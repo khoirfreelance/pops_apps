@@ -27,14 +27,6 @@ class FamilyController extends Controller
                 'tgl_lahir'       => $k->kepala ? $k->kepala->tanggal_lahir : null,
                 'pendidikan'      => $k->kepala ? $k->kepala->pendidikan : null,
                 'status_hubungan' => $k->kepala ? $k->kepala->status_hubungan : null,
-                /* 'kepala'  => $k->kepala ? [
-                    'id'            => $k->kepala->id,
-                    'nama'          => $k->kepala->nama,
-                    'nik'           => $k->kepala->nik,
-                    'tgl_lahir'     => $k->kepala->tanggal_lahir,
-                    'pendidikan'    => $k->kepala->pendidikan,
-                    'status_hubungan' => $k->kepala->status_hubungan,
-                ] : null, */
             ];
         });
 
@@ -87,7 +79,7 @@ class FamilyController extends Controller
 
     public function checkNoKK(Request $request)
     {
-        $keluarga = Keluarga::with(['kepala', 'anggota'])
+        $keluarga = Keluarga::with(['kepala', 'anggota', 'wilayah'])
             ->where('no_kk', $request->no_kk)
             ->first();
 
@@ -102,12 +94,16 @@ class FamilyController extends Controller
                     'rw' => $keluarga->rw,
                     'id_wilayah' => $keluarga->id_wilayah,
                     'kepala' => $keluarga->kepala?->nama,
+                    // expand wilayah
+                    'provinsi'  => $keluarga->wilayah?->provinsi,
+                    'kota'      => $keluarga->wilayah?->kota,
+                    'kecamatan' => $keluarga->wilayah?->kecamatan,
+                    'kelurahan' => $keluarga->wilayah?->kelurahan,
                 ],
             ]);
         }
 
         return response()->json(['exists' => false]);
     }
-
 }
 

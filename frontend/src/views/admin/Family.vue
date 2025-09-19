@@ -192,7 +192,7 @@
             <!-- Alamat -->
             <div class="col-md-12">
               <label class="form-label small fw-semibold text-secondary">Alamat</label>
-              <textarea class="form-control shadow-sm" rows="2" v-model="form.alamat"></textarea>
+              <textarea class="form-control shadow-sm" rows="2" v-model="form.alamat" :readonly="isKKChecked"></textarea>
             </div>
 
             <!-- Provinsi, Kecamatan & Kota -->
@@ -207,7 +207,7 @@
                 />
               </div>
               <div v-else>
-                <select class="form-select shadow-sm" v-model="form.provinsi" @change="loadKota">
+                <select class="form-select shadow-sm" v-model="form.provinsi" @change="loadKota" :readonly="isKKChecked">
                   <option value="">Pilih</option>
                   <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
                     {{ item.nama }}
@@ -227,7 +227,7 @@
                 />
               </div>
               <div v-else>
-                <select class="form-select shadow-sm" v-model="form.kota" @change="loadKecamatan">
+                <select class="form-select shadow-sm" v-model="form.kota" @change="loadKecamatan" :readonly="isKKChecked">
                   <option value="">Pilih</option>
                   <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
                     {{ item.nama }}
@@ -269,7 +269,7 @@
                 />
               </div>
               <div v-else>
-                <select class="form-select shadow-sm" v-model="form.kelurahan">
+                <select class="form-select shadow-sm" v-model="form.kelurahan" :readonly="isKKChecked">
                   <option value="">Pilih</option>
                   <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
                     {{ item.nama }}
@@ -280,11 +280,11 @@
             </div>
             <div class="col-md-4">
               <label class="form-label small fw-semibold text-secondary">RT</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rt" />
+              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rt" :readonly="isKKChecked"/>
             </div>
             <div class="col-md-4">
               <label class="form-label small fw-semibold text-secondary">RW</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rw" />
+              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rw" :readonly="isKKChecked"/>
             </div>
 
             <div class="col-md-12">
@@ -521,6 +521,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      isKKChecked: false,
       isCollapsed: false,
       isFilterOpen: false,
       showAlert: false,
@@ -600,22 +601,42 @@ export default {
 
       try {
         const res = await axios.get("http://localhost:8000/api/family/check", {
-          params: { no_kk: this.form.no_kk }
+          params: {  // ⬅️ pake params biar masuk ke query string
+            no_kk: this.form.no_kk,
+          },
         });
 
         if (res.data.exists) {
-          // isi otomatis data keluarga
-          const k = res.data.keluarga;
-          this.form.alamat = k.alamat;
-          this.form.rt = k.rt;
-          this.form.rw = k.rw;
-          this.form.provinsi = k.provinsi; // kalau mau auto select
-          this.form.kota = k.kota;
-          this.form.kecamatan = k.kecamatan;
-          this.form.kelurahan = k.kelurahan;
+          const data = res.data.keluarga;
+
+          // isi form
+          this.form.alamat = data.alamat;
+          this.form.rt = data.rt;
+          this.form.rw = data.rw;
+          this.form.provinsi = data.provinsi;
+          this.form.kota = data.kota;
+          this.form.kecamatan = data.kecamatan;
+          this.form.kelurahan = data.kelurahan;
+
+          // pastikan dropdown punya value-nya
+          if (data.kota && !this.kotaList.some(k => k.nama === data.kota)) {
+            this.kotaList.push({ nama: data.kota });
+          }
+          if (data.kecamatan && !this.kecamatanList.some(k => k.nama === data.kecamatan)) {
+            this.kecamatanList.push({ nama: data.kecamatan });
+          }
+          if (data.kelurahan && !this.kelurahanList.some(k => k.nama === data.kelurahan)) {
+            this.kelurahanList.push({ nama: data.kelurahan });
+          }
+
+          // set flag supaya field jadi readonly
+          this.isKKChecked = true;
+        } else {
+          this.isKKChecked = false;
         }
       } catch (e) {
-        console.error("Gagal cek No KK:", e);
+        console.error("Error check KK:", e);
+        this.isKKChecked = false;
       }
     },
     async loadProvinsi() {

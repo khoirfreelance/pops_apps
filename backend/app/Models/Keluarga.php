@@ -21,5 +21,10 @@ class Keluarga extends Model
             ->where('status_hubungan', 'Kepala Keluarga');
     }
 
+    public function wilayah()
+    {
+        return $this->belongsTo(Wilayah::class, 'id_wilayah');
+    }
+
 }
 
