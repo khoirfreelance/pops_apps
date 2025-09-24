@@ -8,7 +8,7 @@ class AnggotaKeluarga extends Model
 {
     protected $table = 'anggota_keluarga';
     const UPDATED_AT = 'modified_at';
-    protected $fillable = ['id_keluarga','nik','nama','tanggal_lahir','jenis_kelamin',
+    protected $fillable = ['id_keluarga','nik','nama','tempat_lahir','tanggal_lahir','jenis_kelamin',
         'status_hubungan','agama','pendidikan','pekerjaan','status_perkawinan','kewarganegaraan','is_pending'];
 
     public function keluarga()

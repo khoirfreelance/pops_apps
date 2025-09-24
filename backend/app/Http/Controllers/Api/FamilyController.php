@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Models\Keluarga;
 use App\Models\AnggotaKeluarga;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Log;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -42,6 +44,14 @@ class FamilyController extends Controller
             ];
         });
 
+        dd(Auth::id(), Auth::user());
+
+        Log::create([
+            'id_user'  => Auth::id(),
+            'context'  => 'keluarga',
+            'activity' => 'view',
+            'timestamp'=> now(),
+        ]);
         return response()->json($data->values());
     }
 
@@ -92,6 +102,13 @@ class FamilyController extends Controller
             'status_perkawinan' => $request->status_perkawinan,
             'kewarganegaraan' => $request->kewarganegaraan,
             'is_pending' => $isPendingAnggota,
+        ]);
+
+        Log::create([
+            'id_user'  => Auth::id(),
+            'context'  => 'keluarga',
+            'activity' => 'store',
+            'timestamp'=> now(),
         ]);
 
         return response()->json(['message' => 'Data berhasil disimpan', 'status' => $status]);
@@ -227,6 +244,14 @@ class FamilyController extends Controller
             }
 
             DB::commit();
+
+            Log::create([
+                'id_user'  => Auth::id(),
+                'context'  => 'keluarga',
+                'activity' => 'import',
+                'timestamp'=> now(),
+            ]);
+
             return response()->json(['success' => true, 'message' => 'Data berhasil diimport', 'status'=> $status]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -236,43 +261,75 @@ class FamilyController extends Controller
 
     public function pendingData()
     {
-        $keluargas = Keluarga::with('kepala')
-                    ->where('is_pending', 1)
-                    ->get();
+        $keluargas = Keluarga::with(['kepala', 'anggota'])
+            ->where('is_pending', 1)
+            ->orWhereHas('anggota', function ($q) {
+                $q->where('is_pending', 1);
+            })
+            ->get();
 
-        $data = $keluargas->map(function ($k) {
-            return [
-                'id'      => $k->id,
-                'no_kk'   => $k->no_kk,
-                'alamat'  => $k->alamat,
-                'rt'      => $k->rt,
-                'rw'      => $k->rw,
+        $data = collect();
 
-                // data kepala keluarga langsung diurai
-                'nama_kepala'     => $k->kepala ? $k->kepala->nama : null,
-                'nik_kepala'      => $k->kepala ? $k->kepala->nik : null,
-                'tgl_lahir'       => $k->kepala && $k->kepala->tanggal_lahir
-                                    ? $k->kepala->tempat_lahir.', '. Carbon::parse($k->kepala->tanggal_lahir)->format('d-m-Y')
-                                    : null,
-                'pendidikan'      => $k->kepala ? $k->kepala->pendidikan : null,
-                'status_hubungan' => $k->kepala ? $k->kepala->status_hubungan : null,
-                'is_pending' => $k->kepala ? $k->kepala->is_pending : null,
+        foreach ($keluargas as $k) {
+            if ($k->is_pending) {
+                // === tampilkan kepala keluarga ===
+                $data->push([
+                    'id'      => $k->id,
+                    'no_kk'   => $k->no_kk,
+                    'alamat'  => $k->alamat,
+                    'rt'      => $k->rt,
+                    'rw'      => $k->rw,
 
-                // jumlah anggota keluarga
-                'jml_anggota'     => $k->anggota ? $k->anggota
-                                                    ->where('is_pending', 1)
-                                                    ->count() : 0,
-            ];
-        });
+                    'nama'    => $k->kepala?->nama,
+                    'nik'     => $k->kepala?->nik,
+                    'tgl_lahir' => $k->kepala && $k->kepala->tanggal_lahir
+                        ? $k->kepala->tempat_lahir.', '.Carbon::parse($k->kepala->tanggal_lahir)->format('d-m-Y')
+                        : null,
+                    'pendidikan'      => $k->kepala?->pendidikan,
+                    'status_hubungan' => $k->kepala?->status_hubungan,
+                    'is_pending'      => 1,
+                    'tipe'            => 'keluarga',
+                ]);
+            } else {
+                // === tampilkan anggota pending ===
+                foreach ($k->anggota->where('is_pending', 1) as $a) {
+                    $data->push([
+                        'id'      => $a->id,
+                        'no_kk'   => $k->no_kk,
+                        'alamat'  => $k->alamat,
+                        'rt'      => $k->rt,
+                        'rw'      => $k->rw,
+
+                        'nama'    => $a->nama,
+                        'nik'     => $a->nik,
+                        'tgl_lahir' => $a->tanggal_lahir
+                            ? $a->tempat_lahir.', '.Carbon::parse($a->tanggal_lahir)->format('d-m-Y')
+                            : null,
+                        'pendidikan'      => $a->pendidikan,
+                        'status_hubungan' => $a->status_hubungan,
+                        'is_pending'      => 1,
+                        'tipe'            => 'anggota',
+                    ]);
+                }
+            }
+        }
 
         return response()->json($data->values());
     }
 
+
     public function pending($id)
     {
-        $keluarga = Keluarga::with(['wilayah', 'anggota'])
+        $keluarga = Keluarga::with(['wilayah', 'anggota' => function ($q) {
+                            $q->where('is_pending', 1); // hanya anggota pending
+                        }])
                     ->where('id', $id)
-                    ->where('is_pending', '1')
+                    ->where(function ($q) {
+                        $q->where('is_pending', 1) // keluarga pending
+                        ->orWhereHas('anggota', function ($q2) {
+                            $q2->where('is_pending', 1); // anggota pending
+                        });
+                    })
                     ->firstOrFail();
 
         return response()->json([
@@ -288,7 +345,7 @@ class FamilyController extends Controller
             'kecamatan' => $keluarga->wilayah?->kecamatan,
             'kelurahan' => $keluarga->wilayah?->kelurahan,
 
-            // anggota keluarga (kepala + lainnya)
+            // anggota keluarga (hanya yang pending)
             'anggota' => $keluarga->anggota->map(function ($a) {
                 return [
                     'id'               => $a->id,
@@ -310,7 +367,6 @@ class FamilyController extends Controller
 
     public function update(Request $request, $id)
     {
-        // cek apakah no_kk sudah ada
         $keluarga = Keluarga::findOrFail($id);
 
         // cek is_pending untuk keluarga
@@ -318,43 +374,59 @@ class FamilyController extends Controller
 
         // cek is_pending untuk anggota
         $isPendingAnggota = empty($request->nik) ? 1 : 0;
-        $status = $isPendingKeluarga || $isPendingAnggota == 0 ? 'Pending':'Saved';
+        $status = ($isPendingKeluarga || $isPendingAnggota) ? 'Pending' : 'Saved';
 
         // simpan wilayah
         $wilayah = \App\Models\Wilayah::firstOrCreate([
-            'provinsi' => $request->provinsi,
-            'kota' => $request->kota,
+            'provinsi'  => $request->provinsi,
+            'kota'      => $request->kota,
             'kecamatan' => $request->kecamatan,
             'kelurahan' => $request->kelurahan,
         ]);
 
-        // buat keluarga baru
+        // update keluarga
         $keluarga->update([
-            'no_kk' => $request->no_kk,
-            'alamat' => $request->alamat,
-            'rt' => $request->rt,
-            'rw' => $request->rw,
+            'no_kk'      => $request->no_kk,
+            'alamat'     => $request->alamat,
+            'rt'         => $request->rt,
+            'rw'         => $request->rw,
             'id_wilayah' => $wilayah->id,
             'is_pending' => $isPendingKeluarga,
         ]);
 
-        // tambah anggota keluarga (bisa kepala/istri/anak dsb.)
-        $keluarga->anggota()->update([
-            'nik' => $request->nik,
-            'nama' => $request->nama,
-            'tempat_lahir' => $request->tempat_lahir,
-            'tanggal_lahir' => $request->tgl_lahir,
-            'jenis_kelamin' => $request->gender,
-            'pendidikan' => $request->pendidikan,
-            'pekerjaan' => $request->pekerjaan,
-            'status_hubungan' => $request->status_hubungan,
-            'agama' => $request->agama,
-            'status_perkawinan' => $request->status_perkawinan,
-            'kewarganegaraan' => $request->kewarganegaraan,
-            'is_pending' => $isPendingAnggota,
+        // update anggota tertentu
+        if ($request->anggota_id) {
+            $anggota = $keluarga->anggota()->where('id', $request->anggota_id)->first();
+            if ($anggota) {
+                $anggota->update([
+                    'nik'              => $request->nik,
+                    'nama'             => $request->nama,
+                    'tempat_lahir'     => $request->tempat_lahir,
+                    'tanggal_lahir'    => $request->tgl_lahir,
+                    'jenis_kelamin'    => $request->gender,
+                    'pendidikan'       => $request->pendidikan,
+                    'pekerjaan'        => $request->pekerjaan,
+                    'status_hubungan'  => $request->status_hubungan,
+                    'agama'            => $request->agama,
+                    'status_perkawinan'=> $request->status_perkawinan,
+                    'kewarganegaraan'  => $request->kewarganegaraan,
+                    'is_pending'       => $isPendingAnggota,
+                ]);
+            }
+        }
+
+        Log::create([
+            'id_user'  => Auth::id(),
+            'context'  => 'keluarga',
+            'activity' => 'update',
+            'timestamp'=> now(),
         ]);
 
-        return response()->json(['message' => 'Data berhasil diubah', 'status' => $status]);
+        return response()->json([
+            'message' => 'Data berhasil diubah',
+            'status'  => $status
+        ]);
     }
+
 }
 

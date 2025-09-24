@@ -32,7 +32,7 @@
                 <div class="text-white my-0">
                   <ul>
                     <li>Anda memiiki <strong>1</strong> jadwal intervensi hari ini.</li>
-                    <li>
+                    <li v-if="pendingCount > 0">
                       Anda memiliki
                       <a
                         href="#dataPending"
@@ -147,6 +147,31 @@
 
           <!-- Table -->
           <div class="container-fluid">
+            <div id="dataPending" class="card modern-card mt-4 collapse">
+              <div class="card-body bg-additional rounded">
+                <div class="table-responsive">
+                  <div class="d-flex justify-content-between">
+                    <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
+                    <button data-bs-toggle="collapse" data-bs-target="#dataPending" class="btn-close"></button>
+                  </div>
+
+                  <EasyDataTable
+                    :headers="headers_pending"
+                    :items="familyPending"
+                  >
+                  <template #item-action="{ id }">
+                    <button
+                      class="btn btn-secondary m-2"
+                      @click="updateFamily(id)"
+                      style="font-size: small;"
+                    >
+                      <i class="fa fa-pen"></i>
+                    </button>
+                  </template>
+                  </EasyDataTable>
+                </div>
+              </div>
+            </div>
             <div class="card modern-card mt-4">
               <div class="card-body">
                 <div class="table-responsive">
@@ -162,27 +187,6 @@
                       style="font-size: small;"
                     >
                       <i class="fa fa-eye"></i>
-                    </button>
-                  </template>
-                  </EasyDataTable>
-                </div>
-              </div>
-            </div>
-            <div id="dataPending" class="card modern-card mt-4 collapse">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <h5 class="fw-bold mb-2">Data Pending</h5>
-                  <EasyDataTable
-                    :headers="headers_pending"
-                    :items="familyPending"
-                  >
-                  <template #item-action="{ id }">
-                    <button
-                      class="btn btn-secondary m-2"
-                      @click="updateFamily(id)"
-                      style="font-size: small;"
-                    >
-                      <i class="fa fa-pen"></i>
                     </button>
                   </template>
                   </EasyDataTable>
@@ -213,7 +217,7 @@
           <h5 class="modal-title fw-bold text-primary">
             {{ modalMode === 'add' ? 'Tambah Data Keluarga' : 'Ubah Data Keluarga' }}
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" @click="resetForm"></button>
         </div>
 
         <!-- Body -->
@@ -364,7 +368,6 @@
                 type="text"
                 class="form-control shadow-sm"
                 v-model="form.tempat_lahir"
-                maxlength="16"
                 @input="form.tempat_lahir = form.tempat_lahir"
               />
             </div>
@@ -445,7 +448,7 @@
 
         <!-- Footer -->
         <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
+          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal" @click="resetForm">
             <i class="bi bi-x-circle me-2"></i> Batal
           </button>
           <button class="btn btn-success rounded-pill px-4" @click="modalMode === 'add' ? saveData() : updateData()">
@@ -609,53 +612,6 @@
               </table>
             </div>
           </div>
-          <!-- <div class="mb-3">
-
-          </div>
-
-          <div class="d-flex justify-content-between mb-3">
-            <div>
-              <p class="mb-1"><strong>RT/RW</strong></p>
-              <p class="text-muted">{{ selectedFamily?.rt }}/{{ selectedFamily?.rw }}</p>
-            </div>
-            <div>
-              <p class="mb-1"><strong>Wilayah</strong></p>
-              <p class="text-muted">
-
-                {{ selectedFamily?.wilayah?.kecamatan }},
-                {{ selectedFamily?.wilayah?.kota }},
-                {{ selectedFamily?.wilayah?.provinsi }}
-              </p>
-            </div>
-          </div>
-
-          <h6 class="fw-semibold text-dark border-bottom pb-2 mt-4">Anggota Keluarga</h6>
-          <div class="table-responsive mt-3">
-            <table class="table table-sm align-middle text-center">
-              <thead class="table-light">
-                <tr>
-                  <th>NIK</th>
-                  <th>Nama</th>
-                  <th>Tanggal Lahir</th>
-                  <th>L/P</th>
-                  <th>Pendidikan</th>
-                  <th>Pekerjaan</th>
-                  <th>Status Hubungan</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="a in selectedFamily?.anggota" :key="a.id">
-                  <td>{{ a.nik }}</td>
-                  <td class="fw-medium">{{ a.nama }}</td>
-                  <td>{{ a.tanggal_lahir }}</td>
-                  <td>{{ a.jenis_kelamin }}</td>
-                  <td>{{ a.pendidikan }}</td>
-                  <td>{{ a.pekerjaan }}</td>
-                  <td>{{ a.status_hubungan }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div> -->
         </div>
 
       </div>
@@ -756,8 +712,8 @@ export default {
       headers_pending: [
         { text: 'ID', value: 'id' },
         { text: 'No KK', value: 'no_kk' },
-        { text: 'NIK', value: 'nik_kepala' },
-        { text: 'Kepala Keluarga', value: 'nama_kepala' },
+        { text: 'NIK', value: 'nik' },
+        { text: 'Nama', value: 'nama' },
         { text: 'RT', value: 'rt' },
         { text: 'RW', value: 'rw' },
         { text: 'Tempat, Tanggal Lahir', value: 'tgl_lahir' },
@@ -797,6 +753,58 @@ export default {
   methods: {
     toggleExpand() {
       this.isFilterOpen = !this.isFilterOpen
+    },
+    async checkNoKK() {
+      if (!this.form.no_kk) return;
+
+      try {
+        const res = await axios.get("http://localhost:8000/api/family/check", {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          params: { no_kk: this.form.no_kk },
+        });
+
+        if (res.data.exists) {
+          const data = res.data.keluarga;
+
+          // isi alamat dan rt/rw dulu
+          this.form.alamat = data.alamat;
+          this.form.rt = data.rt;
+          this.form.rw = data.rw;
+
+          // provinsi
+          if (data.provinsi) {
+            this.form.provinsi = data.provinsi;
+            await this.loadKota();
+          }
+
+          // kota
+          if (data.kota) {
+            this.form.kota = data.kota;
+            await this.loadKecamatan();
+          }
+
+          // kecamatan
+          if (data.kecamatan) {
+            this.form.kecamatan = data.kecamatan;
+            await this.loadKelurahan();
+          }
+
+          // kelurahan
+          if (data.kelurahan) {
+            this.form.kelurahan = data.kelurahan;
+          }
+
+          this.isKKChecked = true;
+        } else {
+          this.isKKChecked = false;
+        }
+      } catch (e) {
+        console.error("Error check KK:", e);
+        this.isKKChecked = false;
+      }
     },
     async loadProvinsi() {
       try {
@@ -847,62 +855,14 @@ export default {
         this.form.kelurahan = "";
       }
     },
-    async checkNoKK() {
-      if (!this.form.no_kk) return;
-
-      try {
-        const res = await axios.get("http://localhost:8000/api/family/check", {
-          params: {  // ⬅️ pake params biar masuk ke query string
-            no_kk: this.form.no_kk,
-          },
-        });
-
-        if (res.data.exists) {
-          const data = res.data.keluarga;
-
-          // isi form
-          this.form.alamat = data.alamat;
-          this.form.rt = data.rt;
-          this.form.rw = data.rw;
-          this.form.provinsi = data.provinsi;
-          this.form.kota = data.kota;
-          this.form.kecamatan = data.kecamatan;
-          this.form.kelurahan = data.kelurahan;
-
-          // trigger loader supaya list dropdown sesuai
-          if (data.provinsi) {
-            await this.loadKota();
-          }
-          if (data.kota) {
-            await this.loadKecamatan();
-          }
-          if (data.kecamatan) {
-            await this.loadKelurahan();
-          }
-          // pastikan dropdown punya value-nya
-          /* if (data.kota && !this.kotaList.some(k => k.nama === data.kota)) {
-            this.kotaList.push({ nama: data.kota });
-          }
-          if (data.kecamatan && !this.kecamatanList.some(k => k.nama === data.kecamatan)) {
-            this.kecamatanList.push({ nama: data.kecamatan });
-          }
-          if (data.kelurahan && !this.kelurahanList.some(k => k.nama === data.kelurahan)) {
-            this.kelurahanList.push({ nama: data.kelurahan });
-          } */
-
-          // set flag supaya field jadi readonly
-          this.isKKChecked = true;
-        } else {
-          this.isKKChecked = false;
-        }
-      } catch (e) {
-        console.error("Error check KK:", e);
-        this.isKKChecked = false;
-      }
-    },
     async loadFamily() {
       try {
-        const res = await axios.get('http://localhost:8000/api/family')
+        const res = await axios.get('http://localhost:8000/api/family',{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
         this.family = res.data
         console.log(this.family);
       } catch (e) {
@@ -955,7 +915,12 @@ export default {
     async updateFamily(id) {
       this.modalMode = "update";
       try {
-        const res = await axios.get(`http://localhost:8000/api/family/${id}`);
+        const res = await axios.get(`http://localhost:8000/api/family/${id}`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         const data = res.data;
 
         // mapping ke form sesuai struktur
@@ -1009,7 +974,14 @@ export default {
     },
     async updateData() {
       try {
-        await axios.put(`http://localhost:8000/api/family/${this.form.id}`, this.form)
+       console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+
+        await axios.put(`http://localhost:8000/api/family/${this.form.id}`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }, this.form)
         //alert("Data berhasil diupdate")
         Modal.getInstance(document.getElementById("modalTambah")).hide()
         this.getPendingData()
@@ -1032,8 +1004,15 @@ export default {
         this.form.kecamatan = this.form.kecamatan === "__new__" ? this.form.kecamatan_new : this.form.kecamatan;
         this.form.kelurahan= this.form.kelurahan === "__new__" ? this.form.kelurahan_new : this.form.kelurahan;
 
+        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+
         // simpan ke backend
-        await axios.post('http://localhost:8000/api/family', this.form)
+        await axios.post('http://localhost:8000/api/family',{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }, this.form)
 
         // refresh table
         await this.loadFamily()
@@ -1079,7 +1058,12 @@ export default {
     async openFamilyModal(no_kk) {
       try {
         // panggil API detail by id
-        const res = await axios.get(`http://localhost:8000/api/family/detail/${no_kk}`)
+        const res = await axios.get(`http://localhost:8000/api/family/detail/${no_kk}`,{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
         this.selectedFamily = res.data
         console.log(res.data);
 
@@ -1107,7 +1091,11 @@ export default {
 
       try {
         const res = await axios.post("http://localhost:8000/api/family/import", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               this.importProgress = Math.round(
@@ -1135,7 +1123,12 @@ export default {
     },
     async getPendingData() {
       try {
-        const res = await axios.post("http://localhost:8000/api/family/pending")
+        const res = await axios.get("http://localhost:8000/api/family/pending",{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
         this.familyPending = res.data
         console.log("Pending data:", this.familyPending)
       } catch (err) {

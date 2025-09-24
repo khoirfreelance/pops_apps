@@ -1,15 +1,15 @@
 <?php
 
-return [
+/* return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
     'allowed_origins' => ['http://localhost:5173'], // alamat frontend Vue
     'allowed_headers' => ['*'], // supaya Authorization ikut
     'exposed_headers' => ['*'],
-    'supports_credentials' => false, // kalau Bearer token, false
-];
+    'supports_credentials' => true, // kalau Bearer token, false
+]; */
 
-/* return [
+return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
@@ -27,5 +27,5 @@ return [
     'max_age' => 0,
 
     'supports_credentials' => true,
-]; */
+];
 
