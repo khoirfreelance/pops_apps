@@ -75,7 +75,7 @@
         </router-link>
       </li>
 
-      <li class="menu-section mt-4" v-if="!isCollapsed">Setting</li>
+      <li class="menu-section mt-4" v-if="!isCollapsed">Administrator</li>
       <li>
         <router-link
           to="/admin/config"
@@ -84,6 +84,16 @@
         >
           <i class="bi bi-gear"></i>
           <span v-if="!isCollapsed">Konfigurasi</span>
+        </router-link>
+      </li>
+      <li>
+        <router-link
+          to="/admin/log"
+          class="nav-link"
+          :class="{ active: isActive('/admin/log') }"
+        >
+          <i class="bi bi-display"></i>
+          <span v-if="!isCollapsed">Log</span>
         </router-link>
       </li>
     </ul>

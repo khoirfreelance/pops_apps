@@ -77,13 +77,14 @@ export default {
         // ambil data dari API
         const { status, message, user, token } = response.data
 
-        console.log('Token di config.vue:', token) // debug di console
+        //console.log('Token di config.vue:', token) // debug di console
 
         if (status) {
           // simpan token + info user ke localStorage
           localStorage.setItem('token', token)
           localStorage.setItem('isLoggedIn', 'true')
           localStorage.setItem('userEmail', user.email)
+          //localStorage.setItem('userID', user.id)
           localStorage.setItem('authToken', token)
 
           Swal.fire({

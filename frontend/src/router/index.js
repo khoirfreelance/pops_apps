@@ -15,6 +15,7 @@ import Cadre from '@/views/admin/Cadre.vue'
 import Membership from '@/views/admin/Membership.vue'
 import Profile from '@/views/admin/Profile.vue'
 import Chart from '@/views/admin/Chart.vue'
+import Log from '@/views/admin/Log.vue'
 
 const routes = [
   {
@@ -92,6 +93,12 @@ const routes = [
     path: '/admin/config',
     name: 'config',
     component: Config,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/log',
+    name: 'log',
+    component: Log,
     meta: { requiresAuth: true },
   },
   {

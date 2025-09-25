@@ -7,12 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Log extends Model
 {
     protected $table = 'log';
-     public $timestamps = false;
-    protected $fillable = ['id_user','context','activity','timestamp'];
+    public $timestamps = false;
+
+    protected $fillable = [
+        'id_user',
+        'context',
+        'activity',
+        'timestamp'
+    ];
 
     public function user()
     {
-        return $this->hasMany(User::class, 'id_user');
+        return $this->belongsTo(User::class, 'id_user');
     }
-
 }

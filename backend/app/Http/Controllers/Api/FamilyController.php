@@ -44,8 +44,6 @@ class FamilyController extends Controller
             ];
         });
 
-        dd(Auth::id(), Auth::user());
-
         Log::create([
             'id_user'  => Auth::id(),
             'context'  => 'keluarga',

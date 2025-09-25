@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ConfigController;
 use App\Http\Controllers\Api\FamilyController;
 use App\Http\Controllers\Api\RegionController;
+use App\Http\Controllers\Api\LogController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -29,5 +30,5 @@ Route::get('/region/kota', [RegionController::class, 'getKota']);
 Route::get('/region/kecamatan', [RegionController::class, 'getKecamatan']);
 Route::get('/region/kelurahan', [RegionController::class, 'getKelurahan']);
 
-
-
+// Log Endpoint
+Route::middleware('auth:sanctum')->get('/log', [LogController::class, 'index']);
