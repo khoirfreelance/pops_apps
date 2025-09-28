@@ -315,22 +315,43 @@ class FamilyController extends Controller
         return response()->json($data->values());
     }
 
-
-    public function pending($id)
+    public function pending($id, Request $request)
     {
-        $keluarga = Keluarga::with(['wilayah', 'anggota' => function ($q) {
-                            $q->where('is_pending', 1); // hanya anggota pending
-                        }])
-                    ->where('id', $id)
-                    ->where(function ($q) {
-                        $q->where('is_pending', 1) // keluarga pending
-                        ->orWhereHas('anggota', function ($q2) {
-                            $q2->where('is_pending', 1); // anggota pending
-                        });
-                    })
-                    ->firstOrFail();
+        $tipe = $request->query('tipe');
+
+        if ($tipe === 'keluarga') {
+            // Cari keluarga berdasarkan ID
+            $keluarga = Keluarga::with(['wilayah', 'anggota' => function ($q) {
+                    $q->where('status_hubungan', 'Kepala Keluarga');
+                }])
+                ->find($id);
+
+            if (!$keluarga) {
+                return response()->json(['message' => 'Data keluarga tidak ditemukan'], 404);
+            }
+
+        } elseif ($tipe === 'anggota') {
+            // Cari anggota berdasarkan ID
+            $anggota = AnggotaKeluarga::with('keluarga.wilayah')
+                ->where('id', $id)
+                ->where('is_pending', 1)
+                ->first();
+
+            if (!$anggota) {
+                return response()->json(['message' => 'Data anggota tidak ditemukan'], 404);
+            }
+
+            // Ambil keluarganya + filter anggota pending
+            $keluarga = $anggota->keluarga->load(['anggota' => function ($q) {
+                $q->where('is_pending', 1);
+            }]);
+
+        } else {
+            return response()->json(['message' => 'Tipe tidak valid'], 400);
+        }
 
         return response()->json([
+            'tipe'     => $tipe,
             'id'       => $keluarga->id,
             'no_kk'    => $keluarga->no_kk,
             'alamat'   => $keluarga->alamat,
@@ -343,7 +364,7 @@ class FamilyController extends Controller
             'kecamatan' => $keluarga->wilayah?->kecamatan,
             'kelurahan' => $keluarga->wilayah?->kelurahan,
 
-            // anggota keluarga (hanya yang pending)
+            // anggota keluarga pending
             'anggota' => $keluarga->anggota->map(function ($a) {
                 return [
                     'id'               => $a->id,
@@ -365,16 +386,15 @@ class FamilyController extends Controller
 
     public function update(Request $request, $id)
     {
+        $tipe = $request->tipe;
+
+        // ambil data keluarga berdasarkan id
         $keluarga = Keluarga::findOrFail($id);
 
-        // cek is_pending untuk keluarga
+        // cek is_pending keluarga
         $isPendingKeluarga = empty($request->no_kk) ? 1 : 0;
 
-        // cek is_pending untuk anggota
-        $isPendingAnggota = empty($request->nik) ? 1 : 0;
-        $status = ($isPendingKeluarga || $isPendingAnggota) ? 'Pending' : 'Saved';
-
-        // simpan wilayah
+        // simpan wilayah (hanya kalau ada input wilayah)
         $wilayah = \App\Models\Wilayah::firstOrCreate([
             'provinsi'  => $request->provinsi,
             'kota'      => $request->kota,
@@ -382,33 +402,71 @@ class FamilyController extends Controller
             'kelurahan' => $request->kelurahan,
         ]);
 
-        // update keluarga
-        $keluarga->update([
-            'no_kk'      => $request->no_kk,
-            'alamat'     => $request->alamat,
-            'rt'         => $request->rt,
-            'rw'         => $request->rw,
-            'id_wilayah' => $wilayah->id,
-            'is_pending' => $isPendingKeluarga,
-        ]);
+        if ($tipe === 'keluarga') {
+            // === 1. Update keluarga dulu ===
+            $keluarga->update([
+                'no_kk'      => $request->no_kk,
+                'alamat'     => $request->alamat,
+                'rt'         => $request->rt,
+                'rw'         => $request->rw,
+                'id_wilayah' => $wilayah->id,
+                'is_pending' => $isPendingKeluarga,
+            ]);
 
-        // update anggota tertentu
-        if ($request->anggota_id) {
-            $anggota = $keluarga->anggota()->where('id', $request->anggota_id)->first();
-            if ($anggota) {
-                $anggota->update([
-                    'nik'              => $request->nik,
-                    'nama'             => $request->nama,
-                    'tempat_lahir'     => $request->tempat_lahir,
-                    'tanggal_lahir'    => $request->tgl_lahir,
-                    'jenis_kelamin'    => $request->gender,
-                    'pendidikan'       => $request->pendidikan,
-                    'pekerjaan'        => $request->pekerjaan,
-                    'status_hubungan'  => $request->status_hubungan,
-                    'agama'            => $request->agama,
-                    'status_perkawinan'=> $request->status_perkawinan,
-                    'kewarganegaraan'  => $request->kewarganegaraan,
-                    'is_pending'       => $isPendingAnggota,
+            // === 2. Kalau ada anggota yg diupdate ===
+            if ($request->anggota_id) {
+                $isPendingAnggota = empty($request->nik) ? 1 : 0;
+                $anggota = $keluarga->anggota()->where('id', $request->anggota_id)->first();
+                if ($anggota) {
+                    $anggota->update([
+                        'nik'              => $request->nik,
+                        'nama'             => $request->nama,
+                        'tempat_lahir'     => $request->tempat_lahir,
+                        'tanggal_lahir'    => $request->tanggal_lahir,
+                        'jenis_kelamin'    => $request->jenis_kelamin,
+                        'pendidikan'       => $request->pendidikan,
+                        'pekerjaan'        => $request->pekerjaan,
+                        'status_hubungan'  => $request->status_hubungan,
+                        'agama'            => $request->agama,
+                        'status_perkawinan'=> $request->status_perkawinan,
+                        'kewarganegaraan'  => $request->kewarganegaraan,
+                        'is_pending'       => $isPendingAnggota,
+                    ]);
+                }
+            }
+
+        } elseif ($tipe === 'anggota') {
+            // === 1. Update anggota dulu ===
+            if ($request->anggota_id) {
+                $isPendingAnggota = empty($request->nik) ? 1 : 0;
+                $anggota = $keluarga->anggota()->where('id', $request->anggota_id)->first();
+                if ($anggota) {
+                    $anggota->update([
+                        'nik'              => $request->nik,
+                        'nama'             => $request->nama,
+                        'tempat_lahir'     => $request->tempat_lahir,
+                        'tanggal_lahir'    => $request->tanggal_lahir,
+                        'jenis_kelamin'    => $request->jenis_kelamin,
+                        'pendidikan'       => $request->pendidikan,
+                        'pekerjaan'        => $request->pekerjaan,
+                        'status_hubungan'  => $request->status_hubungan,
+                        'agama'            => $request->agama,
+                        'status_perkawinan'=> $request->status_perkawinan,
+                        'kewarganegaraan'  => $request->kewarganegaraan,
+                        'is_pending'       => $isPendingAnggota,
+                    ]);
+                }
+            }
+
+            // === 2. Kalau ada data keluarga yg ikut diupdate ===
+            if ($request->filled(['no_kk', 'alamat'])) {
+                $keluarga->update([
+                    'no_kk'      => $request->no_kk,
+                    'alamat'     => $request->alamat,
+                    'rt'         => $request->rt,
+                    'rw'         => $request->rw,
+                    'id_wilayah' => $wilayah->id,
+                    'is_pending' => $isPendingKeluarga,
                 ]);
             }
         }
@@ -421,8 +479,7 @@ class FamilyController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Data berhasil diubah',
-            'status'  => $status
+            'message' => 'Data berhasil diubah'
         ]);
     }
 

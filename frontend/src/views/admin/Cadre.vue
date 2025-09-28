@@ -126,23 +126,256 @@
             </div>
           </div>
 
-          <!-- Button Group -->
-          <div class="container-fluid mt-4 d-flex flex-wrap gap-2 justify-content-end">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-              <i class="bi bi-plus-square"></i> Tambah Data
-            </button>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
-              <i class="bi bi-filetype-csv"></i> Import Data Pengguna
-            </button>
-          </div>
+          <!-- Form -->
+          <div class="container-fluid mt-4">
+            <!-- Expand/Collapse Button -->
+            <div class="text-end mb-3">
+              <button
+                type="button"
+                class="btn btn-primary mx-3"
+                @click="toggleExpandForm"
+              >
+                <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+              </button>
+              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
+                <i class="bi bi-filetype-csv"></i> Import Data Pengguna
+              </button>
+            </div>
 
-          <!-- Alert -->
-          <!--  <div class="container-fluid mt-4">
-            <div class="alert alert-success shadow-sm">✅ Data berhasil disimpan!</div>
-          </div> -->
+            <!-- Collapsible Form -->
+            <div v-if="isFormOpen" id="formData" class="card shadow-sm">
+              <div class="card-body">
+                <form class="row g-4">
+                  <!-- No TPK -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">No TPK</label>
+                    <input type="number" min="0" class="form-control shadow-sm" v-model="form.no_tpk" />
+                  </div>
+                  <!-- NIK -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">NIK</label>
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.nik"
+                      @input="form.nik = form.nik.replace(/\D/g, '')"
+                      maxlength="16"
+                    />
+                  </div>
+
+                  <!-- Nama Lengkap -->
+                  <div class="col-md-12">
+                    <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
+                    <input type="text" class="form-control shadow-sm" v-model="form.nama" />
+                  </div>
+
+                  <!-- Email -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Email</label>
+                    <input type="text" class="form-control shadow-sm" v-model="form.email" />
+                  </div>
+
+                  <!-- Phone -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">No Telepon</label>
+                    <input type="text" class="form-control shadow-sm" v-model="form.phone" />
+                  </div>
+
+                  <!-- Password & Confirm -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Password</label>
+                    <input type="password" class="form-control shadow-sm" v-model="form.password" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Konfirmasi Password</label>
+                    <input
+                      type="password"
+                      class="form-control shadow-sm"
+                      v-model="form.confirm_password"
+                    />
+                  </div>
+
+                  <!-- Role & Unit Posyandu -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Role</label>
+                    <select class="form-select shadow-sm" v-model="form.role">
+                      <option value="">Pilih</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Bidan">Bidan</option>
+                      <option value="Kader PKK">Kader PKK</option>
+                      <option value="Kader KB">Kader KB</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Unit Posyandu</label>
+                    <select class="form-select shadow-sm" v-model="form.unit_posyandu">
+                      <option value="">Pilih</option>
+                      <option value="1">Flamboyan</option>
+                      <option value="2">Mawar</option>
+                      <option value="3">Dahlia</option>
+                      <option value="4">Anggrek</option>
+                      <option value="5">Cempaka</option>
+                      <option value="6">Matahari</option>
+                      <option value="7">Bougenville</option>
+                      <option value="8">Kenanga</option>
+                      <option value="9">Melati</option>
+                      <option value="10">Al-hidayah</option>
+                      <option value="11">Al-ikhlas</option>
+                    </select>
+                  </div>
+
+                  <!-- Provinsi -->
+                  <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Provinsi</label>
+                    <template v-if="form.provinsi === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.provinsi_new"
+                        placeholder="Tambah provinsi baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.provinsi"
+                        @change="loadKota"
+                        :readonly="isKKChecked"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- Kota -->
+                  <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Kota</label>
+                    <template v-if="form.kota === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.kota_new"
+                        placeholder="Tambah kota baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kota"
+                        @change="loadKecamatan"
+                        :readonly="isKKChecked"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- Kecamatan -->
+                  <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
+                    <template v-if="form.kecamatan === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.kecamatan_new"
+                        placeholder="Tambah kecamatan baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kecamatan"
+                        @change="loadKelurahan"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- Kelurahan -->
+                  <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
+                    <template v-if="form.kelurahan === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.kelurahan_new"
+                        placeholder="Tambah kelurahan baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kelurahan"
+                        :readonly="isKKChecked"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-footer bg-white d-flex justify-content-between">
+                <button
+                  class="btn btn-light border rounded-pill px-4"
+                  @click="resetForm"
+                >
+                  <i class="bi bi-x-circle me-2"></i> Batal
+                </button>
+                <button
+                  class="btn btn-success rounded-pill px-4"
+                  @click="modalMode === 'add' ? saveData() : updateData()"
+                >
+                  <i class="bi bi-save me-2"></i> {{ modalMode === 'add' ? 'Simpan' : 'Ubah' }}
+                </button>
+              </div>
+            </div>
+          </div>
 
           <!-- Table -->
           <div class="container-fluid">
+            <div class="card modern-card mt-4" v-if="isPendingOpen">
+              <div class="card-body bg-additional rounded">
+                <div class="d-flex justify-content-between">
+                  <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
+                  <button @click="toggleExpandPending" class="btn-close"></button>
+                </div>
+
+                <EasyDataTable
+                  :headers="headers_pending"
+                  :items="cadrePending"
+                >
+                  <template #item-action="{ id,tipe }">
+                    <button
+                      class="btn btn-secondary m-2"
+                      @click="updateCadre(id,tipe)"
+                      style="font-size: small;"
+                    >
+                      <i class="fa fa-pen"></i>
+                    </button>
+                  </template>
+                </EasyDataTable>
+              </div>
+            </div>
             <div class="card modern-card mt-4">
               <div class="card-body">
                 <div class="table-responsive">
@@ -172,120 +405,6 @@
           </div>
         </div>
         <CopyRight class="mt-auto" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Tambah -->
-  <div class="modal fade" id="modalTambah" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div
-        class="modal-content shadow-lg border-0 rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <!-- Header -->
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title fw-bold text-primary">Tambah Data Pengguna</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body">
-          <form class="row g-4">
-            <!-- No TPK -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">No TPK</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.no_tpk" />
-            </div>
-            <!-- NIK -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">NIK</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.nik"
-                @input="form.nik = form.nik.replace(/\D/g, '')"
-                maxlength="16"
-              />
-            </div>
-
-            <!-- Nama Lengkap -->
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.nama" />
-            </div>
-
-            <!-- Email -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Email</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.email" />
-            </div>
-
-            <!-- Phone -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">No Telepon</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.phone" />
-            </div>
-
-            <!-- Role & Unit Posyandu -->
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Role</label>
-              <select class="form-select shadow-sm" v-model="form.role">
-                <option value="">Pilih</option>
-                <option value="Admin">Admin</option>
-                <option value="Bidan">Bidan</option>
-                <option value="Kader PKK">Kader PKK</option>
-                <option value="Kader KB">Kader KB</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Unit Posyandu</label>
-              <select class="form-select shadow-sm" v-model="form.unit_posyandu">
-                <option value="">Pilih</option>
-                <option value="1">Flamboyan</option>
-                <option value="2">Mawar</option>
-                <option value="3">Dahlia</option>
-                <option value="4">Anggrek</option>
-                <option value="5">Cempaka</option>
-                <option value="6">Matahari</option>
-                <option value="7">Bougenville</option>
-                <option value="8">Kenanga</option>
-                <option value="9">Melati</option>
-                <option value="10">Al-hidayah</option>
-                <option value="11">Al-ikhlas</option>
-              </select>
-            </div>
-
-            <!-- Password & Confirm -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Password</label>
-              <input type="password" class="form-control shadow-sm" v-model="form.password" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Konfirmasi Password</label>
-              <input
-                type="password"
-                class="form-control shadow-sm"
-                v-model="form.confirm_password"
-              />
-            </div>
-          </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="saveData">
-            <i class="bi bi-save me-2"></i> Simpan
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -390,6 +509,7 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
+import axios from 'axios'
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -397,6 +517,13 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      provinsiList: [],
+      kotaList: [],
+      kecamatanList: [],
+      kelurahanList: [],
+      modalMode: "add",
+      isFormOpen: false,
+      isPendingOpen: false,
       isCollapsed: false,
       isFilterOpen: false,
       importTitle: 'Import File',
@@ -405,7 +532,7 @@ export default {
       importProgress: 0,
       animatedProgress: 0,
       currentRow: 0,
-      totalRows: 1, // default 1 agar tidak bagi 0
+      totalRows: 1,
       form: {
         nik: '',
         no_tpk: '',
@@ -416,54 +543,18 @@ export default {
         unit_posyandu: '',
         password: '',
         confirm_password: '',
-        status: 'Active',
+        kelurahan: '',
+        kecamatan: '',
+        kota: '',
+        provinsi: '',
+        kelurahan_new: '',
+        kecamatan_new: '',
+        kota_new: '',
+        provinsi_new: '',
+        status: 1,
       },
-      cadre: [
-        {
-          no_tpk: '1',
-          nama: 'Nama Aja',
-          nik: '5678904531234578',
-          status: 'Active',
-          phone: '081996864333',
-          email: 'local_1@email.com',
-          role: 'Admin',
-          unit_posyandu: 'Flamboyan',
-          //action: '<a href="?no_tpk=1" class="btn btn-info"><i class="fa fa-pencil"></i></a>',
-        },
-        {
-          no_tpk: '2',
-          nama: 'Nama Lagi',
-          nik: '5678904535432178',
-          status: 'Active',
-          phone: '0855796864333',
-          email: 'local_2@email.com',
-          role: 'Admin',
-          unit_posyandu: 'Flamboyan',
-          //action: '<a href="?no_tpk=2" class="btn btn-info"><i class="fa fa-pencil"></i></a>',
-        },
-        {
-          no_tpk: '3',
-          nama: 'Nama Donk',
-          nik: '5678904531231234',
-          status: 'Suspended',
-          phone: '082196864333',
-          email: 'local_3@email.com',
-          role: 'Bidan',
-          unit_posyandu: 'Flamboyan',
-          //action: '<a href="?no_tpk=3" class="btn btn-info"><i class="fa fa-pencil"></i></a>',
-        },
-        {
-          no_tpk: '4',
-          nama: 'Nama Baru',
-          nik: '5678904531234556',
-          status: 'Suspended',
-          phone: '088896864333',
-          email: 'local_4@email.com',
-          role: 'Admin',
-          unit_posyandu: 'Flamboyan',
-          //action: '<a href="?no_tpk=4" class="btn btn-info"><i class="fa fa-pencil"></i></a>',
-        },
-      ],
+      cadre: [],
+      cadrePending: [],
       headers: [
         { text: 'No TPK', value: 'no_tpk' },
         { text: 'Nama', value: 'nama' },
@@ -473,6 +564,16 @@ export default {
         { text: 'Email', value: 'email' },
         { text: 'Role', value: 'role' },
         { text: 'Unit Posyandu', value: 'unit_posyandu' },
+        { text: 'Action', value: 'action' },
+      ],
+      headers_pending: [
+        { text: 'No TPK', value: 'no_tpk' },
+        { text: 'Nama', value: 'nama' },
+        { text: 'NIK', value: 'nik' },
+        { text: 'Status', value: 'status' },
+        { text: 'No Telepon', value: 'phone' },
+        { text: 'Unit Posyandu', value: 'unit_posyandu' },
+        { text: 'Tipe Pending', value: 'tipe' },
         { text: 'Action', value: 'action' },
       ],
       // filter
@@ -489,13 +590,8 @@ export default {
     }
   },
   computed: {
-    background() {
-      try {
-        const config = JSON.parse(localStorage.getItem('siteConfig'))
-        return config?.background || null
-      } catch {
-        return null
-      }
+    pendingCount() {
+      return this.cadrePending.length
     },
     filteredCadre() {
       return this.cadre.filter((item) => {
@@ -513,6 +609,69 @@ export default {
     },
   },
   methods: {
+    async loadCadre() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/cadre',{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        this.cadre = res.data
+        console.log('kader:'+ this.cadre);
+      } catch (e) {
+        console.error('Gagal ambil data:', e)
+      }
+    },
+    async loadProvinsi() {
+      try {
+        const res = await axios.get("http://localhost:8000/api/region/provinsi");
+        console.log("Provinsi API response:", res.data); // debug
+
+        // isi list dari API
+        this.provinsiList = res.data;
+
+      } catch (err) {
+        console.error("Error load provinsi:", err);
+      }
+    },
+    async loadKota() {
+      if (this.form.provinsi && this.form.provinsi !== "__new__") {
+        const res = await axios.get("http://localhost:8000/api/region/kota", {
+          params: { provinsi: this.form.provinsi }
+        });
+        this.kotaList = res.data;
+        this.kecamatanList = [];
+        this.kelurahanList = [];
+        this.form.kota = "";
+        this.form.kecamatan = "";
+        this.form.kelurahan = "";
+      }
+    },
+    async loadKecamatan() {
+      if (this.form.kota && this.form.kota !== "__new__") {
+        const res = await axios.get("http://localhost:8000/api/region/kecamatan", {
+          params: { provinsi: this.form.provinsi, kota: this.form.kota }
+        });
+        this.kecamatanList = res.data;
+        this.kelurahanList = [];
+        this.form.kecamatan = "";
+        this.form.kelurahan = "";
+      }
+    },
+    async loadKelurahan() {
+      if (this.form.kecamatan && this.form.kecamatan !== "__new__") {
+        const res = await axios.get("http://localhost:8000/api/region/kelurahan", {
+          params: {
+            provinsi: this.form.provinsi,
+            kota: this.form.kota,
+            kecamatan: this.form.kecamatan
+          }
+        });
+        this.kelurahanList = res.data;
+        this.form.kelurahan = "";
+      }
+    },
     closeModal(id) {
       const el = document.getElementById(id)
       if (el) {
@@ -546,6 +705,41 @@ export default {
     toggleExpand() {
       this.isFilterOpen = !this.isFilterOpen
     },
+    toggleExpandForm() {
+      this.isFormOpen = !this.isFormOpen
+    },
+    toggleExpandPending() {
+      this.isPendingOpen = !this.isPendingOpen
+    },
+    openTambah() {
+      this.modalMode = "add"
+      this.form = {} // reset form
+      this.isFormOpen = true
+    },
+    resetForm() {
+      this.form = {
+        id: null,
+        nik: '',
+        no_tpk: '',
+        nama: '',
+        email: '',
+        phone: '',
+        role: '',
+        unit_posyandu: '',
+        password: '',
+        confirm_password: '',
+        kelurahan: '',
+        kecamatan: '',
+        kota: '',
+        provinsi: '',
+        kelurahan_new: '',
+        kecamatan_new: '',
+        kota_new: '',
+        provinsi_new: '',
+        status: '',
+      },
+      this.isFormOpen = false
+    },
     applyFilter() {
       // copy isi advancedFilter ke appliedFilter saat tombol Cari ditekan
       this.appliedFilter = { ...this.advancedFilter }
@@ -563,56 +757,38 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    saveData() {
-      this.closeModal('modalTambah')
+    async saveData() {
       this.isLoadingImport = true
       this.importProgress = 0
       this.animatedProgress = 0
-      this.currentRow = 0
-      this.totalRows = 1 // hanya 1 record, bisa disesuaikan kalau batch
 
-      // simulasi progress bertahap
-      let step = 0
-      const interval = setInterval(() => {
-        step += 10
-        this.importProgress = Math.min(step, 100)
-        this.animatedProgress = this.importProgress
-        this.currentRow = Math.round((this.totalRows * this.importProgress) / 100)
+      try {
+        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
 
-        if (this.importProgress >= 100) {
-          clearInterval(interval)
+        this.form.provinsi = this.form.provinsi === "__new__" ? this.form.provinsi_new : this.form.provinsi;
+        this.form.kota = this.form.kota === "__new__" ? this.form.kota_new : this.form.kota;
+        this.form.kecamatan = this.form.kecamatan === "__new__" ? this.form.kecamatan_new : this.form.kecamatan;
+        this.form.kelurahan= this.form.kelurahan === "__new__" ? this.form.kelurahan_new : this.form.kelurahan;
 
-          // lanjut simpan data
-
-          this.cadre.push({ ...this.form })
-          this.showAlert = true
-          setTimeout(() => (this.showAlert = false), 3000)
-
-          // reset form
-          this.form = {
-            nik: '',
-            no_tpk: '',
-            nama: '',
-            email: '',
-            phone: '',
-            role: '',
-            unit_posyandu: '',
-            password: '',
-            confirm_password: '',
-            status: 'Active',
+        // simpan ke backend
+        await axios.post('http://localhost:8000/api/cadre', this.form,{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
           }
+        })
 
-          this.$nextTick(() => {
-            const el = document.getElementById('successModal')
-            if (el) {
-              const instance = Modal.getOrCreateInstance(el)
-              instance.show()
-            }
-          })
+        // refresh table
+        await this.getPendingData()
+        await this.loadFamily()
+        await this.resetForm()
+        setTimeout(() => (this.showAlert = false), 3000)
 
-          this.isLoadingImport = false
-        }
-      }, 150) // jeda antar progress
+      } catch (e) {
+        console.error('Gagal simpan data:', e)
+      }finally{
+        this.isLoadingImport = false
+      }
     },
     handleImport() {
       this.closeModal('modalImport')
@@ -669,6 +845,26 @@ export default {
 
       reader.readAsText(file)
     },
+    /* async getPendingData() {
+      try {
+        const res = await axios.get("http://localhost:8000/api/cadre/pending",{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        this.cadrePending = res.data
+        //console.log("Pending data:", this.familyPending)
+      } catch (err) {
+        console.error("Gagal fetch pending data:", err)
+      }
+    }, */
+
+  },
+  mounted() {
+    this.loadCadre()
+    this.loadProvinsi()
+    //this.getPendingData()
   },
 }
 </script>

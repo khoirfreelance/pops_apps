@@ -35,9 +35,9 @@
                     <li v-if="pendingCount > 0">
                       Anda memiliki
                       <a
-                        href="#dataPending"
+                        href="javascript:void(0)"
                         class="fw-bold text-white text-decoration-none"
-                        data-bs-toggle="collapse"
+                        @click="toggleExpandPending"
                       >
                         {{ pendingCount }} data pending
                       </a>
@@ -115,6 +115,7 @@
                 </div>
 
                 <!-- Tombol -->
+
                 <div class="col-md-12">
                   <button type="submit" class="btn btn-primary float-start" @click="applyFilter">
                     <i class="bi bi-search"></i> Cari
@@ -135,41 +136,331 @@
             </div>
           </div>
 
-          <!-- Button Group -->
-          <div class="container-fluid mt-4 d-flex flex-wrap gap-2 justify-content-end">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-              <i class="bi bi-plus-square"></i> Tambah Data
-            </button>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
-              <i class="bi bi-filetype-csv"></i> Import Data Keluarga
-            </button>
+          <!-- Form -->
+          <div class="container-fluid mt-4">
+            <!-- Expand/Collapse Button -->
+            <div class="text-end mb-3">
+              <button
+                type="button"
+                class="btn btn-primary mx-3"
+                @click="toggleExpandForm"
+              >
+                <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+              </button>
+              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
+                <i class="bi bi-filetype-csv"></i> Import Data Keluarga
+              </button>
+            </div>
+
+            <!-- Collapsible Form -->
+            <div v-if="isFormOpen" id="formData" class="card shadow-sm">
+              <div class="card-body">
+                <form class="row g-4">
+                  <!-- No KK -->
+                  <div class="col-md-12">
+                    <label class="form-label small fw-semibold text-secondary">No KK</label>
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.no_kk"
+                      @input="form.no_kk = form.no_kk.replace(/\D/g, '')"
+                      maxlength="16"
+                      @blur="checkNoKK"
+                    />
+                  </div>
+
+                  <!-- Alamat -->
+                  <div class="col-md-12">
+                    <label class="form-label small fw-semibold text-secondary">Alamat</label>
+                    <textarea
+                      class="form-control shadow-sm"
+                      rows="2"
+                      v-model="form.alamat"
+                      :readonly="isKKChecked"
+                    ></textarea>
+                  </div>
+
+                  <!-- Provinsi -->
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">Provinsi</label>
+                    <template v-if="form.provinsi === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.provinsi_new"
+                        placeholder="Tambah provinsi baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.provinsi"
+                        @change="loadKota"
+                        :readonly="isKKChecked"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- Kota -->
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">Kota</label>
+                    <template v-if="form.kota === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.kota_new"
+                        placeholder="Tambah kota baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kota"
+                        @change="loadKecamatan"
+                        :readonly="isKKChecked"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- Kecamatan -->
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
+                    <template v-if="form.kecamatan === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.kecamatan_new"
+                        placeholder="Tambah kecamatan baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kecamatan"
+                        @change="loadKelurahan"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- Kelurahan -->
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
+                    <template v-if="form.kelurahan === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.kelurahan_new"
+                        placeholder="Tambah kelurahan baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kelurahan"
+                        :readonly="isKKChecked"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+
+                  <!-- RT & RW -->
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">RT</label>
+                    <input
+                      type="number"
+                      min="0"
+                      class="form-control shadow-sm"
+                      v-model="form.rt"
+                      :readonly="isKKChecked"
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary">RW</label>
+                    <input
+                      type="number"
+                      min="0"
+                      class="form-control shadow-sm"
+                      v-model="form.rw"
+                      :readonly="isKKChecked"
+                    />
+                  </div>
+
+                  <!-- Nama -->
+                  <div class="col-md-12">
+                    <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
+                    <input type="text" class="form-control shadow-sm" v-model="form.nama" />
+                  </div>
+
+                  <!-- NIK -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">NIK</label>
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.nik"
+                      maxlength="16"
+                      @input="form.nik = form.nik.replace(/\D/g, '')"
+                    />
+                  </div>
+
+                  <!-- Gender -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Jenis Kelamin</label>
+                    <select class="form-select shadow-sm" v-model="form.gender">
+                      <option value="">L/P</option>
+                      <option value="L">Laki-laki</option>
+                      <option value="P">Perempuan</option>
+                    </select>
+                  </div>
+
+                  <!-- Tempat & Tanggal Lahir -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Tempat Lahir</label>
+                    <input type="text" class="form-control shadow-sm" v-model="form.tempat_lahir" />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
+                    <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahir" />
+                  </div>
+
+                  <!-- Pendidikan -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
+                    <select class="form-select shadow-sm" v-model="form.pendidikan">
+                      <option value="">Pendidikan</option>
+                      <option value="TK">TK</option>
+                      <option value="SD">SD</option>
+                      <option value="SMP">SMP</option>
+                      <option value="SMA/SMK">SMA/sederajat</option>
+                      <option value="SARJANA">Sarjana</option>
+                      <option value="MAGISTER">Magister</option>
+                      <option value="DOKTORAL">Doktoral</option>
+                      <option value="PROFESSOR">Professor</option>
+                    </select>
+                  </div>
+
+                  <!-- Pekerjaan -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
+                    <input type="text" class="form-control shadow-sm" v-model="form.pekerjaan" />
+                  </div>
+
+                  <!-- Status Hubungan -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Status Hubungan</label>
+                    <select class="form-select shadow-sm" v-model="form.status_hubungan">
+                      <option value="">Pilih</option>
+                      <option value="Kepala Keluarga">Kepala Keluarga</option>
+                      <option value="Istri">Istri</option>
+                      <option value="Anak">Anak</option>
+                      <option value="Famili Lain">Famili Lain</option>
+                    </select>
+                  </div>
+
+                  <!-- Agama -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Agama</label>
+                    <select class="form-select shadow-sm" v-model="form.agama">
+                      <option value="">Pilih</option>
+                      <option value="Islam">Islam</option>
+                      <option value="Kristen">Kristen</option>
+                      <option value="Katolik">Katolik</option>
+                      <option value="Hindu">Hindu</option>
+                      <option value="Budha">Budha</option>
+                      <option value="Konghucu">Konghucu</option>
+                    </select>
+                  </div>
+
+                  <!-- Status Perkawinan -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Status Perkawinan</label>
+                    <select class="form-select shadow-sm" v-model="form.status_perkawinan">
+                      <option value="">Pilih</option>
+                      <option value="Belum Kawin">Belum Kawin</option>
+                      <option value="Kawin">Kawin</option>
+                      <option value="Cerai Hidup">Cerai Hidup</option>
+                      <option value="Cerai Mati">Cerai Mati</option>
+                    </select>
+                  </div>
+
+                  <!-- Kewarganegaraan -->
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Kewarganegaraan</label>
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.kewarganegaraan"
+                      placeholder="Contoh: WNI"
+                    />
+                  </div>
+                </form>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-footer bg-white d-flex justify-content-between">
+                <button
+                  class="btn btn-light border rounded-pill px-4"
+                  @click="resetForm"
+                >
+                  <i class="bi bi-x-circle me-2"></i> Batal
+                </button>
+                <button
+                  class="btn btn-success rounded-pill px-4"
+                  @click="modalMode === 'add' ? saveData() : updateData()"
+                >
+                  <i class="bi bi-save me-2"></i> {{ modalMode === 'add' ? 'Simpan' : 'Ubah' }}
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Table -->
           <div class="container-fluid">
-            <div id="dataPending" class="card modern-card mt-4 collapse">
+            <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
               <div class="card-body bg-additional rounded">
-                <div class="table-responsive">
-                  <div class="d-flex justify-content-between">
-                    <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
-                    <button data-bs-toggle="collapse" data-bs-target="#dataPending" class="btn-close"></button>
-                  </div>
+                <div class="d-flex justify-content-between">
+                  <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
+                  <button @click="toggleExpandPending" class="btn-close"></button>
+                </div>
 
-                  <EasyDataTable
-                    :headers="headers_pending"
-                    :items="familyPending"
-                  >
-                  <template #item-action="{ id }">
+                <EasyDataTable
+                  :headers="headers_pending"
+                  :items="familyPending"
+                >
+                  <template #item-action="{ id,tipe }">
                     <button
                       class="btn btn-secondary m-2"
-                      @click="updateFamily(id)"
+                      @click="updateFamily(id,tipe)"
                       style="font-size: small;"
                     >
                       <i class="fa fa-pen"></i>
                     </button>
                   </template>
-                  </EasyDataTable>
-                </div>
+                </EasyDataTable>
               </div>
             </div>
             <div class="card modern-card mt-4">
@@ -196,265 +487,6 @@
           </div>
         </div>
         <CopyRight class="mt-auto" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Tambah -->
-  <div class="modal fade" id="modalTambah" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div
-        class="modal-content shadow-lg border-0 rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <!-- Header -->
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title fw-bold text-primary">
-            {{ modalMode === 'add' ? 'Tambah Data Keluarga' : 'Ubah Data Keluarga' }}
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" @click="resetForm"></button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body">
-          <form class="row g-4">
-            <!-- No KK -->
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">No KK</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.no_kk"
-                @input="form.no_kk = form.no_kk.replace(/\D/g, '')"
-                maxlength="16"
-                @blur="checkNoKK"
-              />
-            </div>
-
-            <!-- Alamat -->
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">Alamat</label>
-              <textarea class="form-control shadow-sm" rows="2" v-model="form.alamat" :readonly="isKKChecked"></textarea>
-            </div>
-
-            <!-- Provinsi, Kecamatan & Kota -->
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Provinsi</label>
-              <div v-if="form.provinsi === '__new__'">
-                <input
-                  type="text"
-                  class="form-control shadow-sm"
-                  v-model="form.provinsi_new"
-                  placeholder="Tambah provinsi baru"
-                />
-              </div>
-              <div v-else>
-                <select class="form-select shadow-sm" v-model="form.provinsi" @change="loadKota" :readonly="isKKChecked">
-                  <option value="">Pilih</option>
-                  <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
-                    {{ item.nama }}
-                  </option>
-                  <option value="__new__">+ Tambah baru</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Kota</label>
-              <div v-if="form.kota === '__new__'">
-                <input
-                  type="text"
-                  class="form-control shadow-sm"
-                  v-model="form.kota_new"
-                  placeholder="Tambah kota baru"
-                />
-              </div>
-              <div v-else>
-                <select class="form-select shadow-sm" v-model="form.kota" @change="loadKecamatan" :readonly="isKKChecked">
-                  <option value="">Pilih</option>
-                  <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
-                    {{ item.nama }}
-                  </option>
-                  <option value="__new__">+ Tambah baru</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
-              <div v-if="form.kecamatan === '__new__'">
-                <input
-                  type="text"
-                  class="form-control shadow-sm"
-                  v-model="form.kecamatan_new"
-                  placeholder="Tambah kecamatan baru"
-                />
-              </div>
-              <div v-else>
-                <select class="form-select shadow-sm" v-model="form.kecamatan" @change="loadKelurahan">
-                  <option value="">Pilih</option>
-                  <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
-                    {{ item.nama }}
-                  </option>
-                  <option value="__new__">+ Tambah baru</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- RT, RW , Kelurahan -->
-            <div class="col-md-4">
-               <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
-              <div v-if="form.kelurahan === '__new__'">
-                <input
-                  type="text"
-                  class="form-control shadow-sm"
-                  v-model="form.kelurahan_new"
-                  placeholder="Tambah kelurahan baru"
-                />
-              </div>
-              <div v-else>
-                <select class="form-select shadow-sm" v-model="form.kelurahan" :readonly="isKKChecked">
-                  <option value="">Pilih</option>
-                  <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
-                    {{ item.nama }}
-                  </option>
-                  <option value="__new__">+ Tambah baru</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">RT</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rt" :readonly="isKKChecked"/>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">RW</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rw" :readonly="isKKChecked"/>
-            </div>
-
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.nama" />
-            </div>
-
-            <!-- NIK -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">NIK</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.nik"
-                maxlength="16"
-                @input="form.nik = form.nik.replace(/\D/g, '')"
-              />
-            </div>
-
-            <!-- Jenis Kelamin -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Jenis Kelamin</label>
-              <select class="form-select shadow-sm" v-model="form.gender">
-                <option value="">L/P</option>
-                <option value="L">Laki-laki</option>
-                <option value="P">Perempuan</option>
-              </select>
-            </div>
-
-            <!-- Tempat Lahir -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Tempat Lahir</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.tempat_lahir"
-                @input="form.tempat_lahir = form.tempat_lahir"
-              />
-            </div>
-
-            <!-- Tanggal lahir-->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
-              <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahir" />
-            </div>
-
-            <!-- Pendidikan -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
-              <select class="form-select shadow-sm" v-model="form.pendidikan">
-                <option value="">Pendidikan</option>
-                <option value="TK">TK</option>
-                <option value="SD">SD</option>
-                <option value="SMP">SMP</option>
-                <option value="SMA/SMK">SMA/sederajat</option>
-                <option value="SARJANA">Sarjana</option>
-                <option value="MAGISTER">Magister</option>
-                <option value="DOKTORAL">Doktoral</option>
-                <option value="PROFESSOR">Professor</option>
-              </select>
-            </div>
-
-            <!-- Pekerjaan -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.pekerjaan" />
-            </div>
-
-            <!-- Status Hubungan dalam Keluarga -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Status Hubungan</label>
-              <select class="form-select shadow-sm" v-model="form.status_hubungan">
-                <option value="">Pilih</option>
-                <option value="Kepala Keluarga">Kepala Keluarga</option>
-                <option value="Istri">Istri</option>
-                <option value="Anak">Anak</option>
-                <option value="Famili Lain">Famili Lain</option>
-              </select>
-            </div>
-
-            <!-- Agama -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Agama</label>
-              <select class="form-select shadow-sm" v-model="form.agama">
-                <option value="">Pilih</option>
-                <option value="Islam">Islam</option>
-                <option value="Kristen">Kristen</option>
-                <option value="Katolik">Katolik</option>
-                <option value="Hindu">Hindu</option>
-                <option value="Budha">Budha</option>
-                <option value="Konghucu">Konghucu</option>
-              </select>
-            </div>
-
-            <!-- Status Perkawinan -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Status Perkawinan</label>
-              <select class="form-select shadow-sm" v-model="form.status_perkawinan">
-                <option value="">Pilih</option>
-                <option value="Belum Kawin">Belum Kawin</option>
-                <option value="Kawin">Kawin</option>
-                <option value="Cerai Hidup">Cerai Hidup</option>
-                <option value="Cerai Mati">Cerai Mati</option>
-              </select>
-            </div>
-
-            <!-- Kewarganegaraan -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Kewarganegaraan</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.kewarganegaraan" placeholder="Contoh: WNI" />
-            </div>
-          </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal" @click="resetForm">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="modalMode === 'add' ? saveData() : updateData()">
-            <i class="bi bi-save me-2"></i> {{ modalMode === 'add' ? 'Simpan' : 'Ubah' }}
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -511,7 +543,7 @@
         }"
       >
         <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">✅ Berhasil</h5>
+          <h5 class="modal-title">Berhasil</h5>
           <button
             type="button"
             class="btn-close btn-close-white"
@@ -520,7 +552,7 @@
           ></button>
         </div>
         <div class="modal-body text-center">
-          <p class="mb-0">Data Anak berhasil disimpan ke <strong>localStorage</strong>.</p>
+          <p class="mb-0">Data keluarga berhasil disimpan.</p>
         </div>
         <div class="modal-footer justify-content-center">
           <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
@@ -636,7 +668,7 @@
         </div>
       </div>
     </div>
-    <p class="text-white mt-3">Mengimpor data... {{ currentRow }}/{{ totalRows }} baris</p>
+    <p class="text-white mt-3">Menyimpan data... {{ currentRow }}/{{ totalRows }} baris</p>
   </div>
 </template>
 
@@ -655,11 +687,13 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
-      modalMode: "add", // default tambah
+      modalMode: "add",
       selectedFamily: null,
       isKKChecked: false,
       isCollapsed: false,
       isFilterOpen: false,
+      isFormOpen: false,
+      isPendingOpen: false,
       showAlert: false,
       isLoadingImport: false,
       importProgress: 0,
@@ -718,7 +752,7 @@ export default {
         { text: 'RW', value: 'rw' },
         { text: 'Tempat, Tanggal Lahir', value: 'tgl_lahir' },
         { text: 'Pendidikan', value: 'pendidikan' },
-        { text: 'Jumlah Anggota', value: 'jml_anggota' },
+        { text: 'Tipe Pending', value: 'tipe' },
         { text: 'Action', value: 'action' },
       ],
       filter: {
@@ -754,8 +788,17 @@ export default {
     toggleExpand() {
       this.isFilterOpen = !this.isFilterOpen
     },
+    toggleExpandForm() {
+      this.isFormOpen = !this.isFormOpen
+    },
+    toggleExpandPending() {
+      this.isPendingOpen = !this.isPendingOpen
+    },
     async checkNoKK() {
-      if (!this.form.no_kk) return;
+      if (!this.form.no_kk) {
+        this.isKKChecked = false;
+        return;
+      }
 
       try {
         const res = await axios.get("http://localhost:8000/api/family/check", {
@@ -809,7 +852,7 @@ export default {
     async loadProvinsi() {
       try {
         const res = await axios.get("http://localhost:8000/api/region/provinsi");
-        console.log("Provinsi API response:", res.data); // debug
+        //console.log("Provinsi API response:", res.data); // debug
 
         // isi list dari API
         this.provinsiList = res.data;
@@ -864,7 +907,7 @@ export default {
           }
         })
         this.family = res.data
-        console.log(this.family);
+        //console.log(this.family);
       } catch (e) {
         console.error('Gagal ambil data:', e)
       }
@@ -904,18 +947,19 @@ export default {
         agama: "",
         status_perkawinan: "",
         kewarganegaraan: "",
-      }
+      },
+      this.isFormOpen = false
     },
     openTambah() {
       this.modalMode = "add"
-      this.resetForm()
-      const modal = new Modal(document.getElementById("modalTambah"))
-      modal.show()
+      this.form = {} // reset form
+      this.isFormOpen = true
     },
-    async updateFamily(id) {
+    async updateFamily(id,tipe) {
       this.modalMode = "update";
+      this.isFormOpen = true
       try {
-        const res = await axios.get(`http://localhost:8000/api/family/${id}`, {
+        const res = await axios.get(`http://localhost:8000/api/family/${id}/pending?tipe=${tipe}`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -925,6 +969,7 @@ export default {
 
         // mapping ke form sesuai struktur
         this.form = {
+          tipe: data.tipe,
           id: data.id,
           no_kk: data.no_kk,
           alamat: data.alamat,
@@ -938,6 +983,7 @@ export default {
           ...(
             data.anggota && data.anggota.length > 0
               ? {
+                  anggota_id: data.anggota[0].id,
                   nik: data.anggota[0].nik,
                   nama: data.anggota[0].nama,
                   tempat_lahir: data.anggota[0].tempat_lahir,
@@ -964,10 +1010,7 @@ export default {
         await this.loadKelurahan()
         this.form.kelurahan = data.kelurahan
 
-        console.log("Form terisi:", this.form);
-
-        const modal = new Modal(document.getElementById("modalTambah"));
-        modal.show();
+        this.isFormOpen = true // 👈 bukan modal.show()
       } catch (err) {
         console.error("Gagal load data keluarga:", err);
       }
@@ -976,14 +1019,20 @@ export default {
       try {
        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
 
-        await axios.put(`http://localhost:8000/api/family/${this.form.id}`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+        await axios.put(
+          `http://localhost:8000/api/family/${this.form.id}`,
+          this.form, // data body
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
           }
-        }, this.form)
+        )
+
         //alert("Data berhasil diupdate")
-        Modal.getInstance(document.getElementById("modalTambah")).hide()
+        this.isFormOpen = false
+        this.isPendingOpen = false
         this.getPendingData()
         this.loadFamily()
         const modal = new Modal(document.getElementById("successModal"))
@@ -1004,17 +1053,18 @@ export default {
         this.form.kecamatan = this.form.kecamatan === "__new__" ? this.form.kecamatan_new : this.form.kecamatan;
         this.form.kelurahan= this.form.kelurahan === "__new__" ? this.form.kelurahan_new : this.form.kelurahan;
 
-        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+        //console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
 
         // simpan ke backend
-        await axios.post('http://localhost:8000/api/family',{
+        await axios.post('http://localhost:8000/api/family', this.form,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
-        }, this.form)
+        })
 
         // refresh table
+        await this.getPendingData()
         await this.loadFamily()
 
         // reset form
@@ -1035,8 +1085,7 @@ export default {
           pekerjaan: '',
         }
 
-        this.closeModal('modalTambah')
-        this.showAlert = true
+        this.isFormOpen = false
         setTimeout(() => (this.showAlert = false), 3000)
       } catch (e) {
         console.error('Gagal simpan data:', e)
@@ -1065,7 +1114,7 @@ export default {
           }
         })
         this.selectedFamily = res.data
-        console.log(res.data);
+        //console.log(res.data);
 
         // buka modal
         const modalEl = document.getElementById('kkModal')
@@ -1090,7 +1139,7 @@ export default {
       this.animatedProgress = 0;
 
       try {
-        const res = await axios.post("http://localhost:8000/api/family/import", formData, {
+        await axios.post("http://localhost:8000/api/family/import", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             Accept: 'application/json',
@@ -1106,17 +1155,16 @@ export default {
           },
         });
 
-        console.log("Import berhasil:", res.data);
-
         // refresh data keluarga
         await this.loadFamily();
+        await this.getPendingData();
 
         this.closeModal("modalImport");
         this.showAlert = true;
         setTimeout(() => (this.showAlert = false), 3000);
       } catch (err) {
         console.error("Gagal import:", err.response?.data || err);
-        alert("Gagal import data!");
+        //alert("Gagal import data!");
       } finally {
         this.isLoadingImport = false;
       }
@@ -1130,7 +1178,7 @@ export default {
           }
         })
         this.familyPending = res.data
-        console.log("Pending data:", this.familyPending)
+        //console.log("Pending data:", this.familyPending)
       } catch (err) {
         console.error("Gagal fetch pending data:", err)
       }
