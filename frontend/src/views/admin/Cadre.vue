@@ -626,7 +626,6 @@ export default {
     async loadProvinsi() {
       try {
         const res = await axios.get("http://localhost:8000/api/region/provinsi");
-        console.log("Provinsi API response:", res.data); // debug
 
         // isi list dari API
         this.provinsiList = res.data;

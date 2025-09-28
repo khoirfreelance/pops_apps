@@ -13,12 +13,18 @@ class Cadre extends Model
         'id_tpk',
         'id_user',
         'jabatan',
+        'is_pending',
         'status'
     ];
 
     public function tpk()
     {
         return $this->belongsTo(TPK::class, 'id_tpk');
+    }
+
+    public function posyandu()
+    {
+        return $this->belongsTo(Posyandu::class, 'id_posyandu');
     }
 
     public function user()

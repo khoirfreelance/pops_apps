@@ -15,8 +15,32 @@ class CadreController extends Controller
     public function index()
     {
         $cadres = Cadre::with(['tpk', 'user'])->get();
-        return response()->json($cadres);
+
+        $data = $cadres->map(function ($cadre) {
+            return [
+                'no_tpk'        => $cadre->tpk->no_tpk ?? null,
+                'nama'          => $cadre->user->name ?? null,
+                'nik'           => $cadre->user->nik ?? null,
+                'status'        => $cadre->status ?? null,
+                'phone'         => $cadre->user->phone ?? null,
+                'email'         => $cadre->user->email ?? null,
+                'role'          => $cadre->user->role ?? null,
+                'unit_posyandu' => $cadre->posyandu->nama_posyandu ?? null, // kalau Cadre punya relasi posyandu
+                // kamu bisa tambahkan field action sendiri, misal tombol edit/delete
+                'action'        => null,
+            ];
+        });
+
+        \App\Models\Log::create([
+            'id_user'  => \Auth::id(),
+            'context'  => 'Pengguna',
+            'activity' => 'view',
+            'timestamp'=> now(),
+        ]);
+
+        return response()->json($data);
     }
+
 
     public function store(Request $request)
     {
@@ -28,7 +52,32 @@ class CadreController extends Controller
             'phone' => 'nullable|string',
             'role' => 'required|string',
             'unit_posyandu' => 'required|numeric',
-            //'password' => 'required|min:6|confirmed', // confirm_password
+        ]);
+
+        $isPendingKader = empty($request->no_tpk) ? 1 : 0;
+        $isPendingUser = empty($request->nik) ? 1 : 0;
+
+        // simpan wilayah
+        $wilayah = \App\Models\Wilayah::firstOrCreate([
+            'provinsi' => $request->provinsi,
+            'kota' => $request->kota,
+            'kecamatan' => $request->kecamatan,
+            'kelurahan' => $request->kelurahan,
+        ]);
+
+        // simpan TPK
+        $tpk = \App\Models\TPK::firstOrCreate([
+            'no_tpk' => $request->no_tpk,
+            'id_wilayah' => $wilayah->id,
+            'is_pending' => $isPendingKader,
+        ]);
+
+        // simpan Posyandu
+        $posyandu = \App\Models\Posyandu::firstOrCreate([
+            'nama_posyandu' => $request->unit_posyandu,
+            'alamat'=> $request->alamat,
+            'is_pending' => 0,
+            'id_wilayah'  => $wilayah->id,
         ]);
 
         // simpan user
@@ -36,19 +85,28 @@ class CadreController extends Controller
             'nik' => $request->nik,
             'name' => $request->nama,
             'email' => $request->email,
+            'email_verified_at' => NOW(),
             'phone' => $request->phone,
             'role' => $request->role,
             'status' => $request->status,
-            'id_posyandu' => $request->unit_posyandu,
+            'is_pending' => $isPendingUser,
             'password' => Hash::make($request->password),
         ]);
 
         // simpan cadre
         $cadre = Cadre::create([
-            'id_tpk' => $request->no_tpk,
+            'id_tpk' => $tpk->id,
             'id_user' => $user->id,
             'jabatan' => $request->role,
+            'is_pending' => $isPendingKader,
             'status' => 'aktif'
+        ]);
+
+        Log::create([
+            'id_user'  => Auth::id(),
+            'context'  => 'Pengguna',
+            'activity' => 'store',
+            'timestamp'=> now(),
         ]);
 
         return response()->json([

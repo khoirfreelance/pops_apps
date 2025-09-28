@@ -12,11 +12,17 @@ class Posyandu extends Model
     protected $fillable = [
         'nama_posyandu',
         'alamat',
+        'is_pending',
         'id_wilayah'
     ];
 
     public function cadres()
     {
         return $this->hasMany(User::class, 'id_posyandu');
+    }
+
+    public function wilayah()
+    {
+        return $this->belongsTo(Wilayah::class, 'id_wilayah');
     }
 }

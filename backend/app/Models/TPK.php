@@ -18,4 +18,9 @@ class TPK extends Model
     {
         return $this->hasMany(Cadre::class, 'id_tpk');
     }
+
+    public function wilayah()
+    {
+        return $this->belongsTo(Wilayah::class, 'id_wilayah');
+    }
 }

@@ -22,9 +22,11 @@ class User extends Authenticatable
         'nik',
         'name',
         'email',
+        'email_verified_at',
         'password',
         'role',
         'status',
+        'is_pending',
     ];
 
     /**
@@ -34,7 +36,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
