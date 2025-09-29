@@ -12,8 +12,7 @@ class Cadre extends Model
     protected $fillable = [
         'id_tpk',
         'id_user',
-        'jabatan',
-        'is_pending',
+        'id_posyandu',
         'status'
     ];
 

@@ -12,7 +12,6 @@ class Posyandu extends Model
     protected $fillable = [
         'nama_posyandu',
         'alamat',
-        'is_pending',
         'id_wilayah'
     ];
 

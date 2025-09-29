@@ -149,9 +149,10 @@
                 <form class="row g-4">
                   <!-- No TPK -->
                   <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">No TPK</label>
+                    <label class="form-label small fw-semibold text-secondary">No. TPK <small class="text-additional2 fw-normal">(kosongkan jika pengguna bukan anggota TPK)</small></label>
                     <input type="number" min="0" class="form-control shadow-sm" v-model="form.no_tpk" />
                   </div>
+                  <div class="col-md-6"></div>
                   <!-- NIK -->
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">NIK</label>
@@ -165,7 +166,7 @@
                   </div>
 
                   <!-- Nama Lengkap -->
-                  <div class="col-md-12">
+                  <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
                     <input type="text" class="form-control shadow-sm" v-model="form.nama" />
                   </div>
@@ -182,18 +183,49 @@
                     <input type="text" class="form-control shadow-sm" v-model="form.phone" />
                   </div>
 
-                  <!-- Password & Confirm -->
+                  <!-- Password -->
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">Password</label>
-                    <input type="password" class="form-control shadow-sm" v-model="form.password" />
+                    <div class="input-group">
+                      <input
+                        :type="showPassword ? 'text' : 'password'"
+                        class="form-control shadow-sm"
+                        v-model="form.password"
+                      />
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        @click="toggle('password')"
+                      >
+                        <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                      </button>
+                    </div>
                   </div>
+
+                  <!-- Konfirmasi Password -->
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">Konfirmasi Password</label>
-                    <input
-                      type="password"
-                      class="form-control shadow-sm"
-                      v-model="form.confirm_password"
-                    />
+                    <div class="input-group">
+                      <input
+                        :type="showConfirm ? 'text' : 'password'"
+                        class="form-control shadow-sm"
+                        v-model="form.confirm_password"
+                      />
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        @click="toggle('confirm')"
+                      >
+                        <i :class="showConfirm ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                      </button>
+                    </div>
+                    <!-- Pesan error -->
+                    <small v-if="passwordMismatch" class="text-danger">
+                      Konfirmasi password tidak sama dengan password
+                    </small>
+                    <small v-else-if="passwordMatch" class="text-success">
+                      Password cocok ✔
+                    </small>
                   </div>
 
                   <!-- Role & Unit Posyandu -->
@@ -209,20 +241,27 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">Unit Posyandu</label>
-                    <select class="form-select shadow-sm" v-model="form.unit_posyandu">
-                      <option value="">Pilih</option>
-                      <option value="1">Flamboyan</option>
-                      <option value="2">Mawar</option>
-                      <option value="3">Dahlia</option>
-                      <option value="4">Anggrek</option>
-                      <option value="5">Cempaka</option>
-                      <option value="6">Matahari</option>
-                      <option value="7">Bougenville</option>
-                      <option value="8">Kenanga</option>
-                      <option value="9">Melati</option>
-                      <option value="10">Al-hidayah</option>
-                      <option value="11">Al-ikhlas</option>
-                    </select>
+                    <template v-if="form.unit_posyandu === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.unit_posyandu_new"
+                        placeholder="Tambah unit posyandu baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.unit_posyandu"
+                        @change="loadPosyandu"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in posyanduList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
                   </div>
 
                   <!-- Provinsi -->
@@ -517,10 +556,13 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      showPassword: false,
+      showConfirm: false,
       provinsiList: [],
       kotaList: [],
       kecamatanList: [],
       kelurahanList: [],
+      posyanduList: [],
       modalMode: "add",
       isFormOpen: false,
       isPendingOpen: false,
@@ -541,6 +583,7 @@ export default {
         phone: '',
         role: '',
         unit_posyandu: '',
+        unit_posyandu_new: '',
         password: '',
         confirm_password: '',
         kelurahan: '',
@@ -556,9 +599,9 @@ export default {
       cadre: [],
       cadrePending: [],
       headers: [
+        { text: 'NIK', value: 'nik' },
         { text: 'No TPK', value: 'no_tpk' },
         { text: 'Nama', value: 'nama' },
-        { text: 'NIK', value: 'nik' },
         { text: 'Status', value: 'status' },
         { text: 'No Telepon', value: 'phone' },
         { text: 'Email', value: 'email' },
@@ -567,12 +610,10 @@ export default {
         { text: 'Action', value: 'action' },
       ],
       headers_pending: [
-        { text: 'No TPK', value: 'no_tpk' },
-        { text: 'Nama', value: 'nama' },
         { text: 'NIK', value: 'nik' },
-        { text: 'Status', value: 'status' },
-        { text: 'No Telepon', value: 'phone' },
-        { text: 'Unit Posyandu', value: 'unit_posyandu' },
+        { text: 'Nama', value: 'nama' },
+        { text: 'Email', value: 'email' },
+        { text: 'Role', value: 'role' },
         { text: 'Tipe Pending', value: 'tipe' },
         { text: 'Action', value: 'action' },
       ],
@@ -607,8 +648,53 @@ export default {
         )
       })
     },
+    passwordMismatch() {
+      return (
+        this.form.confirm_password !== '' &&
+        this.form.confirm_password !== this.form.password
+      );
+    },
+    passwordMatch(){
+      return (
+        this.form.password !== '' &&
+        this.form.confirm_password !== '' &&
+        this.form.confirm_password === this.form.password
+      );
+    },
   },
   methods: {
+    toggle(field) {
+      if (field === 'password') {
+        this.showPassword = !this.showPassword;
+        // optional: fokus kembali ke field
+        this.$nextTick(() => {
+          const el = document.querySelector('input[aria-describedby="btnTogglePassword"]');
+          if (el) el.focus();
+        });
+      } else if (field === 'confirm') {
+        this.showConfirm = !this.showConfirm;
+        this.$nextTick(() => {
+          const el = document.querySelector('input[aria-describedby="btnToggleConfirm"]');
+          if (el) el.focus();
+        });
+      }
+    },
+    async loadPosyandu() {
+      try {
+        const res = await axios.get("http://localhost:8000/api/posyandu",{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        // isi list dari API
+        this.posyanduList = res.data;
+
+      } catch (err) {
+        console.error("Error load posyandu:", err);
+      }
+    },
     async loadCadre() {
       try {
         const res = await axios.get('http://localhost:8000/api/cadre',{
@@ -768,6 +854,7 @@ export default {
         this.form.kota = this.form.kota === "__new__" ? this.form.kota_new : this.form.kota;
         this.form.kecamatan = this.form.kecamatan === "__new__" ? this.form.kecamatan_new : this.form.kecamatan;
         this.form.kelurahan= this.form.kelurahan === "__new__" ? this.form.kelurahan_new : this.form.kelurahan;
+        this.form.unit_posyandu= this.form.unit_posyandu === "__new__" ? this.form.unit_posyandu_new : this.form.unit_posyandu;
 
         // simpan ke backend
         await axios.post('http://localhost:8000/api/cadre', this.form,{
@@ -778,9 +865,10 @@ export default {
         })
 
         // refresh table
-        await this.getPendingData()
-        await this.loadFamily()
+        //await this.getPendingData()
         await this.resetForm()
+        await this.loadCadre()
+
         setTimeout(() => (this.showAlert = false), 3000)
 
       } catch (e) {
@@ -863,6 +951,7 @@ export default {
   mounted() {
     this.loadCadre()
     this.loadProvinsi()
+    this.loadPosyandu()
     //this.getPendingData()
   },
 }

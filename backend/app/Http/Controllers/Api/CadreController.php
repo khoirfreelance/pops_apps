@@ -8,6 +8,8 @@ use App\Models\Cadre;
 use App\Models\TPK;
 use App\Models\Posyandu;
 use App\Models\User;
+use App\Models\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class CadreController extends Controller
@@ -41,21 +43,10 @@ class CadreController extends Controller
         return response()->json($data);
     }
 
-
     public function store(Request $request)
     {
-        $request->validate([
-            'no_tpk' => 'required|numeric',
-            'nik' => 'required|unique:users,nik',
-            'nama' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string',
-            'role' => 'required|string',
-            'unit_posyandu' => 'required|numeric',
-        ]);
-
-        $isPendingKader = empty($request->no_tpk) ? 1 : 0;
         $isPendingUser = empty($request->nik) ? 1 : 0;
+        $isTPK = empty($request->no_tpk);
 
         // simpan wilayah
         $wilayah = \App\Models\Wilayah::firstOrCreate([
@@ -65,24 +56,23 @@ class CadreController extends Controller
             'kelurahan' => $request->kelurahan,
         ]);
 
-        // simpan TPK
-        $tpk = \App\Models\TPK::firstOrCreate([
-            'no_tpk' => $request->no_tpk,
-            'id_wilayah' => $wilayah->id,
-            'is_pending' => $isPendingKader,
-        ]);
+        if (!$isTPK) {
+            // simpan TPK
+            $tpk = \App\Models\TPK::firstOrCreate([
+                'no_tpk' => $request->no_tpk ?: null,
+                'id_wilayah' => $wilayah->id,
+            ]);
+        }
 
         // simpan Posyandu
         $posyandu = \App\Models\Posyandu::firstOrCreate([
             'nama_posyandu' => $request->unit_posyandu,
-            'alamat'=> $request->alamat,
-            'is_pending' => 0,
             'id_wilayah'  => $wilayah->id,
         ]);
 
         // simpan user
         $user = User::create([
-            'nik' => $request->nik,
+            'nik' => $request->nik?: null,
             'name' => $request->nama,
             'email' => $request->email,
             'email_verified_at' => NOW(),
@@ -95,10 +85,9 @@ class CadreController extends Controller
 
         // simpan cadre
         $cadre = Cadre::create([
-            'id_tpk' => $tpk->id,
+            'id_tpk' => $request->no_tpk ?: null,
             'id_user' => $user->id,
-            'jabatan' => $request->role,
-            'is_pending' => $isPendingKader,
+            'id_posyandu' => $posyandu->id,
             'status' => 'aktif'
         ]);
 
