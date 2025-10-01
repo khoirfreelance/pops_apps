@@ -504,13 +504,13 @@
         }"
       >
         <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title">Import File Ibu Hamil</h5>
+          <h5 class="modal-title">Import File Data Keluarga</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div class="alert alert-warning p-2">
             <ul>
-              <li>Import data untuk kunjungan kehamilan oleh pendampingan TPK</li>
+              <li>Import data untuk data Keluarga</li>
               <li>Pastikan data yang diimport, berformat csv</li>
               <li>Pastikan data sudah lengkap sebelum di import</li>
               <li>Silahkan unduh contoh dengan klik <a href="/keluarga.csv" download="keluarga.csv">Example.csv</a></li>

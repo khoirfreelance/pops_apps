@@ -27,17 +27,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Cadre Endpoint
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('cadre', CadreController::class)->only(['index','store']);
     Route::get('/cadre/pending', [CadreController::class, 'pendingData']);
+    Route::apiResource('cadre', CadreController::class)
+        ->only(['index','store','show','update'])
+        ->where(['cadre' => '[0-9]+']);
     Route::get('/posyandu', [PosyanduController::class, 'getPosyandu']);
-    /* Route::get('/family/detail/{no_kk}', [FamilyController::class, 'detail']);
-    Route::get('/family/check', [FamilyController::class, 'checkNoKK']);
-    Route::post('/family/import', [FamilyController::class, 'import']);
-    Route::get('/family/pending', [FamilyController::class, 'pendingData']);
-    Route::get('/family/{id}/pending', [FamilyController::class, 'pending']);
-    Route::put('/family/{id}', [FamilyController::class, 'update']); */
+    Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
+    Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
+    Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']);
 });
-
 
 // Region Endpoint
 Route::apiResource('region', RegionController::class)->only(['index','store']);

@@ -31,6 +31,22 @@
                     List daftar pengguna yang terdaftar sebagai admin untuk mengelola data
                   </small>
                 </div>
+                <div class="text-white my-0">
+                  <ul>
+                    <li>Anda memiliki <strong>1</strong> jadwal intervensi hari ini.</li>
+                    <li v-if="pendingCount > 0">
+                      Anda memiliki
+                      <a
+                        href="javascript:void(0)"
+                        class="fw-bold text-white text-decoration-none"
+                        @click="toggleExpandPending"
+                      >
+                        {{ pendingCount }} data pending
+                      </a>
+                      belum terkirim.
+                    </li>
+                  </ul>
+                </div>
                 <nav aria-label="breadcrumb" class="mt-auto mb-2">
                   <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
@@ -75,6 +91,32 @@
                 />
               </div>
 
+              <!-- Status -->
+              <div class="col-md-12">
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      id="statusActive"
+                      value="Aktif"
+                      v-model="filter.status"
+                    />
+                    <label class="form-check-label" for="statusActive">Aktif</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      id="statusSuspended"
+                      value="Non aktif"
+                      v-model="filter.status"
+                    />
+                    <label class="form-check-label" for="statusSuspended">Non aktif</label>
+                  </div>
+                </div>
+              </div>
+
               <!-- Expandable section -->
               <div v-if="isFilterOpen" class="row g-3 align-items-end mt-2">
                 <!-- Nama -->
@@ -83,18 +125,8 @@
                   <input type="text" v-model="advancedFilter.nama" id="nama" class="form-control" />
                 </div>
 
-                <!-- Status -->
-                <div class="col-md-3">
-                  <label for="status" class="form-label">Status</label>
-                  <select class="form-select shadow-sm" v-model="advancedFilter.status">
-                    <option value="">Pilih</option>
-                    <option value="Active">Active</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-
                 <!-- Role-->
-                <div class="col-md-3">
+                <div class="col-md-6">
                   <label for="role" class="form-label">Role</label>
                   <select class="form-select shadow-sm" v-model="advancedFilter.role">
                     <option value="">Pilih</option>
@@ -138,9 +170,6 @@
                 <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
                 {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
               </button>
-              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
-                <i class="bi bi-filetype-csv"></i> Import Data Pengguna
-              </button>
             </div>
 
             <!-- Collapsible Form -->
@@ -179,12 +208,18 @@
 
                   <!-- Phone -->
                   <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">No Telepon</label>
-                    <input type="text" class="form-control shadow-sm" v-model="form.phone" />
+                    <label class="form-label small fw-semibold text-secondary">No. Telepon</label>
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.phone"
+                      @input="form.phone = form.phone.replace(/[^0-9]/g, '').slice(0, 15)"
+                      placeholder="Nomor Telepon"
+                    />
                   </div>
 
                   <!-- Password -->
-                  <div class="col-md-6">
+                  <div class="col-md-6" v-if="modalMode !== 'update'">
                     <label class="form-label small fw-semibold text-secondary">Password</label>
                     <div class="input-group">
                       <input
@@ -203,7 +238,7 @@
                   </div>
 
                   <!-- Konfirmasi Password -->
-                  <div class="col-md-6">
+                  <div class="col-md-6" v-if="modalMode !== 'update'">
                     <label class="form-label small fw-semibold text-secondary">Konfirmasi Password</label>
                     <div class="input-group">
                       <input
@@ -403,10 +438,10 @@
                   :headers="headers_pending"
                   :items="cadrePending"
                 >
-                  <template #item-action="{ id,tipe }">
+                  <template #item-action="{ id }">
                     <button
                       class="btn btn-secondary m-2"
-                      @click="updateCadre(id,tipe)"
+                      @click="updateCadre(id)"
                       style="font-size: small;"
                     >
                       <i class="fa fa-pen"></i>
@@ -426,62 +461,59 @@
                     table-class="table-modern"
                     theme-color="var(--bs-primary)"
                   >
-                    <!-- Render kolom action sebagai HTML -->
-                    <template #item-action="item">
-                      <a
-                        v-if="item && item.no_tpk"
-                        :href="`?no_tpk=${item.no_tpk}`"
-                        class="btn btn-secondary"
-                      >
-                        <i class="fa fa-pencil"></i>
-                      </a>
-                      <span v-else>-</span>
+                    <template #item-action="{ id, email, status }">
+                      <!-- Kalau user aktif -->
+                      <template v-if="status === 'Aktif'">
+                        <button
+                          class="btn btn-primary m-2"
+                          @click="updateCadre(id)"
+                          style="font-size: small;"
+                          data-bs-toggle="tooltip"
+                          title="Update Data Kader"
+                        >
+                          <i class="fa fa-pen"></i>
+                        </button>
+                        <button
+                          class="btn btn-secondary m-2"
+                          @click="deactive(email)"
+                          style="font-size: small;"
+                          data-bs-toggle="tooltip"
+                          title="Nonaktif Kader"
+                        >
+                          <i class="fa fa-eye-slash"></i>
+                        </button>
+                      </template>
+
+                      <!-- Kalau user nonaktif -->
+                      <template v-else>
+                        <button
+                          class="btn btn-primary m-2"
+                          @click="active(email)"
+                          style="font-size: small;"
+                          data-bs-toggle="tooltip"
+                          title="Aktifkan Kader"
+                        >
+                          <i class="fa fa-eye"></i>
+                        </button>
+                        <button
+                          class="btn btn-danger m-2"
+                          @click="deleteUser(email)"
+                          style="font-size: small;"
+                          data-bs-toggle="tooltip"
+                          title="Hapus Kader"
+                        >
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </template>
                     </template>
                   </EasyDataTable>
+
                 </div>
               </div>
             </div>
           </div>
         </div>
         <CopyRight class="mt-auto" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Import -->
-  <div class="modal fade" id="modalImport" ref="modalImport" tabindex="-1">
-    <div class="modal-dialog">
-      <div
-        class="modal-content"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title">Import File TPK</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning p-2">
-            <ul>
-              <li>Import data untuk kunjungan kehamilan oleh pendampingan TPK</li>
-              <li>Pastikan data yang diimport, berformat csv</li>
-              <li>Pastikan data sudah lengkap sebelum di import</li>
-            </ul>
-          </div>
-          <input type="file" class="form-control" ref="csvFile" accept=".csv" />
-        </div>
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="handleImport">
-            <i class="bi bi-upload me-2"></i> Unggah
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -568,7 +600,6 @@ export default {
       isPendingOpen: false,
       isCollapsed: false,
       isFilterOpen: false,
-      importTitle: 'Import File',
       showAlert: false,
       isLoadingImport: false,
       importProgress: 0,
@@ -576,6 +607,7 @@ export default {
       currentRow: 0,
       totalRows: 1,
       form: {
+        id: null,
         nik: '',
         no_tpk: '',
         nama: '',
@@ -614,17 +646,16 @@ export default {
         { text: 'Nama', value: 'nama' },
         { text: 'Email', value: 'email' },
         { text: 'Role', value: 'role' },
-        { text: 'Tipe Pending', value: 'tipe' },
         { text: 'Action', value: 'action' },
       ],
       // filter
       filter: {
         nik: '',
         no_tpk: '',
+        status: 'Aktif',
       },
       advancedFilter: {
         nama: '',
-        status: '',
         role: '',
       },
       appliedFilter: {}, // hasil filter simpan di sini
@@ -640,10 +671,10 @@ export default {
           // NIK realtime
           (!this.filter.nik || item.nik.includes(this.filter.nik)) &&
           (!this.filter.no_tpk || item.no_tpk.includes(this.filter.no_tpk)) &&
+          (!this.filter.status || item.status.includes(this.filter.status)) &&
           // Advanced filter hanya aktif setelah "Cari"
           (!this.appliedFilter.nama ||
             item.nama.toLowerCase().includes(this.appliedFilter.nama.toLowerCase())) &&
-          (!this.appliedFilter.status || item.status === this.appliedFilter.status) &&
           (!this.appliedFilter.role || item.role === this.appliedFilter.role)
         )
       })
@@ -704,7 +735,7 @@ export default {
           }
         })
         this.cadre = res.data
-        console.log('kader:'+ this.cadre);
+        //console.log('kader:'+ this.cadre);
       } catch (e) {
         console.error('Gagal ambil data:', e)
       }
@@ -792,6 +823,7 @@ export default {
     },
     toggleExpandForm() {
       this.isFormOpen = !this.isFormOpen
+      if (!this.isFormOpen) this.resetForm()
     },
     toggleExpandPending() {
       this.isPendingOpen = !this.isPendingOpen
@@ -834,7 +866,6 @@ export default {
       this.filter.no_tpk = ''
       this.advancedFilter = {
         nama: '',
-        status: '',
         role: '',
       }
       this.appliedFilter = {}
@@ -848,7 +879,7 @@ export default {
       this.animatedProgress = 0
 
       try {
-        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+        console.log("Payload sebelum dikirim:", this.form)
 
         this.form.provinsi = this.form.provinsi === "__new__" ? this.form.provinsi_new : this.form.provinsi;
         this.form.kota = this.form.kota === "__new__" ? this.form.kota_new : this.form.kota;
@@ -865,9 +896,9 @@ export default {
         })
 
         // refresh table
-        //await this.getPendingData()
         await this.resetForm()
         await this.loadCadre()
+        await this.getPendingData()
 
         setTimeout(() => (this.showAlert = false), 3000)
 
@@ -877,62 +908,145 @@ export default {
         this.isLoadingImport = false
       }
     },
-    handleImport() {
-      this.closeModal('modalImport')
+    async updateCadre(id) {
+      this.modalMode = "update";
+      this.isFormOpen = true
+      try {
+        const res = await axios.get(`http://localhost:8000/api/cadre/${id}`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = res.data;
+        console.log('data show: '+data);
 
-      const fileInput = this.$refs.csvFile
-      if (!fileInput || !fileInput.files.length) return
+        // mapping ke form sesuai struktur
+        this.form = {
+          id: data.id,
+          nik: data.nik,
+          no_tpk: data.no_tpk,
+          nama: data.nama,
+          email: data.email,
+          phone: data.phone,
+          role: data.role,
+          unit_posyandu: data.unit_posyandu,
+          password: '',
+          confirm_password: '',
+          kelurahan: data.kelurahan,
+          kecamatan: data.kecamatan,
+          kota: data.kota,
+          provinsi: data.provinsi,
+        };
 
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
+        // pastikan listnya ke-load dulu sebelum set value
+        await this.loadKota()
+        this.form.kota = data.kota
 
-      const file = fileInput.files[0]
-      const reader = new FileReader()
+        await this.loadKecamatan()
+        this.form.kecamatan = data.kecamatan
 
-      reader.onload = (e) => {
-        const text = e.target.result
-        const rows = text
-          .split('\n')
-          .map((r) => r.trim())
-          .filter((r) => r)
-        const headers = rows[0].split(',').map((h) => h.trim())
-        const total = rows.length - 1
-        this.totalRows = total
+        await this.loadKelurahan()
+        this.form.kelurahan = data.kelurahan
 
-        rows.slice(1).forEach((row, idx) => {
-          const values = row.split(',').map((v) => v.trim())
-          const obj = {}
-          headers.forEach((h, i) => {
-            obj[h] = values[i] || ''
-          })
-
-          this.cadre.push({
-            no_tpk: obj.no_tpk || '',
-            nik: obj.nik || '',
-            nama: obj.nama || '',
-            email: obj.email || '',
-            phone: obj.phone || '',
-            role: obj.role || '',
-            unit_posyandu: obj.unit_posyandu || '',
-            status: obj.status || 'Active',
-          })
-
-          const percent = Math.round(((idx + 1) / total) * 100)
-          this.updateProgressBar(percent, idx + 1, total)
-        })
-
-        setTimeout(() => {
-          this.isLoadingImport = false
-          const el = document.getElementById('successModal')
-          const instance = Modal.getOrCreateInstance(el)
-          instance.show()
-        }, 500)
+        this.isFormOpen = true
+      } catch (err) {
+        console.error("Gagal load data kader:", err);
       }
-
-      reader.readAsText(file)
     },
-    /* async getPendingData() {
+    async updateData() {
+      try {
+       console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+
+        await axios.put(
+          `http://localhost:8000/api/cadre/${this.form.id}`,
+          this.form, // data body
+          {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        )
+
+        //alert("Data berhasil diupdate")
+        this.isFormOpen = false
+        this.isPendingOpen = false
+        this.getPendingData()
+        this.loadCadre()
+        const modal = new Modal(document.getElementById("successModal"))
+        modal.show()
+      } catch (err) {
+        console.error("Gagal update:", err)
+      }
+    },
+    async deactive(email) {
+      try {
+        await axios.put(
+          `http://localhost:8000/api/cadre/deactive/${email}`,
+          {}, // body kosong
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        this.loadCadre()
+        this.getPendingData()
+
+        const modal = new Modal(document.getElementById("successModal"));
+        modal.show();
+      } catch (err) {
+        console.error("Gagal deactive data kader:", err.response?.data || err);
+      }
+    },
+    async active(email) {
+      try {
+        await axios.put(
+          `http://localhost:8000/api/cadre/active/${email}`,
+          {}, // body kosong
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+
+        this.loadCadre()
+        this.getPendingData()
+
+        const modal = new Modal(document.getElementById("successModal"));
+        modal.show();
+      } catch (err) {
+        console.error("Gagal deactive data kader:", err.response?.data || err);
+      }
+    },
+    async deleteUser(email) {
+      try {
+        await axios.put(
+          `http://localhost:8000/api/cadre/delete/${email}`,
+          {}, // body kosong
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        this.loadCadre()
+        this.getPendingData()
+        const modal = new Modal(document.getElementById("successModal"));
+        modal.show();
+      } catch (err) {
+        console.error("Gagal deactive data kader:", err.response?.data || err);
+      }
+    },
+    async getPendingData() {
       try {
         const res = await axios.get("http://localhost:8000/api/cadre/pending",{
           headers: {
@@ -941,18 +1055,17 @@ export default {
           }
         })
         this.cadrePending = res.data
-        //console.log("Pending data:", this.familyPending)
+
       } catch (err) {
         console.error("Gagal fetch pending data:", err)
       }
-    }, */
-
+    },
   },
   mounted() {
     this.loadCadre()
     this.loadProvinsi()
     this.loadPosyandu()
-    //this.getPendingData()
+    this.getPendingData()
   },
 }
 </script>

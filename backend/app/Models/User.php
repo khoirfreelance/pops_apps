@@ -23,10 +23,12 @@ class User extends Authenticatable
         'name',
         'email',
         'email_verified_at',
+        'phone',
         'password',
         'role',
         'status',
         'is_pending',
+        'deleted_at',
     ];
 
     /**
