@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\RegionController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\CadreController;
 use App\Http\Controllers\Api\PosyanduController;
+use App\Http\Controllers\Api\MemberController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -35,6 +36,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
     Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
     Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']);
+});
+
+// Member Endpoint
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('member', MemberController::class)
+        ->only(['index','store','show','update'])
+        ->where(['member' => '[0-9]+']);
+    Route::get('/member/tpk', [MemberController::class, 'getTPK']);
+    Route::get('/member/user', [MemberController::class, 'getUser']);
+    /* Route::get('/posyandu', [PosyanduController::class, 'getPosyandu']);
+    Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
+    Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
+    Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']); */
 });
 
 // Region Endpoint

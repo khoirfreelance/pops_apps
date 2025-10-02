@@ -315,7 +315,7 @@
                         class="form-select shadow-sm"
                         v-model="form.provinsi"
                         @change="loadKota"
-                        :readonly="isKKChecked"
+
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
@@ -342,7 +342,7 @@
                         class="form-select shadow-sm"
                         v-model="form.kota"
                         @change="loadKecamatan"
-                        :readonly="isKKChecked"
+
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
@@ -394,7 +394,7 @@
                       <select
                         class="form-select shadow-sm"
                         v-model="form.kelurahan"
-                        :readonly="isKKChecked"
+
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
