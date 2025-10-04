@@ -8,7 +8,7 @@
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Main Content -->
         <div
-          class="flex-grow-1 p-4 bg-light container-fluid"
+          class="py-4 bg-light container-fluid"
           :style="{
             backgroundImage: background ? `url(${background})` : 'none',
             backgroundSize: 'cover',
@@ -52,30 +52,20 @@
           </div>
 
           <!-- Statistic Cards -->
-          <div class="row justify-content-center mt-4">
-            <div
-              v-for="(stat, index) in stats"
-              :key="index"
-              class="col-6 col-md-4 col-lg-3 col-xl stat-col p-2"
-            >
-              <div class="card stat-card h-100 border border-1 border-primary shadow-sm">
-                <div
-                  class="card-body p-3 d-flex flex-column align-items-center justify-content-center"
-                >
-                  <!-- Icon wrapper -->
-                  <div class="icon-wrapper mb-2">
-                    <i :class="stat.icon + ' fs-4'"></i>
-                  </div>
-
-                  <!-- Title -->
-                  <h6 class="card-title text-muted text-uppercase small mb-1">
-                    {{ stat.title }}
-                  </h6>
-
-                  <!-- Value -->
-                  <p class="fw-bold fs-5 mb-0 text-dark">
+          <div class="container-fluid mt-2">
+            <div class="row justify-content-center" style="gap: 0.6rem !important;">
+              <div v-for="(stat, index) in stats" :key="index" class="stat-card card-shadow-bottom border-0">
+                <div class="card-body p-3 position-relative h-100">
+                  <p class="text-dark position-absolute top-0 end-0 fw-semibold my-1">
                     {{ stat.value }}
                   </p>
+                  <small class="text-success position-absolute bottom-0 start-0 my-1" style="white-space: normal; max-width: 80%;">
+                    {{ stat.title }}
+                  </small>
+                  <div class="position-absolute bottom-0 end-0 my-1 d-flex align-items-center justify-content-center">
+                    <img :src="stat.icon" alt="icon" width="25">
+                    <!-- <i :class="stat.icon + ' fs-4'" :style="{ color: stat.color }"></i> -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -83,8 +73,8 @@
 
           <!-- Filter Form -->
           <div class="mt-5">
-            <div class="card border-0 shadow-sm p-3 bg-light">
-              <h3 class="text-primary fw-bold py-2">Filter:</h3>
+            <div class="card border-0 shadow-sm p-3 bg-light text-primary">
+              <p class="text-primary fw-bold h5">Filter:</p>
               <form class="row g-3 align-items-end">
                 <div class="col-3">
                   <label for="kecamatan">Kecamatan</label>
@@ -113,7 +103,7 @@
                   />
                 </div>
                 <div class="col-2">
-                  <button type="submit" class="btn btn-primary">
+                  <button type="submit" class="btn btn-gradient col-12">
                     <i class="bi bi-search me-1"></i> Cari
                   </button>
                 </div>
@@ -885,16 +875,15 @@ export default {
         },
       ],
       stats: [
-        { title: 'Total RW', value: '1,000', icon: 'fa-solid fa-house-chimney-window' },
-        { title: 'Total RT', value: '100,000', icon: 'bi bi-house-fill' },
-        { title: 'Penduduk', value: '278 M', icon: 'bi bi-people-fill' },
-        { title: 'Keluarga', value: '100 M', icon: 'fa-solid fa-people-roof' },
-        { title: 'Balita', value: '1,234', icon: 'fa-solid fa-baby' },
-        { title: 'Ibu Hamil', value: '56 K', icon: 'fa-solid fa-person-pregnant' },
-        { title: 'Calon Pengantin', value: '12 K', icon: 'fa-solid fa-people-arrows' },
-        { title: 'Posyandu', value: '8 K', icon: 'fa-solid fa-stethoscope' },
-        { title: 'Bidan', value: '1,234', icon: 'fa-solid fa-user-nurse' },
-        { title: 'Anggota TPK', value: '56', icon: 'bi bi-person-vcard-fill' },
+        { title: 'RW', value: '1,000', icon: '/icons/icon1.png' },
+        { title: 'RT', value: '100,000', icon: '/icons/icon2.png'},
+        { title: 'Keluarga Terdaftar', value: '100 M', icon: '/icons/icon3.png' },
+        { title: 'TPK', value: '1,234', icon: '/icons/icon4.png' },
+        { title: 'Ibu Hamil', value: '56 K', icon: '/icons/icon5.png' },
+        { title: 'Posyandu', value: '8 K', icon: '/icons/icon6.png' },
+        { title: 'Bidan', value: '1,234', icon: '/icons/icon7.png' },
+        { title: 'Calon Pengantin', value: '12 K', icon: '/icons/icon8.png' },
+        { title: 'Anak <= 5 Tahun', value: '56', icon: '/icons/icon9.png' },
       ],
       activities: [
         { user: 'Alice', action: 'Created new project', date: '2025-08-13' },
@@ -1761,25 +1750,38 @@ export default {
 
 /* Card Statistik */
 .stat-card {
+  width: 130px;
+  height: 80px;
   border-radius: 1rem;
+  background-color: #fff;
   transition: all 0.3s ease;
-  /* background: #fff; */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.25);
 }
 
+/* Icon wrapper */
 .icon-wrapper {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(0, 123, 255, 0.08); /* soft primary */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1a7f37;
+  background: rgba(0, 123, 255, 0.08);
+}
+
+/* Responsif: sedikit lebih besar di layar kecil */
+@media (max-width: 1200px) {
+  .stat-card {
+    width: 140px;
+  }
+}
+@media (max-width: 992px) {
+  .stat-card {
+    width: 160px;
+  }
 }
 
 /* Form & Select */
