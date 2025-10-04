@@ -67,7 +67,7 @@ class MemberController extends Controller
         ]);
     }
 
-    public function getTPK()
+    /* public function getTPK()
     {
         $tpk = TPK::select('no_tpk')
             ->distinct()
@@ -75,7 +75,7 @@ class MemberController extends Controller
             ->get();
 
         return response()->json($tpk);
-    }
+    } */
 
     public function getUser()
     {
@@ -87,4 +87,69 @@ class MemberController extends Controller
 
         return response()->json($user);
     }
+
+    public function assign(Request $request)
+    {
+        $id = $request->id;
+
+        // ambil data keluarga berdasarkan id
+        $cadre = Cadre::findOrFail($id);
+        $user = $cadre->user()->where('nik', $request->nik)->first();
+
+        $cadre->update([
+            'id_tpk' => $request->id,
+            'id_user' => $user->id,
+            'status' => 'Kader',
+        ]);
+
+        Log::create([
+            'id_user'  => Auth::id(),
+            'context'  => 'Anggota TPK',
+            'activity' => 'assign',
+            'timestamp'=> now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Anggota berhasil ditambahkan'
+        ]);
+    }
+
+    public function memberTPK($no_tpk)
+    {
+        $cadre = Cadre::with(['tpk', 'user'])
+            ->whereHas('tpk', function ($q) use ($no_tpk) {
+                $q->where('no_tpk', $no_tpk);
+            })
+            ->get();
+
+        // karena $cadre hasilnya collection, bukan single object
+        $data = $cadre->map(function ($c) {
+            return [
+                'id'            => $c->id,
+                'no_tpk'        => $c->tpk->no_tpk ?? null,
+                'nama'          => $c->user->name ?? null,
+                'nik'           => $c->user->nik ?? null,
+                'status'        => $c->status ?? null,
+                'phone'         => $c->user->phone ?? null,
+                'email'         => $c->user->email ?? null,
+                'role'          => $c->user->role ?? null,
+                'unit_posyandu' => $c->posyandu->nama_posyandu ?? null,
+
+                // relasi wilayah
+                'provinsi'      => $c->posyandu->wilayah->provinsi ?? null,
+                'kota'          => $c->posyandu->wilayah->kota ?? null,
+                'kecamatan'     => $c->posyandu->wilayah->kecamatan ?? null,
+                'kelurahan'     => $c->posyandu->wilayah->kelurahan ?? null,
+            ];
+        });
+
+        return response()->json($data);
+    }
+
+
+    /* public function family(id)
+    {
+
+        return response()->json($user);
+    } */
 }

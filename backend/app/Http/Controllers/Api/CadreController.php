@@ -236,5 +236,4 @@ class CadreController extends Controller
             'message' => 'Kader/Pengguna berhasil dihapus'
         ]);
     }
-
 }

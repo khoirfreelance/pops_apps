@@ -36,19 +36,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
     Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
     Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']);
+    //Route::get('/cadre/member/{no_tpk}', [CadreController::class, 'getTPK']);
 });
 
 // Member Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('member', MemberController::class)
-        ->only(['index','store','show','update'])
+        ->only(['index','store','show'])
         ->where(['member' => '[0-9]+']);
-    Route::get('/member/tpk', [MemberController::class, 'getTPK']);
+    //Route::get('/member/tpk', [MemberController::class, 'getTPK']);
     Route::get('/member/user', [MemberController::class, 'getUser']);
-    /* Route::get('/posyandu', [PosyanduController::class, 'getPosyandu']);
-    Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
-    Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
-    Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']); */
+    Route::post('/member/assign', [MemberController::class, 'assign']);
+    Route::get('/member/tpk/{no_tpk}', [MemberController::class, 'memberTPK']);
+    Route::get('/member/{id}/family', [MemberController::class, 'family']);
 });
 
 // Region Endpoint
