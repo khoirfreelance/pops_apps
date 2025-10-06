@@ -64,7 +64,6 @@
                   </small>
                   <div class="position-absolute bottom-0 end-0 my-1 d-flex align-items-center justify-content-center">
                     <img :src="stat.icon" alt="icon" width="25">
-                    <!-- <i :class="stat.icon + ' fs-4'" :style="{ color: stat.color }"></i> -->
                   </div>
                 </div>
               </div>
@@ -161,16 +160,117 @@
             </div>
             <div class="tab-content" id="myTabContent">
               <!-- Tab 1 -->
-              <div
-                class="tab-pane fade show active"
-                id="home-tab-pane"
-                role="tabpanel"
-                tabindex="0"
-              >
+              <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" tabindex="0">
+                <!-- Ringkasan Status Gizi -->
+                <div class="container-fluid my-4">
+                  <h4 class="text-primary fw-bold mb-4 ml-3">Ringkasan Status Gizi</h4>
+                  <!--BARIS 1: Status Gizi -->
+                  <div class="d-flex flex-wrap gap-3 justify-content-between">
+                    <div class="status-card stunting">
+                      <h5 class="text-dark">Stunting</h5>
+                      <div class="value">215</div>
+                      <div class="percent">23.7%</div>
+                      <div class="status-line stunting"></div>
+                    </div>
+
+                    <div class="status-card wasting">
+                      <h5 class="text-dark">Wasting</h5>
+                      <div class="value">33</div>
+                      <div class="percent">23.7%</div>
+                      <div class="status-line wasting"></div>
+                    </div>
+
+                    <div class="status-card underweight">
+                      <h5 class="text-dark">Underweight</h5>
+                      <div class="value">98</div>
+                      <div class="percent">10.8%</div>
+                      <div class="status-line underweight"></div>
+                    </div>
+
+                    <div class="status-card normal">
+                      <h5 class="text-dark">Normal</h5>
+                      <div class="value">541</div>
+                      <div class="percent">59.7%</div>
+                      <div class="status-line normal"></div>
+                    </div>
+
+                    <div class="status-card stagnan">
+                      <h5 class="text-dark">BB Stagnan</h5>
+                      <div class="value">14</div>
+                      <div class="percent">3.0%</div>
+                      <div class="status-line stagnan"></div>
+                    </div>
+
+                    <div class="status-card overweight">
+                      <h5 class="text-dark">Overweight</h5>
+                      <div class="value">13</div>
+                      <div class="percent">1.5%</div>
+                      <div class="status-line overweight"></div>
+                    </div>
+
+                    <div class="status-card total text-center position-relative">
+                      <h5 class="text-dark">Total Anak Balita</h5>
+                      <div class="value">905</div>
+                      <br>
+                      <div class="percent position-absolute bottom-0 start-50 translate-middle-x mb-2">
+                        <i class="fa fa-users fa-2x text-dark"></i>
+                      </div>
+                      <div class="status-line total"></div>
+                    </div>
+                  </div>
+
+                  <!-- BARIS 2: Ringkasan Tambahan -->
+                  <div class="d-flex flex-wrap gap-3 justify-content-center mt-4">
+                    <div class="info-card shadow-sm p-3 rounded-3">
+                      <div class="d-flex align-items-start">
+                        <i class="fa fa-arrow-up text-danger me-2 mt-1"></i>
+                        <div>
+                          <h6 class="fw-bold text-danger mb-1">Stunting naik +1.4 p.p</h6>
+                          <small class="text-muted">Dibanding bulan lalu tertinggi di Desa Wonosari</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="info-card shadow-sm p-3 rounded-3">
+                      <div class="d-flex align-items-start">
+                        <span class="text-success fs-5 me-2 mt-1">●</span>
+                        <div>
+                          <h6 class="fw-bold text-success mb-1">Intervensi</h6>
+                          <small class="text-muted">22% Anak dalam kategori khusus belum mendapat bantuan</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="info-card shadow-sm p-3 rounded-3">
+                      <div class="d-flex align-items-start">
+                        <span class="text-success fs-5 me-2 mt-1">●</span>
+                        <div>
+                          <h6 class="fw-bold text-success mb-1">Kasus baru p.p</h6>
+                          <small>
+                            <span class="text-danger fw-bold">15</span> Kasus Baru Stunting<br>
+                            <span class="text-warning fw-bold">33</span> Kasus Baru Wasting<br>
+                            <span class="text-primary fw-bold">4</span> Kasus Baru BB Stagnan
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="info-card shadow-sm p-3 rounded-3">
+                      <div class="d-flex align-items-start">
+                        <i class="bi bi-calendar text-dark me-2 mt-1"></i>
+                        <div>
+                          <h6 class="fw-bold text-danger mb-1">Data Pending</h6>
+                          <small class="text-muted">10 Data tidak lengkap belum diperbarui dari bulan sebelumnya</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <br>
                 <!-- Title -->
-                <div class="d-flex justify-content-between align-items-center my-3 mt-5">
-                  <h2 class="fw-bold">Status Gizi Anak</h2>
-                  <a href="/admin/grafik" class="text-decoration-none">Selengkapnya...</a>
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                  <h4 class="fw-bold text-primary">Komposisi Status Gizi</h4>
                 </div>
 
                 <!-- PIE CHART-->
@@ -181,20 +281,20 @@
                       <h4 class="fw-bold text-primary">Berat Badan / Usia</h4>
                       <div class="row">
                         <!-- Table -->
-                        <div class="col-12 col-md-8">
+                        <div class="col-12 col-md-7">
                           <table class="table table-borderless align-middle">
                             <tbody>
                               <tr>
-                                <td class="text-additional fw-bold">Status</td>
-                                <td class="text-muted fw-bold">Jumlah</td>
-                                <td class="text-muted fw-bold">Persen</td>
-                                <td class="text-muted fw-bold">Tren</td>
+                                <td class="text-additional fw-semibold">Status</td>
+                                <td class="text-additional fw-semibold">Jumlah</td>
+                                <td class="text-additional fw-semibold">Persen</td>
+                                <td class="text-additional fw-semibold">Tren</td>
                               </tr>
                               <tr v-for="(row, index) in dataTable_bb" :key="index">
-                                <td>{{ row.status }}</td>
-                                <td>{{ row.jumlah }}</td>
-                                <td>{{ row.persen }} %</td>
-                                <td :class="row.trenClass">
+                                <td class="text-additional small">{{ row.status }}</td>
+                                <td class="text-additional small">{{ row.jumlah }}</td>
+                                <td class="text-additional small">{{ row.persen }} %</td>
+                                <td class="small" :class="row.trenClass">
                                   <span v-if="row.tren !== '-'">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
@@ -202,12 +302,18 @@
                                 </td>
                               </tr>
                             </tbody>
+                            <tfoot>
+                              <tr>
+                                <td colspan="4" class="pt-4"><a href="">Lihat Grafik Selengkapnya</a></td>
+                              </tr>
+                            </tfoot>
                           </table>
                         </div>
 
                         <!-- Chart -->
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-5 text-center">
                           <canvas ref="pieChart_bb"></canvas>
+                          <p class="mt-4">Klik Chart untuk melihat data</p>
                         </div>
                       </div>
                     </div>
@@ -216,7 +322,7 @@
                     <div class="card border border-primary shadow p-3 my-3">
                       <h4 class="fw-bold text-primary">Tinggi Badan / Usia</h4>
                       <div class="row">
-                        <div class="col-12 col-md-8">
+                        <div class="col-12 col-md-7">
                           <table class="table table-borderless align-middle">
                             <tbody>
                               <tr>
@@ -226,10 +332,10 @@
                                 <td class="text-muted fw-bold">Tren</td>
                               </tr>
                               <tr v-for="(row, index) in dataTable_tb" :key="index">
-                                <td>{{ row.status }}</td>
-                                <td>{{ row.jumlah }}</td>
-                                <td>{{ row.persen }} %</td>
-                                <td :class="row.trenClass">
+                                <td class="text-additional small">{{ row.status }}</td>
+                                <td class="text-additional small">{{ row.jumlah }}</td>
+                                <td class="text-additional small">{{ row.persen }} %</td>
+                                <td class="small" :class="row.trenClass">
                                   <span v-if="row.tren !== '-'">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
@@ -237,10 +343,16 @@
                                 </td>
                               </tr>
                             </tbody>
+                            <tfoot>
+                              <tr>
+                                <td colspan="4" class="pt-4"><a href="">Lihat Grafik Selengkapnya</a></td>
+                              </tr>
+                            </tfoot>
                           </table>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-5 text-center">
                           <canvas ref="pieChart_tb"></canvas>
+                          <p class="mt-4">Klik Chart untuk melihat data</p>
                         </div>
                       </div>
                     </div>
@@ -260,10 +372,10 @@
                                 <td class="text-muted fw-bold">Tren</td>
                               </tr>
                               <tr v-for="(row, index) in dataTable_status" :key="index">
-                                <td>{{ row.status }}</td>
-                                <td>{{ row.jumlah }}</td>
-                                <td>{{ row.persen }} %</td>
-                                <td :class="row.trenClass">
+                                <td class="text-additional small">{{ row.status }}</td>
+                                <td class="text-additional small">{{ row.jumlah }}</td>
+                                <td class="text-additional small">{{ row.persen }} %</td>
+                                <td class="small" :class="row.trenClass">
                                   <span v-if="row.tren !== '-'">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
@@ -273,393 +385,207 @@
                             </tbody>
                           </table>
                         </div>
-                        <div class="col-12">
+                        <div class="col-12 text-center">
                           <canvas
                             ref="pieChart_status"
                             class="mx-auto d-block"
                             style="max-width: 300px; max-height: 300px"
                           ></canvas>
+                          <div class="d-flex flex-wrap justify-content-between mt-3">
+                            <a href="">Lihat Grafik Selengkapnya</a> <p>Klik Chart untuk melihat data</p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Statistic -->
-                <div class="d-flex justify-content-center">
-                  <ul class="nav nav-pills mb-3" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link active"
-                        id="bb-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#bb-tab-pane"
-                        type="button"
-                        role="tab"
-                        aria-controls="bb-tab-pane"
-                        aria-selected="true"
-                      >
-                        Berat Badan / Usia
-                      </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link"
-                        id="tb-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#tb-tab-pane"
-                        type="button"
-                        role="tab"
-                        aria-controls="tb-tab-pane"
-                        aria-selected="false"
-                      >
-                        Tinggi Badan / Usia
-                      </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                      <button
-                        class="nav-link"
-                        id="bbtb-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#bbtb-tab-pane"
-                        type="button"
-                        role="tab"
-                        aria-controls="bbtb-tab-pane"
-                        aria-selected="false"
-                      >
-                        Berat Badan / Tinggi Badan
-                      </button>
-                    </li>
-                  </ul>
+                <!-- Data Anak Dengan Status Kurang Berdasar Berat Badan / Usia -->
+                <div class="mb-3">
+                  <h5 class="fw-bold text-danger mb-0">
+                    Data Anak dengan Status Kurang Berdasar Berat Badan / Usia
+                  </h5>
                 </div>
-                <div class="tab-content" id="mysubTabContent">
-                  <!-- sub BB Tabs-->
-                  <div
-                    class="tab-pane fade show active"
-                    id="bb-tab-pane"
-                    role="tabpanel"
-                    tabindex="0"
-                  >
-                    <!-- Title -->
-                    <div class="d-flex justify-content-between align-items-center my-3 mt-5">
-                      <h2 class="fw-bold">Berat Badan / Usia</h2>
+                <div class="card shadow-sm border-0 p-3">
+                  <!-- Filter Section -->
+                  <div class="row g-2 mb-3">
+                    <div class="col-md-3 col-6"></div>
+                    <div class="col-md-3 col-6"></div>
+                    <div class="col-md-3 col-6">
+                      <select v-model="selectedStatusGizi" class="form-select form-select-sm">
+                        <option value="">Semua Status</option>
+                        <option
+                          v-for="(status, i) in uniqueStatusGizi"
+                          :key="'status-' + i"
+                          :value="status"
+                        >
+                          {{ status }}
+                        </option>
+                      </select>
                     </div>
 
-                    <!-- Statistik Berat Badan / Usia -->
-                    <div class="card border border-primary shadow p-3 my-3">
-                      <table class="table table-borderless align-middle">
-                        <tbody>
-                          <tr>
-                            <td class="text-additional fw-bold">Status</td>
-                            <td class="text-muted fw-bold">Jumlah</td>
-                            <td class="text-muted fw-bold">Persen</td>
-                            <td class="text-muted fw-bold">Tren</td>
-                          </tr>
-                          <tr v-for="(row, index) in dataTable_bb" :key="index">
-                            <td>{{ row.status }}</td>
-                            <td>{{ row.jumlah }}</td>
-                            <td>{{ row.persen }} %</td>
-                            <td :class="row.trenClass">
-                              <span v-if="row.tren !== '-'">
-                                <i :class="row.trenIcon"></i> {{ row.tren }}
-                              </span>
-                              <span v-else>-</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div class="col-md-3 col-6">
+                      <select v-model="selectedIntervensi" class="form-select form-select-sm">
+                        <option value="">Semua Intervensi</option>
+                        <option
+                          v-for="(item, i) in uniqueIntervensi"
+                          :key="'intervensi-' + i"
+                          :value="item"
+                        >
+                          {{ item }}
+                        </option>
+                      </select>
                     </div>
+                  </div>
 
-                    <!-- Statistik berdasarkan kelompok usia dan gender-->
-                    <div class="row my-3">
-                      <div class="col-12 col-lg-6 col-md-6">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <h4 class="text-primary fw-bold">Berdasarkan Kategori Usia</h4>
-                          <div class="table-responsive">
-                            <canvas ref="usiaChart"></canvas>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12 col-lg-6 col-md-6">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <h4 class="fw-bold mb-4 text-primary">Berdasarkan Jenis Kelamin</h4>
-                          <div class="row justify-content-center">
-                            <div
-                              class="col-md-6 col-sm-12 col-12 mb-4"
-                              v-for="(item, index) in genderData"
-                              :key="index"
+                  <!-- Table -->
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                      <thead class="border-bottom">
+                        <tr class="text-dark small fw-semibold text-center">
+                          <th class="text-dark">Nama</th>
+                          <th class="text-dark">NIK</th>
+                          <th class="text-dark">Status BB/U</th>
+                          <th class="text-dark">Status TB/U</th>
+                          <th class="text-dark">Status BB/TB</th>
+                          <th class="text-dark">JK</th>
+                          <th class="text-dark">Usia</th>
+                          <th class="text-dark">Intervensi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(row, index) in filteredData"
+                          :key="index"
+                          class="small"
+                        >
+                          <td class="text-left">{{ row.nama }}</td>
+                          <td class="text-center">{{ row.nik }}</td>
+                          <td class="text-center text-capitalize">{{ row.status_bb }}</td>
+                          <td class="text-capitalize text-center">{{ row.status_tb }}</td>
+                          <td
+                            class="text-capitalize text-center"
+                            :class="row.status_gizi === 'stunting' ? 'text-danger fw-semibold' : ''"
+                          >
+                            {{ row.status_gizi }}
+                          </td>
+                          <td class="text-center">{{ row.jk }}</td>
+                          <td class="text-center">{{ row.usia }}</td>
+                          <td class="text-capitalize text-center">{{ row.intervensi }}</td>
+                        </tr>
+
+                        <tr v-if="filteredData.length === 0">
+                          <td colspan="8" class="text-center text-muted small py-3">
+                            Tidak ada data yang cocok dengan filter.
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="8" class="text-end pt-3">
+                            <button
+                              class="btn btn-sm btn-outline-success fw-semibold"
+                              @click="exportCSV"
                             >
-                              <div :class="['circle', item.circleClass]">{{ item.total }}</div>
-                              <h5 class="title" :class="item.titleClass">{{ item.label }}</h5>
-                              <div class="d-flex justify-content-between px-5">
-                                <div>
-                                  <p v-for="(cat, i) in item.categories" :key="i">{{ cat.name }}</p>
-                                </div>
-                                <div class="fw-bold text-end" :class="item.valueClass">
-                                  <p v-for="(cat, i) in item.categories" :key="i">
-                                    {{ cat.value }}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                              <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                              Generate Export
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="container-fluid py-3">
+                  <h5 class="fw-bold text-success my-4">
+                    Cohort Tracker & Stagnansi
+                  </h5>
+
+                  <!-- 3 Cards Row -->
+                  <div class="row mb-4">
+
+                    <div class="col-md-4">
+                      <!-- Kasus Card -->
+                      <div class="card text-center shadow-sm border-0 p-5 bg-success-subtle">
+                        <h4 class="fw-bold text-success my-3 ">{{ totalKasus }}</h4>
+                        <span class="p-3 small fw-bold text-primary bg-light">Kasus</span>
+                      </div>
+                      <!-- Funnel -->
+                      <div class="card shadow-sm border-0 px-3 py-5 mt-3">
+                        <h6 class="fw-semibold text-center text-success mb-3">
+                          Funnel Intervensi
+                        </h6>
+                        <canvas ref="funnelChart"></canvas>
                       </div>
                     </div>
 
-                    <!-- Statistik berdasarkan 1 tahun terkahir -->
-                    <div class="row my-3">
-                      <div class="col-12">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <div class="table-responsive"><canvas ref="indiChart"></canvas></div>
+                    <div class="col-md-8">
+                      <div class="row">
+                        <!-- Line Chart -->
+                        <div class="col-md-6">
+                          <div class="card shadow-sm border-0 p-3">
+                            <canvas ref="lineChart"></canvas>
+                            <p class="small text-center text-success fw-semibold mt-2">
+                              Persentase Anak tidak membaik 3 bulan terakhir
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <div class="table-responsive">
-                            <table class="table table-bordered table-sm align-middle text-center">
-                              <thead class="table-light">
-                                <tr>
-                                  <th>Indikator</th>
-                                  <th v-for="(bulan, idx) in bulanLabels" :key="idx">
-                                    {{ bulan }}
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(values, indikator) in indikatorData" :key="indikator">
-                                  <td class="fw-bold">{{ indikator }}</td>
-                                  <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                        <!-- Bar Chart -->
+                        <div class="col-md-6">
+                          <div class="card shadow-sm border-0 p-3">
+                            <h6 class="text-success fw-bold text-center mb-2">
+                              Top 5 dusun dengan kasus tidak membaik dalam 3 bulan
+                            </h6>
+                            <canvas ref="barChart"></canvas>
+                          </div>
+                        </div>
+                        <!-- Table Data -->
+                        <div class="col-md-12 mt-3">
+                          <div class="card shadow-sm border-0 p-3">
+                            <div class="table-responsive">
+                              <table class="table table-bordered align-middle mb-0 text-center">
+                                <thead class="table-light small text-secondary fw-semibold">
+                                  <tr>
+                                    <th>Nama</th>
+                                    <th>NIK</th>
+                                    <th>Stunting</th>
+                                    <th>Wasting</th>
+                                    <th>Underweight</th>
+                                    <th>BB Stagnant</th>
+                                    <th>Overweight</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(row, i) in dataAnak" :key="i">
+                                    <td>{{ row.nama }}</td>
+                                    <td>
+                                      <a
+                                        :href="'#'"
+                                        class="text-decoration-none text-primary fw-semibold small"
+                                        >{{ row.nik }}</a
+                                      >
+                                    </td>
+                                    <td>{{ row.stunting ? '✓' : '' }}</td>
+                                    <td>{{ row.wasting ? '✓' : '' }}</td>
+                                    <td>{{ row.underweight ? '✓' : '' }}</td>
+                                    <td>{{ row.bb_stagnant ? '✓' : '' }}</td>
+                                    <td>{{ row.overweight ? '✓' : '' }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- sub TB Tabs-->
-                  <div
-                    class="tab-pane fade"
-                    id="tb-tab-pane"
-                    role="tabpanel"
-                    tabindex="0"
-                  >
-                    <!-- Title -->
-                    <div class="d-flex justify-content-between align-items-center my-3 mt-5">
-                      <h2 class="fw-bold">Tinggi Badan / Usia</h2>
-                    </div>
-
-                    <!-- Statistik Tinggi Badan / Usia -->
-                    <div class="card border border-primary shadow p-3 my-3">
-                      <table class="table table-borderless align-middle">
-                        <tbody>
-                          <tr>
-                            <td class="text-additional fw-bold">Status</td>
-                            <td class="text-muted fw-bold">Jumlah</td>
-                            <td class="text-muted fw-bold">Persen</td>
-                            <td class="text-muted fw-bold">Tren</td>
-                          </tr>
-                          <tr v-for="(row, index) in dataTable_tb" :key="index">
-                            <td>{{ row.status }}</td>
-                            <td>{{ row.jumlah }}</td>
-                            <td>{{ row.persen }} %</td>
-                            <td :class="row.trenClass">
-                              <span v-if="row.tren !== '-'">
-                                <i :class="row.trenIcon"></i> {{ row.tren }}
-                              </span>
-                              <span v-else>-</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <!-- Statistik berdasarkan kelompok usia dan gender-->
-                    <div class="row my-3">
-                      <div class="col-12 col-lg-6 col-md-6">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <h4 class="text-primary fw-bold">Berdasarkan Kategori Usia</h4>
-                          <div class="table-responsive">
-                            <canvas ref="usiaChart_tb"></canvas>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12 col-lg-6 col-md-6">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <h4 class="fw-bold mb-4 text-primary">Berdasarkan Jenis Kelamin</h4>
-                          <div class="row justify-content-center">
-                            <div
-                              class="col-md-6 col-sm-12 col-12 mb-4"
-                              v-for="(item, index) in genderData_tb"
-                              :key="index"
-                            >
-                              <div :class="['circle', item.circleClass]">{{ item.total }}</div>
-                              <h5 class="title" :class="item.titleClass">{{ item.label }}</h5>
-                              <div class="d-flex justify-content-between px-5">
-                                <div>
-                                  <p v-for="(cat, i) in item.categories" :key="i">{{ cat.name }}</p>
-                                </div>
-                                <div class="fw-bold text-end" :class="item.valueClass">
-                                  <p v-for="(cat, i) in item.categories" :key="i">
-                                    {{ cat.value }}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Statistik berdasarkan 1 tahun terkahir -->
-                    <div class="row my-3">
-                      <div class="col-12">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <div class="table-responsive">
-                            <canvas ref="indiChart_tb"></canvas>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <div class="table-responsive">
-                            <table class="table table-bordered table-sm align-middle text-center">
-                              <thead class="table-light">
-                                <tr>
-                                  <th>Indikator</th>
-                                  <th v-for="(bulan, idx) in bulanLabels" :key="idx">
-                                    {{ bulan }}
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(values, indikator) in indikatorData_tb" :key="indikator">
-                                  <td class="fw-bold">{{ indikator }}</td>
-                                  <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- sub BB/TB Tabs-->
-                  <div
-                    class="tab-pane fade"
-                    id="bbtb-tab-pane"
-                    role="tabpanel"
-                    tabindex="0"
-                  >
-                    <!-- Title -->
-                    <div class="d-flex justify-content-between align-items-center my-3 mt-5">
-                      <h2 class="fw-bold">Berat Badan / Tinggi Badan</h2>
-                    </div>
-
-                    <!-- Statistik BB /TB -->
-                    <div class="card border border-primary shadow p-3 my-3">
-                      <table class="table table-borderless align-middle">
-                        <tbody>
-                          <tr>
-                            <td class="text-additional fw-bold">Status</td>
-                            <td class="text-muted fw-bold">Jumlah</td>
-                            <td class="text-muted fw-bold">Persen</td>
-                            <td class="text-muted fw-bold">Tren</td>
-                          </tr>
-                          <tr v-for="(row, index) in dataTable_status" :key="index">
-                            <td>{{ row.status }}</td>
-                            <td>{{ row.jumlah }}</td>
-                            <td>{{ row.persen }} %</td>
-                            <td :class="row.trenClass">
-                              <span v-if="row.tren !== '-'">
-                                <i :class="row.trenIcon"></i> {{ row.tren }}
-                              </span>
-                              <span v-else>-</span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    <!-- Statistik berdasarkan kelompok usia dan gender-->
-                    <div class="row my-3">
-                      <div class="col-12 col-lg-6 col-md-6">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <h4 class="text-primary fw-bold">Berdasarkan Kategori Usia</h4>
-                          <div class="table-responsive">
-                            <canvas ref="usiaChart_bbtb"></canvas>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12 col-lg-6 col-md-6">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <h4 class="fw-bold mb-4 text-primary">Berdasarkan Jenis Kelamin</h4>
-                          <div class="row justify-content-center">
-                            <div
-                              class="col-md-6 col-sm-12 col-12 mb-4"
-                              v-for="(item, index) in genderData_bbtb"
-                              :key="index"
-                            >
-                              <div :class="['circle', item.circleClass]">{{ item.total }}</div>
-                              <h5 class="title" :class="item.titleClass">{{ item.label }}</h5>
-                              <div class="d-flex justify-content-between px-5">
-                                <div>
-                                  <p v-for="(cat, i) in item.categories" :key="i">{{ cat.name }}</p>
-                                </div>
-                                <div class="fw-bold text-end" :class="item.valueClass">
-                                  <p v-for="(cat, i) in item.categories" :key="i">
-                                    {{ cat.value }}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Statistik berdasarkan 1 tahun terkahir -->
-                    <div class="row my-3">
-                      <div class="col-12">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <div class="table-responsive">
-                            <canvas ref="indiChart_bbtb"></canvas>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="card border border-primary shadow p-3 my-3">
-                          <div class="table-responsive">
-                            <table class="table table-bordered table-sm align-middle text-center">
-                              <thead class="table-light">
-                                <tr>
-                                  <th>Indikator</th>
-                                  <th v-for="(bulan, idx) in bulanLabels" :key="idx">
-                                    {{ bulan }}
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(values, indikator) in indikatorData_bbtb" :key="indikator">
-                                  <td class="fw-bold">{{ indikator }}</td>
-                                  <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
               <!-- Tab 2 -->
               <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" tabindex="0">
-                <!-- Title -->
                 <div class="d-flex justify-content-between align-items-center my-3 mt-5">
                   <h2 class="fw-bold">Status Kesehatan Ibu Hamil</h2>
                 </div>
@@ -786,6 +712,8 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      selectedStatusGizi: '',
+      selectedIntervensi: '',
       username: '',
       genderData: [
         {
@@ -923,23 +851,23 @@ export default {
           status: 'Kurang',
           jumlah: 94,
           persen: 10.96,
-          tren: '10.96',
+          tren: '10.96%',
           trenClass: 'text-success',
           trenIcon: 'bi bi-caret-down-fill',
         },
         {
           status: 'Normal',
           jumlah: 725,
-          persen: 84.5,
-          tren: '84.50 %',
+          persen: 55,
+          tren: '55 %',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
           status: 'Risiko Lebih',
           jumlah: 15,
-          persen: 1.75,
-          tren: '1.75%',
+          persen: 33.45,
+          tren: '33.45%',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
         },
@@ -957,7 +885,7 @@ export default {
           status: 'Sangat Pendek',
           jumlah: 21,
           persen: 2.45,
-          tren: '0.63%',
+          tren: '2.45%',
           trenClass: 'text-success',
           trenIcon: 'bi bi-caret-down-fill',
         },
@@ -965,7 +893,7 @@ export default {
           status: 'Pendek',
           jumlah: 149,
           persen: 17.37,
-          tren: '0.29%',
+          tren: '17.37%',
           trenClass: 'text-success',
           trenIcon: 'bi bi-caret-down-fill',
         },
@@ -973,15 +901,15 @@ export default {
           status: 'Normal',
           jumlah: 688,
           persen: 80.19,
-          tren: ' 0.92%',
+          tren: ' 80.19%',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
           status: 'Tinggi',
-          jumlah: 0,
-          persen: 0,
-          tren: '-',
+          jumlah: 34,
+          persen: 2,
+          tren: '2%',
           trenClass: 'text-muted',
           trenIcon: '',
         },
@@ -990,7 +918,7 @@ export default {
         {
           status: 'Gizi Buruk',
           jumlah: 4,
-          persen: 0.47,
+          persen: 2.80 ,
           tren: '2.80%',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
@@ -998,7 +926,7 @@ export default {
         {
           status: 'Gizi Kurang',
           jumlah: 20,
-          persen: 2.33,
+          persen: 10.96 ,
           tren: '10.96%',
           trenClass: 'text-success',
           trenIcon: 'bi bi-caret-down-fill',
@@ -1006,7 +934,7 @@ export default {
         {
           status: 'Gizi Baik',
           jumlah: 769,
-          persen: 89.63,
+          persen: 84.50 ,
           tren: ' 84.50%',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
@@ -1014,7 +942,7 @@ export default {
         {
           status: 'Risiko Gizi Lebih',
           jumlah: 53,
-          persen: 6.18,
+          persen: 1.75,
           tren: '1.75%',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
@@ -1022,18 +950,50 @@ export default {
         {
           status: 'Gizi Lebih',
           jumlah: 8,
-          persen: 0.93,
+          persen: 33.45,
           tren: '33.45%',
           trenClass: 'text-danger',
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
           status: 'Obesitas',
-          jumlah: 0,
-          persen: 0,
-          tren: '-',
+          jumlah: 10,
+          persen: 12,
+          tren: '12%',
           trenClass: 'text-muted',
           trenIcon: '',
+        },
+      ],
+      dataTable_kurang: [
+        {
+          nama:'Monkey D. Garp',
+          nik:'332198387456670',
+          status_bb:'kurang',
+          status_tb:'kurang',
+          status_gizi:'stunting',
+          jk:'L',
+          usia:'36 Bulan',
+          intervensi:'Sudah dapat bantuan'
+        },
+        {
+          nama:'Aluna Daneen Azqiara',
+          nik:'3403012012930002',
+          status_bb:'sangat kurang',
+          status_tb:'kurang',
+          status_gizi:'gizi buruk',
+          jk:'P',
+          usia:'38 Bulan',
+          intervensi:'Sudah dapat bantuan'
+        },
+        {
+          nama:'Syiffa Azahra',
+          nik:'3403012806910002',
+          status_bb:'kurang',
+          status_tb:'kurang',
+          status_gizi:'stunting',
+          jk:'P',
+          usia:'42 Bulan',
+          intervensi:'belum dapat'
         },
       ],
       isCollapsed: false,
@@ -1088,9 +1048,111 @@ export default {
         'Gizi Lebih': [215, 20, 23, 22, 136, 164, 15, 90, 16, 50, 11, 23],
         'Obesitas': [205, 20, 23, 122, 216, 14, 15, 90, 16, 50, 11, 23],
       },
+      totalKasus: 215,
+      dataAnak: [
+        {
+          nama: 'Aluna Daneen Azqiara',
+          nik: '3403012012930002',
+          stunting: true,
+          wasting: false,
+          underweight: false,
+          bb_stagnant: false,
+          overweight: false,
+        },
+        {
+          nama: 'Arkhanza Raffasya Pamulat',
+          nik: '3403010508980002',
+          stunting: false,
+          wasting: true,
+          underweight: false,
+          bb_stagnant: false,
+          overweight: false,
+        },
+        {
+          nama: 'Askara Gedhe Manah Sinatrya',
+          nik: '3403011105950001',
+          stunting: false,
+          wasting: false,
+          underweight: true,
+          bb_stagnant: false,
+          overweight: false,
+        },
+        {
+          nama: 'Azka Maulana Fadil',
+          nik: '3403011212980002',
+          stunting: false,
+          wasting: false,
+          underweight: false,
+          bb_stagnant: true,
+          overweight: false,
+        },
+        {
+          nama: 'Irshad Ghani Arvarizi',
+          nik: '3403012507930001',
+          stunting: false,
+          wasting: false,
+          underweight: false,
+          bb_stagnant: false,
+          overweight: true,
+        },
+        {
+          nama: 'Syiffa Azahra',
+          nik: '3403012806910002',
+          stunting: false,
+          wasting: false,
+          underweight: false,
+          bb_stagnant: true,
+          overweight: false,
+        },
+      ],
     }
   },
   methods: {
+    exportCSV() {
+      if (this.filteredData.length === 0) {
+        alert('Tidak ada data untuk diexport.')
+        return
+      }
+
+      const header = [
+        'Nama',
+        'NIK',
+        'Status BB/U',
+        'Status TB/U',
+        'Status BB/TB',
+        'JK',
+        'Usia',
+        'Intervensi',
+      ]
+
+      const rows = this.filteredData.map(row => [
+        row.nama,
+        row.nik,
+        row.status_bb,
+        row.status_tb,
+        row.status_gizi,
+        row.jk,
+        row.usia,
+        row.intervensi,
+      ])
+
+      // Gabungkan ke CSV format
+      const csvContent =
+        'data:text/csv;charset=utf-8,' +
+        [header, ...rows].map(e => e.join(',')).join('\n')
+
+      const encodedUri = encodeURI(csvContent)
+      const link = document.createElement('a')
+      link.setAttribute('href', encodedUri)
+      const filename =
+        'data-anak-kurang-' +
+        new Date().toISOString().split('T')[0] +
+        '.csv'
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
@@ -1098,231 +1160,71 @@ export default {
       const ctx = this.$refs[refName]?.getContext('2d')
       if (!ctx) return
 
-      // hancurkan chart lama kalau ada
+      // Hancurkan chart lama
       if (this[refName + 'Instance']) {
         this[refName + 'Instance'].destroy()
       }
 
+      // Buat warna transparan & border
+      const transparentColors = colors.map(color =>
+        color.replace('rgb', 'rgba').replace(')', ', 0.8)')
+      )
+
       this[refName + 'Instance'] = new Chart(ctx, {
         type: 'pie',
         data: {
-          labels: dataSource.map((row) => row.status),
+          labels: dataSource.map(row => row.status),
           datasets: [
             {
-              data: dataSource.map((row) => row.persen),
-              backgroundColor: colors,
+              data: dataSource.map(row => row.persen),
+              backgroundColor: transparentColors,
+              borderColor: '#fff',
+              borderWidth: 1,
+              borderAlign: 'inner',
+              hoverOffset: 12,
             },
           ],
         },
         options: {
           responsive: true,
+          layout: { padding: 20 },
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'bottom',
+              labels: {
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 16,
+                font: { size: 11 },
+                color: '#333',
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const label = context.label || ''
+                  const value = context.parsed
+                  return `${label}: ${value}%`
+                },
+              },
+            },
             datalabels: {
-              color: '#fff',
-              formatter: (value, context) => {
-                const label = context.chart.data.labels[context.dataIndex]
-                return `${label}\n${value}%`
-              },
-              font: {
-                weight: 'bold',
-                size: 12,
-              },
+              display: false, // ❌ tidak tampilkan label di dalam chart
             },
           },
-        },
-      })
-    },
-    renderUsiaChart() {
-      const ctx = this.$refs.usiaChart.getContext('2d')
-
-      if (this.usiaChartInstance) {
-        this.usiaChartInstance.destroy()
-      }
-
-      this.usiaChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.kelompokUmur,
-          datasets: [
-            {
-              label: 'Sangat Kurang',
-              data: this.statusData['Sangat Kurang'],
-              backgroundColor: '#d9534f',
-            },
-            {
-              label: 'Kurang',
-              data: this.statusData['Kurang'],
-              backgroundColor: '#f0ad4e',
-            },
-            {
-              label: 'Normal',
-              data: this.statusData['Normal'],
-              backgroundColor: '#5cb85c',
-            },
-            {
-              label: 'Risiko Lebih',
-              data: this.statusData['Risiko Lebih'],
-              backgroundColor: '#0275d8',
-            },
-            {
-              label: 'Tidak Naik',
-              data: this.statusData['Tidak Naik'],
-              backgroundColor: '#9370db',
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'right' },
+          onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length ? 'pointer' : 'default'
           },
-          scales: {
-            x: {
-              stacked: false,
-              title: {
-                display: true,
-                text: 'Kategori Usia (bulan)',
-              },
-            },
-            y: {
-              stacked: false,
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Total Individu',
-              },
-            },
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const index = elements[0].index
+              const item = dataSource[index]
+              console.log(`Klik pada: ${item.status} (${item.persen}%)`)
+            }
           },
         },
-      })
-    },
-    renderUsiaChart_tb() {
-      const ctx = this.$refs.usiaChart_tb.getContext('2d')
-
-      if (this.usiaChartInstance_tb) {
-        this.usiaChartInstance_tb.destroy()
-      }
-
-      this.usiaChartInstance_tb = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.kelompokUmur,
-          datasets: [
-            {
-              label: 'Sangat Pendek',
-              data: this.statusData_tb['Sangat Pendek'],
-              backgroundColor: '#d9534f',
-            },
-            {
-              label: 'Pendek',
-              data: this.statusData_tb['Pendek'],
-              backgroundColor: '#f0ad4e',
-            },
-            {
-              label: 'Normal',
-              data: this.statusData_tb['Normal'],
-              backgroundColor: '#5cb85c',
-            },
-            {
-              label: 'Tinggi',
-              data: this.statusData_tb['Tinggi'],
-              backgroundColor: '#0275d8',
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'right' },
-          },
-          scales: {
-            x: {
-              stacked: false,
-              title: {
-                display: true,
-                text: 'Kategori Usia (bulan)',
-              },
-            },
-            y: {
-              stacked: false,
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Total Individu',
-              },
-            },
-          },
-        },
-      })
-    },
-    renderUsiaChart_bbtb() {
-      const ctx = this.$refs.usiaChart_bbtb.getContext('2d')
-
-      if (this.usiaChartInstance_bbtb) {
-        this.usiaChartInstance_bbtb.destroy()
-      }
-
-      this.usiaChartInstance_bbtb = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: this.kelompokUmur,
-          datasets: [
-            {
-              label: 'Gizi Buruk',
-              data: this.statusData_bbtb['Gizi Buruk'],
-              backgroundColor: '#d9534f',
-            },
-            {
-              label: 'Gizi Kurang',
-              data: this.statusData_bbtb['Gizi Kurang'],
-              backgroundColor: '#f0ad4e',
-            },
-            {
-              label: 'Gizi Baik',
-              data: this.statusData_bbtb['Gizi Baik'],
-              backgroundColor: '#5cb85c',
-            },
-            {
-              label: 'Risiko Gizi Lebih',
-              data: this.statusData_bbtb['Risiko Gizi Lebih'],
-              backgroundColor: '#0275d8',
-            },
-            {
-              label: 'Gizi Lebih',
-              data: this.statusData_bbtb['Gizi Lebih'],
-              backgroundColor: 'silver',
-            },
-            {
-              label: 'Obesitas',
-              data: this.statusData_bbtb['Obesitas'],
-              backgroundColor: 'black',
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'right' },
-          },
-          scales: {
-            x: {
-              stacked: false,
-              title: {
-                display: true,
-                text: 'Kategori Usia (bulan)',
-              },
-            },
-            y: {
-              stacked: false,
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Total Individu',
-              },
-            },
-          },
-        },
+        plugins: [ChartDataLabels],
       })
     },
     getLast12Months() {
@@ -1347,255 +1249,6 @@ export default {
         labels.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`)
       }
       return labels
-    },
-    renderIndiChart() {
-      const ctx = this.$refs.indiChart.getContext('2d')
-
-      if (this.indiChartInstance) {
-        this.indiChartInstance.destroy()
-      }
-
-      this.indiChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: this.bulanLabels,
-          datasets: [
-            {
-              label: 'Sangat Kurang',
-              data: this.indikatorData['Sangat Kurang'],
-              borderColor: '#d9534f',
-              backgroundColor: 'rgba(217, 83, 79, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Kurang',
-              data: this.indikatorData['Kurang'],
-              borderColor: '#f0ad4e',
-              backgroundColor: 'rgba(240, 173, 78, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Normal',
-              data: this.indikatorData['Normal'],
-              borderColor: '#5cb85c',
-              backgroundColor: 'rgba(92, 184, 92, 0.3)',
-              fill: true, // area fill untuk Normal
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Risiko Lebih',
-              data: this.indikatorData['Risiko Lebih'],
-              borderColor: '#0275d8',
-              backgroundColor: 'rgba(2, 117, 216, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Tidak Naik',
-              data: this.indikatorData['Tidak Naik'],
-              borderColor: '#9370db',
-              backgroundColor: 'rgba(147, 112, 219, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          interaction: { mode: 'nearest', intersect: false },
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: 'Jumlah Individu' },
-            },
-            x: {
-              title: { display: true, text: 'Bulan' },
-            },
-          },
-        },
-      })
-    },
-    renderIndiChart_tb() {
-      const ctx = this.$refs.indiChart_tb.getContext('2d')
-
-      if (this.indiChartInstance_tb) {
-        this.indiChartInstance_tb.destroy()
-      }
-
-      this.indiChartInstance_tb = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: this.bulanLabels,
-          datasets: [
-            {
-              label: 'Sangat Pendek',
-              data: this.indikatorData_tb['Sangat Pendek'],
-              borderColor: '#d9534f',
-              backgroundColor: 'rgba(217, 83, 79, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Pendek',
-              data: this.indikatorData_tb['Pendek'],
-              borderColor: '#f0ad4e',
-              backgroundColor: 'rgba(240, 173, 78, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Normal',
-              data: this.indikatorData_tb['Normal'],
-              borderColor: '#5cb85c',
-              backgroundColor: 'rgba(92, 184, 92, 0.3)',
-              fill: true, // area fill untuk Normal
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Tinggi',
-              data: this.indikatorData_tb['Tinggi'],
-              borderColor: '#0275d8',
-              backgroundColor: 'rgba(2, 117, 216, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          interaction: { mode: 'nearest', intersect: false },
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: 'Jumlah Individu' },
-            },
-            x: {
-              title: { display: true, text: 'Bulan' },
-            },
-          },
-        },
-      })
-    },
-    renderIndiChart_bbtb() {
-      const ctx = this.$refs.indiChart_bbtb.getContext('2d')
-
-      if (this.indiChartInstance_bbtb) {
-        this.indiChartInstance_bbtb.destroy()
-      }
-
-      this.indiChartInstance_bbtb = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: this.bulanLabels,
-          datasets: [
-            {
-              label: 'Gizi Buruk',
-              data: this.indikatorData_bbtb['Gizi Buruk'],
-              borderColor: '#d9534f',
-              backgroundColor: 'rgba(217, 83, 79, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Gizi Kurang',
-              data: this.indikatorData_bbtb['Gizi Kurang'],
-              borderColor: '#f0ad4e',
-              backgroundColor: 'rgba(240, 173, 78, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Gizi Baik',
-              data: this.indikatorData_bbtb['Gizi Baik'],
-              borderColor: '#5cb85c',
-              backgroundColor: 'rgba(92, 184, 92, 0.3)',
-              fill: true, // area fill untuk Normal
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Risiko Gizi Lebih',
-              data: this.indikatorData_bbtb['Risiko Gizi Lebih'],
-              borderColor: '#0275d8',
-              backgroundColor: 'rgba(2, 117, 216, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Gizi Lebih',
-              data: this.indikatorData_bbtb['Gizi Lebih'],
-              borderColor: 'silver',
-              backgroundColor: 'rgba(2, 117, 216, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Obesitas',
-              data: this.indikatorData_bbtb['Obesitas'],
-              borderColor: 'black',
-              backgroundColor: 'rgba(2, 117, 216, 0.2)',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          interaction: { mode: 'nearest', intersect: false },
-          plugins: {
-            legend: { position: 'top' },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: 'Jumlah Individu' },
-            },
-            x: {
-              title: { display: true, text: 'Bulan' },
-            },
-          },
-        },
-      })
     },
     renderIndiChart_pregnancy() {
       const ctx = this.$refs.indiChart_pregnancy.getContext('2d')
@@ -1649,13 +1302,94 @@ export default {
           },
         },
       })
-    }
+    },
+    renderLineChart() {
+      new Chart(this.$refs.lineChart, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+          datasets: [
+            {
+              label: 'Tidak membaik (%)',
+              data: [10, 13, 12, 11],
+              borderColor: 'goldenrod',
+              backgroundColor: 'rgba(255, 215, 0, 0.3)',
+              fill: true,
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } },
+        },
+      })
+    },
+    renderBarChart() {
+      new Chart(this.$refs.barChart, {
+        type: 'bar',
+        data: {
+          labels: ['Mawar', 'Tulip', 'Melati', 'Anggrek', 'Teratai'],
+          datasets: [
+            {
+              label: 'Kasus',
+              data: [10, 6, 12, 8, 10],
+              backgroundColor: 'rgba(255, 99, 132, 0.6)',
+              borderRadius: 8,
+            },
+          ],
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } },
+        },
+      })
+    },
+    renderFunnelChart() {
+      new Chart(this.$refs.funnelChart, {
+        type: 'bar',
+        data: {
+          labels: ['Ditugaskan kader', 'Dikunjungi kader', 'Dapat PMT'],
+          datasets: [
+            {
+              data: [8, 20, 9],
+              backgroundColor: ['#5B9BD5', '#4472C4', '#305496'],
+            },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true },
+          },
+        },
+      })
+    },
   },
   computed: {
     background() {
       const config = JSON.parse(localStorage.getItem('siteConfig'))
       return config && config.background ? config.background : null
     },
+    uniqueStatusGizi() {
+        return [...new Set(this.dataTable_kurang.map(row => row.status_gizi))]
+      },
+      uniqueIntervensi() {
+        return [...new Set(this.dataTable_kurang.map(row => row.intervensi))]
+      },
+      filteredData() {
+        return this.dataTable_kurang.filter(row => {
+          const byStatus =
+            this.selectedStatusGizi === '' ||
+            row.status_gizi === this.selectedStatusGizi
+          const byIntervensi =
+            this.selectedIntervensi === '' ||
+            row.intervensi === this.selectedIntervensi
+          return byStatus && byIntervensi
+        })
+      },
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1678,35 +1412,33 @@ export default {
   mounted() {
     this.$nextTick(() => {
       this.bulanLabels = this.getLast12Months() // <- generate bulan realtime
-      this.renderUsiaChart()
-      this.renderUsiaChart_tb()
-      this.renderUsiaChart_bbtb()
-      this.renderIndiChart()
-      this.renderIndiChart_tb()
-      this.renderIndiChart_bbtb()
       this.renderIndiChart_pregnancy()
       this.renderChart('pieChart_bb', this.dataTable_bb, [
-        '#66a38c',
-        '#338267',
+        '#E6C200',
+        '#F3BC07',
         '#006341',
-        '#004b30',
-        '#00331f',
+        '#0E00AE',
+        '#D60000',
       ])
       this.renderChart('pieChart_tb', this.dataTable_tb, [
-        '#66a38c',
-        '#338267',
+        '#E6C200',
+        '#F3BC07',
         '#006341',
-        '#004b30',
-        '#00331f',
+        '#0E00AE',
+        '#D60000',
       ])
       this.renderChart('pieChart_status', this.dataTable_status, [
-        '#66a38c',
-        '#338267',
+        '#E6C200',
+        '#F3BC07',
         '#006341',
-        '#004b30',
-        '#00331f',
+        '#0E00AE',
+        '#D60000',
+        'violet',
       ])
     })
+    this.renderLineChart()
+    this.renderBarChart()
+    this.renderFunnelChart()
   },
 }
 </script>
@@ -1816,5 +1548,66 @@ export default {
 }
 .table td {
   color: #333;
+}
+
+.status-card {
+  background-color: #FAF9F6;
+  box-shadow: 0 7px 4px rgba(0,0,0,0.1);
+  text-align: left;
+  padding: 20px 20px;
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-width: 140px;
+}
+
+.status-card h5 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  /* margin-bottom: 10px; */
+}
+
+.status-card .value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.status-card .percent {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 25px;
+}
+
+.status-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 35px;
+  opacity: 0.5;
+}
+
+/* warna khusus per kategori */
+.stunting { color: #d33; }
+.wasting { color: #e6b800; }
+.underweight { color: #0033cc; }
+.normal { color: #007a33; }
+.stagnan { color: #e6b800; }
+.overweight { color: #1e90ff; }
+.total { color: #0077cc; }
+
+.status-line.stunting { background-image: url('/chart/card1.png'); background-repeat: no-repeat; background-size:cover;}
+.status-line.wasting { background-image: url('/chart/card2.png'); background-repeat: no-repeat; background-size:cover; }
+.status-line.underweight { background-image: url('/chart/card3.png'); background-repeat: no-repeat; background-size:cover; }
+.status-line.normal { background-image: url('/chart/card4.png'); background-repeat: no-repeat; background-size:cover; }
+.status-line.stagnan { background-image: url('/chart/card5.png'); background-repeat: no-repeat; background-size:cover; }
+.status-line.overweight { background-image: url('/chart/card6.png'); background-repeat: no-repeat; background-size:cover; }
+.status-line.total { background: linear-gradient(to top, #e6f2ff 0%, transparent 100%); }
+
+.info-card {
+  background-color: #FAF9F6;
+  width: 280px;
+  min-height: 100px;
+  box-shadow: 0 7px 5px rgba(0, 0, 0, 0.1) !important;
 }
 </style>
