@@ -507,16 +507,39 @@
 
                     <div class="col-md-4">
                       <!-- Kasus Card -->
-                      <div class="card text-center shadow-sm border-0 p-5 bg-success-subtle">
-                        <h4 class="fw-bold text-success my-3 ">{{ totalKasus }}</h4>
+                      <div class="card text-center shadow-sm border-0 p-3 bg-success-subtle">
+                        <h2 class="fw-bold text-success my-3 ">{{ totalKasus }}</h2>
                         <span class="p-3 small fw-bold text-primary bg-light">Kasus</span>
                       </div>
                       <!-- Funnel -->
-                      <div class="card shadow-sm border-0 px-3 py-5 mt-3">
+                      <div class="card shadow-sm border-0 p-3 mt-3">
                         <h6 class="fw-semibold text-center text-success mb-3">
                           Funnel Intervensi
                         </h6>
                         <canvas ref="funnelChart"></canvas>
+                      </div>
+                      <!-- Summary -->
+                      <div class="card border border-5 border-light shadow-sm p-4 mx-auto mt-3" style="background-color: #fff9db;">
+                        <h6 class="fw-bold text-center mb-3 text-dark">Kartu Ringkas Gap</h6>
+
+                        <p class="text-dark mb-2 small">
+                          Dari {{ totalAnak }} Anak yang tidak membaik:
+                        </p>
+
+                        <ul class="mb-0 small text-dark">
+                          <li>
+                            <strong>{{ dataGap.pmt.jumlah }}</strong>
+                            ({{ dataGap.pmt.persen }}%) belum menerima PMT
+                          </li>
+                          <li>
+                            <strong>{{ dataGap.bantuan.jumlah }}</strong>
+                            ({{ dataGap.bantuan.persen }}%) belum menerima bantuan apapun
+                          </li>
+                          <li>
+                            <strong>{{ dataGap.kunjungan.jumlah }}</strong>
+                            ({{ dataGap.kunjungan.persen }}%) belum dikunjungi kader
+                          </li>
+                        </ul>
                       </div>
                     </div>
 
@@ -542,13 +565,12 @@
                         </div>
                         <!-- Table Data -->
                         <div class="col-md-12 mt-3">
-                          <div class="card shadow-sm border-0 p-3">
+                          <div class="card shadow-sm border-0 px-3 py-4">
                             <div class="table-responsive">
                               <table class="table table-bordered align-middle mb-0 text-center">
                                 <thead class="table-light small text-secondary fw-semibold">
                                   <tr>
                                     <th>Nama</th>
-                                    <th>NIK</th>
                                     <th>Stunting</th>
                                     <th>Wasting</th>
                                     <th>Underweight</th>
@@ -559,13 +581,6 @@
                                 <tbody>
                                   <tr v-for="(row, i) in dataAnak" :key="i">
                                     <td>{{ row.nama }}</td>
-                                    <td>
-                                      <a
-                                        :href="'#'"
-                                        class="text-decoration-none text-primary fw-semibold small"
-                                        >{{ row.nik }}</a
-                                      >
-                                    </td>
                                     <td>{{ row.stunting ? '✓' : '' }}</td>
                                     <td>{{ row.wasting ? '✓' : '' }}</td>
                                     <td>{{ row.underweight ? '✓' : '' }}</td>
@@ -580,7 +595,6 @@
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
 
@@ -712,6 +726,12 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      totalAnak: 37,
+      dataGap: {
+        pmt: { jumlah: 24, persen: 65 },
+        bantuan: { jumlah: 15, persen: 41 },
+        kunjungan: { jumlah: 8, persen: 22 },
+      },
       selectedStatusGizi: '',
       selectedIntervensi: '',
       username: '',
