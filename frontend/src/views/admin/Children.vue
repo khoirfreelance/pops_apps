@@ -529,90 +529,114 @@
 
                   <!-- FORM: tampil hanya jika data ditemukan -->
                   <transition name="fade">
-                    <form v-if="showForm" class="row g-4 border-top pt-3">
-                      <!-- No KIA -->
+                    <form v-if="showForm" class="row g-4 pt-3">
+
+                      <!-- Kolom Kiri -->
                       <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-secondary">No. KIA</label>
-                        <input
-                          type="text"
-                          class="form-control shadow-sm"
-                          v-model="form_kunjungan.kia"
-                          readonly
-                        />
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Nama<span class="text-danger">*</span></label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.nama" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Tanggal Lahir<span class="text-danger">*</span></label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.tgl_lahir" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Jenis Kelamin<span class="text-danger">*</span></label>
+                          <input
+                            type="text"
+                            class="form-control shadow-sm"
+                            :value="form_kunjungan.gender === 'L' ? 'Laki-laki' : 'Perempuan'"
+                            readonly
+                          />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">NIK<span class="text-danger">*</span></label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.nik" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">No Telepon</label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.no_telp" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Alamat</label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.alamat" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.kecamatan" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Desa</label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.desa" readonly />
+                        </div>
+
+                        <div class="text-end mt-3">
+                          <button type="button" class="btn btn-secondary" @click="resetForm"> <i class="bi bi-x-circle me-2"></i> Batal</button>
+                        </div>
                       </div>
 
-                      <!-- Nama Anak -->
+                      <!-- Kolom Kanan -->
                       <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-secondary">Nama Anak</label>
-                        <input
-                          type="text"
-                          class="form-control shadow-sm"
-                          v-model="form_kunjungan.nama"
-                          readonly
-                        />
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">No KIA</label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.no_kia" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Nama Ayah<span class="text-danger">*</span></label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.nama_ayah" readonly />
+                        </div>
+
+                        <div class="mb-2">
+                          <label class="form-label small fw-semibold text-secondary">Nama Ibu<span class="text-danger">*</span></label>
+                          <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.nama_ibu" readonly />
+                        </div>
+
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">RW</label>
+                            <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.rw" readonly />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">RT</label>
+                            <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.rt" readonly />
+                          </div>
+                        </div>
+
+                        <div class="mt-2">
+                          <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm)</label>
+                          <input type="number" class="form-control shadow-sm" v-model="form_kunjungan.tb" />
+                        </div>
+
+                        <div class="mt-2">
+                          <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
+                          <input type="number" class="form-control shadow-sm" v-model="form_kunjungan.bb" />
+                        </div>
+
+                        <div class="mt-2">
+                          <label class="form-label small fw-semibold text-secondary">Lingkar Kepala (cm)</label>
+                          <input type="number" class="form-control shadow-sm" v-model="form_kunjungan.lika" />
+                        </div>
+
+                        <div class="mt-2">
+                          <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
+                          <input type="date" class="form-control shadow-sm" v-model="form_kunjungan.kunjungan" />
+                        </div>
+
+                        <div class="text-end mt-3">
+                          <small class="text-muted me-3">Pastikan data telah sesuai sebelum simpan</small>
+                          <button type="button" class="btn btn-success" @click="kirimData"> <i class="bi bi-save me-2"></i> Simpan</button>
+                        </div>
                       </div>
 
-                      <!-- Nama Ayah -->
-                      <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-secondary">Nama Ayah</label>
-                        <input
-                          type="text"
-                          class="form-control shadow-sm"
-                          v-model="form_kunjungan.nama_ayah"
-                          readonly
-                        />
-                      </div>
-
-                      <!-- Nama Ibu -->
-                      <div class="col-md-6">
-                        <label class="form-label small fw-semibold text-secondary">Nama Ibu</label>
-                        <input
-                          type="text"
-                          class="form-control shadow-sm"
-                          v-model="form_kunjungan.nama_ibu"
-                          readonly
-                        />
-                      </div>
-
-                      <!-- RW & RT -->
-                      <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-secondary">RW</label>
-                        <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.rw" readonly />
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-secondary">RT</label>
-                        <input type="text" class="form-control shadow-sm" v-model="form_kunjungan.rt" readonly />
-                      </div>
-
-                      <!-- Tinggi Badan -->
-                      <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm)</label>
-                        <input type="number" class="form-control shadow-sm" v-model="form_kunjungan.tb" />
-                      </div>
-
-                      <!-- Berat Badan -->
-                      <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
-                        <input type="number" class="form-control shadow-sm" v-model="form_kunjungan.bb" />
-                      </div>
-
-                      <!-- Lingkar Kepala -->
-                      <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-secondary">Lingkar Kepala (cm)</label>
-                        <input type="number" class="form-control shadow-sm" v-model="form_kunjungan.lika" />
-                      </div>
-
-                      <!-- Tanggal Kunjungan -->
-                      <div class="col-md-3">
-                        <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
-                        <input type="date" class="form-control shadow-sm" v-model="form_kunjungan.kunjungan" />
-                      </div>
-
-                      <!-- Tombol Submit -->
-                      <div class="col-12 text-end">
-                        <small class="text-muted me-3">Pastikan data telah sesuai sebelum simpan</small>
-                        <button type="button" class="btn btn-success" @click="kirimData">Kirim</button>
-                      </div>
                     </form>
                   </transition>
                 </div>
@@ -854,8 +878,8 @@
                           <tbody>
                             <tr v-for="(r, i) in selectedAnak.riwayat_penimbangan || []" :key="i">
                               <td>{{ r.tanggal }}</td>
-                              <td>{{ r.bb_u }}</td>
-                              <td>{{ r.tb_u }}</td>
+                              <td>{{ r.bb }}</td>
+                              <td>{{ r.tb }}</td>
                               <td>
                                 <span
                                   class="badge"
@@ -1862,24 +1886,26 @@ export default {
 
       // form kunjungan posyandu
       form_kunjungan: {
-        nik_wali: '',
-        nama_wali: '',
-        hubungan: '',
-        nama: '',
-        gender: '',
-        bb:'',
-        tb:'',
-        lika:'',
-        alamat: '',
         tgl_lahir: '',
-        usia: 0,
-        status_bb:'',
-        status_tb:'',
-        status_gizi:'',
-        posyandu: '',
-        rt: '',
+        no_telp: '',
+        alamat: '',
+        kecamatan: '',
+        desa: '',
+        no_kia: '',
+        nama_ayah: '',
+        nama_ibu: '',
         rw: '',
+        rt: '',
         kunjungan: '',
+        nama: '',
+        nik: '',
+        usia: 0,
+        gender: '',
+        intervensi: '',
+        status_gizi: '',
+        bb: 0,
+        tb: 0,
+        bb_tb: 0,
       },
 
       // form kelahiran
@@ -2063,9 +2089,9 @@ export default {
         status_gizi: 'Stunting',
         status_gizi_kategori: 'BB/U',
         riwayat_penimbangan: [
-          { tanggal: '22/05/2025', bb_u: '0.35', tb_u: '0.85', bb_tb: 'Stunting' },
-          { tanggal: '18/06/2025', bb_u: '0.22', tb_u: '0.89', bb_tb: 'Stunting' },
-          { tanggal: '20/07/2025', bb_u: '0.25', tb_u: '0.92', bb_tb: 'Stunting' },
+          { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+          { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
+          { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
         ],
         riwayat_intervensi: [
           { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
@@ -2079,20 +2105,91 @@ export default {
         { text: 'NIK', value: 'nik' },
         { text: 'Usia (bln)', value: 'usia' },
         { text: 'JK', value: 'gender' },
-        { text: 'Tgl Ukur Terakhir', value: 'tgl_ukur' },
+        { text: 'Tgl Ukur Terakhir', value: 'kunjungan' },
         { text: 'Intervensi', value: 'intervensi' },
         { text: 'Status Gizi', value: 'status_gizi' },
-        { text: 'BB/U', value: 'bb_u' },
-        { text: 'TB/U', value: 'tb_u' },
+        { text: 'BB/U', value: 'bb' },
+        { text: 'TB/U', value: 'tb' },
         { text: 'BB/TB', value: 'bb_tb' },
       ],
       kunjungan_posyandu: [
-        { nama: 'Aluna Daneen Azqiara', nik: '3403012012930002', usia: 24, gender: 'P', tgl_ukur: '20-07-25', intervensi: 'PMT', status_gizi: 'Stunting', bb_u: 3.3, tb_u: 2.3, bb_tb: 2.3 },
-        { nama: 'Arkhansa Raffasya Pamulat', nik: '3403010508980002', usia: 26, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'PMT', status_gizi: 'Stunting', bb_u: 1.5, tb_u: 1.5, bb_tb: 1.5 },
-        { nama: 'Askara Gedhe Manah Sinatrya', nik: '3403011105950001', usia: 20, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'BLT', status_gizi: 'Wasting', bb_u: 2.3, tb_u: 2.3, bb_tb: 2.3 },
-        { nama: 'Azka Maulana Fadil', nik: '3403011212980002', usia: 23, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'PKH', status_gizi: 'Underweight', bb_u: 1.8, tb_u: 1.8, bb_tb: 1.8 },
-        { nama: 'Irshad Ghani Arvarizi', nik: '3403012507930001', usia: 28, gender: 'L', tgl_ukur: '20-07-25', intervensi: '-', status_gizi: 'Normal', bb_u: 6.5, tb_u: 6.5, bb_tb: 6.5 },
-        { nama: 'Syiffa Azahra', nik: '3403012806910002', usia: 24, gender: 'P', tgl_ukur: '20-07-25', intervensi: '-', status_gizi: 'Normal', bb_u: 5.5, tb_u: 5.5, bb_tb: 5.5 },
+        {
+          tgl_lahir: '20-01-2021',
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Suhartanto',
+          nama_ibu: 'Fiska Bisatika',
+          rw: '03',
+          rt: '04',
+          kunjungan: '2025-01-20',
+          nama: 'Aluna Daneen Azqiara',
+          nik: '3403012012930002',
+          usia: 24,
+          gender: 'P',
+          intervensi: 'PMT',
+          status_gizi: 'Stunting',
+          bb: 3.3,
+          tb: 2.3,
+          bb_tb: 2.3
+        },
+        { tgl_lahir: '20-01-2021',
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Dani',
+          nama_ibu: 'Dini',
+          rw: '03',
+          rt: '04',
+          kunjungan: '2025-01-20', nama: 'Arkhansa Raffasya Pamulat', nik: '3403010508980002', usia: 26, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'PMT', status_gizi: 'Stunting', bb: 1.5, tb: 1.5, bb_tb: 1.5 },
+        { tgl_lahir: '20-01-2021',
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Suhartanto',
+          nama_ibu: 'Fiska Bisatika',
+          rw: '03',
+          rt: '04',
+          kunjungan: '2025-01-20', nama: 'Askara Gedhe Manah Sinatrya', nik: '3403011105950001', usia: 20, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'BLT', status_gizi: 'Wasting', bb: 2.3, tb: 2.3, bb_tb: 2.3 },
+        { tgl_lahir: '20-01-2021',
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Suhendra',
+          nama_ibu: 'Milanti',
+          rw: '03',
+          rt: '04',
+          kunjungan: '2025-01-20', nama: 'Azka Maulana Fadil', nik: '3403011212980002', usia: 23, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'PKH', status_gizi: 'Underweight', bb: 1.8, tb: 1.8, bb_tb: 1.8 },
+        { tgl_lahir: '20-01-2021',
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Hendra',
+          nama_ibu: 'Manah',
+          rw: '03',
+          rt: '04',
+          kunjungan: '2025-01-20', nama: 'Irshad Ghani Arvarizi', nik: '3403012507930001', usia: 28, gender: 'L', tgl_ukur: '20-07-25', intervensi: '-', status_gizi: 'Normal', bb: 6.5, tb: 6.5, bb_tb: 6.5 },
+        { tgl_lahir: '20-01-2021',
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Syafi',
+          nama_ibu: 'Syiffa',
+          rw: '03',
+          rt: '04',
+          kunjungan: '2025-01-20', nama: 'Syiffa Azahra', nik: '3403012806910002', usia: 24, gender: 'P', tgl_ukur: '20-07-25', intervensi: '-', status_gizi: 'Normal', bb: 5.5, tb: 5.5, bb_tb: 5.5 },
       ],
 
       // header intervensi
@@ -2403,16 +2500,7 @@ export default {
     },
   },
   methods: {
-    methods: {
-  applyFilter_anak() {
-    // computed already updates automatically
-  },
-
-  showDetail(row) {
-    this.selectedAnak = row
-  },
-
-  downloadRiwayat() {
+    downloadRiwayat() {
       if (!this.selectedAnak) {
         alert('Silakan pilih anak terlebih dahulu.')
         return
@@ -2433,7 +2521,7 @@ export default {
       if (anak.riwayat_penimbangan && anak.riwayat_penimbangan.length) {
         csvContent += `Riwayat Penimbangan\nTanggal,Status BB/U,Status TB/U,Status BB/TB\n`
         anak.riwayat_penimbangan.forEach(r => {
-          csvContent += `${r.tanggal},${r.bb_u},${r.tb_u},${r.bb_tb}\n`
+          csvContent += `${r.tanggal},${r.bb},${r.tb},${r.bb_tb}\n`
         })
         csvContent += `\n`
       }
@@ -2456,8 +2544,35 @@ export default {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-    }
-  },
+    },
+    editRow(row) {
+      // aktifkan tampilan form
+      this.showForm = true
+
+      // cari data tambahan dummy berdasarkan NIK (atau nama)
+      const dummy = this.data_dummy.find(d => d.nik === row.nik)
+
+      // isi form_kunjungan dengan data gabungan
+      this.form_kunjungan = {
+        nik: row.nik || dummy?.nik || '',
+        nama: row.nama || dummy?.nama || '',
+        gender: row.gender || dummy?.gender || '',
+        tgl_lahir: dummy?.tgl_lahir || '',
+        no_telp: dummy?.no_telp || '',
+        alamat: dummy?.alamat || '',
+        kecamatan: dummy?.kecamatan || '',
+        desa: dummy?.desa || '',
+        no_kia: dummy?.no_kia || '',
+        nama_ayah: dummy?.nama_ayah || '',
+        nama_ibu: dummy?.nama_ibu || '',
+        rw: dummy?.rw || '',
+        rt: dummy?.rt || '',
+        bb: row.bb || '',
+        tb: row.tb || '',
+        lika: row.lika || '',
+        kunjungan: dummy?.kunjungan || new Date().toISOString().substr(0, 10),
+      }
+    },
     applyFilter_anak() {
       // computed already updates automatically
     },
@@ -2469,7 +2584,7 @@ export default {
       this.notFound = false
       this.found = false
       const hasil = this.kunjungan_posyandu.find(
-        (d) => d.nik_ibu === this.searchNIK || d.nik_ayah === this.searchNIK
+        (d) => d.nik === this.searchNIK
       )
 
       if (hasil) {
