@@ -809,45 +809,47 @@
                 <div class="container-fluid mt-4">
                   <div class="row mt-4">
                     <div class="col-md-8">
-                      <div class="table-responsive">
-                        <EasyDataTable
-                          :headers="headers_kunjungan"
-                          :items="filteredKunjungan"
-                          table-class="table table-striped align-middle text-center"
-                          header-text-direction="center"
-                          body-text-direction="center"
-                        >
-                          <!-- NIK -->
-                          <template #item-nik="props">
-                            <a
-                              href="#"
-                              @click.prevent="showDetail(props)"
-                              class="fw-semibold text-decoration-none text-primary"
-                            >
-                              {{ props.nik }}
-                            </a>
-                          </template>
+                      <div class="card bg-light px-2 pt-2 pb-5">
+                        <div class="table-responsive">
+                          <EasyDataTable
+                            :headers="headers_kunjungan"
+                            :items="filteredKunjungan"
+                            table-class="table table-striped align-middle text-center"
+                            header-text-direction="center"
+                            body-text-direction="left"
+                          >
+                            <!-- NIK -->
+                            <template #item-nik="props">
+                              <a
+                                href="#"
+                                @click.prevent="showDetail(props)"
+                                class="fw-semibold text-decoration-none text-primary"
+                              >
+                                {{ props.nik }}
+                              </a>
+                            </template>
 
 
-                          <!-- INTERVENSI -->
-                          <template #item-intervensi="{ intervensi }">
-                            <span>{{ intervensi || '-' }}</span>
-                          </template>
+                            <!-- INTERVENSI -->
+                            <template #item-intervensi="{ intervensi }">
+                              <span>{{ intervensi || '-' }}</span>
+                            </template>
 
-                          <!-- STATUS GIZI -->
-                          <template #item-status_gizi="{ status_gizi }">
-                            <span
-                              class="badge px-3 py-2 text-white"
-                              :class="{
-                                'bg-danger': status_gizi === 'Stunting',
-                                'bg-warning text-dark': status_gizi === 'Wasting' || status_gizi === 'Underweight',
-                                'bg-success': status_gizi === 'Normal'
-                              }"
-                            >
-                              {{ status_gizi }}
-                            </span>
-                          </template>
-                        </EasyDataTable>
+                            <!-- STATUS GIZI -->
+                            <template #item-status_gizi="{ status_gizi }">
+                              <span
+                                class="badge px-3 py-2 text-white"
+                                :class="{
+                                  'bg-danger': status_gizi === 'Stunting',
+                                  'bg-warning text-dark': status_gizi === 'Wasting' || status_gizi === 'Underweight',
+                                  'bg-success': status_gizi === 'Normal'
+                                }"
+                              >
+                                {{ status_gizi }}
+                              </span>
+                            </template>
+                          </EasyDataTable>
+                        </div>
                       </div>
                     </div>
 
@@ -952,6 +954,221 @@
                       </div>
                     </div>
 
+                    <!-- Detail Anak -->
+                    <div class="col-md-12 mt-4" v-if="selectedAnak">
+                      <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
+                        <!-- Tombol Close -->
+                        <button
+                          class="btn-close position-absolute top-0 end-0 m-3"
+                          aria-label="Close"
+                          @click="selectedAnak = null"
+                        ></button>
+
+                        <!-- Header -->
+                        <div class="bg-danger text-white p-4 text-center rounded-top">
+                          <h5 class="fw-bold mb-0">{{ selectedAnak.nama }}</h5>
+                          <p class="mb-0 small">
+                            NIK: {{ selectedAnak.nik }} •
+                            <span class="text-capitalize">
+                              {{ selectedAnak.gender === 'L' ? 'Laki-laki' : 'Perempuan' }}
+                            </span>
+                            • Usia: {{ selectedAnak.usia }} bln
+                          </p>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="p-3">
+                          <ul
+                            class="nav nav-pills justify-content-center mb-4 flex-wrap gap-2"
+                            id="anakDetailTab"
+                            role="tablist"
+                          >
+                            <li class="nav-item" role="presentation">
+                              <button
+                                class="nav-link active"
+                                id="tab-profile-anak"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-pane-profile-anak"
+                                type="button"
+                                role="tab"
+                              >
+                                <i class="bi bi-person-badge me-1"></i> Profile Anak
+                              </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                              <button
+                                class="nav-link"
+                                id="tab-kelahiran"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-pane-kelahiran"
+                                type="button"
+                                role="tab"
+                              >
+                                <i class="bi bi-clipboard-heart me-1"></i> Data Kelahiran
+                              </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                              <button
+                                class="nav-link"
+                                id="tab-kunjungan"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-pane-kunjungan"
+                                type="button"
+                                role="tab"
+                              >
+                                <i class="bi bi-hospital me-1"></i> Kunjungan Posyandu
+                              </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                              <button
+                                class="nav-link"
+                                id="tab-intervensi"
+                                data-bs-toggle="tab"
+                                data-bs-target="#tab-pane-intervensi"
+                                type="button"
+                                role="tab"
+                              >
+                                <i class="bi bi-activity me-1"></i> Intervensi
+                              </button>
+                            </li>
+                          </ul>
+
+                          <!-- Tab Content -->
+                          <div class="tab-content" id="anakDetailTabContent">
+                            <!-- Profile Anak -->
+                            <div
+                              class="tab-pane fade show active"
+                              id="tab-pane-profile-anak"
+                              role="tabpanel"
+                            >
+                              <div class="row g-3">
+                                <div class="col-md-6">
+                                  <div class="card bg-light border-0 shadow-sm p-3 h-100">
+                                    <h6 class="fw-bold mb-3 text-danger">Identitas Anak</h6>
+                                    <p class="mb-1"><strong>Nama:</strong> {{ selectedAnak.nama }}</p>
+                                    <p class="mb-1"><strong>NIK:</strong> {{ selectedAnak.nik }}</p>
+                                    <p class="mb-1">
+                                      <strong>Jenis Kelamin:</strong>
+                                      {{ selectedAnak.gender === 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                    </p>
+                                    <p class="mb-1"><strong>Usia:</strong> {{ selectedAnak.usia }} bulan</p>
+                                    <p class="mb-1"><strong>Alamat:</strong> {{ selectedAnak.alamat }}</p>
+                                    <p class="mb-1">
+                                      <strong>Desa/Kecamatan:</strong>
+                                      {{ selectedAnak.desa }}, {{ selectedAnak.kecamatan }}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div class="col-md-6">
+                                  <div class="card bg-light border-0 shadow-sm p-3 h-100">
+                                    <h6 class="fw-bold mb-3 text-danger">Orang Tua</h6>
+                                    <p class="mb-1"><strong>Ayah:</strong> {{ selectedAnak.nama_ayah }}</p>
+                                    <p class="mb-1"><strong>NIK Ayah:</strong> {{ selectedAnak.nik_ayah }}</p>
+                                    <p class="mb-1"><strong>Ibu:</strong> {{ selectedAnak.nama_ibu }}</p>
+                                    <p class="mb-1"><strong>NIK Ibu:</strong> {{ selectedAnak.nik_ibu }}</p>
+                                    <p class="mb-1"><strong>No. Telp:</strong> {{ selectedAnak.no_telp }}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Data Kelahiran -->
+                            <div class="tab-pane fade" id="tab-pane-kelahiran" role="tabpanel">
+                              <div class="card bg-light border-0 shadow-sm p-3">
+                                <h6 class="fw-bold mb-3 text-danger">Data Kelahiran</h6>
+                                <table class="table table-sm table-striped align-middle">
+                                  <thead>
+                                    <tr>
+                                      <th>No. KIA</th>
+                                      <th>Tempat Lahir</th>
+                                      <th>Tanggal Lahir</th>
+                                      <th>Berat (kg)</th>
+                                      <th>Panjang (cm)</th>
+                                      <th>Jenis Persalinan</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr
+                                      v-for="(item, i) in selectedAnak.kelahiran"
+                                      :key="'kelahiran-' + i"
+                                    >
+                                      <td>{{ item.no_kia }}</td>
+                                      <td>{{ item.tmpt_dilahirkan }}</td>
+                                      <td>{{ item.tgl_lahir }}</td>
+                                      <td>{{ item.bb }}</td>
+                                      <td>{{ item.pb }}</td>
+                                      <td class="text-capitalize">{{ item.jenis }}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            <!-- Data Kunjungan Posyandu -->
+                            <div class="tab-pane fade" id="tab-pane-kunjungan" role="tabpanel">
+                              <div class="card bg-light border-0 shadow-sm p-3">
+                                <h6 class="fw-bold mb-3 text-danger">Riwayat Penimbangan</h6>
+                                <table class="table table-sm table-hover align-middle">
+                                  <thead class="table-secondary">
+                                    <tr>
+                                      <th>Tanggal</th>
+                                      <th>BB</th>
+                                      <th>TB</th>
+                                      <th>Status BB/TB</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr
+                                      v-for="(riwayat, i) in selectedAnak.riwayat_penimbangan"
+                                      :key="'penimbangan-' + i"
+                                    >
+                                      <td>{{ riwayat.tanggal }}</td>
+                                      <td>{{ riwayat.bb }}</td>
+                                      <td>{{ riwayat.tb }}</td>
+                                      <td
+                                        :class="{
+                                          'text-danger fw-bold': riwayat.bb_tb === 'Stunting',
+                                          'text-warning fw-bold': riwayat.bb_tb === 'Underweight',
+                                          'text-success fw-bold': riwayat.bb_tb === 'Normal'
+                                        }"
+                                      >
+                                        {{ riwayat.bb_tb }}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            <!-- Data Intervensi -->
+                            <div class="tab-pane fade" id="tab-pane-intervensi" role="tabpanel">
+                              <div class="card bg-light border-0 shadow-sm p-3">
+                                <h6 class="fw-bold mb-3 text-danger">Riwayat Intervensi</h6>
+                                <table class="table table-sm table-striped align-middle">
+                                  <thead class="table-secondary">
+                                    <tr>
+                                      <th>Tanggal</th>
+                                      <th>Kader</th>
+                                      <th>Jenis Intervensi</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr
+                                      v-for="(item, i) in selectedAnak.riwayat_intervensi"
+                                      :key="'intervensi-' + i"
+                                    >
+                                      <td>{{ item.tanggal }}</td>
+                                      <td>{{ item.kader }}</td>
+                                      <td>{{ item.intervensi }}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
                   </div>
                 </div>
@@ -2120,11 +2337,36 @@ export default {
         { text: 'TB/U', value: 'tb' },
         { text: 'BB/TB', value: 'bb_tb' },
       ],
+      headers_detail_kunjungan:[
+
+      ],
       kunjungan_posyandu: [
         {
           id:1,
           posyandu: 'Posyandu Mawar',
           status_gizi_kategori: 'BB/U',
+          profile_anak:[
+            {
+              no_kk:'3127890384059987',
+              nik_ayah:'1870965231876523',
+              nama_ayah: 'Suhartanto',
+              nik_ibu:'3127093421874560',
+              nama_ibu: 'Fiska Bisatika'
+            }
+          ],
+          kelahiran:[
+            {
+              no_kia: '1893456723456123',
+              tmpt_dilahirkan:'Jakarta',
+              tgl_lahir:'2024-03-22',
+              bb:'3',
+              pb:'50',
+              anak_ke:'1',
+              usia_ibu:'23',
+              jarak:'-',
+              jenis:'normal',
+            }
+          ],
           riwayat_penimbangan: [
             { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
             { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
@@ -2140,7 +2382,9 @@ export default {
           kecamatan: 'Bojong Gede',
           desa: 'Cimanggis',
           no_kia: '3403012605200002',
+          nik_ayah:'1870965231876523',
           nama_ayah: 'Suhartanto',
+          nik_ibu:'3127093421874560',
           nama_ibu: 'Fiska Bisatika',
           rw: '03',
           rt: '04',
@@ -2159,6 +2403,28 @@ export default {
           id:2,
           posyandu: 'Posyandu Mawar',
           status_gizi_kategori: 'BB/U',
+          profile_anak:[
+            {
+              no_kk:'3127890384059987',
+              nik_ayah:'3321965231876523',
+              nama_ayah: 'Dani',
+              nama_ibu: 'Dini',
+              nik_ibu:'3457093421874560',
+            }
+          ],
+          kelahiran:[
+            {
+              no_kia: '1893456723456123',
+              tmpt_dilahirkan:'Jakarta',
+              tgl_lahir:'2024-03-22',
+              bb:'3',
+              pb:'50',
+              anak_ke:'1',
+              usia_ibu:'30',
+              jarak:'-',
+              jenis:'normal',
+            }
+          ],
           riwayat_penimbangan: [
             { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
             { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
@@ -2195,6 +2461,28 @@ export default {
           id:3,
           posyandu: 'Posyandu Mawar',
           status_gizi_kategori: 'BB/U',
+          profile_anak:[
+            {
+              no_kk:'3127890384059987',
+              nik_ayah:'332196037476523',
+              nama_ayah: 'Suhartanto',
+          nama_ibu: 'Fiska Bisatika',
+              nik_ibu:'3123093421874560',
+            }
+          ],
+          kelahiran:[
+            {
+              no_kia: '1871456723456123',
+              tmpt_dilahirkan:'Jakarta',
+              tgl_lahir:'2024-03-22',
+              bb:'3',
+              pb:'50',
+              anak_ke:'1',
+              usia_ibu:'30',
+              jarak:'-',
+              jenis:'normal',
+            }
+          ],
           riwayat_penimbangan: [
             { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
             { tanggal: '18/06/2025', bb: '1.22', tb: '1.89', bb_tb: 'Wasting' },
@@ -2231,6 +2519,28 @@ export default {
           id:4,
           posyandu: 'Posyandu Mawar',
           status_gizi_kategori: 'BB/U',
+          profile_anak:[
+            {
+              no_kk:'3127890384059987',
+              nik_ayah:'332196037476523',
+              nama_ayah: 'Suhendra',
+              nama_ibu: 'Milanti',
+              nik_ibu:'3123093421874560',
+            }
+          ],
+          kelahiran:[
+            {
+              no_kia: '3321456723456123',
+              tmpt_dilahirkan:'Jakarta',
+              tgl_lahir:'2024-03-22',
+              bb:'3',
+              pb:'50',
+              anak_ke:'1',
+              usia_ibu:'30',
+              jarak:'-',
+              jenis:'normal',
+            }
+          ],
           riwayat_penimbangan: [
             { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
             { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
@@ -2267,6 +2577,28 @@ export default {
           id:5,
           posyandu: 'Posyandu Mawar',
           status_gizi_kategori: 'BB/U',
+           profile_anak:[
+            {
+              no_kk:'3127890384059987',
+              nik_ayah:'332196037476523',
+              nama_ayah: 'Hendra',
+              nama_ibu: 'Manah',
+              nik_ibu:'3123093421874560',
+            }
+          ],
+          kelahiran:[
+            {
+              no_kia: '3321456723456123',
+              tmpt_dilahirkan:'Jakarta',
+              tgl_lahir:'2024-03-22',
+              bb:'3',
+              pb:'50',
+              anak_ke:'1',
+              usia_ibu:'30',
+              jarak:'-',
+              jenis:'normal',
+            }
+          ],
           riwayat_penimbangan: [
             { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
             { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
@@ -2292,6 +2624,28 @@ export default {
           id:6,
           posyandu: 'Posyandu Mawar',
           status_gizi_kategori: 'BB/U',
+           profile_anak:[
+            {
+              no_kk:'3127890384059987',
+              nik_ayah:'332196037476523',
+              nama_ayah: 'Syafi',
+              nama_ibu: 'Syiffa',
+              nik_ibu:'3123093421874560',
+            }
+          ],
+          kelahiran:[
+            {
+              no_kia: '3321456723456123',
+              tmpt_dilahirkan:'Jakarta',
+              tgl_lahir:'2024-03-22',
+              bb:'3',
+              pb:'50',
+              anak_ke:'1',
+              usia_ibu:'30',
+              jarak:'-',
+              jenis:'normal',
+            }
+          ],
           riwayat_penimbangan: [
             { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
             { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
