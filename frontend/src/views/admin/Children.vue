@@ -646,39 +646,52 @@
                   <div class="table-responsive">
                     <EasyDataTable
                       :headers="pending_kunjungan"
-                      :items="itemsPending"
+                      :items="itemsPending.map(i => ({ row: i }))"
                       table-class="my-striped align-middle text-center"
                       header-text-direction="center"
                       body-text-direction="center"
                       alternating
                     >
                       <!-- Slot Nama -->
-                      <template #item-nama="{ nama }">
-                        <span class="fw-semibold">{{ nama }}</span>
+                      <template #item-nama="{ row }">
+                        <span class="fw-semibold">{{ row.nama }}</span>
                       </template>
 
                       <!-- Slot Jenis Kelamin -->
-                      <template #item-gender="{ gender }">
-                        <span>{{ gender }}</span>
+                      <template #item-gender="{ row }">
+                        <span>{{ row.gender }}</span>
+                      </template>
+
+                      <template #item-tgl_lahir="{ row }">
+                        <span>{{ row.tgl_lahir }}</span>
+                      </template>
+
+                      <template #item-nama_ibu="{ row }">
+                        <span>{{ row.nama_ibu }}</span>
                       </template>
 
                       <!-- Slot BB -->
-                      <template #item-bb="{ bb }">
-                        <span>{{ bb ? bb + ' kg' : '-' }}</span>
+                      <template #item-bb="{ row }">
+                        <span>{{ row.bb ? row.bb + ' kg' : '-' }}</span>
                       </template>
 
                       <!-- Slot TB -->
-                      <template #item-tb="{ tb }">
-                        <span>{{ tb ? tb + ' cm' : '-' }}</span>
+                      <template #item-tb="{ row }">
+                        <span>{{ row.tb ? row.tb + ' cm' : '-' }}</span>
                       </template>
 
                       <!-- Slot Edit -->
                       <template #item-edit="{ row }">
-                        <a href="#" class="text-primary text-decoration-none fw-semibold" @click.prevent="editRow(row)">
+                        <a
+                          href="#"
+                          class="text-primary text-decoration-none fw-semibold"
+                          @click.prevent="editRow(row)"
+                        >
                           Edit
                         </a>
                       </template>
                     </EasyDataTable>
+
                   </div>
                 </div>
 
@@ -840,7 +853,16 @@
 
                     <!-- DETAIL DATA -->
                     <div class="col-md-4">
-                      <div v-if="selectedAnak" class="card shadow-sm p-4 text-center">
+                      <div v-if="selectedAnak" class="card shadow-sm p-4 text-center small position-relative">
+
+                        <!-- Tombol Close -->
+                        <button
+                          type="button"
+                          class="btn-close position-absolute top-0 end-0 m-3"
+                          aria-label="Close"
+                          @click="selectedAnak = null"
+                        ></button>
+
                         <!-- Nama dan Identitas -->
                         <h5 class="fw-bold text-dark mb-1">{{ selectedAnak.nama }}</h5>
                         <p class="text-muted mb-0">
@@ -856,7 +878,7 @@
                             class="badge px-3 py-2 fs-6"
                             :class="{
                               'bg-danger': selectedAnak.status_gizi === 'Stunting',
-                              'bg-warning text-dark': selectedAnak.status_gizi === 'Wasting',
+                              'bg-warning text-dark': ['Wasting', 'Underweight'].includes(selectedAnak.status_gizi),
                               'bg-success': selectedAnak.status_gizi === 'Normal'
                             }"
                           >
@@ -885,7 +907,7 @@
                                   class="badge"
                                   :class="{
                                     'bg-danger': r.bb_tb === 'Stunting',
-                                    'bg-warning text-dark': r.bb_tb === 'Wasting',
+                                    'bg-warning text-dark': ['Wasting', 'Underweight'].includes(r.bb_tb),
                                     'bg-success': r.bb_tb === 'Normal'
                                   }"
                                 >
@@ -916,7 +938,10 @@
                         </table>
 
                         <!-- Tombol Download -->
-                        <button class="btn btn-primary rounded-pill px-4 mt-2 fw-semibold" @click="downloadRiwayat">
+                        <button
+                          class="btn btn-primary rounded-pill px-4 mt-2 fw-semibold"
+                          @click="downloadRiwayat"
+                        >
                           Download Riwayat
                         </button>
                       </div>
@@ -926,6 +951,7 @@
                         <p class="text-muted fst-italic">Klik NIK untuk melihat detail anak.</p>
                       </div>
                     </div>
+
 
                   </div>
                 </div>
@@ -1886,6 +1912,7 @@ export default {
 
       // form kunjungan posyandu
       form_kunjungan: {
+        id:null,
         tgl_lahir: '',
         no_telp: '',
         alamat: '',
@@ -2072,7 +2099,6 @@ export default {
         },
       ],
 
-      //kunjungan_posyandu: [], // array utama
       advancedFilter_anak: {
         status_gizi: '',
         lokasi: '',
@@ -2081,25 +2107,7 @@ export default {
         lokasi_list: [],
         intervensi_list: []
       },
-      selectedAnak: {
-        nama: 'Aluna Daneen Azqiara',
-        gender: 'Perempuan',
-        alamat: 'Desa Wonosari, Kec. Bojong Gede',
-        posyandu: 'Posyandu Mawar',
-        status_gizi: 'Stunting',
-        status_gizi_kategori: 'BB/U',
-        riwayat_penimbangan: [
-          { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-          { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
-          { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
-        ],
-        riwayat_intervensi: [
-          { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
-        ]
-      },
-      //selectedAnak: null,
+      selectedAnak: null,
       headers_kunjungan: [
         { text: 'Nama', value: 'nama' },
         { text: 'NIK', value: 'nik' },
@@ -2114,7 +2122,19 @@ export default {
       ],
       kunjungan_posyandu: [
         {
-          tgl_lahir: '20-01-2021',
+          id:1,
+          posyandu: 'Posyandu Mawar',
+          status_gizi_kategori: 'BB/U',
+          riwayat_penimbangan: [
+            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
+            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+          ],
+          riwayat_intervensi: [
+            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
           kecamatan: 'Bojong Gede',
@@ -2135,7 +2155,21 @@ export default {
           tb: 2.3,
           bb_tb: 2.3
         },
-        { tgl_lahir: '20-01-2021',
+        {
+          id:2,
+          posyandu: 'Posyandu Mawar',
+          status_gizi_kategori: 'BB/U',
+          riwayat_penimbangan: [
+            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
+            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+          ],
+          riwayat_intervensi: [
+            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
           kecamatan: 'Bojong Gede',
@@ -2145,8 +2179,33 @@ export default {
           nama_ibu: 'Dini',
           rw: '03',
           rt: '04',
-          kunjungan: '2025-01-20', nama: 'Arkhansa Raffasya Pamulat', nik: '3403010508980002', usia: 26, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'PMT', status_gizi: 'Stunting', bb: 1.5, tb: 1.5, bb_tb: 1.5 },
-        { tgl_lahir: '20-01-2021',
+          kunjungan: '2025-01-20',
+          nama: 'Arkhansa Raffasya Pamulat',
+          nik: '3403010508980002',
+          usia: 26,
+          gender: 'L',
+          tgl_ukur: '20-07-25',
+          intervensi: 'PMT',
+          status_gizi: 'Stunting',
+          bb: 1.5,
+          tb: 1.5,
+          bb_tb: 1.5
+        },
+        {
+          id:3,
+          posyandu: 'Posyandu Mawar',
+          status_gizi_kategori: 'BB/U',
+          riwayat_penimbangan: [
+            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+            { tanggal: '18/06/2025', bb: '1.22', tb: '1.89', bb_tb: 'Wasting' },
+            { tanggal: '20/07/2025', bb: '2.3', tb: '2.3', bb_tb: 'Wasting' },
+          ],
+          riwayat_intervensi: [
+            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
           kecamatan: 'Bojong Gede',
@@ -2156,8 +2215,33 @@ export default {
           nama_ibu: 'Fiska Bisatika',
           rw: '03',
           rt: '04',
-          kunjungan: '2025-01-20', nama: 'Askara Gedhe Manah Sinatrya', nik: '3403011105950001', usia: 20, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'BLT', status_gizi: 'Wasting', bb: 2.3, tb: 2.3, bb_tb: 2.3 },
-        { tgl_lahir: '20-01-2021',
+          kunjungan: '2025-01-20',
+          nama: 'Askara Gedhe Manah Sinatrya',
+          nik: '3403011105950001',
+          usia: 20,
+          gender: 'L',
+          tgl_ukur: '20-07-25',
+          intervensi: 'BLT',
+          status_gizi: 'Wasting',
+          bb: 2.3,
+          tb: 2.3,
+          bb_tb: 2.3
+        },
+        {
+          id:4,
+          posyandu: 'Posyandu Mawar',
+          status_gizi_kategori: 'BB/U',
+          riwayat_penimbangan: [
+            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
+            { tanggal: '20/07/2025', bb: '1.8', tb: '0.92', bb_tb: 'Underweight' },
+          ],
+          riwayat_intervensi: [
+            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
           kecamatan: 'Bojong Gede',
@@ -2167,8 +2251,33 @@ export default {
           nama_ibu: 'Milanti',
           rw: '03',
           rt: '04',
-          kunjungan: '2025-01-20', nama: 'Azka Maulana Fadil', nik: '3403011212980002', usia: 23, gender: 'L', tgl_ukur: '20-07-25', intervensi: 'PKH', status_gizi: 'Underweight', bb: 1.8, tb: 1.8, bb_tb: 1.8 },
-        { tgl_lahir: '20-01-2021',
+          kunjungan: '2025-01-20',
+          nama: 'Azka Maulana Fadil',
+          nik: '3403011212980002',
+          usia: 23,
+          gender: 'L',
+          tgl_ukur: '20-07-25',
+          intervensi: 'PKH',
+          status_gizi: 'Underweight',
+          bb: 1.8,
+          tb: 1.8,
+          bb_tb: 1.8
+        },
+        {
+          id:5,
+          posyandu: 'Posyandu Mawar',
+          status_gizi_kategori: 'BB/U',
+          riwayat_penimbangan: [
+            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
+            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+          ],
+          riwayat_intervensi: [
+            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
           kecamatan: 'Bojong Gede',
@@ -2179,7 +2288,21 @@ export default {
           rw: '03',
           rt: '04',
           kunjungan: '2025-01-20', nama: 'Irshad Ghani Arvarizi', nik: '3403012507930001', usia: 28, gender: 'L', tgl_ukur: '20-07-25', intervensi: '-', status_gizi: 'Normal', bb: 6.5, tb: 6.5, bb_tb: 6.5 },
-        { tgl_lahir: '20-01-2021',
+        {
+          id:6,
+          posyandu: 'Posyandu Mawar',
+          status_gizi_kategori: 'BB/U',
+          riwayat_penimbangan: [
+            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
+            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
+            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+          ],
+          riwayat_intervensi: [
+            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
           kecamatan: 'Bojong Gede',
@@ -2309,6 +2432,7 @@ export default {
       ],
       itemsPending: [
         {
+          id:7,
           nama: "Hadrika Satrio Aji",
           nik: "",
           gender: "Laki Laki",
@@ -2317,8 +2441,20 @@ export default {
           bb: "5.25",
           tb: "55",
           kunjungan: "20-08-2025",
+          no_telp: '087838894555',
+          alamat: 'Jalan Mewah',
+          kecamatan: 'Bojong Gede',
+          desa: 'Cimanggis',
+          no_kia: '3403012605200002',
+          nama_ayah: 'Syafi',
+          rw: '03',
+          rt: '04',
+          usia: 24,
+          tgl_ukur: '20-07-25', intervensi: '-', status_gizi: 'Normal',
+          bb_tb: 5.5
         },
         {
+          id:8,
           nama: "Nasrina Ningtyas",
           nik: "",
           gender: "Perempuan",
@@ -2546,32 +2682,37 @@ export default {
       document.body.removeChild(link)
     },
     editRow(row) {
-      // aktifkan tampilan form
-      this.showForm = true
+      // tampilkan form
+      this.showForm = true;
 
-      // cari data tambahan dummy berdasarkan NIK (atau nama)
-      const dummy = this.data_dummy.find(d => d.nik === row.nik)
+      // cari data tambahan dummy berdasarkan ID
+      const dummy = this.itemsPending.find(d => d.id === row.id);
 
-      // isi form_kunjungan dengan data gabungan
+      // isi form_kunjungan gabungan (prioritas: row → dummy → default)
       this.form_kunjungan = {
-        nik: row.nik || dummy?.nik || '',
+        id: row.id || dummy?.id || null,
         nama: row.nama || dummy?.nama || '',
+        nik: row.nik || dummy?.nik || '',
         gender: row.gender || dummy?.gender || '',
-        tgl_lahir: dummy?.tgl_lahir || '',
+        tgl_lahir: row.tgl_lahir || dummy?.tgl_lahir || '',
         no_telp: dummy?.no_telp || '',
         alamat: dummy?.alamat || '',
         kecamatan: dummy?.kecamatan || '',
         desa: dummy?.desa || '',
         no_kia: dummy?.no_kia || '',
         nama_ayah: dummy?.nama_ayah || '',
-        nama_ibu: dummy?.nama_ibu || '',
+        nama_ibu: row.nama_ibu || dummy?.nama_ibu || '',
         rw: dummy?.rw || '',
         rt: dummy?.rt || '',
-        bb: row.bb || '',
-        tb: row.tb || '',
-        lika: row.lika || '',
-        kunjungan: dummy?.kunjungan || new Date().toISOString().substr(0, 10),
-      }
+        bb: row.bb || 0,
+        tb: row.tb || 0,
+        bb_tb: dummy?.bb_tb || 0,
+        intervensi: dummy?.intervensi || '',
+        status_gizi: dummy?.status_gizi || '',
+        kunjungan: row.kunjungan || dummy?.kunjungan || new Date().toISOString().substring(0, 10),
+      };
+
+      console.log('Form terisi:', this.form_kunjungan);
     },
     applyFilter_anak() {
       // computed already updates automatically

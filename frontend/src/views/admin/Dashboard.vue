@@ -401,99 +401,124 @@
                 </div>
 
                 <!-- Data Anak Dengan Status Kurang Berdasar Berat Badan / Usia -->
-                <div class="mb-3">
-                  <h5 class="fw-bold text-danger mb-0">
-                    Data Anak dengan Status Kurang Berdasar Berat Badan / Usia
-                  </h5>
-                </div>
-                <div class="card shadow-sm border-0 p-3">
-                  <!-- Filter Section -->
-                  <div class="row g-2 mb-3">
-                    <div class="col-md-3 col-6"></div>
-                    <div class="col-md-3 col-6"></div>
-                    <div class="col-md-3 col-6">
-                      <select v-model="selectedStatusGizi" class="form-select form-select-sm">
-                        <option value="">Semua Status</option>
-                        <option
-                          v-for="(status, i) in uniqueStatusGizi"
-                          :key="'status-' + i"
-                          :value="status"
-                        >
-                          {{ status }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <div class="col-md-3 col-6">
-                      <select v-model="selectedIntervensi" class="form-select form-select-sm">
-                        <option value="">Semua Intervensi</option>
-                        <option
-                          v-for="(item, i) in uniqueIntervensi"
-                          :key="'intervensi-' + i"
-                          :value="item"
-                        >
-                          {{ item }}
-                        </option>
-                      </select>
-                    </div>
+                <div v-if="showDetailSection" id="detail-section">
+                  <div class="mb-3">
+                    <h5 class="fw-bold text-danger mb-0">
+                      Data Anak dengan Status {{ selectedChartStatus }} Berdasar {{ selectedChartType }}
+                    </h5>
                   </div>
-
-                  <!-- Table -->
-                  <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle mb-0">
-                      <thead class="border-bottom">
-                        <tr class="text-dark small fw-semibold text-center">
-                          <th class="text-dark">Nama</th>
-                          <th class="text-dark">NIK</th>
-                          <th class="text-dark">Status BB/U</th>
-                          <th class="text-dark">Status TB/U</th>
-                          <th class="text-dark">Status BB/TB</th>
-                          <th class="text-dark">JK</th>
-                          <th class="text-dark">Usia</th>
-                          <th class="text-dark">Intervensi</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(row, index) in filteredData"
-                          :key="index"
-                          class="small"
-                        >
-                          <td class="text-left">{{ row.nama }}</td>
-                          <td class="text-center">{{ row.nik }}</td>
-                          <td class="text-center text-capitalize">{{ row.status_bb }}</td>
-                          <td class="text-capitalize text-center">{{ row.status_tb }}</td>
-                          <td
-                            class="text-capitalize text-center"
-                            :class="row.status_gizi === 'stunting' ? 'text-danger fw-semibold' : ''"
+                  <div class="card shadow-sm border-0 p-3">
+                    <button
+                      type="button"
+                      class="btn-close top-0 end-0"
+                      aria-label="Close"
+                      @click="showDetailSection = false"
+                    ></button>
+                    <!-- Filter Section -->
+                    <div class="d-flex flex-wrap justify-content-end mb-3">
+                      <div class="col-md-3 col-6 text-right">
+                        <select v-model="selectedIntervensi" class="form-select form-select-sm">
+                          <option value="">Semua Intervensi</option>
+                          <option
+                            v-for="(item, i) in uniqueIntervensi"
+                            :key="'intervensi-' + i"
+                            :value="item"
                           >
-                            {{ row.status_gizi }}
-                          </td>
-                          <td class="text-center">{{ row.jk }}</td>
-                          <td class="text-center">{{ row.usia }}</td>
-                          <td class="text-capitalize text-center">{{ row.intervensi }}</td>
-                        </tr>
+                            {{ item }}
+                          </option>
+                        </select>
+                      </div>
+                    </div>
 
-                        <tr v-if="filteredData.length === 0">
-                          <td colspan="8" class="text-center text-muted small py-3">
-                            Tidak ada data yang cocok dengan filter.
-                          </td>
-                        </tr>
-                      </tbody>
-                      <tfoot>
-                        <tr>
-                          <td colspan="8" class="text-end pt-3">
-                            <button
-                              class="btn btn-sm btn-outline-success fw-semibold"
-                              @click="exportCSV"
+                    <!-- Table -->
+                    <div class="table-responsive">
+                      <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="border-bottom">
+                          <tr class="text-dark small fw-semibold text-center">
+                            <th class="text-dark">Nama</th>
+                            <th class="text-dark">NIK</th>
+                            <th
+                              class="text-center text-capitalize"
+                              :style="selectedChartType === 'Berat Badan / Usia' ? 'background:#fff3cd;' : ''"
                             >
-                              <i class="bi bi-file-earmark-spreadsheet me-1"></i>
-                              Generate Export
-                            </button>
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                              Status BB/U
+                            </th>
+
+                            <th
+                              class="text-capitalize text-center"
+                              :style="selectedChartType === 'Tinggi Badan / Usia' ? 'background:#fff3cd;' : ''"
+                            >
+                              Status TB/U
+                            </th>
+
+                            <th
+                              class="text-capitalize text-center"
+                              :style="selectedChartType === 'Berat Badan / Tinggi Badan' ? 'background:#fff3cd;' : ''"
+                            >
+                              Status BB/TB
+                            </th>
+                            <th class="text-dark">JK</th>
+                            <th class="text-dark">Usia</th>
+                            <th class="text-dark">Intervensi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            v-for="(row, index) in filteredData"
+                            :key="index"
+                            class="small"
+                          >
+                            <td class="text-left">{{ row.nama }}</td>
+                            <td class="text-center">{{ row.nik }}</td>
+                            <td
+                              class="text-center text-capitalize"
+                              :style="selectedChartType === 'Berat Badan / Usia' ? 'background:#fff3cd;' : ''"
+                            >
+                              {{ row.status_bb }}
+                            </td>
+
+                            <td
+                              class="text-capitalize text-center"
+                              :style="selectedChartType === 'Tinggi Badan / Usia' ? 'background:#fff3cd;' : ''"
+                            >
+                              {{ row.status_tb }}
+                            </td>
+
+                            <td
+                              class="text-capitalize text-center"
+                              :class="[
+                                row.status_gizi === 'stunting' ? 'text-danger fw-semibold' : '',
+                              ]"
+                              :style="selectedChartType === 'Berat Badan / Tinggi Badan' ? 'background:#fff3cd;' : ''"
+                            >
+                              {{ row.status_gizi }}
+                            </td>
+                            <td class="text-center">{{ row.jk === 'L'? 'Laki-laki':'Perempuan' }}</td>
+                            <td class="text-center">{{ row.usia }}</td>
+                            <td class="text-capitalize text-center">{{ row.intervensi }}</td>
+                          </tr>
+
+                          <tr v-if="filteredData.length === 0">
+                            <td colspan="8" class="text-center text-muted small py-3">
+                              Tidak ada data yang cocok dengan filter.
+                            </td>
+                          </tr>
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="8" class="text-end pt-3">
+                              <button
+                                class="btn btn-sm btn-outline-success fw-semibold"
+                                @click="exportCSV"
+                              >
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                                Generate Export
+                              </button>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
                   </div>
                 </div>
 
@@ -726,6 +751,9 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      showDetailSection: false,     // 🔥 awalnya disembunyikan
+      selectedChartStatus: '',      // status dari pie chart yang diklik
+      selectedChartType: '',        // tipe chart (BB/U, TB/U, BB/TB)
       totalAnak: 37,
       dataGap: {
         pmt: { jumlah: 24, persen: 65 },
@@ -735,7 +763,7 @@ export default {
       selectedStatusGizi: '',
       selectedIntervensi: '',
       username: '',
-      genderData: [
+      /* genderData: [
         {
           label: 'Laki - Laki',
           total: 589,
@@ -821,7 +849,7 @@ export default {
             { name: 'Risiko Gizi Lebih', value: 11 },
             { name: 'Obesitas', value: 11 },          ],
         },
-      ],
+      ], */
       stats: [
         { title: 'RW', value: '1,000', icon: '/icons/icon1.png' },
         { title: 'RT', value: '100,000', icon: '/icons/icon2.png'},
@@ -833,11 +861,11 @@ export default {
         { title: 'Calon Pengantin', value: '12 K', icon: '/icons/icon8.png' },
         { title: 'Anak <= 5 Tahun', value: '56', icon: '/icons/icon9.png' },
       ],
-      activities: [
+      /* activities: [
         { user: 'Alice', action: 'Created new project', date: '2025-08-13' },
         { user: 'Bob', action: 'Updated profile', date: '2025-08-12' },
         { user: 'Charlie', action: 'Added new user', date: '2025-08-11' },
-      ],
+      ], */
       months: [
         'Juli 2025',
         'Juni 2025',
@@ -989,8 +1017,8 @@ export default {
           nama:'Monkey D. Garp',
           nik:'332198387456670',
           status_bb:'kurang',
-          status_tb:'kurang',
-          status_gizi:'stunting',
+          status_tb:'pendek',
+          status_gizi:'gizi kurang',
           jk:'L',
           usia:'36 Bulan',
           intervensi:'Sudah dapat bantuan'
@@ -999,7 +1027,7 @@ export default {
           nama:'Aluna Daneen Azqiara',
           nik:'3403012012930002',
           status_bb:'sangat kurang',
-          status_tb:'kurang',
+          status_tb:'sangat pendek',
           status_gizi:'gizi buruk',
           jk:'P',
           usia:'38 Bulan',
@@ -1008,10 +1036,30 @@ export default {
         {
           nama:'Syiffa Azahra',
           nik:'3403012806910002',
-          status_bb:'kurang',
-          status_tb:'kurang',
-          status_gizi:'stunting',
+          status_bb:'normal',
+          status_tb:'normal',
+          status_gizi:'gizi baik',
           jk:'P',
+          usia:'42 Bulan',
+          intervensi:'-'
+        },
+        {
+          nama:'Haruno Sakura',
+          nik:'3221012022930003',
+          status_bb:'normal',
+          status_tb:'tinggi',
+          status_gizi:'gizi baik',
+          jk:'P',
+          usia:'38 Bulan',
+          intervensi:'-'
+        },
+        {
+          nama:'Shikamaru Nara',
+          nik:'1870022903220004',
+          status_bb:'risiko lebih',
+          status_tb:'tinggi',
+          status_gizi:'risiko gizi lebih',
+          jk:'L',
           usia:'42 Bulan',
           intervensi:'belum dapat'
         },
@@ -1047,7 +1095,7 @@ export default {
       indiChartInstance: null,
       indiChartPregnancy: null,
       bulanLabels: [],
-      indikatorData: {
+      /* indikatorData: {
         'Sangat Kurang': [29, 37, 20, 26, 24, 22, 24, 23, 56, 79, 10, 0],
         Kurang: [134, 134, 126, 129, 134, 110, 94, 23, 67, 80, 12, 45],
         Normal: [711, 702, 684, 723, 716, 732, 725, 706, 712, 450, 711, 734],
@@ -1067,7 +1115,7 @@ export default {
         'Risiko Gizi Lebih': [25, 20, 23, 22, 16, 14, 15, 90, 16, 50, 11, 23],
         'Gizi Lebih': [215, 20, 23, 22, 136, 164, 15, 90, 16, 50, 11, 23],
         'Obesitas': [205, 20, 23, 122, 216, 14, 15, 90, 16, 50, 11, 23],
-      },
+      }, */
       totalKasus: 215,
       dataAnak: [
         {
@@ -1210,7 +1258,7 @@ export default {
           layout: { padding: 20 },
           plugins: {
             legend: {
-              display: true,
+              display: false,
               position: 'bottom',
               labels: {
                 usePointStyle: true,
@@ -1240,7 +1288,26 @@ export default {
             if (elements.length > 0) {
               const index = elements[0].index
               const item = dataSource[index]
-              console.log(`Klik pada: ${item.status} (${item.persen}%)`)
+              const status = item.status
+
+              // Tentukan tipe chart berdasarkan refName
+              let chartType = ''
+              if (refName === 'pieChart_bb') chartType = 'Berat Badan / Usia'
+              else if (refName === 'pieChart_tb') chartType = 'Tinggi Badan / Usia'
+              else if (refName === 'pieChart_status') chartType = 'Berat Badan / Tinggi Badan'
+
+              console.log('status terpilih: '+status+', tipe: '+chartType);
+
+              // 🔥 Update reactive data untuk show table
+              this.selectedChartStatus = status
+              this.selectedChartType = chartType
+              this.showDetailSection = true
+
+              // Scroll ke section detail biar user langsung lihat
+              this.$nextTick(() => {
+                const section = document.querySelector('#detail-section')
+                if (section) section.scrollIntoView({ behavior: 'smooth' })
+              })
             }
           },
         },
@@ -1394,22 +1461,30 @@ export default {
       return config && config.background ? config.background : null
     },
     uniqueStatusGizi() {
-        return [...new Set(this.dataTable_kurang.map(row => row.status_gizi))]
-      },
-      uniqueIntervensi() {
-        return [...new Set(this.dataTable_kurang.map(row => row.intervensi))]
-      },
-      filteredData() {
-        return this.dataTable_kurang.filter(row => {
-          const byStatus =
-            this.selectedStatusGizi === '' ||
-            row.status_gizi === this.selectedStatusGizi
-          const byIntervensi =
-            this.selectedIntervensi === '' ||
-            row.intervensi === this.selectedIntervensi
-          return byStatus && byIntervensi
-        })
-      },
+      return [...new Set(this.dataTable_kurang.map(row => row.status_gizi))]
+    },
+    uniqueIntervensi() {
+      return [...new Set(this.dataTable_kurang.map(row => row.intervensi))]
+    },
+    filteredData() {
+      return this.dataTable_kurang.filter(row => {
+        // Tentukan field status yang dipakai berdasarkan chart type
+        let statusField = 'status_gizi'
+        if (this.selectedChartType === 'Berat Badan / Usia') statusField = 'status_bb'
+        else if (this.selectedChartType === 'Tinggi Badan / Usia') statusField = 'status_tb'
+        else if (this.selectedChartType === 'Berat Badan / Tinggi Badan') statusField = 'status_gizi'
+
+        const rowStatus = (row[statusField] || '').toLowerCase()
+        const selectedStatus = (this.selectedChartStatus || '').toLowerCase()
+
+        const byStatus = !this.selectedChartStatus || rowStatus === selectedStatus
+        console.log(`filter: ${byStatus}, field digunakan: ${statusField}, rowStatus: ${rowStatus}, selected: ${selectedStatus}`)
+
+        const byIntervensi = !this.selectedIntervensi || row.intervensi === this.selectedIntervensi
+
+        return byStatus && byIntervensi
+      })
+    },
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
