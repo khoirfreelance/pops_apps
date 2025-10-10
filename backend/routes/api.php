@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('member', MemberController::class)
         ->only(['index','store','show'])
         ->where(['member' => '[0-9]+']);
-    //Route::get('/member/tpk', [MemberController::class, 'getTPK']);
+    Route::get('/member/tpk', [MemberController::class, 'getTPK']);
     Route::get('/member/user', [MemberController::class, 'getUser']);
     Route::post('/member/assign', [MemberController::class, 'assign']);
     Route::get('/member/tpk/{no_tpk}', [MemberController::class, 'memberTPK']);

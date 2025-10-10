@@ -67,7 +67,7 @@ class MemberController extends Controller
         ]);
     }
 
-    /* public function getTPK()
+    public function getTPK()
     {
         $tpk = TPK::select('no_tpk')
             ->distinct()
@@ -75,7 +75,7 @@ class MemberController extends Controller
             ->get();
 
         return response()->json($tpk);
-    } */
+    }
 
     public function getUser()
     {

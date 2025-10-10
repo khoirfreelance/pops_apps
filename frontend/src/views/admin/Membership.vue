@@ -1,5 +1,17 @@
 <template>
   <div class="membership-wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header -->
     <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
@@ -32,6 +44,27 @@
                     <small class="text-white">
                       Nomor registrasi anggota TPK terdaftar beserta jumlah anggota per No TPK
                     </small>
+                  </div>
+                  <div class="text-white my-3 d-flex align-items-center">
+                    <!-- Icon lingkaran putih -->
+                    <div
+                      class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+                      style="width: 30px; height: 30px;"
+                    >
+                      <i class="bi bi-calendar2-check text-primary fs-6"></i>
+                    </div>
+
+                    <!-- Teks notifikasi -->
+                    <p class="mb-0 small">
+                      Anda memiliki
+                      <router-link
+                        to="/admin/jadwal"
+                        class="fw-bold text-light text-decoration-none"
+                      >
+                        1 jadwal intervensi
+                      </router-link>
+                      hari ini.
+                    </p>
                   </div>
                   <nav aria-label="breadcrumb" class="mt-auto mb-2">
                     <ol class="breadcrumb mb-0">
@@ -312,7 +345,7 @@
                         </router-link>
                       </li>
                       <li class="breadcrumb-item">
-                        <span class="text-decoration-none text-white-50">TPK</span>
+                        <span class="text-decoration-none text-white-50" @click="backTo" style="cursor: pointer;">TPK</span>
                       </li>
                       <li class="breadcrumb-item active text-white" aria-current="page">Detail</li>
                     </ol>
@@ -582,6 +615,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      isLoading: true,
       isDetail:false,
       isFormOpen: false,
       showAlert: false,
@@ -773,6 +807,9 @@ export default {
     },
   },
   methods: {
+    backTo(){
+      this.isDetail = false
+    },
     openTambah() {
       this.modalMode = "add"
       this.form = {} // reset form
@@ -854,8 +891,22 @@ export default {
           }
         })
         this.userList = res.data
-        //console.log('User: '+ this.userList);
 
+      } catch (e) {
+        console.error('Gagal ambil data:', e)
+      }
+    },
+    async loadTPK(){
+      try {
+        const res = await axios.get('http://localhost:8000/api/member/tpk',{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        console.log('data: '+res.data);
+
+        this.tpkList = res.data
       } catch (e) {
         console.error('Gagal ambil data:', e)
       }
@@ -1037,16 +1088,42 @@ export default {
       }
     },
   },
-  mounted() {
-    this.loadMember()
-    this.loadProvinsi()
-    this.loadFamily()
-    this.loadUser()
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.loadMember(),
+        this.loadProvinsi(),
+        this.loadFamily(),
+        this.loadUser(),
+        this.loadTPK(),
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
   },
 }
 </script>
 
 <style scoped>
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .easy-data-table.text-center td,
 .easy-data-table.text-center th {
   text-align: center;

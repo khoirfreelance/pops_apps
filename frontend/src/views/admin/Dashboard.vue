@@ -27,16 +27,25 @@
                   <span class="text-light fw-normal fs-6">Selamat datang,</span> <br />
                   {{ username }}
                 </h1>
-                <p class="text-light small">
-                  <span class="bg-light rounded-circle p-2"
-                    ><i class="bi bi-calendar text-primary"></i
-                  ></span>
-                  &nbsp; Anda memiliki
-                  <router-link to="/admin/jadwal" class="fw-bold text-light text-decoration-none">
-                    1 jadwal intervensi
-                  </router-link>
-                  hari ini.
+                <p class="text-light small d-flex align-items-center gap-2">
+                  <span
+                    class="icon-circle bg-white d-inline-flex justify-content-center align-items-center"
+                    style="width: 28px; height: 28px; border-radius: 50%;"
+                  >
+                    <i class="bi bi-calendar-event text-primary fs-6"></i>
+                  </span>
+                  <span>
+                    Anda memiliki
+                    <router-link
+                      to="/admin/jadwal"
+                      class="fw-bold text-light text-decoration-none"
+                    >
+                      1 jadwal intervensi
+                    </router-link>
+                    hari ini.
+                  </span>
                 </p>
+
               </div>
 
               <!-- Kanan: Gambar -->
@@ -763,96 +772,9 @@ export default {
       selectedStatusGizi: '',
       selectedIntervensi: '',
       username: '',
-      /* genderData: [
-        {
-          label: 'Laki - Laki',
-          total: 589,
-          circleClass: 'male-circle',
-          titleClass: 'text-success',
-          valueClass: 'text-success',
-          categories: [
-            { name: 'Sangat Kurang', value: 20 },
-            { name: 'Kurang', value: 74 },
-            { name: 'Normal', value: 393 },
-            { name: 'Risiko Lebih', value: 11 },
-            { name: 'Tidak Naik', value: 71 },
-          ],
-        },
-        {
-          label: 'Perempuan',
-          total: 553,
-          circleClass: 'female-circle',
-          titleClass: 'text-warning',
-          valueClass: 'text-warning',
-          categories: [
-            { name: 'Sangat Kurang', value: 17 },
-            { name: 'Kurang', value: 71 },
-            { name: 'Normal', value: 389 },
-            { name: 'Risiko Lebih', value: 9 },
-            { name: 'Tidak Naik', value: 67 },
-          ],
-        },
-      ],
-      genderData_tb: [
-        {
-          label: 'Laki - Laki',
-          total: 589,
-          circleClass: 'male-circle',
-          titleClass: 'text-success',
-          valueClass: 'text-success',
-          categories: [
-            { name: 'Sangat Pendek', value: 20 },
-            { name: 'Pendek', value: 74 },
-            { name: 'Normal', value: 393 },
-            { name: 'Tinggi', value: 11 },
-          ],
-        },
-        {
-          label: 'Perempuan',
-          total: 553,
-          circleClass: 'female-circle',
-          titleClass: 'text-warning',
-          valueClass: 'text-warning',
-          categories: [
-            { name: 'Sangat Pendek', value: 17 },
-            { name: 'Pendek', value: 71 },
-            { name: 'Normal', value: 389 },
-            { name: 'Tinggi', value: 9 },
-          ],
-        },
-      ],
-      genderData_bbtb: [
-        {
-          label: 'Laki - Laki',
-          total: 589,
-          circleClass: 'male-circle',
-          titleClass: 'text-success',
-          valueClass: 'text-success',
-          categories: [
-            { name: 'Gizi Buruk', value: 20 },
-            { name: 'Gizi Kurang', value: 74 },
-            { name: 'Gizi Baik', value: 393 },
-            { name: 'Risiko Gizi Lebih', value: 11 },
-            { name: 'Obesitas', value: 11 },
-          ],
-        },
-        {
-          label: 'Perempuan',
-          total: 553,
-          circleClass: 'female-circle',
-          titleClass: 'text-warning',
-          valueClass: 'text-warning',
-          categories: [
-            { name: 'Gizi Buruk', value: 20 },
-            { name: 'Gizi Kurang', value: 74 },
-            { name: 'Gizi Baik', value: 393 },
-            { name: 'Risiko Gizi Lebih', value: 11 },
-            { name: 'Obesitas', value: 11 },          ],
-        },
-      ], */
       stats: [
-        { title: 'RW', value: '1,000', icon: '/icons/icon1.png' },
-        { title: 'RT', value: '100,000', icon: '/icons/icon2.png'},
+        { title: 'RW', value: '1,000', icon: '/icons/icon2.png' },
+        { title: 'RT', value: '100,000', icon: '/icons/icon1.png'},
         { title: 'Keluarga Terdaftar', value: '100 M', icon: '/icons/icon3.png' },
         { title: 'TPK', value: '1,234', icon: '/icons/icon4.png' },
         { title: 'Ibu Hamil', value: '56 K', icon: '/icons/icon5.png' },
@@ -861,11 +783,6 @@ export default {
         { title: 'Calon Pengantin', value: '12 K', icon: '/icons/icon8.png' },
         { title: 'Anak <= 5 Tahun', value: '56', icon: '/icons/icon9.png' },
       ],
-      /* activities: [
-        { user: 'Alice', action: 'Created new project', date: '2025-08-13' },
-        { user: 'Bob', action: 'Updated profile', date: '2025-08-12' },
-        { user: 'Charlie', action: 'Added new user', date: '2025-08-11' },
-      ], */
       months: [
         'Juli 2025',
         'Juni 2025',
@@ -1095,27 +1012,6 @@ export default {
       indiChartInstance: null,
       indiChartPregnancy: null,
       bulanLabels: [],
-      /* indikatorData: {
-        'Sangat Kurang': [29, 37, 20, 26, 24, 22, 24, 23, 56, 79, 10, 0],
-        Kurang: [134, 134, 126, 129, 134, 110, 94, 23, 67, 80, 12, 45],
-        Normal: [711, 702, 684, 723, 716, 732, 725, 706, 712, 450, 711, 734],
-        'Risiko Lebih': [25, 20, 23, 22, 16, 14, 15, 90, 16, 50, 11, 23],
-        'Tidak Naik': [199, 290, 206, 286, 294, 238, 0, 0, 0, 0, 90, 40],
-      },
-      indikatorData_tb: {
-        'Sangat Pendek': [29, 37, 20, 26, 24, 22, 24, 23, 56, 79, 10, 0],
-        'Pendek': [134, 134, 126, 129, 134, 110, 94, 23, 67, 80, 12, 45],
-        'Normal': [711, 702, 684, 723, 716, 732, 725, 706, 712, 450, 711, 734],
-        'Tinggi': [25, 20, 23, 22, 16, 14, 15, 90, 16, 50, 11, 23],
-      },
-      indikatorData_bbtb: {
-        'Gizi Buruk': [29, 37, 20, 26, 24, 22, 24, 23, 56, 79, 10, 0],
-        'Gizi Kurang': [134, 134, 126, 129, 134, 110, 94, 23, 67, 80, 12, 45],
-        'Gizi Baik': [711, 702, 684, 723, 716, 732, 725, 706, 712, 450, 711, 734],
-        'Risiko Gizi Lebih': [25, 20, 23, 22, 16, 14, 15, 90, 16, 50, 11, 23],
-        'Gizi Lebih': [215, 20, 23, 22, 136, 164, 15, 90, 16, 50, 11, 23],
-        'Obesitas': [205, 20, 23, 122, 216, 14, 15, 90, 16, 50, 11, 23],
-      }, */
       totalKasus: 215,
       dataAnak: [
         {
@@ -1442,12 +1338,18 @@ export default {
             {
               data: [8, 20, 9],
               backgroundColor: ['#5B9BD5', '#4472C4', '#305496'],
+              color: '#FFFFFF',
             },
           ],
         },
         options: {
           indexAxis: 'y',
-          plugins: { legend: { display: false } },
+          plugins: { legend: { display: false }, datalabels: {
+          color: '#FFFFFF',        // warna teks label
+          anchor: 'center',        // posisi di tengah bar
+          align: 'center',         // teks di tengah
+          font: { weight: 'bold' } // biar lebih jelas
+        }, },
           scales: {
             x: { beginAtZero: true },
           },
@@ -1509,26 +1411,25 @@ export default {
       this.bulanLabels = this.getLast12Months() // <- generate bulan realtime
       this.renderIndiChart_pregnancy()
       this.renderChart('pieChart_bb', this.dataTable_bb, [
-        '#E6C200',
-        '#F3BC07',
-        '#006341',
-        '#0E00AE',
-        '#D60000',
+        '#f5ebb9',
+        '#f7db7f',
+        '#7dae9b',
+        '#bfbbe4',
+        '#e87d7b',
       ])
       this.renderChart('pieChart_tb', this.dataTable_tb, [
-        '#E6C200',
-        '#F3BC07',
-        '#006341',
-        '#0E00AE',
-        '#D60000',
+        '#f7db7f',
+        '#bfbbe4',
+        '#7dae9b',
+        '#e87d7b',
       ])
       this.renderChart('pieChart_status', this.dataTable_status, [
-        '#E6C200',
-        '#F3BC07',
-        '#006341',
-        '#0E00AE',
-        '#D60000',
-        'violet',
+        '#f5ebb9',
+        '#f7db7f',
+        '#7dae9b',
+        '#bfbbe4',
+        '#e87d7b',
+        '#eaafdd',
       ])
     })
     this.renderLineChart()
@@ -1539,17 +1440,12 @@ export default {
 </script>
 
 <style scoped>
-.circle {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: bold;
-  margin: 0 auto 15px auto;
-  color: #fff;
+.icon-circle {
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.icon-circle:hover {
+  transform: scale(1.1);
+  background: #f8f9fa;
 }
 .male-circle {
   background-color: rgba(0, 128, 96, 0.8);

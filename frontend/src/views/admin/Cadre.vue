@@ -1,5 +1,17 @@
 <template>
   <div class="cadre-wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header -->
     <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
@@ -32,18 +44,46 @@
                   </small>
                 </div>
                 <div class="text-white my-0">
-                  <ul>
-                    <li>Anda memiliki <strong>1</strong> jadwal intervensi hari ini.</li>
-                    <li v-if="pendingCount > 0">
-                      Anda memiliki
-                      <a
-                        href="javascript:void(0)"
-                        class="fw-bold text-white text-decoration-none"
-                        @click="toggleExpandPending"
+                  <ul class="list-unstyled">
+                    <!-- Jadwal intervensi -->
+                    <li v-if="pendingCount > 0" class="d-flex align-items-center mb-2">
+                      <div
+                        class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                        style="width: 28px; height: 28px;"
                       >
-                        {{ pendingCount }} data pending
-                      </a>
-                      belum terkirim.
+                        <i class="bi bi-calendar2-check text-primary fs-6"></i>
+                      </div>
+                      <p class="mb-0 small">
+                        Anda memiliki
+                        <router-link
+                          to="/admin/jadwal"
+                          class="fw-bold text-light text-decoration-none"
+                        >
+                          1 jadwal intervensi
+                        </router-link>
+                        hari ini.
+                      </p>
+                    </li>
+
+                    <!-- Data pending -->
+                    <li v-if="pendingCount > 0" class="d-flex align-items-center">
+                      <div
+                        class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                        style="width: 28px; height: 28px;"
+                      >
+                        <i class="bi bi-upload text-primary fs-6"></i>
+                      </div>
+                      <p class="mb-0 small">
+                        Anda memiliki
+                        <a
+                          href="javascript:void(0)"
+                          class="fw-bold text-white text-decoration-none"
+                          @click="toggleExpandPending"
+                        >
+                          {{ pendingCount }} data pending
+                        </a>
+                        belum terkirim.
+                      </p>
                     </li>
                   </ul>
                 </div>
@@ -588,6 +628,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      isLoading: true,
       showPassword: false,
       showConfirm: false,
       provinsiList: [],
@@ -1061,16 +1102,41 @@ export default {
       }
     },
   },
-  mounted() {
-    this.loadCadre()
-    this.loadProvinsi()
-    this.loadPosyandu()
-    this.getPendingData()
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.loadCadre(),
+        this.loadProvinsi(),
+        this.loadPosyandu(),
+        this.getPendingData(),
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
   },
 }
 </script>
 
 <style scoped>
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .cadre-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #f9f9fb;
