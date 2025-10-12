@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\CadreController;
 use App\Http\Controllers\Api\PosyanduController;
 use App\Http\Controllers\Api\MemberController;
+use App\Http\Controllers\Api\BrideController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -36,7 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
     Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
     Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']);
-    //Route::get('/cadre/member/{no_tpk}', [CadreController::class, 'getTPK']);
 });
 
 // Member Endpoint
@@ -49,6 +49,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/member/assign', [MemberController::class, 'assign']);
     Route::get('/member/tpk/{no_tpk}', [MemberController::class, 'memberTPK']);
     Route::get('/member/{id}/family', [MemberController::class, 'family']);
+});
+
+// Bride Endpoint
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('bride', BrideController::class)
+        ->only(['index', 'store', 'show'])
+        ->where(['bride' => '[0-9]+']); // <— harusnya 'bride', bukan 'member'
 });
 
 // Region Endpoint

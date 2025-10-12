@@ -1,5 +1,17 @@
 <template>
   <div class="bride-wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header -->
     <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
@@ -9,15 +21,7 @@
 
       <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div
-          class="flex-grow-1 p-4 bg-light container-fluid"
-          :style="{
-            backgroundImage: background ? `url(${background})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }"
-        >
+        <div class="flex-grow-1 p-4 bg-light container-fluid">
           <!-- Welcome Card -->
           <div class="card welcome-card shadow-sm mb-4 border-0">
             <div
@@ -52,10 +56,10 @@
 
           <!-- Filter -->
           <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
-            <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
+            <form class="row g-4 align-items-end" @submit.prevent="applyFilter">
               <!-- NIK -->
               <div class="col-md-12">
-                <label for="nik" class="form-label">NIK Petugas</label>
+                <label for="nik" class="form-label text-primary fw-semibold">NIK Petugas</label>
                 <input
                   type="text"
                   v-model="filter.nik"
@@ -65,49 +69,56 @@
                 />
               </div>
 
-              <!-- Expandable section -->
-              <div v-if="isFilterOpen" class="row g-3 align-items-end mt-2">
-                <!-- context -->
-                <div class="col-md-6">
-                  <label for="context" class="form-label">Context Log</label>
-                  <input
-                    type="text"
-                    v-model="advancedFilter.context"
-                    id="context"
-                    class="form-control"
-                  />
-                </div>
-
-                <!-- Activity -->
-                <div class="col-md-6">
-                  <label for="activity" class="form-label">Activity Log</label>
-                  <input
-                    type="text"
-                    v-model="advancedFilter.activity"
-                    id="activity"
-                    class="form-control"
-                  />
-                </div>
-
-                <!-- Tombol -->
-                <div class="col-md-12">
-                  <button type="submit" class="btn btn-primary float-start" @click="applyFilter">
-                    <i class="bi bi-search"></i> Cari
-                  </button>
-                  <button type="button" class="btn btn-secondary float-end" @click="resetFilter">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                  </button>
+              <!-- Context -->
+              <div class="col-md-6">
+                <label class="form-label mb-2 text-primary fw-semibold">Context Log</label>
+                <div class="row">
+                  <div class="col-6" v-for="(col, colIndex) in splitArray(contextOptions, 3)" :key="'ctx-col-' + colIndex">
+                    <div class="form-check mb-3" v-for="c in col" :key="'ctx-' + c">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        :value="c"
+                        v-model="advancedFilter.context"
+                        :id="'context-' + c"
+                      />
+                      <label class="form-check-label text-capitalize" :for="'context-' + c">
+                        {{ c }}
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </form>
 
-            <!-- Expand/Collapse Button -->
-            <div class="text-end mt-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm" @click="toggleExpand">
-                <i :class="isFilterOpen ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
-                {{ isFilterOpen ? 'Tutup Filter Lain' : 'Filter Lain' }}
-              </button>
-            </div>
+              <!-- Activity -->
+              <div class="col-md-6">
+                <label class="form-label text-primary fw-semibold mb-2">Activity Log</label>
+                <div class="row">
+                  <div class="col-6" v-for="(col, colIndex) in splitArray(activityOptions, 3)" :key="'act-col-' + colIndex">
+                    <div class="form-check mb-3" v-for="a in col" :key="'act-' + a">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        :value="a"
+                        v-model="advancedFilter.activity"
+                        :id="'activity-' + a"
+                      />
+                      <label class="form-check-label text-capitalize" :for="'activity-' + a">
+                        {{ a }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tombol -->
+              <div class="col-md-12 d-flex justify-content-between mt-3">
+                <small class="text-muted fst-italic m-3">*Bisa pilih lebih dari 1</small>
+                <button type="button" class="btn btn-secondary" @click="resetFilter">
+                  <i class="bi bi-arrow-clockwise"></i> Reset
+                </button>
+              </div>
+            </form>
           </div>
 
           <!-- Table -->
@@ -147,8 +158,8 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      isLoading: true,
       isCollapsed: false,
-      isFilterOpen: false,
       log:[],
       headers: [
         { text: 'NIK', value: 'nik' },
@@ -162,29 +173,30 @@ export default {
         nik: '',
       },
       advancedFilter: {
-        context: '',
-        activity: '',
+        context: [],
+        activity: [],
       },
+      contextOptions: [
+        'gizi anak',
+        'ibu Hamil',
+        'Calon Pengantin',
+        'keluarga',
+        'Kader / Pengguna',
+        'Anggota TPK',
+      ],
+      activityOptions: ['store', 'view', 'delete', 'update', 'assign'],
       appliedFilter: {}, // hasil filter simpan di sini
     }
   },
   computed: {
-    background() {
-      try {
-        const config = JSON.parse(localStorage.getItem('siteConfig'))
-        return config?.background || null
-      } catch {
-        return null
-      }
-    },
     filteredLog() {
       return this.log.filter((item) => {
         return (
-          // NIK realtime
           (!this.filter.nik || item.nik.includes(this.filter.nik)) &&
-          // Advanced filter hanya aktif setelah "Cari"
-          (!this.appliedFilter.context || item.context === this.appliedFilter.context) &&
-          (!this.appliedFilter.activity || item.activity === this.appliedFilter.activity)
+          (this.advancedFilter.context.length === 0 ||
+            this.advancedFilter.context.includes(item.context)) &&
+          (this.advancedFilter.activity.length === 0 ||
+            this.advancedFilter.activity.includes(item.activity))
         )
       })
     },
@@ -207,29 +219,58 @@ export default {
     toggleExpand() {
       this.isFilterOpen = !this.isFilterOpen
     },
+    splitArray(array, size) {
+      const result = []
+      for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size))
+      }
+      return result
+    },
     applyFilter() {
       // copy isi advancedFilter ke appliedFilter saat tombol Cari ditekan
       this.appliedFilter = { ...this.advancedFilter }
     },
     resetFilter() {
       this.filter.nik = ''
-      this.advancedFilter = {
-        context: '',
-        activity: '',
-      }
-      this.appliedFilter = {}
+      this.advancedFilter.context = []
+      this.advancedFilter.activity = []
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
   },
-  mounted() {
-    this.loadLog()
-  },
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.loadLog(),
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
+  }
 }
 </script>
 
 <style scoped>
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .datatable-responsive {
   width: 100%;
   overflow-x: auto; /* aktifkan scroll horizontal */

@@ -1,5 +1,17 @@
 <template>
   <div class="bride-wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header -->
     <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
@@ -29,6 +41,27 @@
                   <h2 class="fw-bold mt-3 mb-0 text-white">Data Calon Pengantin</h2>
                   <small class="text-white"> Daftar kunjungan calon pengantin </small>
                 </div>
+                <div class="text-white my-3 d-flex align-items-center">
+                  <!-- Icon lingkaran putih -->
+                  <div
+                    class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0"
+                    style="width: 30px; height: 30px;"
+                  >
+                    <i class="bi bi-calendar2-check text-primary fs-6"></i>
+                  </div>
+
+                  <!-- Teks notifikasi -->
+                  <p class="mb-0 small">
+                    Anda memiliki
+                    <router-link
+                      to="/admin/jadwal"
+                      class="fw-bold text-light text-decoration-none"
+                    >
+                      1 jadwal intervensi
+                    </router-link>
+                    hari ini.
+                  </p>
+                </div>
                 <nav aria-label="breadcrumb" class="mt-auto mb-2">
                   <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
@@ -50,12 +83,193 @@
             </div>
           </div>
 
+          <!-- Input Pencarian -->
+          <div class="container-fluid mt-4 rounded p-3 ">
+            <h5 class="fw-bold mb-3">Tambahkan Data</h5>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <input
+                type="text"
+                class="form-control w-50"
+                placeholder="Masukkan NIK"
+                v-model="searchNIK"
+              />
+              <button class="btn btn-gradient px-3" @click="cariData"><i class="fa fa-search"></i> Cari</button>
+              <div class="ms-auto">
+                <button
+                  type="button"
+                  class="btn btn-primary mx-3"
+                  @click="toggleExpandForm"
+                >
+                  <i :class="showForm ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                  {{ showForm ? 'Tutup Form' : 'Tambah Data' }}
+                </button>
+                <button
+                  class="btn btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalImport"
+                >
+                  <i class="bi bi-filetype-csv"></i> Unggah Data
+                </button>
+              </div>
+            </div>
+
+            <!-- Alert jika data ditemukan / tidak -->
+            <div v-if="showForm">
+              <div v-if="found" class="text-danger fw-semibold mb-3">Data Ditemukan</div>
+              <div v-else-if="notFound" class="text-danger fw-semibold small mb-3">
+                Data dengan NIK tersebut tidak ditemukan.
+              </div>
+            </div>
+
+            <!-- Form -->
+            <transition name="fade">
+              <div v-if="showForm" id="formData" class="card shadow-sm">
+                <div class="card-body">
+                  <form class="row g-4">
+                    <!-- Catatan Berisiko -->
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Catatan Berisiko</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.catatan" />
+                    </div>
+
+                    <!-- Tanggal Kunjungan -->
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
+                      <input type="date" class="form-control shadow-sm" v-model="form.kunjungan" />
+                    </div>
+
+                    <!-- Tanggal Menikah -->
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Tanggal Menikah</label>
+                      <input type="date" class="form-control shadow-sm" v-model="form.menikah" />
+                    </div>
+
+                    <!-- Catin Perempuan -->
+                    <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Perempuan</h5></div>
+
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Nama</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.namaP" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">NIK</label>
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.nikP"
+                        maxlength="16"
+                        @input="form.nikP = form.nikP.replace(/\D/g, '')"
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Usia</label>
+                      <input type="number" class="form-control shadow-sm" v-model="form.usiaP" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanP" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
+                      <input type="number" class="form-control shadow-sm" v-model="form.bbP" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm)</label>
+                      <input type="number" class="form-control shadow-sm" v-model="form.tbP" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">LiLa (cm)</label>
+                      <input type="number" class="form-control shadow-sm" v-model="form.lilaP" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Hb</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.hbP" />
+                    </div>
+
+                    <!-- Catin Laki-laki -->
+                    <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Laki-laki</h5></div>
+
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Nama</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.namaL" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">NIK</label>
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.nikL"
+                        maxlength="16"
+                        @input="form.nikL = form.nikL.replace(/\D/g, '')"
+                      />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Usia</label>
+                      <input type="number" class="form-control shadow-sm" v-model="form.usiaL" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanL" />
+                    </div>
+
+                    <!-- Lingkungan -->
+                    <div class="col-12"><h5 class="fw-bold text-primary mt-3">Lingkungan</h5></div>
+
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Riwayat Penyakit</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.riwayat" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Jamban Sehat</label>
+                      <select class="form-select shadow-sm" v-model="form.jamban">
+                        <option value="">-- Pilih --</option>
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small fw-semibold text-secondary">Sumber Air Bersih</label>
+                      <input type="text" class="form-control shadow-sm" v-model="form.air" />
+                    </div>
+
+                    <!-- Intervensi -->
+                    <div class="col-md-12">
+                      <label class="form-label small fw-semibold text-secondary">Intervensi</label>
+                      <textarea
+                        class="form-control shadow-sm"
+                        v-model="form.intervensi"
+                        rows="2"
+                      ></textarea>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- Actions -->
+                <div class="card-footer bg-white d-flex justify-content-between">
+                  <button
+                    class="btn btn-light border rounded-pill px-4"
+                    @click="resetForm"
+                  >
+                    <i class="bi bi-x-circle me-2"></i> Batal
+                  </button>
+                  <button
+                    class="btn btn-success rounded-pill px-4"
+                    @click="modalMode === 'add' ? saveData() : updateData()"
+                  >
+                    <i class="bi bi-save me-2"></i>
+                    {{ modalMode === 'add' ? 'Simpan' : 'Perbarui' }}
+                  </button>
+                </div>
+              </div>
+            </transition>
+          </div>
+
           <!-- Filter -->
-          <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
+          <div class="container-fluid bg-light rounded shadow-sm p-3 mt-3">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- NIK (selalu tampil, realtime filter) -->
-              <div class="col-md-12">
-                <label for="nik" class="form-label">NIK Perempuan</label>
+              <div class="col-md-4">
+                <label for="nik" class="form-label fw-semibold">NIK Calon Pengantin Wanita</label>
                 <input
                   type="text"
                   v-model="filter.nikP"
@@ -65,267 +279,88 @@
                 />
               </div>
 
-              <!-- Expandable section -->
-              <div v-if="isFilterOpen" class="row g-3 align-items-end mt-2">
-                <!-- Nama -->
-                <div class="col-md-6">
-                  <label for="nama" class="form-label">Nama Pengantin Wanita</label>
-                  <input
-                    type="text"
-                    v-model="advancedFilter.namaP"
-                    id="namaP"
-                    class="form-control"
-                  />
-                </div>
+              <!-- RT -->
+              <div class="col-md-4">
+                <label for="rt" class="form-label fw-semibold">RT</label>
+                <input type="number" v-model="advancedFilter.rt" id="rt" class="form-control" />
+              </div>
 
-                <div class="col-md-6">
-                  <label for="nama" class="form-label">Nama Pengantin Pria</label>
-                  <input
-                    type="text"
-                    v-model="advancedFilter.namaL"
-                    id="namaL"
-                    class="form-control"
-                  />
-                </div>
+              <!-- RW -->
+              <div class="col-md-4">
+                <label for="rw" class="form-label fw-semibold">RW</label>
+                <input type="number" v-model="advancedFilter.rw" id="rw" class="form-control" />
+              </div>
 
-                <!-- RT -->
-                <div class="col-md-2">
-                  <label for="rt" class="form-label">RT</label>
-                  <input type="number" v-model="advancedFilter.rt" id="rt" class="form-control" />
+              <!-- Catatan -->
+              <div class="col-md-4">
+                <label for="catatan" class="form-label fw-semibold">Catatan Berisiko</label>
+                <div class="row">
+                  <div
+                    class="col-md-12"
+                    v-for="item in ['Ada Catatan','Tidak ada Catatan']"
+                    :key="item"
+                  >
+                    <div class="form-check mb-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        :id="'status_'+item"
+                        :value="item"
+                        v-model="advancedFilter.catatan_list"
+                      />
+                      <label class="form-check-label" :for="'status_'+item">{{ item }}</label>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <!-- RW -->
-                <div class="col-md-2">
-                  <label for="rw" class="form-label">RW</label>
-                  <input type="number" v-model="advancedFilter.rw" id="rw" class="form-control" />
+              <!-- Penyakit -->
+              <div class="col-md-4">
+                <label for="penyakit" class="form-label fw-semibold">Riwayat Penyakit</label>
+                <div class="row">
+                  <div
+                    class="col-md-12"
+                    v-for="item in ['Ada Riwayat','Tidak ada Riwayat']"
+                    :key="item"
+                  >
+                    <div class="form-check mb-3">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        :id="'status_'+item"
+                        :value="item"
+                        v-model="advancedFilter.penyakit_list"
+                      />
+                      <label class="form-check-label" :for="'status_'+item">{{ item }}</label>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <!-- Menikah -->
-                <div class="col-md-4">
-                  <label for="menikah" class="form-label">Tanggal Menikah</label>
-                  <input
-                    type="date"
-                    v-model="advancedFilter.menikah"
-                    id="menikah"
-                    class="form-control"
-                  />
-                </div>
-
-                <!-- Kunjungan -->
-                <div class="col-md-4">
-                  <label for="kunjungan" class="form-label">Kunjungan</label>
-                  <input
-                    type="date"
-                    v-model="advancedFilter.kunjungan"
-                    id="kunjungan"
-                    class="form-control"
-                  />
-                </div>
-
-                <!-- Tombol -->
-                <div class="col-md-12">
-                  <button type="submit" class="btn btn-primary float-start" @click="applyFilter">
-                    <i class="bi bi-search"></i> Cari
-                  </button>
-                  <button type="button" class="btn btn-secondary float-end" @click="resetFilter">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                  </button>
-                </div>
+              <!-- Tombol -->
+              <div class="col-md-12 d-flex justify-content-between">
+                <small class="text-muted fst-italic m-3">*Bisa pilih lebih dari 1</small>
+                <button type="button" class="btn btn-secondary float-end" @click="resetFilter">
+                  <i class="bi bi-arrow-clockwise"></i> Reset
+                </button>
               </div>
             </form>
 
-            <!-- Expand/Collapse Button -->
-            <div class="text-end mt-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm" @click="toggleExpand">
-                <i :class="isFilterOpen ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
-                {{ isFilterOpen ? 'Tutup Filter Lain' : 'Filter Lain' }}
-              </button>
-            </div>
           </div>
-
-          <!-- Button Group -->
-          <div class="container-fluid mt-4 d-flex flex-wrap gap-2 justify-content-end">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-              <i class="bi bi-plus-square"></i> Tambah Data
-            </button>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
-              <i class="bi bi-filetype-csv"></i> Import Pendampingan TPK (catin)
-            </button>
-          </div>
-
-          <!-- Alert -->
-          <!-- <div class="container-fluid mt-4">
-            <div class="alert alert-success shadow-sm">
-              <i class="bi bi-info-circle-fill"></i>&nbsp; Daftar Calon Pengantin
-            </div>
-          </div> -->
 
           <!-- Table -->
-          <div class="container-fluid">
-            <div class="card modern-card mt-4">
-              <div class="card-body">
-                <div class="datatable-responsive">
-                  <EasyDataTable
-                    :headers="visibleHeaders"
-                    :items="filteredCatin"
-                    buttons-pagination
-                    :rows-per-page="5"
-                  />
-                </div>
-              </div>
+          <div class="container-fluid bg-light rounded shadow-sm p-3 mt-3">
+            <div class="datatable-responsive">
+              <EasyDataTable
+                :headers="visibleHeaders"
+                :items="filteredCatin"
+                buttons-pagination
+                :rows-per-page="5"
+              />
             </div>
           </div>
         </div>
         <CopyRight class="mt-auto" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Tambah -->
-  <div class="modal fade" id="modalTambah" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div
-        class="modal-content shadow-lg border-0 rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title fw-bold text-primary">Tambah Data Calon Pengantin</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form class="row g-4" @submit.prevent="saveData">
-            <!-- Catatan Berisiko -->
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Catatan Berisiko</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.catatan" />
-            </div>
-
-            <!-- Tanggal Kunjungan -->
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
-              <input type="date" class="form-control shadow-sm" v-model="form.kunjungan" />
-            </div>
-
-            <!-- Tanggal Menikah -->
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Tanggal Menikah</label>
-              <input type="date" class="form-control shadow-sm" v-model="form.menikah" />
-            </div>
-
-            <!-- Catin Perempuan -->
-            <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Perempuan</h5></div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Nama</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.namaP" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">NIK</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.nikP"
-                maxlength="16"
-                @input="form.nikP = form.nikP.replace(/\D/g, '')"
-              />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Usia</label>
-              <input type="number" class="form-control shadow-sm" v-model="form.usiaP" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanP" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
-              <input type="number" class="form-control shadow-sm" v-model="form.bbP" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm)</label>
-              <input type="number" class="form-control shadow-sm" v-model="form.tbP" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">LiLa (cm)</label>
-              <input type="number" class="form-control shadow-sm" v-model="form.lilaP" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Hb</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.hbP" />
-            </div>
-
-            <!-- Catin Laki-laki -->
-            <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Laki-laki</h5></div>
-
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Nama</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.namaL" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">NIK</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.nikL"
-                maxlength="16"
-                @input="form.nikL = form.nikL.replace(/\D/g, '')"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Usia</label>
-              <input type="number" class="form-control shadow-sm" v-model="form.usiaL" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanL" />
-            </div>
-
-            <!-- Lingkungan -->
-            <div class="col-12"><h5 class="fw-bold text-primary mt-3">Lingkungan</h5></div>
-
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Riwayat Penyakit</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.riwayat" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Jamban Sehat</label>
-              <select class="form-select shadow-sm" v-model="form.jamban">
-                <option value="">-- Pilih --</option>
-                <option value="Ya">Ya</option>
-                <option value="Tidak">Tidak</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label small fw-semibold text-secondary">Sumber Air Bersih</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.air" />
-            </div>
-
-            <!-- Intervensi -->
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">Intervensi</label>
-              <textarea
-                class="form-control shadow-sm"
-                v-model="form.intervensi"
-                rows="2"
-              ></textarea>
-            </div>
-          </form>
-        </div>
-
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="saveData">
-            <i class="bi bi-save me-2"></i> Simpan
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -421,6 +456,31 @@
     </div>
     <p class="text-white mt-3">Mengimpor data... {{ currentRow }}/{{ totalRows }} baris</p>
   </div>
+
+  <!-- Modal Error -->
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-danger text-white rounded-top-4">
+          <h5 class="modal-title">Error</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-0">{{ errorMessage || 'Terjadi kesalahan yang tidak diketahui.' }}</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -430,6 +490,7 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
+import axios from 'axios'
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -437,6 +498,11 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      searchNIK: '',
+      showForm: false,
+      found: false,
+      notFound: false,
+      isLoading: true,
       isCollapsed: false,
       isFilterOpen: false,
       importTitle: 'Import File',
@@ -446,8 +512,11 @@ export default {
       animatedProgress: 0,
       currentRow: 0,
       totalRows: 1, // default 1 agar tidak bagi 0
+      catatan_list:[],
+      penyakit_list:[],
       visibleColumns: ['catatan', 'kunjungan', 'menikah', 'namaP', 'nikP'], // default
       form: {
+        id: null,
         catatan: '',
         kunjungan: '',
         menikah: '',
@@ -469,30 +538,7 @@ export default {
         intervensi: '',
         kelola: '',
       },
-      catin: [
-        {
-          catatan: 'Berisiko Tinggi',
-          kunjungan: '2025-08-20',
-          menikah: '2024-12-12',
-          namaP: 'Siti',
-          nikP: '123456789',
-          usiaP: 22,
-          pekerjaanP: 'Mahasiswa',
-          bbP: 45,
-          tbP: 155,
-          lilaP: 24,
-          hbP: '12',
-          namaL: 'Budi',
-          nikL: '987654321',
-          usiaL: 25,
-          pekerjaanL: 'Karyawan',
-          riwayat: 'Hipertensi',
-          jamban: 'Ya',
-          air: 'Sumur',
-          intervensi: '-',
-          kelola: 'Edit/Delete',
-        },
-      ],
+      bride: [],
       headers: [
         { text: 'Catatan Beresiko', value: 'catatan' },
         { text: 'Tanggal Kunjungan', value: 'kunjungan' },
@@ -525,6 +571,8 @@ export default {
         intervensi: '',
         menikah: '',
         kunjungan: '',
+        catatan_list:[],
+        penyakit_list:[],
       },
       appliedFilter: {}, // hasil filter simpan di sini
     }
@@ -539,7 +587,7 @@ export default {
       }
     },
     filteredCatin() {
-      return this.catin.filter((item) => {
+      return this.bride.filter((item) => {
         return (
           // NIK realtime
           (!this.filter.nikP || item.nikP.includes(this.filter.nikP)) &&
@@ -557,6 +605,85 @@ export default {
     },
   },
   methods: {
+    resetForm(){
+      this.form = {
+        id: null,
+        catatan: '',
+        kunjungan: '',
+        menikah: '',
+        namaP: '',
+        nikP: '',
+        usiaP: 0,
+        pekerjaanP: '',
+        bbP: 0,
+        tbP: 0,
+        lilaP: 0,
+        hbP: '',
+        namaL: '',
+        nikL: '',
+        usiaL: 0,
+        pekerjaanL: '',
+        riwayat: '',
+        jamban: '',
+        air: '',
+        intervensi: '',
+        kelola: '',
+      },
+      this.showForm = false
+    },
+    cariData() {
+      this.notFound = false
+      this.found = false
+      const hasil = this.bride.find(
+        (d) => d.nik === this.searchNIK
+      )
+
+      if (hasil) {
+        this.form = { ...hasil }
+        this.showForm = true
+        this.modalMode = 'update'
+        this.found = true
+      } else {
+        this.resetForm()       // kosongkan form
+        this.modalMode = 'add'
+        this.showForm = true   // tetap tampil
+        this.notFound = true   // tampilkan pesan "tidak ditemukan"
+      }
+    },
+    async loadBride(){
+      try {
+        const res = await axios.get('http://localhost:8000/api/bride',{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        this.bride = res.data
+        //console.log(this.family);
+      } catch (e) {
+        console.error('Gagal ambil data:', e)
+        this.showError('Error Ambil Data', e)
+      }
+    },
+    showError(message) {
+      this.errorMessage = message || 'Terjadi kesalahan.'
+      // eslint-disable-next-line no-undef
+      const modal = new bootstrap.Modal(document.getElementById('errorModal'))
+      modal.show()
+    },
+    showSuccess(message){
+      this.successMessage = message || 'Berhasil tersimpan.'
+      // eslint-disable-next-line no-undef
+      const modal = new bootstrap.Modal(document.getElementById('successModal'))
+      modal.show()
+    },
+    toggleExpandForm() {
+      this.modalMode = "add"
+      this.showForm = !this.showForm
+      if (!this.showForm) this.resetForm()
+      console.log('modal mode: '+this.modalMode);
+
+    },
     closeModal(id) {
       const el = document.getElementById(id)
       if (el) {
@@ -602,6 +729,8 @@ export default {
         intervensi: '',
         menikah: '',
         kunjungan: '',
+        catatan_list:[],
+        penyakit_list:[],
       }
       this.appliedFilter = {}
     },
@@ -629,7 +758,7 @@ export default {
 
           // lanjut simpan data
 
-          this.catin.push({ ...this.form })
+          this.bride.push({ ...this.form })
           this.showAlert = true
           setTimeout(() => (this.showAlert = false), 3000)
 
@@ -704,7 +833,7 @@ export default {
             obj[h] = values[i] || ''
           })
 
-          this.catin.push({
+          this.bride.push({
             catatan: obj.catatan || '',
             kunjungan: obj.kunjungan || '',
             menikah: obj.menikah || '',
@@ -742,10 +871,38 @@ export default {
       reader.readAsText(file)
     },
   },
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.loadBride()
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
+  },
 }
 </script>
 
 <style scoped>
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 .datatable-responsive {
   width: 100%;
   overflow-x: auto; /* aktifkan scroll horizontal */

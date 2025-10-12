@@ -146,7 +146,6 @@ class MemberController extends Controller
         return response()->json($data);
     }
 
-
     /* public function family(id)
     {
 

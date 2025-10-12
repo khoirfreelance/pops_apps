@@ -159,12 +159,8 @@
                 </div>
 
                 <!-- Tombol -->
-
-                <div class="col-md-12">
-                  <button type="submit" class="btn btn-primary float-start" @click="applyFilter">
-                    <i class="bi bi-search"></i> Cari
-                  </button>
-                  <button type="button" class="btn btn-secondary float-end" @click="resetFilter">
+                <div class="col-md-12 d-flex justify-content-end mt-3">
+                  <button type="button" class="btn btn-secondary" @click="resetFilter">
                     <i class="bi bi-arrow-clockwise"></i> Reset
                   </button>
                 </div>
@@ -588,6 +584,39 @@
       >
         <div class="modal-header bg-success text-white rounded-top-4">
           <h5 class="modal-title">Berhasil</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-0">Data keluarga berhasil disimpan.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Error -->
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div
+        class="modal-content border-0 shadow-lg rounded-4"
+        :style="{
+          backgroundImage: background ? `url(${background})` : 'none',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }"
+      >
+        <div class="modal-header bg-danger text-white rounded-top-4">
+          <h5 class="modal-title">Error</h5>
           <button
             type="button"
             class="btn-close btn-close-white"

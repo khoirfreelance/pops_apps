@@ -361,7 +361,7 @@
 
             <!-- Navigation Tab -->
             <nav class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
-              <div class="nav nav-tabs" id="nav-tab" role="tablist">
+              <div class="nav nav-pills " id="nav-tab" role="tablist">
                 <button class="nav-link active" id="nav-anggota-tab" data-bs-toggle="tab" data-bs-target="#nav-anggota" type="button" role="tab" aria-controls="nav-anggota" aria-selected="true">Anggota TPK</button>
                 <button class="nav-link" id="nav-keluarga-tab" data-bs-toggle="tab" data-bs-target="#nav-keluarga" type="button" role="tab" aria-controls="nav-keluarga" aria-selected="false">Keluarga Dampingan</button>
                 <button class="nav-link" id="nav-anak-tab" data-bs-toggle="tab" data-bs-target="#nav-anak" type="button" role="tab" aria-controls="nav-anak" aria-selected="false">Pendampingan Anak</button>
@@ -371,10 +371,18 @@
             </nav>
 
             <div class="container-fluid mt-4">
+              <!-- <div class="text-end">
+                <button class="btn btn-secondary" @click="backTo()">
+                  <i class="bi bi-arrow-counterclockwise"></i> Back
+                </button>
+              </div> -->
               <div class="tab-content" id="nav-tabContent">
                 <!-- Anggota -->
                 <div class="tab-pane fade show active" id="nav-anggota" role="tabpanel" aria-labelledby="nav-anggota-tab">
                   <div class="card modern-card mt-4">
+                    <div class="card-header bg-primary">
+                      <p class="h4 fw-bold text-white">Data Anggota TPK</p>
+                    </div>
                     <div class="card-body">
                       <div class="table-responsive">
                         <EasyDataTable
@@ -467,6 +475,9 @@
                     <!-- Table -->
                     <div class="container-fluid">
                       <div class="card modern-card mt-4">
+                        <div class="card-header bg-primary">
+                          <p class="h4 fw-bold text-white">Data Pendampingan Keluarga</p>
+                        </div>
                         <div class="card-body">
                           <div class="table-responsive">
                             <EasyDataTable
@@ -486,6 +497,9 @@
                     <!-- Table -->
                     <div class="container-fluid">
                       <div class="card modern-card mt-4">
+                        <div class="card-header bg-primary">
+                          <p class="h4 fw-bold text-white">Data  Pendampingan Anak</p>
+                        </div>
                         <div class="card-body">
                           <div class="table-responsive">
                             <EasyDataTable
@@ -505,6 +519,9 @@
                     <!-- Table -->
                     <div class="container-fluid">
                       <div class="card modern-card mt-4">
+                        <div class="card-header bg-primary">
+                          <p class="h4 fw-bold text-white">Data Pendampingan Ibu Hamil</p>
+                        </div>
                         <div class="card-body">
                           <div class="table-responsive">
                             <EasyDataTable
@@ -517,12 +534,16 @@
                     </div>
                   </div>
                 </div>
+
                 <!-- Catin -->
                 <div class="tab-pane fade" id="nav-catin" role="tabpanel" aria-labelledby="nav-catin-tab">
                   <div class="card bg-light border-0 shadow-sm p-2">
                     <!-- Table -->
                     <div class="container-fluid">
                       <div class="card modern-card mt-4">
+                        <div class="card-header bg-primary">
+                          <p class="h4 fw-bold text-white">Data Pendampingan Calon Pengantin</p>
+                        </div>
                         <div class="card-body">
                           <div class="table-responsive">
                             <EasyDataTable
@@ -1072,7 +1093,7 @@ export default {
     },
     async detail(no_tpk) {
       this.isDetail = true;
-
+      this.isLoading = true;
       try {
         const res = await axios.get(`http://localhost:8000/api/member/tpk/${no_tpk}`,{
           headers: {
@@ -1081,10 +1102,11 @@ export default {
           }
         })
         this.tpkMember = res.data
-        console.log('anggota: '+ this.tpkMember);
 
       } catch (e) {
         console.error('Gagal ambil data:', e)
+      }finally {
+        this.isLoading = false
       }
     },
   },

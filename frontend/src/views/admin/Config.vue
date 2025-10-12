@@ -7,15 +7,8 @@
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" />
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div
-          class="flex-grow-1 p-4 bg-light container-fluid"
-          :style="{
-            backgroundImage: form.background ? `url(${form.background})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }"
-        >
+        <div class="flex-grow-1 p-4 bg-light container-fluid">
+
           <!-- Welcome Card -->
           <div class="card welcome-card shadow-sm mb-4 border-0">
             <div
@@ -183,7 +176,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">✅ Berhasil</h5>
+          <h5 class="modal-title">Berhasil</h5>
           <button
             type="button"
             class="btn-close btn-close-white"
@@ -192,7 +185,32 @@
           ></button>
         </div>
         <div class="modal-body text-center">
-          <p class="mb-0">Pengaturan berhasil disimpan ke <strong>localStorage</strong>.</p>
+          <p class="mb-0">{{ successMessage || 'Konfigurasi berhasil disimpan.' }}</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Error -->
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-danger text-white rounded-top-4">
+          <h5 class="modal-title">Error</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-0">{{ errorMessage || 'Terjadi kesalahan yang tidak diketahui.' }}</p>
         </div>
         <div class="modal-footer justify-content-center">
           <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
@@ -216,6 +234,8 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      errorMessage: '',
+      successMessage:'',
       form: {
         logo: null,
         logoWidth: 120,
@@ -230,32 +250,6 @@ export default {
       isLogoDrag: false,
       isBgDrag: false,
     }
-  },
-  mounted() {
-    axios.get('http://localhost:8000/api/config', {
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    .then(res => {
-      console.log(res.data);
-      if (!res.data) return
-
-      // ini langsung object, bukan string JSON
-      const conf = res.data
-      this.form.logoWidth = conf.logoWidth || 120
-      this.form.colorTheme = conf.colorTheme || '#000000'
-      this.form.footerColumn = conf.footerColumn || 3
-      this.form.maintenance = conf.maintenance == 1
-
-      // ini preview
-      this.previewLogo = conf.logo || null
-      this.previewBackground = conf.background || null
-      this.form.background = conf.background || null
-      //console.log('Logo: '+this.previewLogo);
-      //console.log('BG: '+this.previewBackground);
-    })
   },
   methods: {
     toggleSidebar() {
@@ -292,6 +286,18 @@ export default {
         this.form.background = file
       }
     },
+    showError(message) {
+      this.errorMessage = message || 'Terjadi kesalahan.'
+      // eslint-disable-next-line no-undef
+      const modal = new bootstrap.Modal(document.getElementById('errorModal'))
+      modal.show()
+    },
+    showSuccess(message){
+      this.successMessage = message || 'Berhasil tersimpan.'
+      // eslint-disable-next-line no-undef
+      const modal = new bootstrap.Modal(document.getElementById('successModal'))
+      modal.show()
+    },
     handleSubmit() {
       const formData = new FormData()
       formData.append('logo', this.form.logo)
@@ -303,27 +309,32 @@ export default {
 
       axios.post('http://localhost:8000/api/config', formData, {
         headers: {
-          'Accept': 'application/json',
-          //'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Accept: 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       })
-        .then(res => {
-          console.log(res.data)
-          // eslint-disable-next-line no-undef
-          const modal = new bootstrap.Modal(document.getElementById('successModal'))
-          modal.show()
-        })
-        .catch(err => {
-          console.error(err)
-          alert('Gagal simpan konfigurasi')
-        })
+      .then(res => {
+        console.log(res.data)
+
+        // ✅ Simpan data form ke localStorage setelah berhasil disimpan di database
+        localStorage.setItem('siteConfig', JSON.stringify(this.form))
+
+        // ✅ Tampilkan modal sukses
+        this.showSuccess('Konfigurasi anda berhasil disimpan')
+      })
+      .catch(err => {
+        console.error('Gagal simpan konfigurasi:', err)
+        this.showError('Gagal menyimpan konfigurasi. Periksa koneksi atau token Anda.')
+      })
     },
   },
 }
 </script>
 
 <style scoped>
+.bg-light[style] {
+  transition: background-image 0.6s ease-in-out;
+}
 .configuration-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #f9f9fb;

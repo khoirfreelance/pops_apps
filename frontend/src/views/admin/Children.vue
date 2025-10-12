@@ -32,18 +32,46 @@
                   </small>
                 </div>
                 <div class="text-white my-0">
-                  <ul>
-                    <li>Anda memiiki <strong>1</strong> jadwal intervensi hari ini.</li>
-                    <li v-if="pendingCount > 0">
-                      Anda memiliki
-                      <a
-                        href="javascript:void(0)"
-                        class="fw-bold text-white text-decoration-none"
-                        @click="toggleExpandPending"
+                  <ul class="list-unstyled">
+                    <!-- Jadwal intervensi -->
+                    <li v-if="pendingCount > 0" class="d-flex align-items-center mb-2">
+                      <div
+                        class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                        style="width: 28px; height: 28px;"
                       >
-                        {{ pendingCount }} data pending
-                      </a>
-                      belum terkirim.
+                        <i class="bi bi-calendar2-check text-primary fs-6"></i>
+                      </div>
+                      <p class="mb-0 small">
+                        Anda memiliki
+                        <router-link
+                          to="/admin/jadwal"
+                          class="fw-bold text-light text-decoration-none"
+                        >
+                          1 jadwal intervensi
+                        </router-link>
+                        hari ini.
+                      </p>
+                    </li>
+
+                    <!-- Data pending -->
+                    <li v-if="pendingCount > 0" class="d-flex align-items-center">
+                      <div
+                        class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                        style="width: 28px; height: 28px;"
+                      >
+                        <i class="bi bi-upload text-primary fs-6"></i>
+                      </div>
+                      <p class="mb-0 small">
+                        Anda memiliki
+                        <a
+                          href="javascript:void(0)"
+                          class="fw-bold text-white text-decoration-none"
+                          @click="toggleExpandPending"
+                        >
+                          {{ pendingCount }} data pending
+                        </a>
+                        belum terkirim.
+                      </p>
                     </li>
                   </ul>
                 </div>
@@ -335,7 +363,6 @@
                 </div>
 
                 <!-- Filter -->
-                <h5 class="fw-bold text-success">Data Anak</h5>
                 <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
                   <form class="row g-3" @submit.prevent="applyFilter_anak">
                     <!-- Baris utama filter -->
@@ -454,29 +481,31 @@
 
                 <!-- Table Section -->
                 <div class="container-fluid">
-                  <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
-                    <div class="card-body bg-additional rounded">
-                      <div class="d-flex justify-content-between">
-                        <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
-                        <button @click="toggleExpandPending" class="btn-close"></button>
-                      </div>
+                  <transition name="collapse">
+                    <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
+                      <div class="card-body bg-additional rounded">
+                        <div class="d-flex justify-content-between">
+                          <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
+                          <button @click="toggleExpandPending" class="btn-close"></button>
+                        </div>
 
-                      <EasyDataTable
-                        :headers="headers_pending"
-                        :items="kelahiranPending"
-                      >
-                        <template #item-action="{ id,tipe }">
-                          <button
-                            class="btn btn-secondary m-2"
-                            @click="updateKelahiran(id,tipe)"
-                            style="font-size: small;"
-                          >
-                            <i class="fa fa-pen"></i>
-                          </button>
-                        </template>
-                      </EasyDataTable>
+                        <EasyDataTable
+                          :headers="headers_pending"
+                          :items="kelahiranPending"
+                        >
+                          <template #item-action="{ id,tipe }">
+                            <button
+                              class="btn btn-secondary m-2"
+                              @click="updateKelahiran(id,tipe)"
+                              style="font-size: small;"
+                            >
+                              <i class="fa fa-pen"></i>
+                            </button>
+                          </template>
+                        </EasyDataTable>
+                      </div>
                     </div>
-                  </div>
+                  </transition>
                   <!-- Data Table -->
                   <div class="card modern-card mt-4">
                     <div class="card-body">
@@ -643,61 +672,68 @@
 
                 <!-- Data Pending -->
                 <div class="container-fluid mt-4">
-                  <div class="table-responsive">
-                    <EasyDataTable
-                      :headers="pending_kunjungan"
-                      :items="itemsPending.map(i => ({ row: i }))"
-                      table-class="my-striped align-middle text-center"
-                      header-text-direction="center"
-                      body-text-direction="center"
-                      alternating
-                    >
-                      <!-- Slot Nama -->
-                      <template #item-nama="{ row }">
-                        <span class="fw-semibold">{{ row.nama }}</span>
-                      </template>
-
-                      <!-- Slot Jenis Kelamin -->
-                      <template #item-gender="{ row }">
-                        <span>{{ row.gender }}</span>
-                      </template>
-
-                      <template #item-tgl_lahir="{ row }">
-                        <span>{{ row.tgl_lahir }}</span>
-                      </template>
-
-                      <template #item-nama_ibu="{ row }">
-                        <span>{{ row.nama_ibu }}</span>
-                      </template>
-
-                      <!-- Slot BB -->
-                      <template #item-bb="{ row }">
-                        <span>{{ row.bb ? row.bb + ' kg' : '-' }}</span>
-                      </template>
-
-                      <!-- Slot TB -->
-                      <template #item-tb="{ row }">
-                        <span>{{ row.tb ? row.tb + ' cm' : '-' }}</span>
-                      </template>
-
-                      <!-- Slot Edit -->
-                      <template #item-edit="{ row }">
-                        <a
-                          href="#"
-                          class="text-primary text-decoration-none fw-semibold"
-                          @click.prevent="editRow(row)"
+                  <transition name="collapse">
+                    <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4 p-3 bg-additional">
+                      <div class="d-flex justify-content-between mb-2">
+                        <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
+                        <button @click="toggleExpandPending" class="btn-close"></button>
+                      </div>
+                      <div class="table-responsive">
+                        <EasyDataTable
+                          :headers="pending_kunjungan"
+                          :items="itemsPending.map(i => ({ row: i }))"
+                          table-class="my-striped align-middle text-center"
+                          header-text-direction="center"
+                          body-text-direction="center"
+                          alternating
                         >
-                          Edit
-                        </a>
-                      </template>
-                    </EasyDataTable>
+                          <!-- Slot Nama -->
+                          <template #item-nama="{ row }">
+                            <span class="fw-semibold">{{ row.nama }}</span>
+                          </template>
 
-                  </div>
+                          <!-- Slot Jenis Kelamin -->
+                          <template #item-gender="{ row }">
+                            <span>{{ row.gender }}</span>
+                          </template>
+
+                          <template #item-tgl_lahir="{ row }">
+                            <span>{{ row.tgl_lahir }}</span>
+                          </template>
+
+                          <template #item-nama_ibu="{ row }">
+                            <span>{{ row.nama_ibu }}</span>
+                          </template>
+
+                          <!-- Slot BB -->
+                          <template #item-bb="{ row }">
+                            <span>{{ row.bb ? row.bb + ' kg' : '-' }}</span>
+                          </template>
+
+                          <!-- Slot TB -->
+                          <template #item-tb="{ row }">
+                            <span>{{ row.tb ? row.tb + ' cm' : '-' }}</span>
+                          </template>
+
+                          <!-- Slot Edit -->
+                          <template #item-edit="{ row }">
+                            <a
+                              href="#"
+                              class="text-primary text-decoration-none fw-semibold"
+                              @click.prevent="editRow(row)"
+                            >
+                              Edit
+                            </a>
+                          </template>
+                        </EasyDataTable>
+
+                      </div>
+                    </div>
+                  </transition>
                 </div>
 
                 <!-- Filter -->
                 <div class="container-fluid mt-4">
-                  <h5 class="fw-bold text-success">Data Anak</h5>
                   <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
                     <form class="row g-3" @submit.prevent="applyFilter_anak">
                       <!-- Baris utama filter -->
@@ -797,9 +833,12 @@
                         </div>
                       </div>
 
-                      <!-- Catatan -->
-                      <div class="col-12 text-end mt-2">
-                        <small class="text-muted fst-italic">*Bisa pilih lebih dari 1</small>
+                      <!-- Tombol -->
+                      <div class="col-md-12 d-flex justify-content-between mt-3">
+                        <small class="text-muted fst-italic m-3">*Bisa pilih lebih dari 1</small>
+                        <button type="button" class="btn btn-secondary" @click="resetFilter">
+                          <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
                       </div>
                     </form>
                   </div>
@@ -1937,6 +1976,24 @@
 </template>
 
 <style scoped>
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  max-height: 1000px; /* cukup besar agar muat konten */
+  opacity: 1;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -2338,7 +2395,6 @@ export default {
         { text: 'BB/TB', value: 'bb_tb' },
       ],
       headers_detail_kunjungan:[
-
       ],
       kunjungan_posyandu: [
         {
@@ -2990,6 +3046,16 @@ export default {
     },
   },
   methods: {
+    resetFilter(){
+      this.advancedFilter_anak = {
+        status_gizi: '',
+        lokasi: '',
+        intervensi: '',
+        status_list: [],
+        lokasi_list: [],
+        intervensi_list: []
+      }
+    },
     downloadRiwayat() {
       if (!this.selectedAnak) {
         alert('Silakan pilih anak terlebih dahulu.')
@@ -3090,10 +3156,6 @@ export default {
         this.showForm = false
         this.notFound = true
       }
-    },
-    kirimData() {
-      alert('Data berhasil dikirim!')
-      console.log('Data dikirim:', this.form_kunjungan)
     },
     toggleExpandForm() {
       this.isFormOpen = !this.isFormOpen
@@ -3203,9 +3265,6 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    toggleExpand() {
-      this.isFilterOpen = !this.isFilterOpen
-    },
     hitungUsia() {
       if (!this.form_kunjungan.tgl_lahir) {
         this.form_kunjungan.usia = 0
@@ -3285,10 +3344,6 @@ export default {
     applyAdvancedFilter_kunjungan() {
       this.appliedAdvancedFilter_kunjungan = { ...this.advancedFilter_kunjungan }
     },
-    /* applyAdvancedFilter_anak() {
-      // Salin isi input advancedFilter ke appliedAdvancedFilter
-      this.appliedAdvancedFilter_anak = { ...this.advancedFilter_anak }
-    }, */
     applyAdvancedFilter_intervensi() {
       // Salin isi input advancedFilter ke appliedAdvancedFilter
       this.appliedAdvancedFilter_intervensi = { ...this.advancedFilter_intervensi }
@@ -3306,8 +3361,6 @@ export default {
       }
       this.appliedAdvancedFilter_kunjungan = { ...this.advancedFilter_kunjungan }
     },
-
-    // Reset semua filter
     resetFilter_anak() {
       this.filter_anak.nik = ''
       this.advancedFilter_anak = {
@@ -3322,16 +3375,6 @@ export default {
       // Bisa juga langsung reload data default
       // this.loadAnak()
     },
-    /* resetFilter_anak() {
-      this.advancedFilter_anak = {
-        nama: '',
-        no_kia: '',
-        gender: '',
-        tgl_lahir: '',
-        kunjungan: '',
-      }
-      this.appliedAdvancedFilter_anak = { ...this.advancedFilter_anak }
-    }, */
     resetFilter_intervensi() {
       this.advancedFilter_intervensi = {
         nama: '',
