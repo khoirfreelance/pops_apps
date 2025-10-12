@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Bride;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,10 +17,8 @@ class BrideController extends Controller
      */
     public function index()
     {
-        // Ambil semua data catin beserta pasangan (lazy eager load)
-        $brides = Bride::with('pasangan')->get();
-
-        return response()->json($brides, 200);
+        $data = Bride::all();
+        return response()->json($data);
     }
 
     /**
@@ -28,38 +27,25 @@ class BrideController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'peran' => 'required|in:suami,istri',
-            'id_pasangan' => 'nullable|exists:catin,id',
-            'tgl_daftar' => 'required|date',
-            'rencana_tgl_nikah' => 'nullable|date',
-            'tempat_nikah' => 'nullable|string|max:255',
-            'status_pernikahan' => 'nullable|string|max:100',
+        $data = $request->validate([
+            'bride.nik' => 'required|string',
+            'bride.nama' => 'required|string',
+            'groom.nik' => 'nullable|string',
+            'groom.nama' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors(),
-            ], 422);
+        $bride = Bride::create($data['bride']);
+
+        if (!empty($data['groom']['nik'])) {
+            $groom = BridePartner::create(array_merge(
+                $data['groom'],
+                ['bride_id' => $bride->id]
+            ));
         }
 
-        $bride = Bride::create($validator->validated());
-
-        // Jika pasangan sudah ada, perbarui hubungan dua arah
-        if ($bride->id_pasangan) {
-            $pasangan = Bride::find($bride->id_pasangan);
-            if ($pasangan && !$pasangan->id_pasangan) {
-                $pasangan->id_pasangan = $bride->id;
-                $pasangan->save();
-            }
-        }
-
-        return response()->json([
-            'message' => 'Data calon pengantin berhasil disimpan',
-            'data' => $bride->load('pasangan'),
-        ], 201);
+        return response()->json(['success' => true, 'bride' => $bride]);
     }
+
 
     /**
      * Tampilkan detail satu calon pengantin.

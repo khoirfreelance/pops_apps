@@ -54,8 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Bride Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('bride', BrideController::class)
-        ->only(['index', 'store', 'show'])
-        ->where(['bride' => '[0-9]+']); // <— harusnya 'bride', bukan 'member'
+        ->only(['index', 'store', 'show']);
 });
 
 // Region Endpoint

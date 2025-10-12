@@ -163,7 +163,7 @@
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">Usia</label>
-                      <input type="number" class="form-control shadow-sm" v-model="form.usiaP" />
+                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaP" />
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
@@ -171,15 +171,15 @@
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
-                      <input type="number" class="form-control shadow-sm" v-model="form.bbP" />
+                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.bbP" />
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm)</label>
-                      <input type="number" class="form-control shadow-sm" v-model="form.tbP" />
+                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.tbP" />
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">LiLa (cm)</label>
-                      <input type="number" class="form-control shadow-sm" v-model="form.lilaP" />
+                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.lilaP" />
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">Hb</label>
@@ -205,7 +205,7 @@
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Usia</label>
-                      <input type="number" class="form-control shadow-sm" v-model="form.usiaL" />
+                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaL" />
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
@@ -282,13 +282,13 @@
               <!-- RT -->
               <div class="col-md-4">
                 <label for="rt" class="form-label fw-semibold">RT</label>
-                <input type="number" v-model="advancedFilter.rt" id="rt" class="form-control" />
+                <input type="number" min="0" v-model="advancedFilter.rt" id="rt" class="form-control" />
               </div>
 
               <!-- RW -->
               <div class="col-md-4">
                 <label for="rw" class="form-label fw-semibold">RW</label>
-                <input type="number" v-model="advancedFilter.rw" id="rw" class="form-control" />
+                <input type="number" min="0" v-model="advancedFilter.rw" id="rw" class="form-control" />
               </div>
 
               <!-- Catatan -->
@@ -652,6 +652,7 @@ export default {
     },
     async loadBride(){
       try {
+
         const res = await axios.get('http://localhost:8000/api/bride',{
           headers: {
             Accept: 'application/json',
@@ -737,17 +738,16 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    saveData() {
+    async saveData() {
       this.closeModal('modalTambah')
       this.isLoadingImport = true
       this.importProgress = 0
       this.animatedProgress = 0
       this.currentRow = 0
-      this.totalRows = 1 // hanya 1 record, bisa disesuaikan kalau batch
+      this.totalRows = 1
 
-      // simulasi progress bertahap
       let step = 0
-      const interval = setInterval(() => {
+      const interval = setInterval(async () => {
         step += 10
         this.importProgress = Math.min(step, 100)
         this.animatedProgress = this.importProgress
@@ -755,48 +755,51 @@ export default {
 
         if (this.importProgress >= 100) {
           clearInterval(interval)
-
-          // lanjut simpan data
-
-          this.bride.push({ ...this.form })
-          this.showAlert = true
-          setTimeout(() => (this.showAlert = false), 3000)
-
-          // reset form
-          this.form = {
-            catatan: '',
-            kunjungan: '',
-            menikah: '',
-            namaP: '',
-            nikP: '',
-            usiaP: '',
-            pekerjaanP: '',
-            bbP: '',
-            tbP: '',
-            lilaP: '',
-            hbP: '',
-            namaL: '',
-            nikL: '',
-            usiaL: '',
-            pekerjaanL: '',
-            riwayat: '',
-            jamban: '',
-            air: '',
-            intervensi: '',
-            kelola: '',
-          }
-
-          this.$nextTick(() => {
-            const el = document.getElementById('successModal')
-            if (el) {
-              const instance = Modal.getOrCreateInstance(el)
-              instance.show()
+          try {
+            // Gabung data perempuan & suami
+            const payload = {
+              bride: {
+                nik: this.form.nikP,
+                nama: this.form.namaP,
+                usia: this.form.usiaP,
+                bb: this.form.bbP,
+                tb: this.form.tbP,
+                lila: this.form.lilaP,
+                hb: this.form.hbP,
+                pendidikan: this.form.pendidikanP,
+                pekerjaan: this.form.pekerjaanP
+              },
+              groom: {
+                nik: this.form.nikL,
+                nama: this.form.namaL,
+                usia: this.form.usiaL,
+                bb: this.form.bbL,
+                tb: this.form.tbL,
+                pendidikan: this.form.pendidikanL,
+                pekerjaan: this.form.pekerjaanL
+              }
             }
-          })
 
-          this.isLoadingImport = false
+            // Kirim ke backend
+            await axios.post('http://localhost:8000/api/bride', payload, {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            })
+
+            // Refresh data
+            await this.loadBride()
+            this.resetForm()
+            this.showSuccess('Data Berhasil Disimpan')
+          } catch (e) {
+            console.error('Gagal simpan data:', e)
+            this.showError('Error Simpan Data', e)
+          } finally {
+            this.isLoadingImport = false
+          }
         }
-      }, 150) // jeda antar progress
+      }, 150)
     },
     openImport(title) {
       this.importTitle = title
