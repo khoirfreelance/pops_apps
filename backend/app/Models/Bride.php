@@ -10,17 +10,23 @@ class Bride extends Model
     const UPDATED_AT = 'modified_at';
 
     protected $fillable = [
-        'nama',
-        'nik',
-        'tgl_lahir',
-        'alamat',
         'id_pasangan',
+        'id_user', // relasi ke tb_anggota_keluarga
         'peran', // 'suami' atau 'istri'
         'tgl_daftar',
         'rencana_tgl_nikah',
         'tempat_nikah',
         'status_pernikahan',
     ];
+
+    /**
+     * Relasi ke tabel anggota_keluarga
+     * id_user → id di tabel anggota_keluarga
+     */
+    public function anggotaKeluarga()
+    {
+        return $this->belongsTo(AnggotaKeluarga::class, 'id_user');
+    }
 
     /**
      * Relasi pasangan — menunjuk ke calon pengantin lainnya (suami/istri)

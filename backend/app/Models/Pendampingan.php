@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Pendampingan extends Model
+{
+    use HasFactory;
+
+    protected $table = 'pendampingan';
+    const UPDATED_AT = 'modified_at';
+
+    protected $fillable = [
+        'jenis',
+        'id_subjek',
+        'tanggal',
+        'catatan',
+        'lokasi',
+        'bb',
+        'tb',
+        'lk',
+        'lila',
+        'lika',
+        'hb',
+        'umur_anak',
+        'asi_ekslusif',
+        'imunisasi_dasar',
+        'diasuh_oleh',
+        'pemberian_vit_a',
+        'usia_kehamilan',
+        'anemia',
+        'kek',
+        'riwayat_kehamilan',
+        'resti',
+        'terpapar_rokok',
+        'jamban_sehat',
+        'sumber_air_bersih',
+        'punya_jaminan',
+        'keluarga_teredukasi',
+        'mendapatkan_bantuan',
+        'id_petugas',
+    ];
+
+    /**
+     * Relasi dinamis ke tabel subjek.
+     */
+    public function subjek()
+    {
+        return match ($this->jenis) {
+            'catin' => $this->belongsTo(Catin::class, 'id_subjek', 'id'),
+            //'anak'  => $this->belongsTo(Anak::class, 'id_subjek', 'id'),
+            //'bumil' => $this->belongsTo(Bumil::class, 'id_subjek', 'id'),
+            default => null,
+        };
+    }
+
+    /**
+     * Relasi ke petugas.
+     */
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'id_petugas', 'id');
+    }
+}

@@ -127,19 +127,19 @@
                 <div class="card-body">
                   <form class="row g-4">
                     <!-- Catatan Berisiko -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Catatan Berisiko</label>
                       <input type="text" class="form-control shadow-sm" v-model="form.catatan" />
                     </div>
 
                     <!-- Tanggal Kunjungan -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
                       <input type="date" class="form-control shadow-sm" v-model="form.kunjungan" />
                     </div>
 
                     <!-- Tanggal Menikah -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Tanggal Menikah</label>
                       <input type="date" class="form-control shadow-sm" v-model="form.menikah" />
                     </div>
@@ -147,7 +147,7 @@
                     <!-- Catin Perempuan -->
                     <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Perempuan</h5></div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                       <label class="form-label small fw-semibold text-secondary">Nama</label>
                       <input type="text" class="form-control shadow-sm" v-model="form.namaP" />
                     </div>
@@ -161,13 +161,48 @@
                         @input="form.nikP = form.nikP.replace(/\D/g, '')"
                       />
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Usia</label>
-                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaP" />
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">No. KK</label>
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.no_kkP"
+                        maxlength="16"
+                        @input="form.no_kkP = form.no_kkP.replace(/\D/g, '')"
+                      />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
+                      <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahirP" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Usia</label>
+                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaP" readonly/>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
+                      <select  class="form-select shadow-sm" v-model="form.pendidikanP">
+                        <option value="">-- Pilih Pendidikan</option>
+                        <option value="SD">SD</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMA">SMA</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Sarjana">Sarjana</option>
+                        <option value="Magister">Magister</option>
+                        <option value="Doktoral">Doktoral</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
                       <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanP" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Status Pernikahan</label>
+                      <select class="form-select shadow-sm" v-model="form.statusP">
+                        <option value="">-- Pilih Status</option>
+                        <option value="Belum Menikah">Belum Menikah</option>
+                        <option value="Janda">Janda</option>
+                      </select>
                     </div>
                     <div class="col-md-4">
                       <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
@@ -189,9 +224,19 @@
                     <!-- Catin Laki-laki -->
                     <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Laki-laki</h5></div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                       <label class="form-label small fw-semibold text-secondary">Nama</label>
                       <input type="text" class="form-control shadow-sm" v-model="form.namaL" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">No. KK</label>
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.no_kkL"
+                        maxlength="16"
+                        @input="form.no_kkL = form.no_kkL.replace(/\D/g, '')"
+                      />
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">NIK</label>
@@ -203,15 +248,40 @@
                         @input="form.nikL = form.nikL.replace(/\D/g, '')"
                       />
                     </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
+                      <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahirL" />
+                    </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Usia</label>
                       <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaL" />
                     </div>
                     <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
+                      <select  class="form-select shadow-sm" v-model="form.pendidikanL">
+                        <option value="">-- Pilih Pendidikan</option>
+                        <option value="SD">SD</option>
+                        <option value="SMP">SMP</option>
+                        <option value="SMA">SMA</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Sarjana">Sarjana</option>
+                        <option value="Magister">Magister</option>
+                        <option value="Doktoral">Doktoral</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
                       <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
                       <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanL" />
                     </div>
-
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">Status Pernikahan</label>
+                      <select class="form-select shadow-sm" v-model="form.statusL">
+                        <option value="">-- Pilih Status</option>
+                        <option value="Belum Menikah">Belum Menikah</option>
+                        <option value="Janda">Janda</option>
+                      </select>
+                    </div>
                     <!-- Lingkungan -->
                     <div class="col-12"><h5 class="fw-bold text-primary mt-3">Lingkungan</h5></div>
 
@@ -522,6 +592,10 @@ export default {
         menikah: '',
         namaP: '',
         nikP: '',
+        no_kkP: '',
+        tgl_lahirP:'',
+        pendidikanP:'',
+        statusP:'',
         usiaP: 0,
         pekerjaanP: '',
         bbP: 0,
@@ -531,12 +605,14 @@ export default {
         namaL: '',
         nikL: '',
         usiaL: 0,
+        tgl_lahirL:'',
+        statusL:'',
+        pendidikanL:'',
         pekerjaanL: '',
         riwayat: '',
         jamban: '',
         air: '',
         intervensi: '',
-        kelola: '',
       },
       bride: [],
       headers: [
@@ -759,6 +835,7 @@ export default {
             // Gabung data perempuan & suami
             const payload = {
               bride: {
+                no_kk: this.form.no_kkP,
                 nik: this.form.nikP,
                 nama: this.form.namaP,
                 usia: this.form.usiaP,
@@ -767,16 +844,27 @@ export default {
                 lila: this.form.lilaP,
                 hb: this.form.hbP,
                 pendidikan: this.form.pendidikanP,
-                pekerjaan: this.form.pekerjaanP
+                pekerjaan: this.form.pekerjaanP,
+                status: this.form.statusP,
+                tgl_lahir: this.form.tgl_lahirP,
               },
               groom: {
+                no_kk: this.form.no_kkL,
                 nik: this.form.nikL,
                 nama: this.form.namaL,
                 usia: this.form.usiaL,
                 bb: this.form.bbL,
                 tb: this.form.tbL,
                 pendidikan: this.form.pendidikanL,
-                pekerjaan: this.form.pekerjaanL
+                pekerjaan: this.form.pekerjaanL,
+                status: this.form.statusL,
+                tgl_lahir: this.form.tgl_lahirL,
+              },
+              meta: {
+                rencana_tgl_nikah: this.form.menikah,
+                catatan: this.form.catatan,
+                kunjungan: this.form.kunjungan,
+                intervensi: this.form.intervensi,
               }
             }
 
