@@ -85,7 +85,6 @@
 
           <!-- Input Pencarian -->
           <div class="container-fluid mt-4 rounded p-3 ">
-            <h5 class="fw-bold mb-3">Tambahkan Data</h5>
             <div class="d-flex align-items-center gap-2 mb-3">
               <input
                 type="text"
@@ -121,217 +120,276 @@
               </div>
             </div>
 
-            <!-- Form -->
+            <!-- FORM DATA CATIN & PENDAMPINGAN -->
             <transition name="fade">
-              <div v-if="showForm" id="formData" class="card shadow-sm">
-                <div class="card-body">
+              <div v-if="showForm" id="formData" class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
                   <form class="row g-4">
-                    <!-- Catatan Berisiko -->
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Catatan Berisiko</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.catatan" />
+                    <!-- ===================== -->
+                    <!-- DATA CATIN -->
+                    <!-- ===================== -->
+                    <div class="col-12">
+                      <h4 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-person-hearts me-2"></i>Data Calon Pengantin
+                      </h4>
                     </div>
 
-                    <!-- Tanggal Kunjungan -->
+                    <!-- PEREMPUAN -->
                     <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
-                      <input type="date" class="form-control shadow-sm" v-model="form.kunjungan" />
+                      <h5 class="fw-semibold text-muted mb-3">
+                        <i class="bi bi-gender-female me-2"></i>Perempuan
+                      </h5>
+
+                      <label class="form-label">Nama Perempuan</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input v-model="form.nama_perempuan" class="form-control" />
+                      </div>
+
+                      <label class="form-label">NIK Perempuan</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                        <input v-model="form.nik_perempuan" class="form-control" />
+                      </div>
+
+                      <label class="form-label">Pekerjaan</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                        <input v-model="form.pekerjaan_perempuan" class="form-control" />
+                      </div>
+
+                      <label class="form-label">Tanggal Lahir</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input v-model="form.tgl_lahir_perempuan" type="date" class="form-control" @change="hitungUsia('perempuan')"/>
+                      </div>
+
+                      <label class="form-label">Usia</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
+                        <input v-model="form.usia_perempuan" type="number" class="form-control" readonly />
+                      </div>
+
+                      <label class="form-label">No. HP</label>
+                      <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                        <input v-model="form.hp_perempuan" class="form-control" />
+                      </div>
                     </div>
 
-                    <!-- Tanggal Menikah -->
+                    <!-- PRIA -->
                     <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Tanggal Menikah</label>
-                      <input type="date" class="form-control shadow-sm" v-model="form.menikah" />
+                      <h5 class="fw-semibold text-muted mb-3">
+                        <i class="bi bi-gender-male me-2"></i>Pria
+                      </h5>
+
+                      <label class="form-label">Nama Pria</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input v-model="form.nama_pria" class="form-control" />
+                      </div>
+
+                      <label class="form-label">NIK Pria</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                        <input v-model="form.nik_pria" class="form-control" />
+                      </div>
+
+                      <label class="form-label">Pekerjaan</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                        <input v-model="form.pekerjaan_pria" class="form-control" />
+                      </div>
+
+                      <label class="form-label">Tanggal Lahir</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input v-model="form.tgl_lahir_pria" type="date" class="form-control" @change="hitungUsia('pria')" />
+                      </div>
+
+                      <label class="form-label">Usia</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
+                        <input v-model="form.usia_pria" type="number" class="form-control" readonly />
+                      </div>
+
+                      <label class="form-label">No. HP</label>
+                      <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                        <input v-model="form.hp_pria" class="form-control" />
+                      </div>
                     </div>
 
-                    <!-- Catin Perempuan -->
-                    <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Perempuan</h5></div>
+                    <div class="col-md-6">
+                      <label class="form-label">Tanggal Rencana Nikah</label>
+                      <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                        <input type="date" v-model="form.tgl_rencana_menikah" class="form-control" />
+                      </div>
+                    </div>
 
-                    <div class="col-md-12">
-                      <label class="form-label small fw-semibold text-secondary">Nama</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.namaP" />
-                    </div>
                     <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">NIK</label>
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.nikP"
-                        maxlength="16"
-                        @input="form.nikP = form.nikP.replace(/\D/g, '')"
-                      />
+                      <label class="form-label">Rencana Tempat Tinggal</label>
+                      <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-house-door"></i></span>
+                        <input v-model="form.rencana_tinggal" class="form-control" />
+                      </div>
                     </div>
+
+                    <hr class="mt-4" />
+
+                    <!-- ===================== -->
+                    <!-- DATA PENDAMPINGAN -->
+                    <!-- ===================== -->
+                    <div class="col-12">
+                      <h4 class="fw-bold text-primary mb-3">
+                        <i class="bi bi-clipboard-heart me-2 text-success"></i>Data Pendampingan Catin
+                      </h4>
+                    </div>
+
                     <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">No. KK</label>
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.no_kkP"
-                        maxlength="16"
-                        @input="form.no_kkP = form.no_kkP.replace(/\D/g, '')"
-                      />
+                      <label class="form-label">Tanggal Pemeriksaan</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-calendar-heart"></i></span>
+                        <input type="date" v-model="form.tgl_pemeriksaan" class="form-control" />
+                      </div>
                     </div>
+
                     <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
-                      <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahirP" />
+                      <label class="form-label">Tanggal Pendampingan</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
+                        <input type="date" v-model="form.tgl_pendampingan" class="form-control" />
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Usia</label>
-                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaP" readonly/>
+
+                    <div
+                      class="col-md-4"
+                      v-for="(label, field) in { bb:'BB (kg)', tb:'TB (cm)', lila:'LILA (cm)', hb:'HB' }"
+                      :key="field"
+                    >
+                      <label class="form-label">{{ label }}</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-heart-pulse"></i></span>
+                        <input v-model="form[field]" type="number" class="form-control" />
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
-                      <select  class="form-select shadow-sm" v-model="form.pendidikanP">
-                        <option value="">-- Pilih Pendidikan</option>
-                        <option value="SD">SD</option>
-                        <option value="SMP">SMP</option>
-                        <option value="SMA">SMA</option>
-                        <option value="Diploma">Diploma</option>
-                        <option value="Sarjana">Sarjana</option>
-                        <option value="Magister">Magister</option>
-                        <option value="Doktoral">Doktoral</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanP" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Status Pernikahan</label>
-                      <select class="form-select shadow-sm" v-model="form.statusP">
-                        <option value="">-- Pilih Status</option>
-                        <option value="Belum Menikah">Belum Menikah</option>
-                        <option value="Janda">Janda</option>
-                      </select>
-                    </div>
+
+                    <!-- ===================== -->
+                    <!-- STATUS DAN KONDISI CATIN -->
+                    <!-- ===================== -->
                     <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Berat Badan (kg)</label>
-                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.bbP" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Tinggi Badan (cm)</label>
-                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.tbP" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">LiLa (cm)</label>
-                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.lilaP" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Hb</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.hbP" />
+                      <label class="form-label">Status HB</label>
+                      <div class="d-flex align-items-center gap-3 border rounded p-2">
+                        <i class="bi bi-droplet-half fs-5"></i>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="Anemia" v-model="form.status_hb" id="hb_anemia" />
+                          <label class="form-check-label" for="hb_anemia">Anemia</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="Normal" v-model="form.status_hb" id="hb_normal" />
+                          <label class="form-check-label" for="hb_normal">Normal</label>
+                        </div>
+                      </div>
                     </div>
 
-                    <!-- Catin Laki-laki -->
-                    <div class="col-12"><h5 class="fw-bold text-primary mt-3">Catin Laki-laki</h5></div>
-
-                    <div class="col-md-12">
-                      <label class="form-label small fw-semibold text-secondary">Nama</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.namaL" />
+                    <div class="col-md-4">
+                      <label class="form-label">Status Gizi</label>
+                      <div class="d-flex align-items-center gap-3 border rounded p-2">
+                        <i class="bi bi-bar-chart text-success fs-5"></i>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="KEK" v-model="form.status_gizi" id="gizi_kek" />
+                          <label class="form-check-label" for="gizi_kek">KEK</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="Tidak KEK" v-model="form.status_gizi" id="gizi_tidakkek" />
+                          <label class="form-check-label" for="gizi_tidakkek">Tidak KEK</label>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">No. KK</label>
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.no_kkL"
-                        maxlength="16"
-                        @input="form.no_kkL = form.no_kkL.replace(/\D/g, '')"
-                      />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">NIK</label>
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.nikL"
-                        maxlength="16"
-                        @input="form.nikL = form.nikL.replace(/\D/g, '')"
-                      />
-                    </div>
-
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
-                      <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahirL" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Usia</label>
-                      <input type="number" min="0" class="form-control shadow-sm" v-model="form.usiaL" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
-                      <select  class="form-select shadow-sm" v-model="form.pendidikanL">
-                        <option value="">-- Pilih Pendidikan</option>
-                        <option value="SD">SD</option>
-                        <option value="SMP">SMP</option>
-                        <option value="SMA">SMA</option>
-                        <option value="Diploma">Diploma</option>
-                        <option value="Sarjana">Sarjana</option>
-                        <option value="Magister">Magister</option>
-                        <option value="Doktoral">Doktoral</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.pekerjaanL" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-semibold text-secondary">Status Pernikahan</label>
-                      <select class="form-select shadow-sm" v-model="form.statusL">
-                        <option value="">-- Pilih Status</option>
-                        <option value="Belum Menikah">Belum Menikah</option>
-                        <option value="Janda">Janda</option>
-                      </select>
-                    </div>
-                    <!-- Lingkungan -->
-                    <div class="col-12"><h5 class="fw-bold text-primary mt-3">Lingkungan</h5></div>
 
                     <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Riwayat Penyakit</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.riwayat" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Jamban Sehat</label>
-                      <select class="form-select shadow-sm" v-model="form.jamban">
-                        <option value="">-- Pilih --</option>
-                        <option value="Ya">Ya</option>
-                        <option value="Tidak">Tidak</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold text-secondary">Sumber Air Bersih</label>
-                      <input type="text" class="form-control shadow-sm" v-model="form.air" />
+                      <label class="form-label">Terpapar Rokok?</label>
+                      <div class="d-flex align-items-center gap-3 border rounded p-2">
+                        <i class="bi bi-wind fs-5"></i>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="ya" v-model="form.catin_terpapar_rokok" id="rokok_ya" />
+                          <label class="form-check-label" for="rokok_ya">Ya</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="tidak" v-model="form.catin_terpapar_rokok" id="rokok_tidak" />
+                          <label class="form-check-label" for="rokok_tidak">Tidak</label>
+                        </div>
+                      </div>
                     </div>
 
-                    <!-- Intervensi -->
-                    <div class="col-md-12">
-                      <label class="form-label small fw-semibold text-secondary">Intervensi</label>
-                      <textarea
-                        class="form-control shadow-sm"
-                        v-model="form.intervensi"
-                        rows="2"
-                      ></textarea>
+                    <div class="col-md-4">
+                      <label class="form-label">Catin TTD?</label>
+                      <div class="d-flex align-items-center gap-3 border rounded p-2">
+                        <i class="bi bi-capsule fs-5"></i>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="ya" v-model="form.catin_ttd" id="ttd_ya" />
+                          <label class="form-check-label" for="ttd_ya">Ya</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="tidak" v-model="form.catin_ttd" id="ttd_tidak" />
+                          <label class="form-check-label" for="ttd_tidak">Tidak</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-4">
+                      <label class="form-label">Riwayat Penyakit?</label>
+                      <div class="d-flex align-items-center gap-3 border rounded p-2">
+                        <i class="bi bi-activity fs-5"></i>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="ya" v-model="form.punya_riwayat_penyakit" id="riwayat_ya" />
+                          <label class="form-check-label" for="riwayat_ya">Ya</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" value="tidak" v-model="form.punya_riwayat_penyakit" id="riwayat_tidak" />
+                          <label class="form-check-label" for="riwayat_tidak">Tidak</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label">Keterangan Riwayat Penyakit</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-journal-medical"></i></span>
+                        <textarea rows="8" readonly v-model="form.riwayat_penyakit" class="form-control" ></textarea>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <div
+                      class="col-md-12"
+                      v-for="(label, field) in { fasilitas_rujukan:'Fasilitas Rujukan', edukasi:'Edukasi', pmt:'PMT' }"
+                      :key="field"
+                    >
+                      <label class="form-label">{{ label }}</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-hospital"></i></span>
+                        <input v-model="form[field]" class="form-control" />
+                      </div>
+                    </div>
                     </div>
                   </form>
+
                 </div>
 
                 <!-- Actions -->
-                <div class="card-footer bg-white d-flex justify-content-between">
-                  <button
-                    class="btn btn-light border rounded-pill px-4"
-                    @click="resetForm"
-                  >
+                <div class="card-footer bg-white border-0 d-flex justify-content-between">
+                  <button class="btn btn-outline-secondary rounded-pill px-4" @click="resetForm">
                     <i class="bi bi-x-circle me-2"></i> Batal
                   </button>
-                  <button
-                    class="btn btn-success rounded-pill px-4"
-                    @click="modalMode === 'add' ? saveData() : updateData()"
-                  >
-                    <i class="bi bi-save me-2"></i>
-                    {{ modalMode === 'add' ? 'Simpan' : 'Perbarui' }}
+                  <button class="btn btn-success rounded-pill px-4" @click="modalMode === 'add' ? saveData() : updateData()">
+                    <i class="bi bi-save me-2"></i>{{ modalMode === 'add' ? 'Simpan' : 'Perbarui' }}
                   </button>
                 </div>
               </div>
             </transition>
+
           </div>
 
           <!-- Filter -->
@@ -422,10 +480,11 @@
           <div class="container-fluid bg-light rounded shadow-sm p-3 mt-3">
             <div class="datatable-responsive">
               <EasyDataTable
-                :headers="visibleHeaders"
+                :headers="headers"
                 :items="filteredCatin"
-                buttons-pagination
-                :rows-per-page="5"
+                :visible-columns="visibleColumns"
+                :searchable="true"
+                :pagination="true"
               />
             </div>
           </div>
@@ -584,58 +643,104 @@ export default {
       totalRows: 1, // default 1 agar tidak bagi 0
       catatan_list:[],
       penyakit_list:[],
-      visibleColumns: ['catatan', 'kunjungan', 'menikah', 'namaP', 'nikP'], // default
+      visibleColumns: [
+        'nama_perempuan',
+        'nama_pria',
+        'tgl_rencana_menikah',
+        'rencana_tinggal',
+        'tgl_pendampingan',
+        'bb',
+        'tb',
+        'status_hb',
+        'status_gizi',
+        'catin_terpapar_rokok',
+        'catin_ttd'
+      ],
       form: {
-        id: null,
-        catatan: '',
-        kunjungan: '',
-        menikah: '',
-        namaP: '',
-        nikP: '',
-        no_kkP: '',
-        tgl_lahirP:'',
-        pendidikanP:'',
-        statusP:'',
-        usiaP: 0,
-        pekerjaanP: '',
-        bbP: 0,
-        tbP: 0,
-        lilaP: 0,
-        hbP: '',
-        namaL: '',
-        nikL: '',
-        usiaL: 0,
-        tgl_lahirL:'',
-        statusL:'',
-        pendidikanL:'',
-        pekerjaanL: '',
-        riwayat: '',
-        jamban: '',
-        air: '',
-        intervensi: '',
+        id:null,
+        // ========== DATA CATIN PEREMPUAN ==========
+        nama_perempuan: '',
+        nik_perempuan: '',
+        pekerjaan_perempuan: '',
+        tgl_lahir_perempuan: '',
+        usia_perempuan: null,
+        hp_perempuan: '',
+
+        // ========== DATA CATIN PRIA ==========
+        nama_pria: '',
+        nik_pria: '',
+        pekerjaan_pria: '',
+        tgl_lahir_pria: '',
+        usia_pria: null,
+        hp_pria: '',
+
+        // ========== DATA PERNIKAHAN ==========
+        tgl_rencana_menikah: '',
+        rencana_tinggal: '',
+
+        // ========== DATA PENDAMPINGAN ==========
+        tgl_pemeriksaan: '',
+        tgl_pendampingan: '',
+        bb: null,
+        tb: null,
+        lila: null,
+        hb: null,
+
+        // ========== STATUS DAN KONDISI CATIN ==========
+        status_hb: '', // "Anemia" | "Normal"
+        status_gizi: '', // "KEK" | "Tidak KEK"
+        catin_terpapar_rokok: '', // "ya" | "tidak"
+        catin_ttd: '', // "ya" | "tidak"
+        punya_riwayat_penyakit: '', // "ya" | "tidak"
+        riwayat_penyakit: '',
+
+        // ========== FASILITAS DAN EDUKASI ==========
+        fasilitas_rujukan: '',
+        edukasi: '',
+        pmt: ''
       },
       bride: [],
       headers: [
-        { text: 'Catatan Beresiko', value: 'catatan' },
-        { text: 'Tanggal Kunjungan', value: 'kunjungan' },
-        { text: 'Tanggal Menikah', value: 'menikah' },
-        { text: 'Nama Catin (P)', value: 'namaP' },
-        { text: 'NIK Catin (P)', value: 'nikP' },
-        { text: 'Usia Catin (P)', value: 'usiaP' },
-        { text: 'Pekerjaan Catin (P)', value: 'pekerjaanP' },
-        { text: 'BB (kg)', value: 'bbP' },
-        { text: 'TB (cm)', value: 'tbP' },
-        { text: 'LiLa (cm)', value: 'lilaP' },
-        { text: 'Hb', value: 'hbP' },
-        { text: 'Nama Pasangan', value: 'namaL' },
-        { text: 'NIK Pasangan', value: 'nikL' },
-        { text: 'Usia Pasangan', value: 'usiaL' },
-        { text: 'Pekerjaan Pasangan', value: 'pekerjaanL' },
-        { text: 'Riwayat Penyakit', value: 'riwayat' },
-        { text: 'Jamban Sehat', value: 'jamban' },
-        { text: 'Sumber Air Bersih', value: 'air' },
-        { text: 'Intervensi', value: 'intervensi' },
-        { text: 'Kelola', value: 'kelola' },
+        // --- Data Perempuan ---
+        { text: 'Nama Perempuan', value: 'nama_perempuan' },
+        { text: 'NIK Perempuan', value: 'nik_perempuan' },
+        { text: 'Pekerjaan Perempuan', value: 'pekerjaan_perempuan' },
+        { text: 'Tanggal Lahir Perempuan', value: 'tgl_lahir_perempuan' },
+        { text: 'Usia Perempuan', value: 'usia_perempuan' },
+        { text: 'HP Perempuan', value: 'hp_perempuan' },
+
+        // --- Data Pria ---
+        { text: 'Nama Pria', value: 'nama_pria' },
+        { text: 'NIK Pria', value: 'nik_pria' },
+        { text: 'Pekerjaan Pria', value: 'pekerjaan_pria' },
+        { text: 'Tanggal Lahir Pria', value: 'tgl_lahir_pria' },
+        { text: 'Usia Pria', value: 'usia_pria' },
+        { text: 'HP Pria', value: 'hp_pria' },
+
+        // --- Data Pernikahan ---
+        { text: 'Tanggal Rencana Nikah', value: 'tgl_rencana_menikah' },
+        { text: 'Rencana Tempat Tinggal', value: 'rencana_tinggal' },
+
+        // --- Data Pendampingan ---
+        { text: 'Tanggal Pemeriksaan', value: 'tgl_pemeriksaan' },
+        { text: 'Tanggal Pendampingan', value: 'tgl_pendampingan' },
+        { text: 'BB (kg)', value: 'bb' },
+        { text: 'TB (cm)', value: 'tb' },
+        { text: 'LILA (cm)', value: 'lila' },
+        { text: 'HB', value: 'hb' },
+
+        // --- Status dan Kondisi ---
+        { text: 'Status HB', value: 'status_hb' },
+        { text: 'Status Gizi', value: 'status_gizi' },
+        { text: 'Terpapar Rokok', value: 'catin_terpapar_rokok' },
+        { text: 'Catin TTD', value: 'catin_ttd' },
+        { text: 'Punya Riwayat Penyakit', value: 'punya_riwayat_penyakit' },
+        { text: 'Keterangan Riwayat Penyakit', value: 'riwayat_penyakit' },
+
+        // --- Fasilitas & Edukasi ---
+        { text: 'Fasilitas Rujukan', value: 'fasilitas_rujukan' },
+        { text: 'Edukasi', value: 'edukasi' },
+        { text: 'PMT', value: 'pmt' }
       ],
       // filter
       filter: {
@@ -681,30 +786,62 @@ export default {
     },
   },
   methods: {
-    resetForm(){
+    hitungUsia(jenis) {
+      const today = new Date()
+      let tglLahir = null
+
+      if (jenis === 'perempuan' && this.form.tgl_lahir_perempuan) {
+        tglLahir = new Date(this.form.tgl_lahir_perempuan)
+      } else if (jenis === 'pria' && this.form.tgl_lahir_pria) {
+        tglLahir = new Date(this.form.tgl_lahir_pria)
+      }
+
+      if (tglLahir) {
+        let usia = today.getFullYear() - tglLahir.getFullYear()
+        const m = today.getMonth() - tglLahir.getMonth()
+        if (m < 0 || (m === 0 && today.getDate() < tglLahir.getDate())) {
+          usia--
+        }
+
+        if (jenis === 'perempuan') {
+          this.form.usia_perempuan = usia
+        } else if (jenis === 'pria') {
+          this.form.usia_pria = usia
+        }
+      }
+    },
+    resetForm() {
       this.form = {
-        id: null,
-        catatan: '',
-        kunjungan: '',
-        menikah: '',
-        namaP: '',
-        nikP: '',
-        usiaP: 0,
-        pekerjaanP: '',
-        bbP: 0,
-        tbP: 0,
-        lilaP: 0,
-        hbP: '',
-        namaL: '',
-        nikL: '',
-        usiaL: 0,
-        pekerjaanL: '',
-        riwayat: '',
-        jamban: '',
-        air: '',
-        intervensi: '',
-        kelola: '',
-      },
+        nama_perempuan: '',
+        nik_perempuan: '',
+        pekerjaan_perempuan: '',
+        tgl_lahir_perempuan: '',
+        usia_perempuan: null,
+        hp_perempuan: '',
+        nama_pria: '',
+        nik_pria: '',
+        pekerjaan_pria: '',
+        tgl_lahir_pria: '',
+        usia_pria: null,
+        hp_pria: '',
+        tgl_rencana_menikah: '',
+        rencana_tinggal: '',
+        tgl_pemeriksaan: '',
+        tgl_pendampingan: '',
+        bb: null,
+        tb: null,
+        lila: null,
+        hb: null,
+        status_hb: '',
+        status_gizi: '',
+        catin_terpapar_rokok: '',
+        catin_ttd: '',
+        punya_riwayat_penyakit: '',
+        riwayat_penyakit: '',
+        fasilitas_rujukan: '',
+        edukasi: '',
+        pmt: ''
+      }
       this.showForm = false
     },
     cariData() {
