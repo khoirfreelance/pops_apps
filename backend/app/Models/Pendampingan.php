@@ -15,16 +15,16 @@ class Pendampingan extends Model
     protected $fillable = [
         'jenis',
         'id_subjek',
-        'tanggal',
+        'tgl_pendampingan',
+        'dampingan_ke',
         'catatan',
-        'lokasi',
         'bb',
         'tb',
         'lk',
         'lila',
         'lika',
         'hb',
-        'umur_anak',
+        'usia',
         'asi_ekslusif',
         'imunisasi_dasar',
         'diasuh_oleh',
@@ -40,6 +40,8 @@ class Pendampingan extends Model
         'punya_jaminan',
         'keluarga_teredukasi',
         'mendapatkan_bantuan',
+        'riwayat_penyakit',
+        'ket_riwayat_penyakit',
         'id_petugas',
     ];
 

@@ -5,169 +5,224 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Bride;
-use App\Models\AnggotaKeluarga;
+use App\Models\Catin;
 use App\Models\Pendampingan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 
 class BrideController extends Controller
 {
     /**
-     * Tampilkan semua calon pengantin.
-     * GET /api/bride
+     * Tampilkan semua data pernikahan lengkap dengan pasangan dan pendampingan
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Bride::all();
-        return response()->json($data);
+        $query = Bride::with([
+            'catin',
+            'catin.pasangan',
+            'catin' => function ($q) {
+                $q->select('id', 'id_pasangan', 'nama', 'nik', 'peran', 'pekerjaan', 'tgl_lahir', 'usia', 'no_hp');
+            },
+            'catin.pasangan' => function ($q) {
+                $q->select('id', 'id_pasangan', 'nama', 'nik', 'peran', 'pekerjaan', 'tgl_lahir', 'usia', 'no_hp');
+            }
+        ]);
+
+        // filter opsional
+        if ($request->has('nama')) {
+            $query->whereHas('catin', function ($q) use ($request) {
+                $q->where('nama', 'like', "%{$request->nama}%");
+            });
+        }
+
+        if ($request->has('tgl_rencana_menikah')) {
+            $query->whereDate('tgl_rencana_menikah', $request->tgl_rencana_menikah);
+        }
+
+        return response()->json($query->orderByDesc('id')->get());
     }
 
     /**
-     * Simpan data calon pengantin baru.
-     * POST /api/bride
+     * Simpan data pernikahan baru
+     * Sekaligus buat 2 data catin (pria & perempuan)
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'bride.nik' => 'required|string',
-            'bride.nama' => 'required|string',
-            'bride.no_kk' => 'nullable|string',
-            'bride.tgl_lahir' => 'nullable|date',
-            'bride.pendidikan' => 'nullable|string',
-            'bride.status' => 'nullable|string',
-            'bride.pekerjaan' => 'nullable|string',
-            'bride.bb' => 'nullable|numeric',
-            'bride.tb' => 'nullable|numeric',
-            'bride.lila' => 'nullable|numeric',
-            'bride.hb' => 'nullable|string',
-
-            'groom.nik' => 'required|string',
-            'groom.nama' => 'required|string',
-            'groom.no_kk' => 'nullable|string',
-            'groom.tgl_lahir' => 'nullable|date',
-            'groom.pendidikan' => 'nullable|string',
-            'groom.status' => 'nullable|string',
-            'groom.pekerjaan' => 'nullable|string',
-            'groom.bb' => 'nullable|numeric',
-            'groom.tb' => 'nullable|numeric',
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            /**
-             * 1️⃣ Simpan ke tb_anggota_keluarga (calon pengantin perempuan)
-             */
-            $anggotaP = AnggotaKeluarga::create([
-                'id_keluarga'       => null,
-                'nik'               => $validated['bride']['nik'],
-                'nama'              => $validated['bride']['nama'],
-                'status_hubungan'   => 'Calon Istri',
-                'pendidikan'        => $validated['bride']['pendidikan'] ?? null,
-                'pekerjaan'         => $validated['bride']['pekerjaan'] ?? null,
-                'status_perkawinan' => $validated['bride']['status'] ?? null,
+        return DB::transaction(function () use ($request) {
+            // simpan catin perempuan
+            $catinP = Catin::create([
+                'nama' => $request->input('nama_perempuan'),
+                'nik' => $request->input('nik_perempuan'),
+                'pekerjaan' => $request->input('pekerjaan_perempuan'),
+                'tgl_lahir' => $request->input('tgl_lahir_perempuan'),
+                'usia' => $request->input('usia_perempuan'),
+                'no_hp' => $request->input('hp_perempuan'),
+                'peran' => 'istri'
             ]);
 
-            if (!empty($validated['bride']['no_kk'])) {
-                // optional: simpan ke tabel kk / keluarga bila ada relasi
-                // Keluarga::firstOrCreate(['no_kk' => $validated['bride']['no_kk']]);
-            }
-
-            /**
-             * 2️⃣ Simpan ke tb_anggota_keluarga (calon pengantin laki-laki)
-             */
-            $anggotaL = AnggotaKeluarga::create([
-                'id_keluarga'       => null,
-                'nik'               => $validated['groom']['nik'],
-                'nama'              => $validated['groom']['nama'],
-                'status_hubungan'   => 'Calon Suami',
-                'pendidikan'        => $validated['groom']['pendidikan'] ?? null,
-                'pekerjaan'         => $validated['groom']['pekerjaan'] ?? null,
-                'status_perkawinan' => $validated['groom']['status'] ?? null,
+            // simpan catin pria
+            $catinL = Catin::create([
+                'nama' => $request->input('nama_pria'),
+                'nik' => $request->input('nik_pria'),
+                'pekerjaan' => $request->input('pekerjaan_pria'),
+                'tgl_lahir' => $request->input('tgl_lahir_pria'),
+                'usia' => $request->input('usia_pria'),
+                'no_hp' => $request->input('hp_pria'),
+                'peran' => 'suami',
+                'id_pasangan' => $catinP->id
             ]);
 
-            /**
-             * 3️⃣ Simpan ke tb_catin untuk masing-masing
-             */
-            $catinP = Bride::create([
-                'id_user'          => $anggotaP->id,
-                'peran'            => 'istri',
-                'tgl_daftar'       => now(),
-                'status_pernikahan'=> 'belum menikah',
-            ]);
-
-            $catinL = Bride::create([
-                'id_user'          => $anggotaL->id,
-                'id_pasangan'      => $catinP->id, // relasi ke istri
-                'peran'            => 'suami',
-                'tgl_daftar'       => now(),
-                'status_pernikahan'=> 'belum menikah',
-            ]);
-
-            // Update pasangan perempuan agar punya id_pasangan juga
+            // update pasangan perempuan
             $catinP->update(['id_pasangan' => $catinL->id]);
 
-            /**
-             * 4️⃣ Simpan data kesehatan ke tb_pendampingan (masing-masing)
-             */
-            Pendampingan::create([
-                'jenis'        => 'catin',
-                'id_subjek'    => $catinP->id,
-                'tanggal'      => now(),
-                'bb'           => $validated['bride']['bb'] ?? null,
-                'tb'           => $validated['bride']['tb'] ?? null,
-                'lila'         => $validated['bride']['lila'] ?? null,
-                'hb'           => $validated['bride']['hb'] ?? null,
-                'id_petugas'   => auth()->id(),
+            // simpan data pernikahan
+            $bride = Bride::create([
+                'id_catin' => $catinP->id,
+                'tgl_daftar' => now(),
+                'tgl_rencana_menikah' => $request->tgl_rencana_menikah,
+                'rencana_tinggal' => $request->rencana_tinggal,
+                'catatan' => $request->catatan,
             ]);
 
-            Pendampingan::create([
-                'jenis'        => 'catin',
-                'id_subjek'    => $catinL->id,
-                'tanggal'      => now(),
-                'bb'           => $validated['groom']['bb'] ?? null,
-                'tb'           => $validated['groom']['tb'] ?? null,
-                'id_petugas'   => auth()->id(),
+            $pendampingan = Pendampingan::create([
+                'jenis' => 'Calon Pengantin',
+                'id_subjek' => $bride->id,
+                'tgl_pendampingan' => $request->tgl_pendampingan,
+                'dampingan_ke' => $request->dampingan_ke,
+                'catatan'=> $request->catatan,
+                'bb' => $request->bb,
+                'tb'=> $request->tb,
+                'lila'=> $request->lila,
+                'hb'=> $request->hb,
+                'usia'=> $request->usia_perempuan,
+                'anemia'=> $request->status_hb,
+                'kek'=> $request->status_gizi,
+                'terpapar_rokok'=> $request->catin_terpapar_rokok,
+                'punya_jaminan'=> $request->fasilitas_rujukan,
+                'keluarga_teredukasi'=> $request->edukasi,
+                'mendapatkan_bantuan'=> $request->pmt,
+                'riwayat_penyakit'=> $request->punya_riwayat_penyakit,
+                'ket_riwayat_penyakit'=> $request->riwayat_penyakit,
+                'id_petugas'=> Auth::id(),
             ]);
 
-            DB::commit();
+            Log::create([
+                'id_user'  => Auth::id(),
+                'context'  => 'calon pengantin',
+                'activity' => 'create',
+                'timestamp'=> now(),
+            ]);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Data calon pengantin berhasil disimpan',
+                'message' => 'Data pernikahan berhasil disimpan',
                 'data' => [
-                    'istri' => $catinP,
-                    'suami' => $catinL
+                    'pernikahan' => $bride,
+                    'catin_perempuan' => $catinP,
+                    'catin_pria' => $catinL
                 ]
             ]);
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menyimpan data',
-                'error' => $th->getMessage()
-            ], 500);
-        }
+        });
     }
 
-
-
     /**
-     * Tampilkan detail satu calon pengantin.
-     * GET /api/bride/{id}
+     * Tampilkan detail pernikahan berdasarkan ID
      */
     public function show($id)
     {
-        $bride = Bride::with('pasangan')->find($id);
+        $bride = Bride::with([
+            'catin',
+            'catin.pasangan'
+        ])->findOrFail($id);
 
-        if (!$bride) {
-            return response()->json([
-                'message' => 'Data calon pengantin tidak ditemukan',
-            ], 404);
+        return response()->json($bride);
+    }
+
+    /**
+     * Update data pernikahan dan catin
+     */
+    public function update(Request $request, $id)
+    {
+        $bride = Bride::with('catin.pasangan')->findOrFail($id);
+
+        return DB::transaction(function () use ($request, $bride) {
+            $bride->update([
+                'tgl_rencana_menikah' => $request->tgl_rencana_menikah,
+                'rencana_tinggal' => $request->rencana_tinggal,
+                'catatan' => $request->catatan,
+            ]);
+
+            // update catin perempuan
+            $bride->catin->update([
+                'nama' => $request->input('perempuan.nama'),
+                'nik' => $request->input('perempuan.nik'),
+                'pekerjaan' => $request->input('perempuan.pekerjaan'),
+                'tgl_lahir' => $request->input('perempuan.tgl_lahir'),
+                'usia' => $request->input('perempuan.usia'),
+                'no_hp' => $request->input('perempuan.no_hp'),
+            ]);
+
+            // update catin pria
+            $bride->catin->pasangan->update([
+                'nama' => $request->input('pria.nama'),
+                'nik' => $request->input('pria.nik'),
+                'pekerjaan' => $request->input('pria.pekerjaan'),
+                'tgl_lahir' => $request->input('pria.tgl_lahir'),
+                'usia' => $request->input('pria.usia'),
+                'no_hp' => $request->input('pria.no_hp'),
+            ]);
+
+            return response()->json(['message' => 'Data berhasil diperbarui']);
+        });
+    }
+
+    /**
+     * Cek jumlah pendampingan berdasarkan NIK pasangan catin
+     */
+    public function checkDampinganKe(Request $request)
+    {
+        $nikP = $request->query('nik_perempuan');
+        $nikL = $request->query('nik_pria');
+
+        if (!$nikP || !$nikL) {
+            return response()->json(['error' => 'NIK belum lengkap'], 400);
         }
 
-        return response()->json($bride, 200);
+        // Ambil data catin perempuan dan pria
+        $catinP = Catin::where('nik', $nikP)->first();
+        $catinL = Catin::where('nik', $nikL)->first();
+
+        if (!$catinP || !$catinL) {
+            return response()->json([
+                'exists' => false,
+                'dampingan_ke' => 1,
+                'message' => 'Belum ada data pasangan di database'
+            ]);
+        }
+
+        // Pastikan mereka pasangan valid
+        $isCouple = (
+            ($catinP->id_pasangan === $catinL->id) ||
+            ($catinL->id_pasangan === $catinP->id)
+        );
+
+        if (!$isCouple) {
+            return response()->json([
+                'exists' => false,
+                'dampingan_ke' => 1,
+                'message' => 'Data ditemukan tapi bukan pasangan valid'
+            ]);
+        }
+
+        // Hitung total pendampingan sebelumnya
+        $total = Pendampingan::where('jenis', 'catin')
+            ->whereIn('id_subjek', [$catinP->id, $catinL->id])
+            ->count();
+
+        return response()->json([
+            'exists' => true,
+            'dampingan_ke' => $total + 1,
+            'message' => 'Pasangan ditemukan'
+        ]);
     }
 }

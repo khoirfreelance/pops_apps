@@ -149,7 +149,7 @@
                       <label class="form-label">NIK Perempuan</label>
                       <div class="input-group mb-3">
                         <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                        <input v-model="form.nik_perempuan" class="form-control" />
+                        <input v-model="form.nik_perempuan" class="form-control" maxlength="16" @input="form.nik_perempuan = form.nik_perempuan.replace(/\D/g, '')" />
                       </div>
 
                       <label class="form-label">Pekerjaan</label>
@@ -192,7 +192,7 @@
                       <label class="form-label">NIK Pria</label>
                       <div class="input-group mb-3">
                         <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                        <input v-model="form.nik_pria" class="form-control" />
+                        <input v-model="form.nik_pria" @input="form.nik_pria = form.nik_pria.replace(/\D/g, '')" maxlength="16" class="form-control" />
                       </div>
 
                       <label class="form-label">Pekerjaan</label>
@@ -248,14 +248,6 @@
                     </div>
 
                     <div class="col-md-6">
-                      <label class="form-label">Tanggal Pemeriksaan</label>
-                      <div class="input-group mb-3">
-                        <span class="input-group-text"><i class="bi bi-calendar-heart"></i></span>
-                        <input type="date" v-model="form.tgl_pemeriksaan" class="form-control" />
-                      </div>
-                    </div>
-
-                    <div class="col-md-6">
                       <label class="form-label">Tanggal Pendampingan</label>
                       <div class="input-group mb-3">
                         <span class="input-group-text"><i class="bi bi-calendar-check"></i></span>
@@ -263,8 +255,16 @@
                       </div>
                     </div>
 
+                    <div class="col-md-6">
+                      <label class="form-label">Dampingan Ke</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-calculator"></i></span>
+                        <input type="number" readonly v-model="form.dampingan_ke" class="form-control" />
+                      </div>
+                    </div>
+
                     <div
-                      class="col-md-4"
+                      class="col-md-3"
                       v-for="(label, field) in { bb:'BB (kg)', tb:'TB (cm)', lila:'LILA (cm)', hb:'HB' }"
                       :key="field"
                     >
@@ -278,10 +278,9 @@
                     <!-- ===================== -->
                     <!-- STATUS DAN KONDISI CATIN -->
                     <!-- ===================== -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label">Status HB</label>
-                      <div class="d-flex align-items-center gap-3 border rounded p-2">
-                        <i class="bi bi-droplet-half fs-5"></i>
+                      <div class="d-flex align-items-center gap-3 p-2">
                         <div class="form-check form-check-inline">
                           <input class="form-check-input" type="radio" value="Anemia" v-model="form.status_hb" id="hb_anemia" />
                           <label class="form-check-label" for="hb_anemia">Anemia</label>
@@ -293,10 +292,9 @@
                       </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label">Status Gizi</label>
-                      <div class="d-flex align-items-center gap-3 border rounded p-2">
-                        <i class="bi bi-bar-chart text-success fs-5"></i>
+                      <div class="d-flex align-items-center gap-3 p-2">
                         <div class="form-check form-check-inline">
                           <input class="form-check-input" type="radio" value="KEK" v-model="form.status_gizi" id="gizi_kek" />
                           <label class="form-check-label" for="gizi_kek">KEK</label>
@@ -308,10 +306,9 @@
                       </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label">Terpapar Rokok?</label>
-                      <div class="d-flex align-items-center gap-3 border rounded p-2">
-                        <i class="bi bi-wind fs-5"></i>
+                      <div class="d-flex align-items-center gap-3 p-2">
                         <div class="form-check form-check-inline">
                           <input class="form-check-input" type="radio" value="ya" v-model="form.catin_terpapar_rokok" id="rokok_ya" />
                           <label class="form-check-label" for="rokok_ya">Ya</label>
@@ -323,10 +320,9 @@
                       </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                       <label class="form-label">Catin TTD?</label>
-                      <div class="d-flex align-items-center gap-3 border rounded p-2">
-                        <i class="bi bi-capsule fs-5"></i>
+                      <div class="d-flex align-items-center gap-3 p-2">
                         <div class="form-check form-check-inline">
                           <input class="form-check-input" type="radio" value="ya" v-model="form.catin_ttd" id="ttd_ya" />
                           <label class="form-check-label" for="ttd_ya">Ya</label>
@@ -338,26 +334,26 @@
                       </div>
                     </div>
 
-                    <div class="col-md-4">
-                      <label class="form-label">Riwayat Penyakit?</label>
-                      <div class="d-flex align-items-center gap-3 border rounded p-2">
-                        <i class="bi bi-activity fs-5"></i>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" value="ya" v-model="form.punya_riwayat_penyakit" id="riwayat_ya" />
-                          <label class="form-check-label" for="riwayat_ya">Ya</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" value="tidak" v-model="form.punya_riwayat_penyakit" id="riwayat_tidak" />
-                          <label class="form-check-label" for="riwayat_tidak">Tidak</label>
+                    <div class="col-md-6">
+                      <div class="col-md-12">
+                        <label class="form-label">Riwayat Penyakit?</label>
+                        <div class="d-flex align-items-center gap-3 p-2">
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" @click="isRiwayat = false" type="radio" value="ya" v-model="form.punya_riwayat_penyakit" id="riwayat_ya" />
+                            <label class="form-check-label" for="riwayat_ya">Ya</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" @click="isRiwayat = true" type="radio" value="tidak" v-model="form.punya_riwayat_penyakit" id="riwayat_tidak" />
+                            <label class="form-check-label" for="riwayat_tidak">Tidak</label>
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div class="col-md-6">
-                      <label class="form-label">Keterangan Riwayat Penyakit</label>
-                      <div class="input-group mb-3">
-                        <span class="input-group-text"><i class="bi bi-journal-medical"></i></span>
-                        <textarea rows="8" readonly v-model="form.riwayat_penyakit" class="form-control" ></textarea>
+                      <div class="col-md-12">
+                        <label class="form-label">Keterangan Riwayat Penyakit</label>
+                        <div class="input-group mb-3">
+                          <span class="input-group-text"><i class="bi bi-journal-medical"></i></span>
+                          <textarea rows="5" :readonly="isRiwayat" v-model="form.riwayat_penyakit" class="form-control" ></textarea>
+                        </div>
                       </div>
                     </div>
 
@@ -480,9 +476,8 @@
           <div class="container-fluid bg-light rounded shadow-sm p-3 mt-3">
             <div class="datatable-responsive">
               <EasyDataTable
-                :headers="headers"
+                :headers="visibleHeaders"
                 :items="filteredCatin"
-                :visible-columns="visibleColumns"
                 :searchable="true"
                 :pagination="true"
               />
@@ -521,7 +516,7 @@
           <input type="file" class="form-control" ref="csvFile" accept=".csv" />
         </div>
         <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
+          <button class="btn btn-light-pill px-4" data-bs-dismiss="modal">
             <i class="bi bi-x-circle me-2"></i> Batal
           </button>
           <button class="btn btn-success rounded-pill px-4" @click="handleImport">
@@ -627,6 +622,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      isRiwayat:true,
       searchNIK: '',
       showForm: false,
       found: false,
@@ -679,7 +675,7 @@ export default {
         rencana_tinggal: '',
 
         // ========== DATA PENDAMPINGAN ==========
-        tgl_pemeriksaan: '',
+        dampingan_ke: '',
         tgl_pendampingan: '',
         bb: null,
         tb: null,
@@ -697,7 +693,7 @@ export default {
         // ========== FASILITAS DAN EDUKASI ==========
         fasilitas_rujukan: '',
         edukasi: '',
-        pmt: ''
+        pmt: '',
       },
       bride: [],
       headers: [
@@ -722,7 +718,7 @@ export default {
         { text: 'Rencana Tempat Tinggal', value: 'rencana_tinggal' },
 
         // --- Data Pendampingan ---
-        { text: 'Tanggal Pemeriksaan', value: 'tgl_pemeriksaan' },
+        { text: 'Dampingan Ke', value: 'dampingan_ke' },
         { text: 'Tanggal Pendampingan', value: 'tgl_pendampingan' },
         { text: 'BB (kg)', value: 'bb' },
         { text: 'TB (cm)', value: 'tb' },
@@ -786,6 +782,22 @@ export default {
     },
   },
   methods: {
+    async checkDampinganKe() {
+      if (!this.form.nik_perempuan || !this.form.nik_pria) return
+
+      try {
+        const res = await axios.get('http://localhost:8000/api/bride/check', {
+          params: {
+            nik_perempuan: this.form.nik_perempuan,
+            nik_pria: this.form.nik_pria
+          }
+        })
+        this.form.dampingan_ke = res.data.dampingan_ke
+      } catch (err) {
+        console.error('Gagal cek dampingan ke:', err)
+        this.form.dampingan_ke = 1
+      }
+    },
     hitungUsia(jenis) {
       const today = new Date()
       let tglLahir = null
@@ -952,79 +964,84 @@ export default {
       this.isCollapsed = !this.isCollapsed
     },
     async saveData() {
-      this.closeModal('modalTambah')
       this.isLoadingImport = true
       this.importProgress = 0
       this.animatedProgress = 0
       this.currentRow = 0
       this.totalRows = 1
 
-      let step = 0
-      const interval = setInterval(async () => {
-        step += 10
-        this.importProgress = Math.min(step, 100)
-        this.animatedProgress = this.importProgress
-        this.currentRow = Math.round((this.totalRows * this.importProgress) / 100)
+      try {
+        // Payload langsung dari struktur form
+        const payload = {
+          // Data catin perempuan
+          nama_perempuan: this.form.nama_perempuan,
+          nik_perempuan: this.form.nik_perempuan,
+          pekerjaan_perempuan: this.form.pekerjaan_perempuan,
+          tgl_lahir_perempuan: this.form.tgl_lahir_perempuan,
+          usia_perempuan: this.form.usia_perempuan,
+          hp_perempuan: this.form.hp_perempuan,
 
-        if (this.importProgress >= 100) {
-          clearInterval(interval)
-          try {
-            // Gabung data perempuan & suami
-            const payload = {
-              bride: {
-                no_kk: this.form.no_kkP,
-                nik: this.form.nikP,
-                nama: this.form.namaP,
-                usia: this.form.usiaP,
-                bb: this.form.bbP,
-                tb: this.form.tbP,
-                lila: this.form.lilaP,
-                hb: this.form.hbP,
-                pendidikan: this.form.pendidikanP,
-                pekerjaan: this.form.pekerjaanP,
-                status: this.form.statusP,
-                tgl_lahir: this.form.tgl_lahirP,
-              },
-              groom: {
-                no_kk: this.form.no_kkL,
-                nik: this.form.nikL,
-                nama: this.form.namaL,
-                usia: this.form.usiaL,
-                bb: this.form.bbL,
-                tb: this.form.tbL,
-                pendidikan: this.form.pendidikanL,
-                pekerjaan: this.form.pekerjaanL,
-                status: this.form.statusL,
-                tgl_lahir: this.form.tgl_lahirL,
-              },
-              meta: {
-                rencana_tgl_nikah: this.form.menikah,
-                catatan: this.form.catatan,
-                kunjungan: this.form.kunjungan,
-                intervensi: this.form.intervensi,
-              }
-            }
+          // Data catin pria
+          nama_pria: this.form.nama_pria,
+          nik_pria: this.form.nik_pria,
+          pekerjaan_pria: this.form.pekerjaan_pria,
+          tgl_lahir_pria: this.form.tgl_lahir_pria,
+          usia_pria: this.form.usia_pria,
+          hp_pria: this.form.hp_pria,
 
-            // Kirim ke backend
-            await axios.post('http://localhost:8000/api/bride', payload, {
-              headers: {
-                Accept: 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-              }
-            })
+          // Data pernikahan
+          tgl_rencana_menikah: this.form.tgl_rencana_menikah,
+          rencana_tinggal: this.form.rencana_tinggal,
 
-            // Refresh data
-            await this.loadBride()
-            this.resetForm()
-            this.showSuccess('Data Berhasil Disimpan')
-          } catch (e) {
-            console.error('Gagal simpan data:', e)
-            this.showError('Error Simpan Data', e)
-          } finally {
-            this.isLoadingImport = false
-          }
+          // Data pendampingan
+          dampingan_ke: this.form.dampingan_ke,
+          tgl_pendampingan: this.form.tgl_pendampingan,
+          bb: this.form.bb,
+          tb: this.form.tb,
+          lila: this.form.lila,
+          hb: this.form.hb,
+
+          // Status & kondisi
+          status_hb: this.form.status_hb,
+          status_gizi: this.form.status_gizi,
+          catin_terpapar_rokok: this.form.catin_terpapar_rokok,
+          catin_ttd: this.form.catin_ttd,
+          punya_riwayat_penyakit: this.form.punya_riwayat_penyakit,
+          riwayat_penyakit: this.form.riwayat_penyakit,
+
+          // Fasilitas & edukasi
+          fasilitas_rujukan: this.form.fasilitas_rujukan,
+          edukasi: this.form.edukasi,
+          pmt: this.form.pmt,
         }
-      }, 150)
+
+        // Tentukan mode (tambah / update)
+        const url = this.form.id
+          ? `http://localhost:8000/api/bride/${this.form.id}`
+          : `http://localhost:8000/api/bride`
+        const method = this.form.id ? 'put' : 'post'
+
+        // Kirim ke backend
+        await axios({
+          method,
+          url,
+          data: payload,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        // Refresh data
+        await this.loadBride()
+        this.resetForm()
+        this.showSuccess('Data berhasil disimpan')
+      } catch (error) {
+        console.error('Gagal simpan data:', error)
+        this.showError('Terjadi kesalahan saat menyimpan data')
+      } finally {
+        this.isLoadingImport = false
+      }
     },
     openImport(title) {
       this.importTitle = title
@@ -1109,6 +1126,16 @@ export default {
       console.error('Error loading data:', err)
     } finally {
       this.isLoading = false
+    }
+  },
+  watch: {
+    // eslint-disable-next-line no-unused-vars
+    'form.nik_perempuan'(val) {
+      this.checkDampinganKe()
+    },
+    // eslint-disable-next-line no-unused-vars
+    'form.nik_pria'(val) {
+      this.checkDampinganKe()
     }
   },
 }
