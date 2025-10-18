@@ -56,6 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('bride', BrideController::class)
         ->only(['index', 'store', 'show']);
     Route::get('/bride/check', [BrideController::class, 'checkDampinganKe']);
+    Route::get('/bride/search/{nik}', [BrideController::class, 'search']);
+
 });
 
 // Region Endpoint

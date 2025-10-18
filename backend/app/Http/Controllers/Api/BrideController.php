@@ -21,15 +21,44 @@ class BrideController extends Controller
         $query = Bride::with([
             'catin',
             'catin.pasangan',
+            'catin.pendampingan', // ✅ relasi baru ditambahkan
             'catin' => function ($q) {
                 $q->select('id', 'id_pasangan', 'nama', 'nik', 'peran', 'pekerjaan', 'tgl_lahir', 'usia', 'no_hp');
             },
             'catin.pasangan' => function ($q) {
                 $q->select('id', 'id_pasangan', 'nama', 'nik', 'peran', 'pekerjaan', 'tgl_lahir', 'usia', 'no_hp');
+            },
+            'catin.pendampingan' => function ($q) {
+                $q->select(
+                    'id',
+                    'jenis',
+                    'id_subjek',
+                    'tgl_pendampingan',
+                    'dampingan_ke',
+                    'catatan',
+                    'bb',
+                    'tb',
+                    'lk',
+                    'lila',
+                    'lika',
+                    'hb',
+                    'usia',
+                    'anemia',
+                    'kek',
+                    'terpapar_rokok',
+                    'jamban_sehat',
+                    'punya_jaminan',
+                    'keluarga_teredukasi',
+                    'mendapatkan_bantuan',
+                    'riwayat_penyakit',
+                    'ket_riwayat_penyakit',
+                    'id_petugas',
+                    'created_at'
+                );
             }
         ]);
 
-        // filter opsional
+        // Filter opsional
         if ($request->has('nama')) {
             $query->whereHas('catin', function ($q) use ($request) {
                 $q->where('nama', 'like', "%{$request->nama}%");
@@ -87,7 +116,7 @@ class BrideController extends Controller
 
             $pendampingan = Pendampingan::create([
                 'jenis' => 'Calon Pengantin',
-                'id_subjek' => $bride->id,
+                'id_subjek' => $catinP->id,
                 'tgl_pendampingan' => $request->tgl_pendampingan,
                 'dampingan_ke' => $request->dampingan_ke,
                 'catatan'=> $request->catatan,
@@ -225,4 +254,70 @@ class BrideController extends Controller
             'message' => 'Pasangan ditemukan'
         ]);
     }
+
+    public function search(Request $request)
+    {
+        $nik = $request->nik;
+
+        if (!$nik) {
+            return response()->json(['message' => 'NIK wajib diisi.'], 400);
+        }
+
+        $query = Bride::with([
+            'catin',
+            'catin.pasangan',
+            'catin.pendampingan',
+            'catin' => function ($q) {
+                $q->select('id', 'id_pasangan', 'nama', 'nik', 'peran', 'pekerjaan', 'tgl_lahir', 'usia', 'no_hp');
+            },
+            'catin.pasangan' => function ($q) {
+                $q->select('id', 'id_pasangan', 'nama', 'nik', 'peran', 'pekerjaan', 'tgl_lahir', 'usia', 'no_hp');
+            },
+            'catin.pendampingan' => function ($q) {
+                $q->select(
+                    'id',
+                    'jenis',
+                    'id_subjek',
+                    'tgl_pendampingan',
+                    'dampingan_ke',
+                    'catatan',
+                    'bb',
+                    'tb',
+                    'lk',
+                    'lila',
+                    'lika',
+                    'hb',
+                    'usia',
+                    'anemia',
+                    'kek',
+                    'terpapar_rokok',
+                    'jamban_sehat',
+                    'punya_jaminan',
+                    'keluarga_teredukasi',
+                    'mendapatkan_bantuan',
+                    'riwayat_penyakit',
+                    'ket_riwayat_penyakit',
+                    'id_petugas',
+                    'created_at'
+                );
+            }
+        ])
+        ->whereHas('catin', function ($q) use ($nik) {
+            $q->where('nik', $nik);
+        })
+        ->orWhereHas('catin.pasangan', function ($q) use ($nik) {
+            $q->where('nik', $nik);
+        });
+
+        $result = $query->first();
+
+         // ❌ kalau gak ada hasil, kirim 404
+        if (!$result) {
+            return response()->json(['message' => 'Data tidak ditemukan.'], 404);
+        }
+
+        // ✅ kalau ada, kirim data
+        return response()->json($result);
+    }
+
 }

@@ -24,6 +24,7 @@ class Pendampingan extends Model
         'lila',
         'lika',
         'hb',
+        'imt',
         'usia',
         'asi_ekslusif',
         'imunisasi_dasar',

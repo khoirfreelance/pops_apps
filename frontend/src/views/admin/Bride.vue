@@ -88,6 +88,7 @@
             <div class="d-flex align-items-center gap-2 mb-3">
               <input
                 type="text"
+                maxlength="16"
                 class="form-control w-50"
                 placeholder="Masukkan NIK"
                 v-model="searchNIK"
@@ -263,46 +264,62 @@
                       </div>
                     </div>
 
-                    <div
-                      class="col-md-3"
-                      v-for="(label, field) in { bb:'BB (kg)', tb:'TB (cm)', lila:'LILA (cm)', hb:'HB' }"
-                      :key="field"
-                    >
-                      <label class="form-label">{{ label }}</label>
+                    <div class="col-md-3">
+                      <label class="form-label">Berat Badan (kg)</label>
                       <div class="input-group mb-3">
-                        <span class="input-group-text"><i class="bi bi-heart-pulse"></i></span>
-                        <input v-model="form[field]" type="number" class="form-control" />
+                        <span class="input-group-text"><i class="bi bi-columns"></i></span>
+                        <input type="number" v-model="form.bb" @input="hitungKondisiCatin" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="col-md-3">
+                      <label class="form-label">Tinggi Badan (cm)</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-person-standing"></i></span>
+                        <input type="number" v-model="form.tb" @input="hitungKondisiCatin" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="col-md-3">
+                      <label class="form-label">Lingkar Lengan (cm)</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-person-raised-hand"></i></span>
+                        <input type="number" v-model="form.lila" @input="hitungKondisiCatin" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="col-md-3">
+                      <label class="form-label">Hb</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-droplet-half"></i></span>
+                        <input type="number" v-model="form.hb" @input="hitungKondisiCatin" class="form-control" />
                       </div>
                     </div>
 
                     <!-- ===================== -->
                     <!-- STATUS DAN KONDISI CATIN -->
                     <!-- ===================== -->
-                    <div class="col-md-6">
-                      <label class="form-label">Status HB</label>
-                      <div class="d-flex align-items-center gap-3 p-2">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" value="Anemia" v-model="form.status_hb" id="hb_anemia" />
-                          <label class="form-check-label" for="hb_anemia">Anemia</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" value="Normal" v-model="form.status_hb" id="hb_normal" />
-                          <label class="form-check-label" for="hb_normal">Normal</label>
-                        </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Indeks Massa Tubuh</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-person-arms-up"></i></span>
+                        <input type="number" readonly v-model="form.imt" class="form-control" />
                       </div>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                      <label class="form-label">Status HB</label>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-file-medical"></i></span>
+                        <input type="text" readonly v-model="form.status_hb" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="col-md-4">
                       <label class="form-label">Status Gizi</label>
-                      <div class="d-flex align-items-center gap-3 p-2">
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" value="KEK" v-model="form.status_gizi" id="gizi_kek" />
-                          <label class="form-check-label" for="gizi_kek">KEK</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" value="Tidak KEK" v-model="form.status_gizi" id="gizi_tidakkek" />
-                          <label class="form-check-label" for="gizi_tidakkek">Tidak KEK</label>
-                        </div>
+                      <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-file-medical"></i></span>
+                        <input type="text" readonly v-model="form.status_gizi" class="form-control" />
                       </div>
                     </div>
 
@@ -389,7 +406,7 @@
           </div>
 
           <!-- Filter -->
-          <div class="container-fluid bg-light rounded shadow-sm p-3 mt-3">
+          <div class="container-fluid bg-light rounded shadow-sm p-3 mt-3 d-none">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- NIK (selalu tampil, realtime filter) -->
               <div class="col-md-4">
@@ -644,13 +661,11 @@ export default {
         'nama_pria',
         'tgl_rencana_menikah',
         'rencana_tinggal',
-        'tgl_pendampingan',
+        'tgl_daftar',
         'bb',
         'tb',
-        'status_hb',
         'status_gizi',
-        'catin_terpapar_rokok',
-        'catin_ttd'
+        'status_hb'
       ],
       form: {
         id:null,
@@ -681,6 +696,7 @@ export default {
         tb: null,
         lila: null,
         hb: null,
+        imt:null,
 
         // ========== STATUS DAN KONDISI CATIN ==========
         status_hb: '', // "Anemia" | "Normal"
@@ -714,29 +730,28 @@ export default {
         { text: 'HP Pria', value: 'hp_pria' },
 
         // --- Data Pernikahan ---
+        { text: 'Tanggal Daftar', value: 'tgl_daftar' },
         { text: 'Tanggal Rencana Nikah', value: 'tgl_rencana_menikah' },
         { text: 'Rencana Tempat Tinggal', value: 'rencana_tinggal' },
 
         // --- Data Pendampingan ---
-        { text: 'Dampingan Ke', value: 'dampingan_ke' },
+        { text: 'Tanggal Pemeriksaan', value: 'tgl_pemeriksaan' },
         { text: 'Tanggal Pendampingan', value: 'tgl_pendampingan' },
-        { text: 'BB (kg)', value: 'bb' },
-        { text: 'TB (cm)', value: 'tb' },
-        { text: 'LILA (cm)', value: 'lila' },
-        { text: 'HB', value: 'hb' },
-
-        // --- Status dan Kondisi ---
+        { text: 'Dampingan Ke', value: 'dampingan_ke' },
+        { text: 'Berat Badan (kg)', value: 'bb' },
+        { text: 'Tinggi Badan (cm)', value: 'tb' },
+        { text: 'Lingkar Lengan Atas (cm)', value: 'lila' },
+        { text: 'Hemoglobin (g/dL)', value: 'hb' },
         { text: 'Status HB', value: 'status_hb' },
         { text: 'Status Gizi', value: 'status_gizi' },
         { text: 'Terpapar Rokok', value: 'catin_terpapar_rokok' },
-        { text: 'Catin TTD', value: 'catin_ttd' },
+        { text: 'TTD', value: 'catin_ttd' },
         { text: 'Punya Riwayat Penyakit', value: 'punya_riwayat_penyakit' },
-        { text: 'Keterangan Riwayat Penyakit', value: 'riwayat_penyakit' },
-
-        // --- Fasilitas & Edukasi ---
+        { text: 'Riwayat Penyakit', value: 'riwayat_penyakit' },
         { text: 'Fasilitas Rujukan', value: 'fasilitas_rujukan' },
         { text: 'Edukasi', value: 'edukasi' },
-        { text: 'PMT', value: 'pmt' }
+        { text: 'PMT', value: 'pmt' },
+
       ],
       // filter
       filter: {
@@ -782,6 +797,57 @@ export default {
     },
   },
   methods: {
+    hitungKondisiCatin() {
+      const bb = parseFloat(this.form.bb)
+      const tb = parseFloat(this.form.tb)
+      const hb = parseFloat(this.form.hb)
+      const lila = parseFloat(this.form.lila)
+
+      // =====================
+      // 1️⃣ Hitung IMT
+      // =====================
+      if (bb > 0 && tb > 0) {
+        const tinggiMeter = tb / 100
+        const imt = bb / (tinggiMeter * tinggiMeter)
+        console.log('imt: '+imt);
+        this.form.imt = imt.toFixed(1)
+      } else {
+        this.form.imt = null
+      }
+
+      // =====================
+      // 2️⃣ Tentukan Status HB
+      // =====================
+      if (hb > 0) {
+        if (hb < 8) this.form.status_hb = 'Anemia berat'
+        else if (hb >= 8 && hb < 10) this.form.status_hb = 'Anemia sedang'
+        else if (hb >= 10 && hb < 12) this.form.status_hb = 'Anemia ringan'
+        else this.form.status_hb = 'Normal'
+        console.log('hb: '+this.form.status_hb);
+      } else {
+        this.form.status_hb = null
+      }
+
+      // =====================
+      // 3️⃣ Tentukan Status Gizi
+      // =====================
+      // Berdasarkan IMT dan LILA
+      if (this.form.imt) {
+        const imt = parseFloat(this.form.imt)
+        if (imt < 18.5) this.form.status_gizi = 'Kekurangan gizi (Kurus)'
+        else if (imt >= 18.5 && imt < 25) this.form.status_gizi = 'Normal'
+        else if (imt >= 25 && imt < 30) this.form.status_gizi = 'Kelebihan berat badan'
+        else this.form.status_gizi = 'Obesitas'
+        console.log('gizi: '+this.form.status_gizi);
+      } else if (lila > 0) {
+        // fallback jika IMT tidak ada tapi ada LILA
+        if (lila < 23.5) this.form.status_gizi = 'Kekurangan energi kronis (KEK)'
+        else this.form.status_gizi = 'Normal'
+        console.log('gizi: '+this.form.status_gizi);
+      } else {
+        this.form.status_gizi = null
+      }
+    },
     async checkDampinganKe() {
       if (!this.form.nik_perempuan || !this.form.nik_pria) return
 
@@ -856,36 +922,133 @@ export default {
       }
       this.showForm = false
     },
-    cariData() {
+    async cariData() {
       this.notFound = false
       this.found = false
-      const hasil = this.bride.find(
-        (d) => d.nik === this.searchNIK
-      )
 
-      if (hasil) {
-        this.form = { ...hasil }
-        this.showForm = true
-        this.modalMode = 'update'
-        this.found = true
-      } else {
-        this.resetForm()       // kosongkan form
-        this.modalMode = 'add'
-        this.showForm = true   // tetap tampil
-        this.notFound = true   // tampilkan pesan "tidak ditemukan"
-      }
-    },
-    async loadBride(){
       try {
-
-        const res = await axios.get('http://localhost:8000/api/bride',{
+        const res = await axios.get(`http://localhost:8000/api/bride/search/${this.searchNIK}`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         })
-        this.bride = res.data
-        //console.log(this.family);
+        const data = res.data
+
+        // ========== DATA PENDAMPINGAN ==========
+        const pend = data.catin?.pendampingan?.[0] || {} // <-- ambil elemen pertama atau objek kosong
+
+        this.form = {
+          id: data.id || null,
+          nama_perempuan: data.catin?.peran === 'istri' ? data.catin?.nama : data.catin?.pasangan?.nama || '',
+          nik_perempuan: data.catin?.peran === 'istri' ? data.catin?.nik : data.catin?.pasangan?.nik || '',
+          pekerjaan_perempuan: data.catin?.peran === 'istri' ? data.catin?.pekerjaan : data.catin?.pasangan?.pekerjaan || '',
+          tgl_lahir_perempuan: data.catin?.peran === 'istri' ? data.catin?.tgl_lahir : data.catin?.pasangan?.tgl_lahir || '',
+          usia_perempuan: data.catin?.peran === 'istri' ? data.catin?.usia : data.catin?.pasangan?.usia || '',
+          hp_perempuan: data.catin?.peran === 'istri' ? data.catin?.no_hp : data.catin?.pasangan?.no_hp || '',
+
+          nama_pria: data.catin?.peran === 'suami' ? data.catin?.nama : data.catin?.pasangan?.nama || '',
+          nik_pria: data.catin?.peran === 'suami' ? data.catin?.nik : data.catin?.pasangan?.nik || '',
+          pekerjaan_pria: data.catin?.peran === 'suami' ? data.catin?.pekerjaan : data.catin?.pasangan?.pekerjaan || '',
+          tgl_lahir_pria: data.catin?.peran === 'suami' ? data.catin?.tgl_lahir : data.catin?.pasangan?.tgl_lahir || '',
+          usia_pria: data.catin?.peran === 'suami' ? data.catin?.usia : data.catin?.pasangan?.usia || '',
+          hp_pria: data.catin?.peran === 'suami' ? data.catin?.no_hp : data.catin?.pasangan?.no_hp || '',
+
+          tgl_rencana_menikah: data.tgl_rencana_menikah || '',
+          rencana_tinggal: data.rencana_tinggal || '',
+
+          // Pendampingan (ambil dari pend)
+          tgl_pendampingan: pend.tgl_pendampingan || '',
+          dampingan_ke: pend.dampingan_ke || '',
+          bb: pend.bb || null,
+          tb: pend.tb || null,
+          lila: pend.lila || null,
+          hb: pend.hb || null,
+          imt:pend.imt || null,
+          status_hb: pend.anemia || '', // Normal / Anemia
+          status_gizi: pend.kek || '', // KEK / Tidak KEK
+          catin_terpapar_rokok: pend.terpapar_rokok || '',
+          catin_ttd: pend.catin_ttd || '',
+          punya_riwayat_penyakit: pend.riwayat_penyakit || '',
+          riwayat_penyakit: pend.ket_riwayat_penyakit || '',
+
+          fasilitas_rujukan: pend.punya_jaminan || '',
+          edukasi: pend.keluarga_teredukasi || '',
+          pmt: pend.mendapatkan_bantuan || '',
+        }
+
+        this.modalMode = 'update'
+        this.showForm = true
+        this.found = true
+      } catch (error) {
+        // ✅ Tangani kalau backend kirim 404
+        if (error.response && error.response.status === 404) {
+          this.resetForm()
+          this.modalMode = 'add'
+          this.showForm = true
+          this.notFound = true
+        } else {
+          console.error('Error tak terduga:', error)
+        }
+      }
+
+      console.log('is found? ' + this.found)
+    },
+    async loadBride() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/bride', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        this.bride = res.data.map(item => {
+        const pendamping = item.catin?.pendampingan?.[0] || {} // ambil pendampingan pertama
+
+        return {
+          id: item.id,
+          tgl_daftar: item.tgl_daftar,
+          tgl_rencana_menikah: item.tgl_rencana_menikah,
+          rencana_tinggal: item.rencana_tinggal,
+
+          // --- Data Catin Perempuan ---
+          nama_perempuan: item.catin?.nama || '',
+          nik_perempuan: item.catin?.nik || '',
+          pekerjaan_perempuan: item.catin?.pekerjaan || '',
+          tgl_lahir_perempuan: item.catin?.tgl_lahir || '',
+          usia_perempuan: item.catin?.usia || '',
+          hp_perempuan: item.catin?.no_hp || '',
+
+          // --- Data Catin Pria ---
+          nama_pria: item.catin?.pasangan?.nama || '',
+          nik_pria: item.catin?.pasangan?.nik || '',
+          pekerjaan_pria: item.catin?.pasangan?.pekerjaan || '',
+          tgl_lahir_pria: item.catin?.pasangan?.tgl_lahir || '',
+          usia_pria: item.catin?.pasangan?.usia || '',
+          hp_pria: item.catin?.pasangan?.no_hp || '',
+
+          // --- Data Pendampingan ---
+          tgl_pemeriksaan: pendamping.tgl_pemeriksaan || '',
+          tgl_pendampingan: pendamping.tgl_pendampingan || '',
+          dampingan_ke: pendamping.dampingan_ke || '',
+          bb: pendamping.bb || '',
+          tb: pendamping.tb || '',
+          lila: pendamping.lila || '',
+          hb: pendamping.hb || '',
+          imt: pendamping.imt || '',
+          status_hb: pendamping.anemia || '',
+          status_gizi: pendamping.kek || '',
+          catin_terpapar_rokok: pendamping.catin_terpapar_rokok || '',
+          catin_ttd: pendamping.catin_ttd || '',
+          punya_riwayat_penyakit: pendamping.punya_riwayat_penyakit || '',
+          riwayat_penyakit: pendamping.riwayat_penyakit || '',
+          fasilitas_rujukan: pendamping.fasilitas_rujukan || '',
+          edukasi: pendamping.edukasi || '',
+          pmt: pendamping.pmt || '',
+        }})
+
+        console.log('Data Flatten:', this.bride)
       } catch (e) {
         console.error('Gagal ambil data:', e)
         this.showError('Error Ambil Data', e)
@@ -1129,6 +1292,10 @@ export default {
     }
   },
   watch: {
+    'form.bb': 'hitungKondisiCatin',
+    'form.tb': 'hitungKondisiCatin',
+    'form.hb': 'hitungKondisiCatin',
+    'form.lila': 'hitungKondisiCatin',
     // eslint-disable-next-line no-unused-vars
     'form.nik_perempuan'(val) {
       this.checkDampinganKe()

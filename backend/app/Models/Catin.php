@@ -27,4 +27,12 @@ class Catin extends Model
     {
         return $this->belongsTo(Catin::class, 'id_pasangan', 'id');
     }
+
+    // App\Models\Catin.php
+    public function pendampingan()
+    {
+        return $this->hasMany(Pendampingan::class, 'id_subjek', 'id')
+            ->where('jenis', 'Calon Pengantin');
+    }
+
 }
