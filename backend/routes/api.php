@@ -53,11 +53,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Bride Endpoint
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/bride/pending', [BrideController::class, 'pendingData']);
     Route::apiResource('bride', BrideController::class)
         ->only(['index', 'store', 'show']);
     Route::get('/bride/check', [BrideController::class, 'checkDampinganKe']);
     Route::get('/bride/search/{nik}', [BrideController::class, 'search']);
-
+    Route::get('/bride/{id}/pending', [BrideController::class, 'pending']);
+    Route::put('/bride/{id}', [BrideController::class, 'update']);
 });
 
 // Region Endpoint

@@ -16,6 +16,7 @@ class Pendampingan extends Model
         'jenis',
         'id_subjek',
         'tgl_pendampingan',
+        'tgl_pemeriksaan',
         'dampingan_ke',
         'catatan',
         'bb',
@@ -44,6 +45,10 @@ class Pendampingan extends Model
         'riwayat_penyakit',
         'ket_riwayat_penyakit',
         'id_petugas',
+        'id_wilayah',
+        'rw',
+        'rt',
+        'is_pending'
     ];
 
     /**
@@ -65,5 +70,10 @@ class Pendampingan extends Model
     public function petugas()
     {
         return $this->belongsTo(User::class, 'id_petugas', 'id');
+    }
+
+    public function wilayah()
+    {
+        return $this->belongsTo(Wilayah::class, 'id_wilayah');
     }
 }

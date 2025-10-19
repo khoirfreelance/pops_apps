@@ -11,10 +11,10 @@ class Bride extends Model
 
     protected $fillable = [
         'id_catin',
-        'tgl_daftar',
         'tgl_rencana_menikah',
         'rencana_tinggal',
-        'catatan',
+        'pernikahan_ke',
+        'is_pending'
     ];
 
     /**

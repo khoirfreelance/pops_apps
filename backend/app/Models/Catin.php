@@ -18,6 +18,7 @@ class Catin extends Model
         'tgl_lahir',
         'usia',
         'no_hp',
+        'is_pending'
     ];
 
     /**
