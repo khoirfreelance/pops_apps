@@ -236,4 +236,36 @@ class CadreController extends Controller
             'message' => 'Kader/Pengguna berhasil dihapus'
         ]);
     }
+
+    public function wilayahByUser()
+{
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    $cadre = Cadre::with(['tpk.wilayah', 'posyandu.wilayah'])
+        ->where('id_user', $user->id)
+        ->first();
+
+    if (!$cadre) {
+        return response()->json(['message' => 'Data kader tidak ditemukan'], 404);
+    }
+
+    // ambil dari wilayah TPK kalau ada, kalau tidak dari posyandu
+    $wilayah = $cadre->tpk->wilayah ?? $cadre->posyandu->wilayah ?? null;
+
+    if (!$wilayah) {
+        return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
+    }
+
+    return response()->json([
+        'provinsi' => $wilayah->provinsi ?? '-',
+        'kota' => $wilayah->kota ?? '-',
+        'kecamatan' => $wilayah->kecamatan ?? '-',
+        'kelurahan' => $wilayah->kelurahan ?? '-',
+    ]);
+}
+
 }

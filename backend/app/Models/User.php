@@ -52,4 +52,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function cadre()
+    {
+        return $this->hasOne(Cadre::class, 'id_user');
+    }
+
+    public function tpk()
+    {
+        return $this->hasOneThrough(TPK::class, Cadre::class, 'id_user', 'id', 'id', 'id_tpk');
+    }
+
+    public function wilayah()
+    {
+        return $this->hasOneThrough(Wilayah::class, TPK::class, 'id', 'id', 'id_tpk', 'id_wilayah');
+    }
+
 }

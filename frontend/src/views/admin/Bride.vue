@@ -114,8 +114,9 @@
               <div class="col-md-6 col-sm-12 d-flex align-items-center">
                 <input
                   type="text"
-                  class="form-control w-50 me-3 flex-grow-1"
+                  class="form-control w-50 mx-2 flex-grow-1"
                   placeholder="Masukkan NIK"
+                  maxlength="16"
                   v-model="searchNIK"
                 />
                 <button class="btn btn-gradient px-5" @click="cariData">
@@ -200,7 +201,7 @@
 
                   <label class="form-label">Usia</label>
                   <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
+                    <span class="input-group-text"><i class="bi bi-cake"></i></span>
                     <input v-model="form.usia_perempuan" type="number"
                           class="form-control" readonly />
                   </div>
@@ -247,7 +248,7 @@
 
                   <label class="form-label">Usia</label>
                   <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
+                    <span class="input-group-text"><i class="bi bi-cake"></i></span>
                     <input v-model="form.usia_pria" type="number" class="form-control" readonly />
                   </div>
 
@@ -268,18 +269,32 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Rencana Tempat Tinggal</label>
-                  <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-house-door"></i></span>
-                    <input v-model="form.rencana_tinggal" class="form-control" />
-                  </div>
-                </div>
-
-                <div class="col-md-6">
                   <label class="form-label">Pernikahan ke</label>
                   <div class="input-group shadow-sm mb-3">
                     <span class="input-group-text"><i class="bi bi-calculator"></i></span>
                     <input type="number" v-model="form.pernikahan_ke" class="form-control" />
+                  </div>
+                </div>
+
+                <div class="col-md-12">
+                  <label class="form-label">Prov / Kot / Kec / Kel</label>
+                  <div class="d-flex gap-3">
+                    <div class="input-group shadow-sm">
+                      <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-map"></i></span>
+                      <input type="text" readonly v-model="form.provinsi" class="form-control" style="background-color: #e9ecef;"/>
+                    </div>
+                    <div class="input-group shadow-sm">
+                      <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-diagram-3"></i></span>
+                      <input type="text" readonly v-model="form.kota" class="form-control" style="background-color: #e9ecef;"/>
+                    </div>
+                    <div class="input-group shadow-sm">
+                      <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-diagram-2"></i></span>
+                      <input type="text" readonly v-model="form.kecamatan" class="form-control" style="background-color: #e9ecef;"/>
+                    </div>
+                    <div class="input-group shadow-sm">
+                      <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-geo"></i></span>
+                      <input type="text" readonly v-model="form.kelurahan" class="form-control" style="background-color: #e9ecef;"/>
+                    </div>
                   </div>
                 </div>
 
@@ -294,6 +309,19 @@
                       <span class="input-group-text">RW</span>
                       <input type="number" v-model="form.rw" class="form-control" min="0" />
                     </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Rencana Tempat Tinggal</label>
+                  <div class="input-group shadow-sm mb-3">
+                    <span class="input-group-text"><i class="bi bi-house-door"></i></span>
+                    <select v-model="form.rencana_tinggal" class="form-control">
+                      <option value=""> All </option>
+                      <option value="Domisili saat ini">Domisili saat ini</option>
+                      <option value="Luar domisili">Luar Domisili</option>
+                    </select>
+                    <!-- <input v-model="form.rencana_tinggal" class="form-control" /> -->
                   </div>
                 </div>
 
@@ -327,8 +355,8 @@
                 <div class="col-md-4">
                   <label class="form-label">Dampingan Ke</label>
                   <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-calculator"></i></span>
-                    <input type="number" readonly v-model="form.dampingan_ke" class="form-control" />
+                    <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-calculator"></i></span>
+                    <input type="number" readonly v-model="form.dampingan_ke" class="form-control" style="background-color: #e9ecef;"/>
                   </div>
                 </div>
 
@@ -346,12 +374,12 @@
                 <div class="col-md-4" v-for="(label, field) in { imt:'Indeks Massa Tubuh', status_hb:'Status HB', status_gizi:'Status Gizi' }" :key="field">
                   <label class="form-label">{{ label }}</label>
                   <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-file-medical"></i></span>
-                    <input type="text" readonly v-model="form[field]" class="form-control" />
+                    <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-file-medical"></i></span>
+                    <input type="text" readonly v-model="form[field]" class="form-control" style="background-color: #e9ecef;"/>
                   </div>
                 </div>
 
-                <div class="col-md-6" v-for="(label, field) in { catin_terpapar_rokok:'Terpapar Rokok?', catin_ttd:'Catin TTD?' }" :key="field">
+                <div class="col-md-4" v-for="(label, field) in { catin_terpapar_rokok:'Terpapar Rokok?', catin_ttd:'Catin TTD?',fasilitas_rujukan:'Fasilitas Rujukan', edukasi:'Catin Teredukasi', pmt:'PMT' }" :key="field">
                   <label class="form-label">{{ label }}</label>
                   <div class="d-flex align-items-center gap-3 p-2">
                     <div class="form-check form-check-inline">
@@ -365,7 +393,7 @@
                   </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <label class="form-label">Riwayat Penyakit?</label>
                   <div class="d-flex align-items-center gap-3 p-2">
                     <div class="form-check form-check-inline">
@@ -377,27 +405,21 @@
                       <label class="form-check-label" for="riwayat_tidak">Tidak</label>
                     </div>
                   </div>
+                </div>
 
+                <div class="col-md-6">
                   <label class="form-label">Keterangan Riwayat Penyakit</label>
                   <div class="input-group shadow-sm mb-3">
                     <span class="input-group-text"><i class="bi bi-journal-medical"></i></span>
-                    <textarea rows="5" :readonly="isRiwayat" v-model="form.riwayat_penyakit" class="form-control"></textarea>
+                    <textarea rows="4" :readonly="isRiwayat" v-model="form.riwayat_penyakit" class="form-control"></textarea>
                   </div>
                 </div>
 
                 <div class="col-md-6">
-                  <div v-for="(label, field) in { fasilitas_rujukan:'Fasilitas Rujukan', edukasi:'Edukasi', pmt:'PMT' }" :key="field" class="mb-3">
-                    <label class="form-label fw-semibold">{{ label }}</label>
-                    <div class="d-flex align-items-center ms-2">
-                      <div class="form-check me-3">
-                        <input class="form-check-input" type="radio" :id="field + '_ya'" :name="field" value="ya" v-model="form[field]" />
-                        <label class="form-check-label" :for="field + '_ya'">Ya</label>
-                      </div>
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" :id="field + '_tidak'" :name="field" value="tidak" v-model="form[field]" />
-                        <label class="form-check-label" :for="field + '_tidak'">Tidak</label>
-                      </div>
-                    </div>
+                  <label class="form-label">Catatan</label>
+                  <div class="input-group shadow-sm mb-3">
+                    <span class="input-group-text"><i class="bi bi-journal-check"></i></span>
+                    <textarea rows="4" v-model="form.catatan" class="form-control"></textarea>
                   </div>
                 </div>
 
@@ -756,6 +778,7 @@ export default {
         fasilitas_rujukan: '',
         edukasi: '',
         pmt: '',
+        catatn:''
       },
       bride: [],
       bridePending: [], // <--- tambahkan ini
@@ -857,6 +880,25 @@ export default {
     },
   },
   methods: {
+    async getWilayahUser() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/user/wilayah', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const wilayah = res.data
+        this.form.provinsi = wilayah.provinsi
+        this.form.kota = wilayah.kota
+        this.form.kecamatan = wilayah.kecamatan
+        this.form.kelurahan = wilayah.kelurahan
+      } catch (error) {
+        console.error('Gagal mengambil data wilayah user:', error)
+      }
+    },
+
     async updateData() {
       try {
         // 🔍 Debug payload sebelum dikirim
@@ -953,6 +995,7 @@ export default {
           fasilitas_rujukan: data.fasilitas_rujukan ?? '',
           edukasi: data.edukasi ?? '',
           pmt: data.pmt ?? '',
+          catatan: data.catatan ?? ''
         }
 
         // tampilkan form edit
@@ -1128,7 +1171,8 @@ export default {
         riwayat_penyakit: '',
         fasilitas_rujukan: '',
         edukasi: '',
-        pmt: ''
+        pmt: '',
+        catatan: ''
       }
       this.showForm = false
     },
@@ -1256,6 +1300,7 @@ export default {
           fasilitas_rujukan: pendamping.fasilitas_rujukan || '',
           edukasi: pendamping.edukasi || '',
           pmt: pendamping.pmt || '',
+          catatan: pendamping.catatan ?? ''
         }})
 
         //console.log('Data Flatten:', this.bride)
@@ -1329,16 +1374,12 @@ export default {
       this.isCollapsed = !this.isCollapsed
     },
     async saveData() {
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
-      this.currentRow = 0
-      this.totalRows = 1
+      this.isLoading = true
 
       try {
-        // Payload langsung dari struktur form
+        // Buat payload dari form
         const payload = {
-          // Data catin perempuan
+          // === Data Catin Perempuan ===
           nama_perempuan: this.form.nama_perempuan,
           nik_perempuan: this.form.nik_perempuan,
           pekerjaan_perempuan: this.form.pekerjaan_perempuan,
@@ -1346,7 +1387,7 @@ export default {
           usia_perempuan: this.form.usia_perempuan,
           hp_perempuan: this.form.hp_perempuan,
 
-          // Data catin pria
+          // === Data Catin Pria ===
           nama_pria: this.form.nama_pria,
           nik_pria: this.form.nik_pria,
           pekerjaan_pria: this.form.pekerjaan_pria,
@@ -1354,11 +1395,11 @@ export default {
           usia_pria: this.form.usia_pria,
           hp_pria: this.form.hp_pria,
 
-          // Data pernikahan
+          // === Data Pernikahan ===
           tgl_rencana_menikah: this.form.tgl_rencana_menikah,
           rencana_tinggal: this.form.rencana_tinggal,
 
-          // Data pendampingan
+          // === Data Pendampingan ===
           dampingan_ke: this.form.dampingan_ke,
           tgl_pendampingan: this.form.tgl_pendampingan,
           bb: this.form.bb,
@@ -1366,7 +1407,7 @@ export default {
           lila: this.form.lila,
           hb: this.form.hb,
 
-          // Status & kondisi
+          // === Status & Kondisi ===
           status_hb: this.form.status_hb,
           status_gizi: this.form.status_gizi,
           catin_terpapar_rokok: this.form.catin_terpapar_rokok,
@@ -1374,38 +1415,39 @@ export default {
           punya_riwayat_penyakit: this.form.punya_riwayat_penyakit,
           riwayat_penyakit: this.form.riwayat_penyakit,
 
-          // Fasilitas & edukasi
+          // === Fasilitas & Edukasi ===
           fasilitas_rujukan: this.form.fasilitas_rujukan,
           edukasi: this.form.edukasi,
           pmt: this.form.pmt,
+          catatan: this.form.catatan,
         }
 
-        // Tentukan mode (tambah / update)
+        // Jika form.id ada → update, kalau tidak → tambah data baru
         const url = this.form.id
           ? `http://localhost:8000/api/bride/${this.form.id}`
           : `http://localhost:8000/api/bride`
+
         const method = this.form.id ? 'put' : 'post'
 
         // Kirim ke backend
-        await axios({
-          method,
-          url,
-          data: payload,
+        await axios[method](url, payload, {
           headers: {
             Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         })
 
-        // Refresh data
+        // Refresh tampilan data
         await this.loadBride()
         this.resetForm()
-        this.showSuccess('Data berhasil disimpan')
+
+        const modal = new Modal(document.getElementById('successModal'))
+        modal.show()
       } catch (error) {
         console.error('Gagal simpan data:', error)
         this.showError('Terjadi kesalahan saat menyimpan data')
       } finally {
-        this.isLoadingImport = false
+        this.isLoading = false
       }
     },
     openImport(title) {
@@ -1508,7 +1550,8 @@ export default {
     try {
       await Promise.all([
         this.loadBride(),
-        this.getPendingData()
+        this.getPendingData(),
+        this.getWilayahUser()
       ])
     } catch (err) {
       console.error('Error loading data:', err)
