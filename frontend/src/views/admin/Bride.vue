@@ -181,9 +181,13 @@
                   <label class="form-label">NIK Perempuan</label>
                   <div class="input-group shadow-sm mb-3">
                     <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                    <input v-model="form.nik_perempuan" maxlength="16"
-                          @input="form.nik_perempuan = form.nik_perempuan.replace(/\D/g, '')"
-                          class="form-control" />
+                    <input
+                      v-model="form.nik_perempuan"
+                      maxlength="16"
+                      @keypress="onlyNumber($event)"
+                      @input="form.nik_perempuan = form.nik_perempuan.replace(/\D/g, '')"
+                      class="form-control"
+                    />
                   </div>
 
                   <label class="form-label">Pekerjaan</label>
@@ -201,15 +205,21 @@
 
                   <label class="form-label">Usia</label>
                   <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-cake"></i></span>
-                    <input v-model="form.usia_perempuan" type="number"
+                    <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-cake"></i></span>
+                    <input v-model="form.usia_perempuan" type="number" style="background-color: #e9ecef;"
                           class="form-control" readonly />
                   </div>
 
                   <label class="form-label">No. HP</label>
                   <div class="input-group shadow-sm mb-4">
                     <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                    <input v-model="form.hp_perempuan" class="form-control" />
+                    <input
+                      v-model="form.hp_perempuan"
+                      class="form-control"
+                      maxlength="15"
+                      @keypress="onlyNumber($event)"
+                      @input="form.hp_perempuan = form.hp_perempuan.replace(/\D/g, '')"
+                    />
                   </div>
                 </div>
 
@@ -228,9 +238,12 @@
                   <label class="form-label">NIK Pria</label>
                   <div class="input-group shadow-sm mb-3">
                     <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                    <input v-model="form.nik_pria" maxlength="16"
-                          @input="form.nik_pria = form.nik_pria.replace(/\D/g, '')"
-                          class="form-control" />
+                    <input
+                      v-model="form.nik_pria" maxlength="16"
+                      @keypress="onlyNumber($event)"
+                      @input="form.nik_pria = form.nik_pria.replace(/\D/g, '')"
+                      class="form-control"
+                    />
                   </div>
 
                   <label class="form-label">Pekerjaan</label>
@@ -248,14 +261,20 @@
 
                   <label class="form-label">Usia</label>
                   <div class="input-group shadow-sm mb-3">
-                    <span class="input-group-text"><i class="bi bi-cake"></i></span>
-                    <input v-model="form.usia_pria" type="number" class="form-control" readonly />
+                    <span class="input-group-text" style="background-color: #e9ecef;"><i class="bi bi-cake"></i></span>
+                    <input v-model="form.usia_pria"  style="background-color: #e9ecef;" type="number" class="form-control" readonly />
                   </div>
 
                   <label class="form-label">No. HP</label>
                   <div class="input-group shadow-sm mb-4">
                     <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                    <input v-model="form.hp_pria" class="form-control" />
+                    <input
+                      v-model="form.hp_pria"
+                      class="form-control"
+                      maxlength="15"
+                      @keypress="onlyNumber($event)"
+                      @input="form.hp_pria = form.hp_pria.replace(/\D/g, '')"
+                    />
                   </div>
                 </div>
 
@@ -303,11 +322,23 @@
                   <div class="d-flex gap-3">
                     <div class="input-group shadow-sm">
                       <span class="input-group-text">RT</span>
-                      <input type="number" v-model="form.rt" class="form-control" min="0" />
+                      <input
+                        type="text"
+                        v-model="form.rt"
+                        class="form-control"
+                        maxlength="3"
+                        @input="formatRT('rt')"
+                      />
                     </div>
                     <div class="input-group shadow-sm">
                       <span class="input-group-text">RW</span>
-                      <input type="number" v-model="form.rw" class="form-control" min="0" />
+                      <input
+                        type="text"
+                        v-model="form.rw"
+                        class="form-control"
+                        maxlength="3"
+                        @input="formatRT('rw')"
+                      />
                     </div>
                   </div>
                 </div>
@@ -733,6 +764,7 @@ export default {
       ],
       form: {
         id:null,
+        id_wilayah:'',
         // ========== DATA CATIN PEREMPUAN ==========
         nama_perempuan: '',
         nik_perempuan: '',
@@ -778,7 +810,7 @@ export default {
         fasilitas_rujukan: '',
         edukasi: '',
         pmt: '',
-        catatn:''
+        catatan:''
       },
       bride: [],
       bridePending: [], // <--- tambahkan ini
@@ -880,9 +912,18 @@ export default {
     },
   },
   methods: {
+    formatRT(field) {
+      let val = this.form[field].replace(/\D/g, '') // hanya angka
+      if (val.length === 1) {
+        val = '0' + val
+      } else if (val.length > 3) {
+        val = val.slice(0, 3)
+      }
+      this.form[field] = val
+    },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/wilayah', {
+        const res = await axios.get('http://localhost:8000/api/user/region', {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -890,6 +931,8 @@ export default {
         })
 
         const wilayah = res.data
+        console.log('wilayah: ', wilayah);
+        this.form.id_wilayah = wilayah.id
         this.form.provinsi = wilayah.provinsi
         this.form.kota = wilayah.kota
         this.form.kecamatan = wilayah.kecamatan
@@ -898,7 +941,6 @@ export default {
         console.error('Gagal mengambil data wilayah user:', error)
       }
     },
-
     async updateData() {
       try {
         // 🔍 Debug payload sebelum dikirim
@@ -1113,7 +1155,7 @@ export default {
         })
         this.form.dampingan_ke = res.data.dampingan_ke
       } catch (err) {
-        console.error('Gagal cek dampingan ke:', err)
+        console.log('Belom pernah melakukan pendampingan', err)
         this.form.dampingan_ke = 1
       }
     },
@@ -1242,11 +1284,11 @@ export default {
           this.showForm = true
           this.notFound = true
         } else {
-          console.error('Error tak terduga:', error)
+          //console.error('Error tak terduga:', error)
         }
       }
 
-      console.log('is found? ' + this.found)
+      //console.log('is found? ' + this.found)
     },
     async loadBride() {
       try {
@@ -1379,6 +1421,7 @@ export default {
       try {
         // Buat payload dari form
         const payload = {
+          id_wilayah: this.form.id_wilayah,
           // === Data Catin Perempuan ===
           nama_perempuan: this.form.nama_perempuan,
           nik_perempuan: this.form.nik_perempuan,
@@ -1398,14 +1441,23 @@ export default {
           // === Data Pernikahan ===
           tgl_rencana_menikah: this.form.tgl_rencana_menikah,
           rencana_tinggal: this.form.rencana_tinggal,
+          pernikahan_ke: this.form.pernikahan_ke,
+          rt: this.form.rt,
+          rw: this.form.rw,
+          provinsi: this.form.provinsi,
+          kota: this.form.kota,
+          kecamatan: this.form.kecamatan,
+          kelurahan: this.form.kelurahan,
 
           // === Data Pendampingan ===
           dampingan_ke: this.form.dampingan_ke,
           tgl_pendampingan: this.form.tgl_pendampingan,
+          tgl_pemeriksaan: this.form.tgl_pemeriksaan,
           bb: this.form.bb,
           tb: this.form.tb,
           lila: this.form.lila,
           hb: this.form.hb,
+          imt: this.form.imt,
 
           // === Status & Kondisi ===
           status_hb: this.form.status_hb,
@@ -1422,20 +1474,15 @@ export default {
           catatan: this.form.catatan,
         }
 
-        // Jika form.id ada → update, kalau tidak → tambah data baru
-        const url = this.form.id
-          ? `http://localhost:8000/api/bride/${this.form.id}`
-          : `http://localhost:8000/api/bride`
-
-        const method = this.form.id ? 'put' : 'post'
-
         // Kirim ke backend
-        await axios[method](url, payload, {
+        const res = await axios.post(`http://localhost:8000/api/bride`, payload, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
+
+        console.log('respon: ', res.data);
 
         // Refresh tampilan data
         await this.loadBride()
@@ -1455,93 +1502,104 @@ export default {
       const el = this.$refs.modalImport
       Modal.getOrCreateInstance(el).show()
     },
-    handleImport() {
-      this.closeModal('modalImport')
+    async handleImport() {
+      this.closeModal('modalImport');
 
-      const fileInput = this.$refs.csvFile
-      if (!fileInput || !fileInput.files.length) return
+      const fileInput = this.$refs.csvFile;
+      if (!fileInput || !fileInput.files.length) return;
 
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
+      this.isLoadingImport = true;
+      this.importProgress = 0;
+      this.animatedProgress = 0;
 
-      const file = fileInput.files[0]
-      const reader = new FileReader()
+      const file = fileInput.files[0];
+      const reader = new FileReader();
 
-      reader.onload = (e) => {
-        const text = e.target.result
-        const rows = text
-          .split('\n')
-          .map((r) => r.trim())
-          .filter((r) => r)
-        const headers = rows[0].split(',').map((h) => h.trim())
-        const total = rows.length - 1
-        this.totalRows = total
+      reader.onload = async (e) => {
+        const text = e.target.result;
+        const rows = text.split('\n').map((r) => r.trim()).filter((r) => r);
+        const headers = rows[0].split(',').map((h) => h.trim());
+        const total = rows.length - 1;
+        this.totalRows = total;
 
-        rows.slice(1).forEach((row, idx) => {
-          const values = row.split(',').map((v) => v.trim())
-          const obj = {}
+        // Loop per baris CSV
+        for (let idx = 1; idx <= total; idx++) {
+          const row = rows[idx];
+          const values = row.split(',').map((v) => v.trim());
+          const obj = {};
           headers.forEach((h, i) => {
-            obj[h] = values[i] || ''
-          })
+            obj[h] = values[i] || '';
+          });
 
           // ===============================
-          //  MAPPING DATA CSV → DATA CATIN
+          //  MAPPING DATA CSV → PAYLOAD API
           // ===============================
-          this.bride.push({
-            id: obj.id || null,
+          const payload = {
             id_catin: obj.id_catin || null,
-            // --- Data Pria ---
+            // Data Pria
             nik_pria: obj.nik_pria || '',
             nama_pria: obj.nama_pria || '',
             tgl_lahir_pria: obj.tgl_lahir_pria || '',
             usia_pria: obj.usia_pria || '',
             pekerjaan_pria: obj.pekerjaan_pria || '',
-            bb_pria: parseFloat(obj.bb_pria) || 0,
-            tb_pria: parseFloat(obj.tb_pria) || 0,
-            lila_pria: parseFloat(obj.lila_pria) || 0,
-            hb_pria: obj.hb_pria || '',
-            status_gizi_pria: obj.status_gizi_pria || '',
-
-            // --- Data Perempuan ---
+            hp_pria: obj.hp_pria || '',
+            // Data Perempuan
             nik_perempuan: obj.nik_perempuan || '',
             nama_perempuan: obj.nama_perempuan || '',
             tgl_lahir_perempuan: obj.tgl_lahir_perempuan || '',
             usia_perempuan: obj.usia_perempuan || '',
             pekerjaan_perempuan: obj.pekerjaan_perempuan || '',
-            bb_perempuan: parseFloat(obj.bb_perempuan) || 0,
-            tb_perempuan: parseFloat(obj.tb_perempuan) || 0,
-            lila_perempuan: parseFloat(obj.lila_perempuan) || 0,
-            hb_perempuan: obj.hb_perempuan || '',
-            status_gizi_perempuan: obj.status_gizi_perempuan || '',
-
-            // --- Data Pernikahan / Rencana ---
+            hp_perempuan: obj.hp_perempuan || '',
+            // Data Pendampingan
+            bb: obj.bb || '',
+            tb: obj.tb || '',
+            lila: obj.lila || '',
+            hb: obj.hb || '',
+            status_hb: obj.status_hb || '',
+            status_gizi: obj.status_gizi || '',
+            catin_terpapar_rokok: obj.catin_terpapar_rokok || '',
+            fasilitas_rujukan: obj.fasilitas_rujukan || '',
+            edukasi: obj.edukasi || '',
+            pmt: obj.pmt || '',
+            punya_riwayat_penyakit: obj.punya_riwayat_penyakit || '',
+            riwayat_penyakit: obj.riwayat_penyakit || '',
+            // Data Pernikahan
             tgl_daftar: obj.tgl_daftar || '',
             tgl_rencana_menikah: obj.tgl_rencana_menikah || '',
             rencana_tinggal: obj.rencana_tinggal || '',
             catatan: obj.catatan || '',
-            fasilitas_rujukan: obj.fasilitas_rujukan || '',
-            edukasi: obj.edukasi || '',
-            pmt: obj.pmt || '',
-          })
+            tgl_pendampingan: obj.tgl_pendampingan || '',
+            dampingan_ke: obj.dampingan_ke || '',
+          };
 
-          // Update progress bar
-          const percent = Math.round(((idx + 1) / total) * 100)
-          this.updateProgressBar(percent, idx + 1, total)
-        })
+          try {
+            // 🔹 Kirim ke backend (update)
+            const id = obj.id;
+            if (id) {
+              await axios.put(`/api/bride/${id}`, payload);
+            }
+
+            // Update progress bar
+            const percent = Math.round((idx / total) * 100);
+            this.updateProgressBar(percent, idx, total);
+
+          } catch (error) {
+            console.error(`Gagal impor baris ke-${idx}:`, error);
+          }
+        }
 
         // ===============================
         //  Tampilkan Modal Sukses
         // ===============================
         setTimeout(() => {
-          this.isLoadingImport = false
-          const el = document.getElementById('successModal')
-          const instance = Modal.getOrCreateInstance(el)
-          instance.show()
-        }, 500)
-      }
+          this.isLoadingImport = false;
+          const el = document.getElementById('successModal');
+          const instance = Modal.getOrCreateInstance(el);
+          instance.show();
+        }, 500);
+      };
 
-      reader.readAsText(file)
+      reader.readAsText(file);
     },
 
   },
@@ -1560,6 +1618,14 @@ export default {
     }
   },
   watch: {
+    'form.rt'(val) {
+      const cleaned = (val || '').toString().replace(/\D/g, '');
+      this.form.rt = cleaned.padStart(2, '0');
+    },
+    'form.rw'(val) {
+      const cleaned = (val || '').toString().replace(/\D/g, '');
+      this.form.rw = cleaned.padStart(2, '0');
+    },
     'form.bb': 'hitungKondisiCatin',
     'form.tb': 'hitungKondisiCatin',
     'form.hb': 'hitungKondisiCatin',

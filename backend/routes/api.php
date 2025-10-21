@@ -73,4 +73,4 @@ Route::get('/region/kelurahan', [RegionController::class, 'getKelurahan']);
 Route::middleware('auth:sanctum')->get('/log', [LogController::class, 'index']);
 
 // User Endpoint
-Route::middleware('auth:sanctum')->get('/user/wilayah', [CadreController::class, 'wilayahByUser']);
+Route::middleware('auth:sanctum')->get('/user/region', [CadreController::class, 'wilayahByUser']);

@@ -85,7 +85,7 @@ class BrideController extends Controller
         return DB::transaction(function () use ($request) {
             $isPending_perempuan = empty($request->input('nik_perempuan')) ? 1 : 0;
             $isPending_pria = empty($request->input('nik_pria')) ? 1 : 0;
-            $isPending = $isPending_perempuan = 1 || $isPending_pria = 1 ? 1 : 0;
+            $isPending = ($isPending_perempuan == 1 || $isPending_pria == 1) ? 1 : 0;
 
             // simpan catin perempuan
             $catinP = Catin::create([
@@ -129,7 +129,7 @@ class BrideController extends Controller
                 'jenis' => 'Calon Pengantin',
                 'id_subjek' => $catinP->id,
                 'tgl_pendampingan' => $request->tgl_pendampingan,
-                'dampingan_ke' => $isPending = 1 ? 1 : $request->dampingan_ke,
+                'dampingan_ke' => ($isPending == 1) ? 1 : $request->dampingan_ke,
                 'catatan'=> $request->catatan,
                 'bb' => $request->bb,
                 'tb'=> $request->tb,
@@ -146,6 +146,9 @@ class BrideController extends Controller
                 'ket_riwayat_penyakit'=> $request->riwayat_penyakit,
                 'id_petugas'=> Auth::id(),
                 'is_pending' => $isPending,
+                'id_wilayah' => $request->id_wilayah,
+                'rw' => $request->rw,
+                'rt' => $request->rt,
             ]);
 
             Log::create([
@@ -462,12 +465,22 @@ class BrideController extends Controller
                 ]);
             }
 
+            if ($catinPerempuan && $catinPria) {
+                $catinPerempuan->update(['id_pasangan' => $catinPria->id]);
+                $catinPria->update(['id_pasangan' => $catinPerempuan->id]);
+            }
+
+
             // 🔹 Update atau buat pendampingan (berdasarkan id_subjek = id catin perempuan)
-            $pendampingan = Pendampingan::firstOrNew(['id_subjek' => $catinPerempuan?->id]);
+            $pendampingan = Pendampingan::firstOrNew([
+                'id_subjek' => $catinPerempuan?->id,
+                'jenis' => 'Calon Pengantin',
+            ]);
+
             $pendampingan->fill([
                 'jenis' => 'Calon Pengantin',
                 'tgl_pendampingan' => $request->tgl_pendampingan,
-                'dampingan_ke' => $isPending ? 1 : ($request->dampingan_ke ?? 1),
+                'dampingan_ke' => $isPending ? 1 : ($request->input('dampingan_ke', 1)),
                 'catatan' => $request->catatan,
                 'bb' => $request->bb,
                 'tb' => $request->tb,
@@ -484,6 +497,10 @@ class BrideController extends Controller
                 'ket_riwayat_penyakit' => $request->riwayat_penyakit,
                 'id_petugas' => Auth::id(),
                 'is_pending' => $isPending,
+                'id_wilayah' => $request->id_wilayah,
+                'rw' => $request->rw,
+                'rt' => $request->rt,
+
             ]);
             $pendampingan->save();
 
