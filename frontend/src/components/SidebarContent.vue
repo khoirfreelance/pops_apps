@@ -120,13 +120,18 @@ export default {
 <style scoped>
 /* Wrapper sidebar */
 .sidebar-container {
+  position: fixed;
+  top: 80px; /* tinggi header Bootstrap (biasanya 56px) */
+  left: 0;
+  height: calc(100vh - 56px);
+  width: 250px;
+  overflow-y: auto;
   border-right: 1px solid #eaeaea;
-  height: 100vh;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  width: 250px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #fff;
+  z-index: 1030; /* biar di atas konten tapi di bawah header */
 }
 
 .sidebar-container.sidebar-collapsed {

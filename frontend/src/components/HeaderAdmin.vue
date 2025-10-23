@@ -1,22 +1,33 @@
 <template>
-  <header class="navbar navbar-light bg-gradient shadow-sm px-3 py-2">
+  <header class="navbar navbar-light bg-gradient shadow-sm px-3 py-2 position-fixed top-0 w-100">
     <!-- Left -->
     <div class="d-flex align-items-center">
       <a class="navbar-brand p-2 ms-5" href="#">
-        <img src="/src/assets/tf_reserved_primary.png" alt="Logo" height="30" />
+        <!-- tampilkan logo jika berhasil load -->
+        <img
+          v-if="logoLoaded"
+          :src="logoSrc"
+          alt="Logo"
+          height="50"
+          @error="logoLoaded = false"
+        />
+        <!-- jika gagal load logo, tampilkan kecamatan -->
+        <span
+          v-else
+          class="text-white fw-bold fs-5"
+        >
+          {{ kecamatan || 'Wilayah' }}
+        </span>
       </a>
-      <!-- tombol toggle di kiri kalau expanded -->
-      <button
-        v-if="!isCollapsed"
-        class="btn btn-outline-light ms-3 d-none d-md-inline"
-        @click="$emit('toggle-sidebar')"
-      >
-        <i class="bi bi-list"></i>
-      </button>
     </div>
 
     <!-- Right -->
     <div class="ms-auto d-flex align-items-center gap-3">
+      <!-- Kecamatan -->
+      <div class="text-white fw-semibold me-3 pe-3 border-end border-white">
+        {{ kecamatan || '...' }}
+      </div>
+
       <!-- Notification -->
       <div class="dropdown">
         <button
@@ -73,18 +84,23 @@
 <script>
 import { eventBus } from '@/eventBus'
 import Swal from 'sweetalert2'
+import axios from 'axios'
 
 export default {
   name: 'HeaderAdmin',
   data() {
     return {
+      logoSrc: '/cipayung.png',
+      logoLoaded: true,
       events: [],
       toggleNotification: false,
       storageKey: 'moodle_calendar_events',
+      kecamatan: '',
     }
   },
   mounted() {
     this.loadEvents()
+    this.getWilayahUser()
     eventBus.on('eventsUpdated', this.loadEvents)
   },
   beforeUnmount() {
@@ -96,6 +112,22 @@ export default {
         this.events = JSON.parse(localStorage.getItem(this.storageKey)) || []
       } catch {
         this.events = []
+      }
+    },
+    async getWilayahUser() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/user/region', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const wilayah = res.data
+        this.kecamatan = wilayah.kecamatan || 'Tidak diketahui'
+      } catch (error) {
+        //console.error('Gagal mengambil data wilayah user:', error)
+        this.kecamatan = error
       }
     },
     handleLogout() {
@@ -120,6 +152,7 @@ export default {
 <style scoped>
 header {
   z-index: 1050;
+  border-bottom: 5px solid var(--bs-secondary);
 }
 
 .bg-gradient {

@@ -78,5 +78,14 @@ ul.nav .nav-link.active {
 
 .card.welcome-card {
   border-radius: 1rem;
-  background: linear-gradient(135deg, $primary, $additional) !important;
+  background: linear-gradient(
+    0deg,
+    var(--bs-primary) 10%,
+    $additional2 10%,
+    var(--bs-light) 13%
+  ) !important;
 }
+.shadow-bottom {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* arah bawah, lembut */
+}
+

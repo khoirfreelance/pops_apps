@@ -1,44 +1,18 @@
 <template>
-  <div class="d-flex">
-    <!-- Button toggle sidebar (mobile) -->
+  <div
+    class="sidebar-desktop d-flex flex-column flex-shrink-0 p-3 bg-light border-end position-fixed start-0 vh-100"
+    :style="{ width: isCollapsed ? '80px' : '250px', top: '56px', transition: 'width 0.3s' }"
+  >
+    <!-- Tombol toggle di kanan sidebar -->
     <button
-      class="btn btn-primary d-md-none m-3"
-      type="button"
-      data-bs-toggle="offcanvas"
-      data-bs-target="#adminSidebar"
-      aria-controls="adminSidebar"
+      class="btn toggle-btn position-absolute top-50 translate-middle-y"
+      @click="$emit('toggle-sidebar')"
     >
-      <i class="bi bi-list"></i>
+      <i :class="isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left'"></i>
     </button>
 
-    <!-- Offcanvas untuk mobile -->
-    <div
-      class="offcanvas offcanvas-start"
-      tabindex="-1"
-      id="adminSidebar"
-      aria-labelledby="adminSidebarLabel"
-    >
-      <div class="offcanvas-header">
-        <!-- <h5 class="offcanvas-title fw-bold" id="adminSidebarLabel">Admin Panel</h5> -->
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="offcanvas-body p-0">
-        <SidebarContent />
-      </div>
-    </div>
-
-    <!-- Sidebar desktop -->
-    <div
-      :class="['d-none d-md-flex flex-column flex-shrink-0 p-3 bg-light vh-100 border-end']"
-      :style="{ width: isCollapsed ? '80px' : '250px', transition: 'width 0.3s' }"
-    >
-      <SidebarContent :is-collapsed="isCollapsed" />
-    </div>
+    <!-- Konten sidebar -->
+    <SidebarContent :is-collapsed="isCollapsed" />
   </div>
 </template>
 
@@ -57,8 +31,35 @@ export default {
 }
 </script>
 
-<style>
-.offcanvas {
-  max-width: 35% !important;
+<style scoped>
+.sidebar-desktop {
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  z-index: 1030;
+  position: fixed;
+}
+
+/* tombol toggle kecil di sisi kanan */
+.toggle-btn {
+  right: -10px; /* keluar sedikit dari sidebar */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  /* border-radius: 10%; */
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  transition: all 0.3s ease;
+  z-index: 2000;
+}
+
+.toggle-btn:hover {
+  background-color: var(--bs-primary);
+  color: #fff;
+  border-color: var(--bs-primary);
+  transform: scale(1.1);
 }
 </style>
