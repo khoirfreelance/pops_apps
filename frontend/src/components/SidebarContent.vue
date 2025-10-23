@@ -32,7 +32,7 @@
           class="nav-link"
           :class="{ active: isActive('/admin/catin') }"
         >
-          <i class="fa-solid fa-people-arrows"></i>
+          <i class="bi bi-arrow-through-heart"></i>
           <span v-if="!isCollapsed">Calon Pengantin</span>
         </router-link>
       </li>
@@ -42,7 +42,7 @@
           class="nav-link"
           :class="{ active: isActive('/admin/jadwal') }"
         >
-          <i class="bi bi-calendar"></i>
+          <i class="bi bi-calendar-check"></i>
           <span v-if="!isCollapsed">Jadwal Intervensi</span>
         </router-link>
       </li>

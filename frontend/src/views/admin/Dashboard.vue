@@ -1,5 +1,17 @@
 <template>
   <div class="wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header -->
     <HeaderAdmin/>
 
@@ -64,18 +76,19 @@
               <div
                 v-for="(stat, index) in stats"
                 :key="index"
-                class="card col-lg-2 col-sm-5 col-5 mx-3 my-2 shadow-bottom border-0 border-top border-4 border-primary"
+                class="stat-card col-lg-2 col-sm-5 col-5 mx-3 my-2 shadow-bottom border-0 border-top border-4 border-primary"
               >
                 <div class="row">
-                  <div class="card-body d-flex justify-content-between align-items-center">
-                    <div class="text-start">
-                      <span class="fa fa-home text-secondary p-3 rounded-circle" style="background-color: lightgrey;"></span>
+                  <div class="card-body d-flex align-items-center justify-content-between mx-2">
+                    <div class="icon-wrap d-flex align-items-center justify-content-center">
+                      <span :class="['stat-icon', stat.icon]"></span>
                     </div>
-                    <div class="text-end">
-                      <h5 class="text-muted">{{ stat.title }}</h5>
-                      <h2 class="card-title">{{ stat.value }}</h2>
+                    <div class="text-end ms-2">
+                      <h5 class="text-muted mb-1">{{ stat.title }}</h5>
+                      <h2 class="card-title fw-bold mb-0">{{ stat.value }}</h2>
                     </div>
                   </div>
+
                 </div>
               </div>
 
@@ -103,6 +116,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      isLoading: true,
       isCollapsed: false,
       username: '',
       today: '',
@@ -110,20 +124,31 @@ export default {
       logoSrc: '/cipayung.png',
       logoLoaded: true,
       windowWidth: window.innerWidth,
-      stats: [
-        { title: 'RW', value: '1,000', icon: '/icons/icon2.png' },
-        { title: 'RT', value: '100,000', icon: '/icons/icon1.png'},
-        { title: 'Keluarga Terdaftar', value: '100 M', icon: '/icons/icon3.png' },
-        { title: 'TPK', value: '1,234', icon: '/icons/icon4.png' },
-        { title: 'Ibu Hamil', value: '56 K', icon: '/icons/icon5.png' },
-        { title: 'Posyandu', value: '8 K', icon: '/icons/icon6.png' },
-        { title: 'Bidan', value: '1,234', icon: '/icons/icon7.png' },
-        { title: 'Calon Pengantin', value: '12 K', icon: '/icons/icon8.png' },
-        { title: 'Anak <= 5 Tahun', value: '56', icon: '/icons/icon9.png' },
-      ],
+      stats: [],
     }
   },
   methods: {
+    async fetchStats() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/dashboard/stats', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+        const data = res.data
+        this.stats = [
+          { title: 'RW', value: data.rw, icon: 'bi bi-houses-fill' },
+          { title: 'RT', value: data.rt, icon: 'bi bi-house-fill' },
+          { title: 'Keluarga Terdaftar', value: data.keluarga, icon: 'fa-solid fa-people-roof' },
+          { title: 'TPK', value: data.tpk, icon: 'bi bi-person-vcard' },
+          { title: 'Ibu Hamil', value: data.ibu_hamil, icon: 'fa-solid fa-person-pregnant' },
+          { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
+          { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
+          { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
+          { title: 'Anak <= 5 Tahun', value: data.anak, icon: 'fa-solid fa-baby' },
+        ]
+      } catch (e) {
+        console.error(e)
+      }
+    },
     async getWilayahUser() {
       try {
         const res = await axios.get('http://localhost:8000/api/user/region', {
@@ -178,10 +203,20 @@ export default {
     }
     this.today = this.getTodayDate()
   },
-  mounted() {
-    this.getWilayahUser()
-    this.handleResize()
-    window.addEventListener('resize', this.handleResize)
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.getWilayahUser(),
+        this.fetchStats(),
+        this.handleResize(),
+        window.addEventListener('resize', this.handleResize)
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
@@ -205,6 +240,54 @@ export default {
   overflow-x: hidden;
   transition: margin-left 0.3s ease;
 }
+.stat-card {
+  border-radius: 10px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.shadow-bottom {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Efek hover lembut */
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ikon */
+.stat-icon {
+  background-color: #e9ecef;
+  color: var(--bs-secondary);
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.stat-icon:hover {
+  background-color: var(--bs-primary);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* Pastikan ikon tetap center vertikal */
+.icon-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =============== media frame ================ */
 /* Sidebar fix untuk layar besar */
 @media (min-width: 992px) {
   .content {
@@ -263,6 +346,7 @@ export default {
     max-width: 180px;
     margin-top: 1rem;
   }
+
 }
 
 </style>

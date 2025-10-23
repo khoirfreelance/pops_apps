@@ -10,11 +10,15 @@ use App\Http\Controllers\Api\CadreController;
 use App\Http\Controllers\Api\PosyanduController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\BrideController;
+use App\Http\Controllers\Api\DashboardController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/config', [ConfigController::class, 'index']);
 Route::middleware('auth:sanctum')->post('/config', [ConfigController::class, 'store']);
+
+// Dashboard Endpoint
+Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
 // Family Endpoint
 Route::middleware('auth:sanctum')->group(function () {
