@@ -1,5 +1,5 @@
 <template>
-  <div class="bride-wrapper">
+  <div class="wrapper">
     <!-- 🔄 Spinner Overlay -->
     <transition name="fade">
       <div
@@ -13,95 +13,59 @@
     </transition>
 
     <!-- Header -->
-    <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
+    <HeaderAdmin />
 
-    <div class="d-flex flex-column flex-md-row">
+    <div
+      class="content flex-grow-1 d-flex flex-column flex-md-row"
+      :class="{
+        'sidebar-collapsed': isCollapsed,
+        'sidebar-expanded': !isCollapsed
+      }"
+    >
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" />
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"   />
 
-      <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div
-          class="flex-grow-1 p-4 bg-light container-fluid"
-          :style="{
-            backgroundImage: background ? `url(${background})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }"
-        >
+        <!-- Content -->
+        <div class="py-4 container-fluid" >
+
           <!-- Welcome Card -->
           <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div
-              class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between"
-            >
+            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
               <!-- Kiri: Teks Welcome -->
               <div class="text-start">
-                <div class="my-3">
-                  <h2 class="fw-bold mt-3 mb-0 text-white">Data Calon Pengantin</h2>
-                  <small class="text-white"> Daftar kunjungan calon pengantin </small>
-                </div>
-                <div class="text-white my-0">
-                  <ul class="list-unstyled">
-                    <!-- Jadwal intervensi -->
-                    <li v-if="pendingCount > 0" class="d-flex align-items-center mb-2">
-                      <div
-                        class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2"
-                        style="width: 28px; height: 28px;"
-                      >
-                        <i class="bi bi-calendar2-check text-primary fs-6"></i>
-                      </div>
-                      <p class="mb-0 small">
-                        Anda memiliki
-                        <router-link
-                          to="/admin/jadwal"
-                          class="fw-bold text-light text-decoration-none"
-                        >
-                          1 jadwal intervensi
-                        </router-link>
-                        hari ini.
-                      </p>
-                    </li>
-
-                    <!-- Data pending -->
-                    <li v-if="pendingCount > 0" class="d-flex align-items-center">
-                      <div
-                        class="bg-white rounded-circle d-flex align-items-center justify-content-center me-2"
-                        style="width: 28px; height: 28px;"
-                      >
-                        <i class="bi bi-upload text-primary fs-6"></i>
-                      </div>
-                      <p class="mb-0 small">
-                        Anda memiliki
-                        <a
-                          href="javascript:void(0)"
-                          class="fw-bold text-white text-decoration-none"
-                          @click="toggleExpandPending"
-                        >
-                          {{ pendingCount }} data pending
-                        </a>
-                        belum terkirim.
-                      </p>
-                    </li>
-                  </ul>
-                </div>
-                <nav aria-label="breadcrumb" class="mt-auto mb-2">
-                  <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                      <router-link to="/admin" class="text-decoration-none text-white-50">
-                        Beranda
-                      </router-link>
-                    </li>
-                    <li class="breadcrumb-item active text-white" aria-current="page">
-                      Calon Pengantin
-                    </li>
-                  </ol>
-                </nav>
+                <h3>
+                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
+                  {{ username }}
+                </h3>
+                <img
+                  v-if="logoLoaded"
+                  :src="logoSrc"
+                  alt="Logo"
+                  height="50"
+                  class="mt-4"
+                  @error="logoLoaded = false"
+                />
+                <!-- jika gagal load logo, tampilkan kelurahan -->
+                <span
+                  v-else
+                  class="text-muted fw-bold fs-5 mt-4"
+                >
+                  {{ kelurahan || 'Wilayah' }}
+                </span>
+                <p class="small d-flex align-items-center mt-1">
+                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
+                </p>
               </div>
 
               <!-- Kanan: Gambar -->
               <div class="mt-3 mt-md-0">
-                <img src="/src/assets/admin.png" alt="Welcome" class="img-fluid welcome-img" />
+                <img
+                  src="/banner.png"
+                  alt="Welcome"
+                  class="img-fluid welcome-img"
+                  style="max-width: 280px"
+                />
               </div>
             </div>
           </div>
@@ -734,14 +698,23 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      // required
+      isLoading: true,
+      isCollapsed: false,
+      username: '',
+      today: '',
+      thisMonth:'',
+      kelurahan: '',
+      logoSrc: '/cipayung.png',
+      logoLoaded: true,
+      windowWidth: window.innerWidth,
+      // -------------------
       isPendingOpen: false,
       isRiwayat:true,
       searchNIK: '',
       showForm: false,
       found: false,
       notFound: false,
-      isLoading: true,
-      isCollapsed: false,
       importTitle: 'Import File',
       showAlert: false,
       isLoadingImport: false,
@@ -911,16 +884,22 @@ export default {
       return this.bridePending.length
     },
   },
+  created() {
+    const storedEmail = localStorage.getItem('userEmail')
+    if (storedEmail) {
+      let namePart = storedEmail.split('@')[0]
+      namePart = namePart.replace(/[._]/g, ' ')
+      this.username = namePart
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ')
+    } else {
+      this.username = 'User'
+    }
+    this.today = this.getTodayDate()
+    this.thisMonth = this.getThisMonth()
+  },
   methods: {
-    formatRT(field) {
-      let val = this.form[field].replace(/\D/g, '') // hanya angka
-      if (val.length === 1) {
-        val = '0' + val
-      } else if (val.length > 3) {
-        val = val.slice(0, 3)
-      }
-      this.form[field] = val
-    },
     async getWilayahUser() {
       try {
         const res = await axios.get('http://localhost:8000/api/user/region', {
@@ -931,15 +910,64 @@ export default {
         })
 
         const wilayah = res.data
-        console.log('wilayah: ', wilayah);
-        this.form.id_wilayah = wilayah.id
-        this.form.provinsi = wilayah.provinsi
-        this.form.kota = wilayah.kota
-        this.form.kecamatan = wilayah.kecamatan
-        this.form.kelurahan = wilayah.kelurahan
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
+
+        // Setelah dapet id_wilayah, langsung fetch posyandu
+        await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
-        console.error('Gagal mengambil data wilayah user:', error)
+        console.error('Gagal ambil data wilayah user:', error)
+        this.kelurahan = '-'
       }
+    },
+    getTodayDate() {
+      const hari = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu',
+        'Kamis', 'Jumat', 'Sabtu'
+      ]
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+      const now = new Date()
+      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+    getThisMonth() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      let monthIndex = now.getMonth() - 1
+      let year = now.getFullYear()
+
+      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
+      if (monthIndex < 0) {
+        monthIndex = 11
+        year -= 1
+      }
+
+      return `${bulan[monthIndex]} ${year}`
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
+    },
+    formatRT(field) {
+      let val = this.form[field].replace(/\D/g, '') // hanya angka
+      if (val.length === 1) {
+        val = '0' + val
+      } else if (val.length > 3) {
+        val = val.slice(0, 3)
+      }
+      this.form[field] = val
     },
     async updateData() {
       try {
@@ -1609,7 +1637,9 @@ export default {
       await Promise.all([
         this.loadBride(),
         this.getPendingData(),
-        this.getWilayahUser()
+        this.getWilayahUser(),
+        this.handleResize(),
+        window.addEventListener('resize', this.handleResize)
       ])
     } catch (err) {
       console.error('Error loading data:', err)
@@ -1639,26 +1669,14 @@ export default {
       this.checkDampinganKe()
     }
   },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize)
+  },
 }
 </script>
 
 <style scoped>
-.spinner-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.8);
-  z-index: 9999;
-  backdrop-filter: blur(2px);
-  transition: opacity 0.3s ease;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+
 .datatable-responsive {
   width: 100%;
   overflow-x: auto; /* aktifkan scroll horizontal */

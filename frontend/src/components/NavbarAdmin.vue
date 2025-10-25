@@ -28,6 +28,12 @@ export default {
       default: false,
     },
   },
+  mounted() {
+  if (window.innerWidth <= 768) {
+    this.$emit('toggle-sidebar', true)
+  }
+}
+
 }
 </script>
 
@@ -38,6 +44,7 @@ export default {
   overflow-y: auto;
   z-index: 1030;
   position: fixed;
+  padding-bottom: 80px; /* 🔥 tambahkan ini */
 }
 
 /* tombol toggle kecil di sisi kanan */
@@ -62,4 +69,10 @@ export default {
   border-color: var(--bs-primary);
   transform: scale(1.1);
 }
+@media (max-width: 768px) {
+  .toggle-btn {
+    display: none !important;
+  }
+}
+
 </style>

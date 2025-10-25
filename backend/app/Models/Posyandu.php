@@ -12,7 +12,9 @@ class Posyandu extends Model
     protected $fillable = [
         'nama_posyandu',
         'alamat',
-        'id_wilayah'
+        'id_wilayah',
+        'rt',
+        'rw'
     ];
 
     public function cadres()

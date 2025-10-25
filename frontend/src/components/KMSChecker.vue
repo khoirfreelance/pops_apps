@@ -372,27 +372,33 @@ export default {
           ],
         },
         options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: 'BB/U: Berat Badan vs Umur (0–60 bln)' },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  if (ctx.dataset.label === 'BB Anak') {
-                    return `Umur: ${this.ageMonths} bln, BB: ${this.currentWeight} kg`
-                  }
-                  return `${ctx.dataset.label}: ${ctx.formattedValue} kg`
-                },
-              },
-            },
-          },
-          interaction: { mode: 'index', intersect: false },
-          scales: {
-            x: { title: { display: true, text: 'Umur (bulan)' }, ticks: { stepSize: 2 } },
-            y: { title: { display: true, text: 'Berat Badan (kg)' } },
-          },
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' },
+    title: { display: true, text: 'BB/U: Berat Badan vs Umur (0–60 bln)' },
+    tooltip: {
+      enabled: true, // tetap tampil saat hover
+      callbacks: {
+        label: (ctx) => {
+          if (ctx.dataset.label === 'BB Anak') {
+            return `Umur: ${this.ageMonths} bln, BB: ${this.currentWeight} kg`
+          }
+          return `${ctx.dataset.label}: ${ctx.formattedValue} kg`
         },
+      },
+    },
+    datalabels: { display: false }, // penting: hilangkan label di titik
+  },
+  interaction: { mode: 'index', intersect: false },
+  elements: {
+    point: { radius: 0 }, // tidak tampil titik di sepanjang garis
+  },
+  scales: {
+    x: { title: { display: true, text: 'Umur (bulan)' }, ticks: { stepSize: 2 } },
+    y: { title: { display: true, text: 'Berat Badan (kg)' } },
+  },
+},
+
       })
     },
 
@@ -495,27 +501,32 @@ export default {
           ],
         },
         options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: 'TB/U: Tinggi Badan vs Umur (0–60 bln)' },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => {
-                  if (ctx.dataset.label === 'TB Anak') {
-                    return `Umur: ${this.ageMonths} bln, TB: ${this.currentHeight} cm`
-                  }
-                  return `${ctx.dataset.label}: ${ctx.formattedValue} cm`
-                },
-              },
-            },
-          },
-          interaction: { mode: 'index', intersect: false },
-          scales: {
-            x: { title: { display: true, text: 'Umur (bulan)' }, ticks: { stepSize: 2 } },
-            y: { title: { display: true, text: 'Tinggi Badan (cm)' } },
-          },
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' },
+    title: { display: true, text: 'BB/U: Berat Badan vs Umur (0–60 bln)' },
+    tooltip: {
+      enabled: true, // tetap tampil saat hover
+      callbacks: {
+        label: (ctx) => {
+          if (ctx.dataset.label === 'BB Anak') {
+            return `Umur: ${this.ageMonths} bln, BB: ${this.currentWeight} kg`
+          }
+          return `${ctx.dataset.label}: ${ctx.formattedValue} kg`
         },
+      },
+    },
+    datalabels: { display: false }, // penting: hilangkan label di titik
+  },
+  interaction: { mode: 'index', intersect: false },
+  elements: {
+    point: { radius: 0 }, // tidak tampil titik di sepanjang garis
+  },
+  scales: {
+    x: { title: { display: true, text: 'Umur (bulan)' }, ticks: { stepSize: 2 } },
+    y: { title: { display: true, text: 'Berat Badan (kg)' } },
+  },
+},
       })
     },
 

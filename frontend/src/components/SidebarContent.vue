@@ -10,6 +10,7 @@
       </li>
 
       <li class="menu-section mt-4" v-if="!isCollapsed">Menu</li>
+      <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li>
         <router-link to="/admin/anak" class="nav-link" :class="{ active: isActive('/admin/anak') }">
           <i class="fa-solid fa-baby"></i>
@@ -46,7 +47,7 @@
           <span v-if="!isCollapsed">Jadwal Intervensi</span>
         </router-link>
       </li>
-
+      <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li class="menu-section mt-4" v-if="!isCollapsed">Master Data</li>
       <li>
         <router-link
@@ -74,7 +75,7 @@
           <span v-if="!isCollapsed">Keanggotaan TPK</span>
         </router-link>
       </li>
-
+      <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li class="menu-section mt-4" v-if="!isCollapsed">Administrator</li>
       <li>
         <router-link
@@ -96,6 +97,7 @@
           <span v-if="!isCollapsed">Log</span>
         </router-link>
       </li>
+      <li class="p-4" v-if="!isCollapsed"></li>
     </ul>
   </div>
 </template>

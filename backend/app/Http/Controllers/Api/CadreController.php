@@ -261,7 +261,7 @@ class CadreController extends Controller
         }
 
         return response()->json([
-            'id' => $wilayah->id ?? '-',
+            'id_wilayah' => $wilayah->id ?? '-',
             'provinsi' => $wilayah->provinsi ?? '-',
             'kota' => $wilayah->kota ?? '-',
             'kecamatan' => $wilayah->kecamatan ?? '-',

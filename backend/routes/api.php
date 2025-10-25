@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->post('/config', [ConfigController::class, 'st
 
 // Dashboard Endpoint
 Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWilayah']);
+
 
 // Family Endpoint
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,10 +39,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('cadre', CadreController::class)
         ->only(['index','store','show','update'])
         ->where(['cadre' => '[0-9]+']);
-    Route::get('/posyandu', [PosyanduController::class, 'getPosyandu']);
+
     Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
     Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
     Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']);
+});
+
+// Posyandu Endpoint
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/posyandu', [PosyanduController::class, 'getPosyandu']);
+    Route::get('/posyandu/{id_wilayah}', [PosyanduController::class, 'getByWilayah']);
 });
 
 // Member Endpoint

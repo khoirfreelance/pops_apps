@@ -80,12 +80,144 @@ ul.nav .nav-link.active {
   border-radius: 1rem;
   background: linear-gradient(
     0deg,
-    var(--bs-primary) 10%,
+    #10754f 10%,
     $additional2 10%,
-    var(--bs-light) 13%
+    #f7fcf4 13%
   ) !important;
 }
-.shadow-bottom {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* arah bawah, lembut */
+
+/* ====== Layout umum ====== */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
+.content {
+  display: flex;
+  margin-top: 80px;
+  flex: 1;
+  flex-direction: row;
+  overflow-x: hidden;
+  transition: margin-left 0.3s ease;
+}
+
+.stat-card {
+  border-radius: 10px;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.shadow-bottom {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Efek hover lembut */
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ikon */
+.stat-icon {
+  background-color: #e9ecef;
+  color: var(--bs-secondary);
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+/* Pastikan ikon tetap center vertikal */
+.icon-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  transition: opacity 0.3s ease;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* =============== media frame ================ */
+/* Sidebar fix untuk layar besar */
+@media (min-width: 992px) {
+  .content {
+    margin-left: 260px; /* sesuaikan lebar sidebar */
+  }
+
+  .content.sidebar-collapsed {
+    margin-left: 80px; /* versi collapse */
+  }
+}
+
+/* ====== Versi mobile (≤991px) ====== */
+@media (max-width: 991px) {
+  .content {
+    flex-direction: column;
+    margin-left: 80px !important; /* default: sidebar collapsed */
+    margin-top: 60px; /* biar gak ketimpa header */
+    transition: margin-left 0.3s ease;
+  }
+
+  /* Kalau sidebar lagi terbuka (utuh 250px) */
+  .content.sidebar-expanded {
+    margin-left: 250px !important; /* geser sesuai lebar sidebar */
+  }
+
+  /* Sidebar biar ngambang di kiri tapi gak nutup konten */
+  .navbar-admin {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 250px;
+    height: calc(100vh - 60px);
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1040;
+  }
+
+  /* Saat sidebar aktif, tampil penuh */
+  .navbar-admin.active {
+    transform: translateX(0);
+  }
+
+  /* Konten utama */
+  .container-fluid {
+    padding: 1rem;
+  }
+
+  .welcome-card {
+    margin: 0 auto;
+    max-width: 95%;
+  }
+
+  .welcome-img {
+    max-width: 180px;
+    margin-top: 1rem;
+  }
+
+}

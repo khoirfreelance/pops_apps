@@ -1,5 +1,5 @@
 <template>
-  <div class="bride-wrapper">
+  <div class="wrapper">
     <!-- 🔄 Spinner Overlay -->
     <transition name="fade">
       <div
@@ -13,15 +13,22 @@
     </transition>
 
     <!-- Header -->
-    <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
+    <HeaderAdmin />
 
-    <div class="d-flex flex-column flex-md-row">
+    <div
+      class="content flex-grow-1 d-flex flex-column flex-md-row"
+      :class="{
+        'sidebar-collapsed': isCollapsed,
+        'sidebar-expanded': !isCollapsed
+      }"
+    >
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" />
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
 
       <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div class="flex-grow-1 p-4 bg-light container-fluid">
+        <!-- Content -->
+        <div class="py-4 container-fluid" >
           <!-- Welcome Card -->
           <div class="card welcome-card shadow-sm mb-4 border-0">
             <div
@@ -30,21 +37,9 @@
               <!-- Kiri: Teks Welcome -->
               <div class="text-start">
                 <div class="my-3">
-                  <h2 class="fw-bold mt-3 mb-0 text-white">Data Log</h2>
-                  <small class="text-white"> Daftar log user </small>
+                  <h2 class="fw-bold mt-3 mb-0 text-primary">Data Log</h2>
+                  <small class="text-muted"> Daftar log user </small>
                 </div>
-                <nav aria-label="breadcrumb" class="mt-auto mb-2">
-                  <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                      <router-link to="/admin" class="text-decoration-none text-white-50">
-                        Beranda
-                      </router-link>
-                    </li>
-                    <li class="breadcrumb-item active text-white" aria-current="page">
-                      Log
-                    </li>
-                  </ol>
-                </nav>
               </div>
 
               <!-- Kanan: Gambar -->
@@ -158,8 +153,17 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      // required
       isLoading: true,
       isCollapsed: false,
+      username: '',
+      today: '',
+      thisMonth:'',
+      kelurahan: '',
+      logoSrc: '/cipayung.png',
+      logoLoaded: true,
+      windowWidth: window.innerWidth,
+      // -------------------
       log:[],
       headers: [
         { text: 'NIK', value: 'nik' },
@@ -202,6 +206,66 @@ export default {
     },
   },
   methods: {
+    async getWilayahUser() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/user/region', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const wilayah = res.data
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
+
+        // Setelah dapet id_wilayah, langsung fetch posyandu
+        await this.fetchPosyanduByWilayah(this.id_wilayah)
+      } catch (error) {
+        console.error('Gagal ambil data wilayah user:', error)
+        this.kelurahan = '-'
+      }
+    },
+    getTodayDate() {
+      const hari = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu',
+        'Kamis', 'Jumat', 'Sabtu'
+      ]
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+      const now = new Date()
+      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+    getThisMonth() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      let monthIndex = now.getMonth() - 1
+      let year = now.getFullYear()
+
+      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
+      if (monthIndex < 0) {
+        monthIndex = 11
+        year -= 1
+      }
+
+      return `${bulan[monthIndex]} ${year}`
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
+    },
     async loadLog(){
       try {
         const res = await axios.get('http://localhost:8000/api/log',{
@@ -239,18 +303,39 @@ export default {
       this.isCollapsed = !this.isCollapsed
     },
   },
+  created() {
+    const storedEmail = localStorage.getItem('userEmail')
+    if (storedEmail) {
+      let namePart = storedEmail.split('@')[0]
+      namePart = namePart.replace(/[._]/g, ' ')
+      this.username = namePart
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ')
+    } else {
+      this.username = 'User'
+    }
+    this.today = this.getTodayDate()
+    this.thisMonth = this.getThisMonth()
+  },
   async mounted() {
     this.isLoading = true
     try {
       await Promise.all([
         this.loadLog(),
+        this.getWilayahUser(),
+        this.handleResize(),
+        window.addEventListener('resize', this.handleResize)
       ])
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
       this.isLoading = false
     }
-  }
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize)
+  },
 }
 </script>
 

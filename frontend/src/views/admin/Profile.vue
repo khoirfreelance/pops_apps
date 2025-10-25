@@ -1,23 +1,35 @@
 <template>
-  <div class="profile-wrapper">
-    <!-- Header -->
-    <HeaderAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
+  <div class="wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
 
-    <div class="d-flex flex-column flex-md-row">
+    <!-- Header -->
+    <HeaderAdmin />
+
+    <div
+      class="content flex-grow-1 d-flex flex-column flex-md-row"
+      :class="{
+        'sidebar-collapsed': isCollapsed,
+        'sidebar-expanded': !isCollapsed
+      }"
+    >
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" />
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
       <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div
-          class="flex-grow-1 p-4 bg-light container-fluid"
-          :style="{
-            backgroundImage: background ? `url(${background})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }"
-        >
+        <!-- Content -->
+        <div class="py-4 container-fluid" >
+
           <!-- Profile Card -->
           <div class="card profile-card border-0 shadow-sm mb-4 overflow-hidden">
             <!-- Gradient Header + Cover Action -->
@@ -199,12 +211,6 @@
 </template>
 
 <style scoped>
-.profile-wrapper {
-  /* padding-top: 56px; tinggi navbar bootstrap default */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f9f9fb;
-  min-height: 100vh;
-}
 
 .profile-card {
   border-radius: 1rem;
@@ -248,6 +254,7 @@
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
+import axios from 'axios'
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -255,10 +262,87 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      // required
+      isLoading: true,
       isCollapsed: false,
+      username: '',
+      today: '',
+      thisMonth:'',
+      kelurahan: '',
+      logoSrc: '/cipayung.png',
+      logoLoaded: true,
+      windowWidth: window.innerWidth,
+      // -------------------
     }
   },
+  created() {
+    const storedEmail = localStorage.getItem('userEmail')
+    if (storedEmail) {
+      let namePart = storedEmail.split('@')[0]
+      namePart = namePart.replace(/[._]/g, ' ')
+      this.username = namePart
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ')
+    } else {
+      this.username = 'User'
+    }
+    this.today = this.getTodayDate()
+    this.thisMonth = this.getThisMonth()
+  },
   methods: {
+    async getWilayahUser() {
+      try {
+        const res = await axios.get('http://localhost:8000/api/user/region', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const wilayah = res.data
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
+
+        // Setelah dapet id_wilayah, langsung fetch posyandu
+        await this.fetchPosyanduByWilayah(this.id_wilayah)
+      } catch (error) {
+        console.error('Gagal ambil data wilayah user:', error)
+        this.kelurahan = '-'
+      }
+    },
+    getTodayDate() {
+      const hari = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu',
+        'Kamis', 'Jumat', 'Sabtu'
+      ]
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+      const now = new Date()
+      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+    getThisMonth() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      let monthIndex = now.getMonth() - 1
+      let year = now.getFullYear()
+
+      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
+      if (monthIndex < 0) {
+        monthIndex = 11
+        year -= 1
+      }
+
+      return `${bulan[monthIndex]} ${year}`
+    },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
@@ -268,6 +352,23 @@ export default {
       const config = JSON.parse(localStorage.getItem('siteConfig'))
       return config && config.background ? config.background : null
     },
+  },
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.getWilayahUser(),
+        this.handleResize(),
+        window.addEventListener('resize', this.handleResize)
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize)
   },
 }
 </script>

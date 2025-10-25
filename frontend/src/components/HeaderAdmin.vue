@@ -11,12 +11,12 @@
           height="50"
           @error="logoLoaded = false"
         />
-        <!-- jika gagal load logo, tampilkan kecamatan -->
+        <!-- jika gagal load logo, tampilkan kelurahan -->
         <span
           v-else
           class="text-white fw-bold fs-5"
         >
-          {{ kecamatan || 'Wilayah' }}
+          {{ kelurahan || 'Wilayah' }}
         </span>
       </a>
     </div>
@@ -25,7 +25,7 @@
     <div class="ms-auto d-flex align-items-center gap-3">
       <!-- Kecamatan -->
       <div class="text-white fw-semibold me-3 pe-3 border-end border-white">
-        {{ kecamatan || '...' }}
+        {{ kelurahan || '...' }}
       </div>
 
       <!-- Notification -->
@@ -95,7 +95,7 @@ export default {
       events: [],
       toggleNotification: false,
       storageKey: 'moodle_calendar_events',
-      kecamatan: '',
+      kelurahan: '',
     }
   },
   mounted() {
@@ -124,10 +124,10 @@ export default {
         })
 
         const wilayah = res.data
-        this.kecamatan = wilayah.kecamatan || 'Tidak diketahui'
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
       } catch (error) {
         //console.error('Gagal mengambil data wilayah user:', error)
-        this.kecamatan = error
+        this.kelurahan = error
       }
     },
     handleLogout() {
