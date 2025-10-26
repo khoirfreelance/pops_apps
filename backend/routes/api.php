@@ -14,8 +14,10 @@ use App\Http\Controllers\Api\DashboardController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/config', [ConfigController::class, 'index']);
-Route::middleware('auth:sanctum')->post('/config', [ConfigController::class, 'store']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('config', ConfigController::class)->only(['index','store']);
+});
 
 // Dashboard Endpoint
 Route::get('/dashboard/stats', [DashboardController::class, 'stats']);

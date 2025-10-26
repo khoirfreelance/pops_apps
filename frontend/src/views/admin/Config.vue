@@ -281,8 +281,6 @@ export default {
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
@@ -391,6 +389,7 @@ export default {
       })
       .then(res => {
         console.log(res.data)
+        localStorage.removeItem('site_config_cache')
 
         // ✅ Simpan data form ke localStorage setelah berhasil disimpan di database
         localStorage.setItem('siteConfig', JSON.stringify(this.form))

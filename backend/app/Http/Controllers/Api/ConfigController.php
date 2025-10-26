@@ -11,47 +11,70 @@ class ConfigController extends Controller
 {
     public function index()
     {
+        $userId = Auth::id();
+
         $config = Config::where('name', 'site_config')
+                        ->where('id_user', $userId)
                         ->first();
 
         if (!$config) {
-            return response()->json(null);
+            // Jika belum ada config untuk user ini
+            return response()->json([
+                'message' => 'Belum ada konfigurasi untuk user ini',
+                'data' => null
+            ], 200);
         }
 
-        // decode string JSON jadi array
+        // Decode JSON jadi array
         $value = json_decode($config->value, true);
 
-        return response()->json($value); // langsung kirim object logo/background
+        // Kembalikan data logo & background langsung
+        return response()->json([
+            'message' => 'Konfigurasi ditemukan',
+            'data'    => $value
+        ]);
     }
+
 
     public function store(Request $request)
     {
-        // Upload file ke storage
+        $userId = Auth::id();
+
+        // Upload file logo (opsional)
         $logoPath = null;
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             $logoPath = $request->file('logo')->store('logos', 'public');
         }
 
+        // Upload file background (opsional)
         $bgPath = null;
         if ($request->hasFile('background') && $request->file('background')->isValid()) {
             $bgPath = $request->file('background')->store('backgrounds', 'public');
         }
 
-        // Bentuk data JSON yang akan disimpan ke kolom `value`
+        // Ambil konfigurasi lama (jika ada)
+        $existingConfig = Config::where('name', 'site_config')
+            ->where('id_user', $userId)
+            ->first();
+
+        // Decode value lama (kalau ada)
+        $oldValue = $existingConfig ? json_decode($existingConfig->value, true) : [];
+
+        // Gabungkan data lama dan baru (supaya kalau logo tidak diupload, tidak jadi null)
         $data = [
-            'logo'         => $logoPath ? asset('storage/' . $logoPath) : null,
-            'background'   => $bgPath ? asset('storage/' . $bgPath) : null,
+            'logo'         => $logoPath ? asset('storage/' . $logoPath) : ($oldValue['logo'] ?? null),
+            'background'   => $bgPath ? asset('storage/' . $bgPath) : ($oldValue['background'] ?? null),
             'logoWidth'    => $request->input('logoWidth'),
             'colorTheme'   => $request->input('colorTheme'),
             'footerColumn' => $request->input('footerColumn'),
             'maintenance'  => $request->input('maintenance'),
         ];
 
-        // Simpan/update di tb_config, pakai JSON di kolom value
+        // Simpan atau update
         Config::updateOrCreate(
             [
                 'name'    => 'site_config',
-                'id_user' => Auth::id(), // supaya spesifik per user
+                'id_user' => $userId,
             ],
             [
                 'value'       => json_encode($data),
@@ -61,7 +84,8 @@ class ConfigController extends Controller
 
         return response()->json([
             'message' => 'Konfigurasi tersimpan',
-            'data'    => $data
+            'data'    => $data,
         ]);
     }
+
 }

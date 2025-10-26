@@ -643,13 +643,14 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
+      configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
       username: '',
       today: '',
       thisMonth:'',
       kelurahan: '',
-      logoSrc: '/cipayung.png',
+      logoSrc: null,
       logoLoaded: true,
       totalKasus: 37,
       windowWidth: window.innerWidth,
@@ -824,6 +825,34 @@ export default {
     }
   },
   methods: {
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get('http://localhost:8000/api/config', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
     renderLineChart() {
       new Chart(this.$refs.lineChart, {
         type: 'line',
@@ -1146,7 +1175,7 @@ export default {
     try {
       // Pastikan spinner sempat tampil
       await this.$nextTick()
-
+      await this.loadConfigWithCache()
       // Ambil data dulu
       await this.getWilayahUser()
       await this.fetchStats()
@@ -1167,7 +1196,7 @@ export default {
       this.renderLineChart()
       this.renderBarChart()
       this.renderFunnelChart()
-
+      this.getLogoConfig()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {

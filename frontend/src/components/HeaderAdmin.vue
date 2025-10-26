@@ -24,7 +24,7 @@
     <!-- Right -->
     <div class="ms-auto d-flex align-items-center gap-3">
       <!-- Kecamatan -->
-      <div class="text-white fw-semibold me-3 pe-3 border-end border-white">
+      <div class="text-white fw-semibold me-3 pe-3 border-end border-white"> <span class="fw-normal">Kelurahan / Desa: </span>
         {{ kelurahan || '...' }}
       </div>
 
@@ -90,17 +90,19 @@ export default {
   name: 'HeaderAdmin',
   data() {
     return {
-      logoSrc: '/cipayung.png',
+      logoSrc: null,
       logoLoaded: true,
       events: [],
       toggleNotification: false,
       storageKey: 'moodle_calendar_events',
       kelurahan: '',
+      configCacheKey: 'site_config_cache',
     }
   },
-  mounted() {
+  async mounted() {
     this.loadEvents()
     this.getWilayahUser()
+    await this.loadConfigWithCache()
     eventBus.on('eventsUpdated', this.loadEvents)
   },
   beforeUnmount() {
@@ -144,6 +146,34 @@ export default {
           window.location.href = '/admin/login'
         }
       })
+    },
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get('http://localhost:8000/api/config', {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
     },
   },
 }
