@@ -347,6 +347,14 @@ const emptyForm = () => ({
   color: '#006341',
 })
 
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'schedule',
@@ -357,6 +365,7 @@ export default {
   },
   data() {
     return {
+      configCacheKey: 'site_config_cache',
       // required
       isLoading: true,
       isCollapsed: false,
@@ -471,9 +480,9 @@ export default {
         eventBus.on('jumpToDate', (date) => {
           this.focusDate(date) // method kamu buat untuk set tanggal aktif
         }),
-        this.loadLog(),
         this.getWilayahUser(),
         this.handleResize(),
+        this.loadConfigWithCache(),
         window.addEventListener('resize', this.handleResize)
       ])
     } catch (err) {
@@ -486,9 +495,37 @@ export default {
     eventBus.off('jumpToDate')
   },
   methods: {
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -500,7 +537,7 @@ export default {
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
+        //await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
@@ -659,6 +696,14 @@ export default {
     focusDate(date) {
       // contoh: ubah currentDate jadi date event
       this.currentDate = new Date(date)
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
     },
   },
 }

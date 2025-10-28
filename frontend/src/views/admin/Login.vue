@@ -51,6 +51,14 @@ import FooterUser from '@/components/FooterUser.vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+
 export default {
   name: 'LoginView',
   components: { FooterUser },
@@ -69,7 +77,7 @@ export default {
     async handleLogin() {
       this.loading = true
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/login', {
+        const response = await axios.post(`${baseURL}/api/login`, {
           email: this.email,
           password: this.password,
         })

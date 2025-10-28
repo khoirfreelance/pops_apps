@@ -750,12 +750,21 @@ import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Family',
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      configCacheKey: 'site_config_cache',
       // required
       isLoading: true,
       isCollapsed: false,
@@ -864,9 +873,37 @@ export default {
     },
   },
   methods: {
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -878,7 +915,7 @@ export default {
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
+        //await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
@@ -940,7 +977,7 @@ export default {
       }
 
       try {
-        const res = await axios.get("http://localhost:8000/api/family/check", {
+        const res = await axios.get(`${baseURL}/api/family/check`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -990,7 +1027,7 @@ export default {
     },
     async loadProvinsi() {
       try {
-        const res = await axios.get("http://localhost:8000/api/region/provinsi");
+        const res = await axios.get(`${baseURL}/api/region/provinsi`);
         //console.log("Provinsi API response:", res.data); // debug
 
         // isi list dari API
@@ -1002,7 +1039,7 @@ export default {
     },
     async loadKota() {
       if (this.form.provinsi && this.form.provinsi !== "__new__") {
-        const res = await axios.get("http://localhost:8000/api/region/kota", {
+        const res = await axios.get(`${baseURL}/api/region/kota`, {
           params: { provinsi: this.form.provinsi }
         });
         this.kotaList = res.data;
@@ -1015,7 +1052,7 @@ export default {
     },
     async loadKecamatan() {
       if (this.form.kota && this.form.kota !== "__new__") {
-        const res = await axios.get("http://localhost:8000/api/region/kecamatan", {
+        const res = await axios.get(`${baseURL}/api/region/kecamatan`, {
           params: { provinsi: this.form.provinsi, kota: this.form.kota }
         });
         this.kecamatanList = res.data;
@@ -1026,7 +1063,7 @@ export default {
     },
     async loadKelurahan() {
       if (this.form.kecamatan && this.form.kecamatan !== "__new__") {
-        const res = await axios.get("http://localhost:8000/api/region/kelurahan", {
+        const res = await axios.get(`${baseURL}/api/region/kelurahan`, {
           params: {
             provinsi: this.form.provinsi,
             kota: this.form.kota,
@@ -1039,7 +1076,7 @@ export default {
     },
     async loadFamily() {
       try {
-        const res = await axios.get('http://localhost:8000/api/family',{
+        const res = await axios.get(`${baseURL}/api/family`,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1098,7 +1135,7 @@ export default {
       this.modalMode = "update";
       this.isFormOpen = true
       try {
-        const res = await axios.get(`http://localhost:8000/api/family/${id}/pending?tipe=${tipe}`, {
+        const res = await axios.get(`${baseURL}/api/family/${id}/pending?tipe=${tipe}`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1159,7 +1196,7 @@ export default {
        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
 
         await axios.put(
-          `http://localhost:8000/api/family/${this.form.id}`,
+          `${baseURL}/api/family/${this.form.id}`,
           this.form, // data body
           {
             headers: {
@@ -1195,7 +1232,7 @@ export default {
         //console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
 
         // simpan ke backend
-        await axios.post('http://localhost:8000/api/family', this.form,{
+        await axios.post(`${baseURL}/api/family`, this.form,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1246,7 +1283,7 @@ export default {
     async openFamilyModal(no_kk) {
       try {
         // panggil API detail by id
-        const res = await axios.get(`http://localhost:8000/api/family/detail/${no_kk}`,{
+        const res = await axios.get(`${baseURL}/api/family/detail/${no_kk}`,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1278,7 +1315,7 @@ export default {
       this.animatedProgress = 0;
 
       try {
-        await axios.post("http://localhost:8000/api/family/import", formData, {
+        await axios.post(`${baseURL}/api/family/import`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             Accept: 'application/json',
@@ -1310,7 +1347,7 @@ export default {
     },
     async getPendingData() {
       try {
-        const res = await axios.get("http://localhost:8000/api/family/pending",{
+        const res = await axios.get(`${baseURL}/api/family/pending`,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1342,6 +1379,7 @@ export default {
     this.isLoading = true
     try {
       await Promise.all([
+        this.loadConfigWithCache(),
         this.loadFamily(),
         this.loadProvinsi(),
         this.getPendingData(),

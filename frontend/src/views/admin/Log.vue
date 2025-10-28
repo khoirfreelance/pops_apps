@@ -147,12 +147,21 @@ import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import axios from 'axios'
 
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Log',
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      configCacheKey: 'site_config_cache',
       // required
       isLoading: true,
       isCollapsed: false,
@@ -206,9 +215,37 @@ export default {
     },
   },
   methods: {
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -220,7 +257,7 @@ export default {
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
+        ////await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
@@ -268,14 +305,14 @@ export default {
     },
     async loadLog(){
       try {
-        const res = await axios.get('http://localhost:8000/api/log',{
+        const res = await axios.get(`${baseURL}/api/log`,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         })
         this.log = res.data
-        console.log(this.log);
+        //console.log(this.log);
       } catch (e) {
         console.error('Gagal ambil data:', e)
       }
@@ -322,6 +359,7 @@ export default {
     this.isLoading = true
     try {
       await Promise.all([
+        this.loadConfigWithCache(),
         this.loadLog(),
         this.getWilayahUser(),
         this.handleResize(),

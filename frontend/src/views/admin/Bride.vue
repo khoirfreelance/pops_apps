@@ -692,12 +692,21 @@ import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Bride',
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
   data() {
     return {
+      configCacheKey: 'site_config_cache',
       // required
       isLoading: true,
       isCollapsed: false,
@@ -900,9 +909,37 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   methods: {
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -914,7 +951,7 @@ export default {
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
+        //await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
@@ -976,7 +1013,7 @@ export default {
 
         // Kirim PUT request ke backend
         const res = await axios.put(
-          `http://localhost:8000/api/bride/${this.form.id}`,
+          `${baseURL}/api/bride/${this.form.id}`,
           this.form,
           {
             headers: {
@@ -1011,7 +1048,7 @@ export default {
       this.showForm = true
 
       try {
-        const res = await axios.get(`http://localhost:8000/api/bride/${id}/pending`, {
+        const res = await axios.get(`${baseURL}/api/bride/${id}/pending`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1076,7 +1113,7 @@ export default {
     },
     async getPendingData() {
       try {
-        const res = await axios.get("http://localhost:8000/api/bride/pending", {
+        const res = await axios.get(`${baseURL}/api/bride/pending`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1175,7 +1212,7 @@ export default {
       if (!this.form.nik_perempuan || !this.form.nik_pria) return
 
       try {
-        const res = await axios.get('http://localhost:8000/api/bride/check', {
+        const res = await axios.get(`${baseURL}/api/bride/check`, {
           params: {
             nik_perempuan: this.form.nik_perempuan,
             nik_pria: this.form.nik_pria
@@ -1251,7 +1288,7 @@ export default {
       this.found = false
 
       try {
-        const res = await axios.get(`http://localhost:8000/api/bride/search/${this.searchNIK}`, {
+        const res = await axios.get(`${baseURL}/api/bride/search/${this.searchNIK}`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1320,7 +1357,7 @@ export default {
     },
     async loadBride() {
       try {
-        const res = await axios.get('http://localhost:8000/api/bride', {
+        const res = await axios.get(`${baseURL}/api/bride`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1503,7 +1540,7 @@ export default {
         }
 
         // Kirim ke backend
-        const res = await axios.post(`http://localhost:8000/api/bride`, payload, {
+        const res = await axios.post(`${baseURL}/api/bride`, payload, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1635,6 +1672,7 @@ export default {
     this.isLoading = true
     try {
       await Promise.all([
+        this.loadConfigWithCache(),
         this.loadBride(),
         this.getPendingData(),
         this.getWilayahUser(),

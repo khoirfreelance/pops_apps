@@ -73,7 +73,7 @@
 
           <!-- Statistic Cards -->
           <div class="container-fluid mt-2">
-            <div class="row justify-content-center" style="/* gap: 0.3rem !important; */">
+            <div class="row justify-content-center">
               <div
                 v-for="(stat, index) in stats"
                 :key="index"
@@ -624,6 +624,13 @@ import {
   Filler,
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend)
 Chart.register(PieController, ArcElement, Tooltip, Legend, ChartDataLabels)
@@ -670,6 +677,7 @@ export default {
         { title: "BB Stagnan", value: 1, percent: "0%", color: "info" },
         { title: "Overweight", value: 1, percent: "0%", color: "dark" },
       ],
+      dev:0,
       posyanduList: [],
       rwList: [],
       rtList: [],
@@ -835,7 +843,7 @@ export default {
           return
         }
          // kalau belum ada cache, fetch dari API
-        const res = await axios.get('http://localhost:8000/api/config', {
+        const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -925,7 +933,7 @@ export default {
     },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -945,7 +953,7 @@ export default {
     },
     async fetchPosyanduByWilayah(id_wilayah) {
       try {
-        const res = await axios.get(`http://localhost:8000/api/posyandu/${id_wilayah}`, {
+        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
         this.posyanduList = res.data
@@ -968,7 +976,7 @@ export default {
     },
     async fetchRwRtByPosyandu(idPosyandu) {
       try {
-        const res = await axios.get(`http://localhost:8000/api/posyandu/${idPosyandu}/wilayah`, {
+        const res = await axios.get(`${baseURL}/api/posyandu/${idPosyandu}/wilayah`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
         this.rwList = res.data.rw || []
@@ -1003,7 +1011,7 @@ export default {
     },
     async fetchStats() {
       try {
-        const res = await axios.get('http://localhost:8000/api/dashboard/stats', {
+        const res = await axios.get(`${baseURL}/api/dashboard/stats`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         const data = res.data
@@ -1196,7 +1204,7 @@ export default {
       this.renderLineChart()
       this.renderBarChart()
       this.renderFunnelChart()
-      this.getLogoConfig()
+      this.loadConfigWithCache()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {

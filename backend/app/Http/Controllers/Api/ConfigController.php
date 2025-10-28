@@ -68,6 +68,7 @@ class ConfigController extends Controller
             'colorTheme'   => $request->input('colorTheme'),
             'footerColumn' => $request->input('footerColumn'),
             'maintenance'  => $request->input('maintenance'),
+            'app'  => $request->input('app'),
         ];
 
         // Simpan atau update

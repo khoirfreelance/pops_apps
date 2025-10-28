@@ -11,6 +11,7 @@
         </div>
       </div>
     </transition>
+
     <!-- Header -->
     <HeaderAdmin />
 
@@ -21,153 +22,189 @@
         'sidebar-expanded': !isCollapsed
       }"
     >
+
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"  />
+
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Content -->
         <div class="py-4 container-fluid" >
 
           <!-- Welcome Card -->
           <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div
-              class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between"
-            >
+            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
               <!-- Kiri: Teks Welcome -->
               <div class="text-start">
-                <div class="my-3">
-                  <h2 class="fw-bold mt-3 mb-0 text-primary">Konfigurasi</h2>
-                  <small class="text-muted">
-                    Halaman konfigurasi untuk melakukan pengaturan administrator
-                  </small>
-                </div>
+                <h3>
+                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
+                  {{ username }}
+                </h3>
+                <img
+                  v-if="logoLoaded"
+                  :src="logoSrc"
+                  alt="Logo"
+                  height="50"
+                  class="mt-4"
+                  @error="logoLoaded = false"
+                />
+                <!-- jika gagal load logo, tampilkan kelurahan -->
+                <span
+                  v-else
+                  class="text-muted fw-bold fs-5 mt-4"
+                >
+                  {{ kelurahan || 'Wilayah' }}
+                </span>
+                <p class="small d-flex align-items-center mt-1">
+                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
+                </p>
               </div>
 
               <!-- Kanan: Gambar -->
               <div class="mt-3 mt-md-0">
-                <img src="/src/assets/admin.png" alt="Welcome" class="img-fluid welcome-img" />
+                <img
+                  src="/banner.png"
+                  alt="Welcome"
+                  class="img-fluid welcome-img"
+                  style="max-width: 280px"
+                />
               </div>
             </div>
           </div>
 
           <!-- Content -->
-          <div class="flex-grow-1 p-4">
-            <div class="card glass-card border-0 rounded-4 shadow-sm">
-              <div class="card-body p-4">
-                <form @submit.prevent="handleSubmit" class="row g-4">
-                  <!-- Upload Section -->
-                  <div class="col-12">
-                    <h6 class="section-title">Branding</h6>
-                  </div>
+          <div class="container-fluid mt-2">
+            <div class="row justify-content-center">
+              <div class="card border rounded-4 shadow-sm">
+                <div class="card-body p-4">
+                  <form @submit.prevent="handleSubmit" class="row g-4">
 
-                  <!-- Upload Logo -->
-                  <div class="col-md-6">
-                    <label class="form-label fw-semibold">Upload Logo</label>
-                    <div
-                      class="dropzone p-4 rounded-3 text-center"
-                      :class="{ 'border-primary bg-light': isLogoDrag }"
-                      @dragover.prevent="isLogoDrag = true"
-                      @dragleave.prevent="isLogoDrag = false"
-                      @drop.prevent="handleDrop($event, 'logo')"
-                    >
-                      <i class="bi bi-cloud-upload fs-1 text-primary"></i>
-                      <p class="mb-1 fw-medium">Drag & drop logo here</p>
-                      <small class="text-muted">or click to browse</small>
+                    <!-- Upload Logo -->
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold">Logo Desa</label>
+                      <div
+                        class="dropzone p-4 rounded-3 text-center position-relative"
+                        :class="{ 'border-primary bg-light': isLogoDrag }"
+                        @dragover.prevent="isLogoDrag = true"
+                        @dragleave.prevent="isLogoDrag = false"
+                        @drop.prevent="handleDrop($event, 'logo')"
+                      >
+                        <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                        <p class="mb-1 fw-medium">Drag & drop logo here</p>
+                        <small class="text-muted">or click to browse</small>
+
+                        <input
+                          ref="logoInput"
+                          type="file"
+                          accept="image/*"
+                          class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                          @change="handleFileChange($event, 'logo')"
+                        />
+
+                        <!-- 🔹 Nama file aktif -->
+                        <div v-if="form.logoName" class="mt-2 small text-success fw-semibold">
+                          <i class="bi bi-check-circle me-1"></i>{{ form.logoName }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Preview Logo-->
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold">Preview</label>
+                      <div v-if="logoSrc" class="p-5 text-center">
+                        <img
+                          :src="logoSrc"
+                          alt="Logo Preview"
+                          class="img-fluid rounded shadow-sm"
+                          style="max-height: 100px"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Upload Background -->
+                    <!-- <div class="col-md-6">
+                      <label class="form-label fw-semibold">Upload Background</label>
+                      <div
+                        class="dropzone p-4 rounded-3 text-center"
+                        :class="{ 'border-primary bg-light': isBgDrag }"
+                        @dragover.prevent="isBgDrag = true"
+                        @dragleave.prevent="isBgDrag = false"
+                        @drop.prevent="handleDrop($event, 'background')"
+                      >
+                        <i class="bi bi-image fs-1 text-primary"></i>
+                        <p class="mb-1 fw-medium">Drag & drop background</p>
+                        <small class="text-muted">or click to browse</small>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                          @change="handleFileChange($event, 'background')"
+                        />
+                      </div>
+                    </div> -->
+
+                    <!-- Preview Background-->
+                    <!-- <div class="col-md-6">
+                      <label class="form-label fw-semibold">Preview</label>
+                      <div v-if="previewBackground" class="mt-3 text-center">
+                        <img
+                          :src="previewBackground"
+                          alt="Background Preview"
+                          class="img-fluid rounded shadow-sm"
+                          style="max-height: 150px"
+                        />
+                      </div>
+                    </div> -->
+
+                    <!-- Theme -->
+                    <!-- <div class="col-md-12">
+                      <label class="form-label fw-semibold">Color Theme</label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                        @change="handleFileChange($event, 'logo')"
+                        type="color"
+                        v-model="form.colorTheme"
+                        class="form-control form-control-color modern-input"
                       />
+                    </div> -->
+
+                    <!-- Apps Mode-->
+                    <div class="col-md-12 d-flex align-items-center justify-content-between">
+                      <label class="form-label fw-semibold mb-0">Dev Mode</label>
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          v-model="form.app"
+                        />
+                        <label class="form-check-label">
+                          {{ form.app ? 'On' : 'Off' }}
+                        </label>
+                      </div>
                     </div>
-                  </div>
 
-                  <!-- Preview Logo-->
-                  <div class="col-md-6">
-                    <label class="form-label fw-semibold">Preview</label>
-                    <div v-if="previewLogo" class="mt-2 text-center">
-                      <img
-                        :src="previewLogo"
-                        alt="Logo Preview"
-                        class="img-fluid rounded shadow-sm"
-                        style="max-height: 100px"
-                      />
+                    <!-- Maintenance Mode -->
+                    <div class="col-md-12 d-flex align-items-center justify-content-between">
+                      <label class="form-label fw-semibold mb-0">Maintenance Mode</label>
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          v-model="form.maintenance"
+                        />
+                        <label class="form-check-label">
+                          {{ form.maintenance ? 'On' : 'Off' }}
+                        </label>
+                      </div>
                     </div>
-                    <input
-                      type="number"
-                      v-model="form.logoWidth"
-                      class="form-control modern-input mt-3"
-                      placeholder="Logo Width (px) e.g. 120"
-                    />
-                  </div>
 
-                  <!-- Upload Background -->
-                  <div class="col-md-6">
-                    <label class="form-label fw-semibold">Upload Background</label>
-                    <div
-                      class="dropzone p-4 rounded-3 text-center"
-                      :class="{ 'border-primary bg-light': isBgDrag }"
-                      @dragover.prevent="isBgDrag = true"
-                      @dragleave.prevent="isBgDrag = false"
-                      @drop.prevent="handleDrop($event, 'background')"
-                    >
-                      <i class="bi bi-image fs-1 text-primary"></i>
-                      <p class="mb-1 fw-medium">Drag & drop background</p>
-                      <small class="text-muted">or click to browse</small>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                        @change="handleFileChange($event, 'background')"
-                      />
+                    <!-- Save Button -->
+                    <div class="col-12 text-end">
+                      <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow">
+                        <i class="bi bi-save me-2"></i> Simpan
+                      </button>
                     </div>
-                  </div>
-
-                  <!-- Preview Background-->
-                  <div class="col-md-6">
-                    <label class="form-label fw-semibold">Preview</label>
-                    <div v-if="previewBackground" class="mt-3 text-center">
-                      <img
-                        :src="previewBackground"
-                        alt="Background Preview"
-                        class="img-fluid rounded shadow-sm"
-                        style="max-height: 150px"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Theme -->
-                  <div class="col-md-12">
-                    <label class="form-label fw-semibold">Color Theme</label>
-                    <input
-                      type="color"
-                      v-model="form.colorTheme"
-                      class="form-control form-control-color modern-input"
-                    />
-                  </div>
-
-                  <!-- Maintenance Mode -->
-                  <div class="col-md-12 d-flex align-items-center justify-content-between">
-                    <label class="form-label fw-semibold mb-0">Maintenance Mode</label>
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        v-model="form.maintenance"
-                      />
-                      <label class="form-check-label">
-                        {{ form.maintenance ? 'On' : 'Off' }}
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Save Button -->
-                  <div class="col-12 text-end">
-                    <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow">
-                      <i class="bi bi-save me-2"></i> Simpan
-                    </button>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -234,101 +271,84 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
 
+const API_PORT = 8000
+const { protocol, hostname } = window.location
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Config',
   components: { NavbarAdmin, CopyRight, HeaderAdmin },
   data() {
     return {
-      // required
+      configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
       username: '',
       today: '',
-      thisMonth:'',
+      thisMonth: '',
       kelurahan: '',
-      logoSrc: '/cipayung.png',
       logoLoaded: true,
       windowWidth: window.innerWidth,
-      // -------------------
+      logoName: null,
       errorMessage: '',
-      successMessage:'',
+      successMessage: '',
       form: {
         logo: null,
-        logoWidth: 120,
-        background: null,
-        colorTheme: 'var(--bs-primary)',
-        footerColumn: 3,
+        app: false,
         maintenance: false,
       },
-      previewLogo: null,
+      logoSrc: null,
       previewBackground: null,
       isLogoDrag: false,
       isBgDrag: false,
     }
   },
   methods: {
+    // --- Wilayah user ---
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
-
         const wilayah = res.data
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
-
+        this.id_wilayah = wilayah.id_wilayah
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
     },
+
+    // --- Util tanggal ---
     getTodayDate() {
-      const hari = [
-        'Minggu', 'Senin', 'Selasa', 'Rabu',
-        'Kamis', 'Jumat', 'Sabtu'
-      ]
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
-      ]
+      const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']
+      const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
     getThisMonth() {
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
-      ]
-
+      const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
       const now = new Date()
       let monthIndex = now.getMonth() - 1
       let year = now.getFullYear()
-
-      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
-      if (monthIndex < 0) {
-        monthIndex = 11
-        year -= 1
-      }
-
+      if (monthIndex < 0) { monthIndex = 11; year -= 1 }
       return `${bulan[monthIndex]} ${year}`
     },
+
+    // --- Layout ---
     handleResize() {
       this.windowWidth = window.innerWidth
-      if (this.windowWidth < 992) {
-        this.isCollapsed = true // auto collapse di tablet/mobile
-      } else {
-        this.isCollapsed = false // normal lagi di desktop
-      }
+      this.isCollapsed = this.windowWidth < 992
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
+
+    // --- Upload handler ---
     handleFileChange(e, type) {
       const file = e.target.files[0]
       if (!file) return
@@ -345,62 +365,126 @@ export default {
       const reader = new FileReader()
       reader.onload = (ev) => {
         if (type === 'logo') {
-          // untuk preview pakai base64
-          this.previewLogo = ev.target.result
+          this.logoSrc = ev.target.result
+          this.form.logoName = file.name
         } else if (type === 'background') {
           this.previewBackground = ev.target.result
         }
       }
       reader.readAsDataURL(file)
-
-      // simpan file asli ke form agar bisa dikirim ke backend
-      if (type === 'logo') {
-        this.form.logo = file
-      } else if (type === 'background') {
-        this.form.background = file
-      }
+      if (type === 'logo') this.form.logo = file
+      else if (type === 'background') this.form.background = file
     },
+
+    // --- Modal helper ---
     showError(message) {
       this.errorMessage = message || 'Terjadi kesalahan.'
       // eslint-disable-next-line no-undef
       const modal = new bootstrap.Modal(document.getElementById('errorModal'))
       modal.show()
     },
-    showSuccess(message){
+    showSuccess(message) {
       this.successMessage = message || 'Berhasil tersimpan.'
       // eslint-disable-next-line no-undef
       const modal = new bootstrap.Modal(document.getElementById('successModal'))
       modal.show()
     },
-    handleSubmit() {
-      const formData = new FormData()
-      formData.append('logo', this.form.logo)
-      formData.append('background', this.form.background)
-      formData.append('logoWidth', this.form.logoWidth)
-      formData.append('colorTheme', this.form.colorTheme)
-      formData.append('footerColumn', this.form.footerColumn)
-      formData.append('maintenance', this.form.maintenance ? 1 : 0)
 
-      axios.post('http://localhost:8000/api/config', formData, {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
-      .then(res => {
-        console.log(res.data)
+    // --- Perbaikan utama di sini ---
+    normalizeLogoPath(path) {
+      if (!path) return null
+      // hilangkan duplikasi "http://localhost:8000/storage/"
+      return path
+        .replace(/^http:\/\/localhost:8000\/storage\//, '')
+        .replace(/^storage\//, '')
+    },
+
+    async loadConfigWithCache() {
+      try {
+        const cached = localStorage.getItem(this.configCacheKey)
+        const { protocol, hostname } = window.location
+        const base = `${protocol}//${hostname}:8000`
+
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.dev = parsed.app == 1 ? 1 : 0
+
+          if (parsed.logo) {
+            const cleanLogo = this.normalizeLogoPath(parsed.logo)
+            this.logoSrc = `${base}/storage/${cleanLogo}`
+            this.form.logoName = cleanLogo.split('/').pop()
+          }
+
+          this.form.app = parsed.app == 1 || parsed.app === true
+          this.form.maintenance = parsed.maintenance == 1 || parsed.maintenance === true
+          return
+        }
+
+        const res = await axios.get(`${base}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.dev = data.app == 1 ? 1 : 0
+
+          if (data.logo) {
+            const cleanLogo = this.normalizeLogoPath(data.logo)
+            this.logoSrc = `${base}/storage/${cleanLogo}`
+            this.form.logoName = cleanLogo.split('/').pop()
+          }
+
+          this.form.app = data.app == 1 || data.app === true
+          this.form.maintenance = data.maintenance == 1 || data.maintenance === true
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      } catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
+
+    async handleSubmit() {
+      try {
+        const { protocol, hostname } = window.location
+        const base = this.dev ? `${protocol}//${hostname}:8000` : `${protocol}//${hostname}`
+
+        const formData = new FormData()
+        formData.append('logo', this.form.logo)
+        formData.append('background', this.form.background)
+        formData.append('maintenance', this.form.maintenance ? 1 : 0)
+        formData.append('app', this.form.app ? 1 : 0)
+
+        const res = await axios.post(`${base}/api/config`, formData, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        console.log('✅ Config saved:', res.data)
+
         localStorage.removeItem('site_config_cache')
-
-        // ✅ Simpan data form ke localStorage setelah berhasil disimpan di database
-        localStorage.setItem('siteConfig', JSON.stringify(this.form))
-
-        // ✅ Tampilkan modal sukses
-        this.showSuccess('Konfigurasi anda berhasil disimpan')
-      })
-      .catch(err => {
-        console.error('Gagal simpan konfigurasi:', err)
+        const refresh = await axios.get(`${base}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        const data = refresh.data?.data
+        if (data) {
+          const cleanLogo = this.normalizeLogoPath(data.logo)
+          this.logoSrc = `${base}/storage/${cleanLogo}`
+          this.form.logoName = cleanLogo.split('/').pop()
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+        this.showSuccess('Konfigurasi berhasil disimpan & disinkronkan')
+      } catch (err) {
+        console.error('❌ Gagal simpan konfigurasi:', err)
         this.showError('Gagal menyimpan konfigurasi. Periksa koneksi atau token Anda.')
-      })
+      }
     },
   },
   async mounted() {
@@ -408,6 +492,7 @@ export default {
     try {
       await Promise.all([
         this.getWilayahUser(),
+        this.loadConfigWithCache(),
         this.handleResize(),
         window.addEventListener('resize', this.handleResize)
       ])
@@ -422,10 +507,7 @@ export default {
     if (storedEmail) {
       let namePart = storedEmail.split('@')[0]
       namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
-        .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ')
+      this.username = namePart.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
     } else {
       this.username = 'User'
     }
@@ -437,6 +519,7 @@ export default {
   },
 }
 </script>
+
 
 <style scoped>
 .bg-light[style] {
