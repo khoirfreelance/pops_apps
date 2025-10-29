@@ -449,8 +449,6 @@ export default {
 
     async handleSubmit() {
       try {
-        const { protocol, hostname } = window.location
-        const base = this.dev ? `${protocol}//${hostname}:8000` : `${protocol}//${hostname}`
 
         const formData = new FormData()
         formData.append('logo', this.form.logo)
@@ -458,7 +456,7 @@ export default {
         formData.append('maintenance', this.form.maintenance ? 1 : 0)
         formData.append('app', this.form.app ? 1 : 0)
 
-        const res = await axios.post(`${base}/api/config`, formData, {
+        const res = await axios.post(`${baseURL}/api/config`, formData, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -467,7 +465,7 @@ export default {
         console.log('✅ Config saved:', res.data)
 
         localStorage.removeItem('site_config_cache')
-        const refresh = await axios.get(`${base}/api/config`, {
+        const refresh = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -476,7 +474,7 @@ export default {
         const data = refresh.data?.data
         if (data) {
           const cleanLogo = this.normalizeLogoPath(data.logo)
-          this.logoSrc = `${base}/storage/${cleanLogo}`
+          this.logoSrc = `${baseURL}/storage/${cleanLogo}`
           this.form.logoName = cleanLogo.split('/').pop()
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
