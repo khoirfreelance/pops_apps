@@ -390,14 +390,15 @@ export default {
       modal.show()
     },
 
-    // --- Perbaikan utama di sini ---
     normalizeLogoPath(path) {
       if (!path) return null
-      // hilangkan duplikasi "http://localhost:8000/storage/"
-      return path
-        .replace(/^http:\/\/localhost:8000\/storage\//, '')
-        .replace(/^storage\//, '')
+      // Kalau sudah mengandung http (sudah absolute URL), langsung return
+      if (path.startsWith('http')) return path
+
+      // Kalau masih relative, pastikan tanpa "storage/" dobel
+      return path.replace(/^storage\//, '')
     },
+
 
     async loadConfigWithCache() {
       try {
@@ -411,9 +412,13 @@ export default {
 
           if (parsed.logo) {
             const cleanLogo = this.normalizeLogoPath(parsed.logo)
-            this.logoSrc = `${base}/storage/${cleanLogo}`
+            // Kalau cleanLogo sudah URL penuh, pakai langsung
+            this.logoSrc = cleanLogo.startsWith('http')
+              ? cleanLogo
+              : `${base}/storage/${cleanLogo}`
             this.form.logoName = cleanLogo.split('/').pop()
           }
+
 
           this.form.app = parsed.app == 1 || parsed.app === true
           this.form.maintenance = parsed.maintenance == 1 || parsed.maintenance === true
@@ -517,7 +522,6 @@ export default {
   },
 }
 </script>
-
 
 <style scoped>
 .bg-light[style] {
