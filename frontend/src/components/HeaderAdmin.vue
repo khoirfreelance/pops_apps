@@ -86,6 +86,14 @@ import { eventBus } from '@/eventBus'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+
 export default {
   name: 'HeaderAdmin',
   data() {
@@ -118,7 +126,7 @@ export default {
     },
     async getWilayahUser() {
       try {
-        const res = await axios.get('http://localhost:8000/api/user/region', {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -157,7 +165,7 @@ export default {
           return
         }
          // kalau belum ada cache, fetch dari API
-        const res = await axios.get('http://localhost:8000/api/config', {
+        const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
