@@ -85,58 +85,296 @@
             <div class="mb-2 fw-bold text-primary">Filter:</div>
 
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-              <!-- Kelurahan/Desa -->
-              <div class="col-md-2">
-                <label class="form-label">Kelurahan/Desa</label>
-                <select v-model="filters.kelurahan" class="form-select text-muted" disabled>
-                  <option :value="kelurahan">{{ kelurahan }}</option>
-                </select>
+              <!-- === Filter Utama === -->
+              <div class="col-md-3 position-relative">
+                <label class="form-label">Underweight (BB/U)</label>
+                <div class="dropdown w-100">
+                  <button
+                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    style="max-width: 100%;"
+                  >
+                    <span v-if="filters.bbu.length === 0" class="text-muted">Pilih Underweight</span>
+                    <span v-else class="selected-text">{{ filters.bbu.join(', ') }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                    <li
+                      v-for="item in bbuOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-' + item"
+                        :value="item"
+                        v-model="filters.bbu"
+                      />
+                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li class="d-flex justify-content-between px-2">
+                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_bbu">
+                        Pilih Semua
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_bbu">
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <!-- Posyandu -->
-              <div class="col-md-2">
-                <label class="form-label">Posyandu</label>
-                <select v-model="filters.posyandu" class="form-select text-muted">
-                  <option value="">All</option>
-                  <option v-for="item in posyanduList" :key="item.id" :value="item.id">
-                    {{ item.nama_posyandu}}
-                  </option>
-                </select>
+              <div class="col-md-3">
+                <label class="form-label">Stunting (TB/U)</label>
+                <div class="dropdown w-100">
+                  <button
+                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    style="max-width: 100%;"
+                  >
+                    <span v-if="filters.tbu.length === 0" class="text-muted">Pilih Stunting</span>
+                    <span v-else class="selected-text">{{ filters.tbu.join(', ') }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                    <li
+                      v-for="item in tbuOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-' + item"
+                        :value="item"
+                        v-model="filters.tbu"
+                      />
+                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li class="d-flex justify-content-between px-2">
+                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_tbu">
+                        Pilih Semua
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_tbu">
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <!-- RW -->
-              <div class="col-md-2">
-                <label class="form-label">RW</label>
-                <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
-                  <option value="">All</option>
-                  <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
-                </select>
+              <div class="col-md-3">
+                <label class="form-label">Wasting (BB/TB)</label>
+                <div class="dropdown w-100">
+                  <button
+                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    style="max-width: 100%;"
+                  >
+                    <span v-if="filters.bbtb.length === 0" class="text-muted">Pilih Wasting</span>
+                    <span v-else class="selected-text">{{ filters.bbtb.join(', ') }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                    <li
+                      v-for="item in bbtbOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-' + item"
+                        :value="item"
+                        v-model="filters.bbtb"
+                      />
+                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li class="d-flex justify-content-between px-2">
+                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_bbtb">
+                        Pilih Semua
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_bbtb">
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <!-- RT -->
-              <div class="col-md-2">
-                <label class="form-label">RT</label>
-                <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
-                  <option value="">All</option>
-                  <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
-                </select>
+              <div class="col-md-3">
+                <label class="form-label">BB Stagnan</label>
+                <div class="dropdown w-100">
+                  <button
+                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    style="max-width: 100%;"
+                  >
+                    <span v-if="filters.stagnan.length === 0" class="text-muted">Pilih BB Stagnan</span>
+                    <span v-else class="selected-text">{{ filters.stagnan.join(', ') }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                    <li
+                      v-for="item in stagnanOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-' + item"
+                        :value="item"
+                        v-model="filters.stagnan"
+                      />
+                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li class="d-flex justify-content-between px-2">
+                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_stagnan">
+                        Pilih Semua
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_stagnan">
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <!-- Periode -->
-              <div class="col-md-2">
-                <label class="form-label">Periode</label>
-                <select v-model="filters.periode" class="form-select text-muted">
-                  <option value="">All</option>
-                  <option v-for="periode in periodeOptions" :key="periode" :value="periode">
-                    {{ periode }}
-                  </option>
-                </select>
+              <!-- Tombol Expand/Collapse -->
+              <div class="col-md-12 d-flex justify-content-end">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary fw-semibold"
+                  @click="showAdvanced = !showAdvanced"
+                >
+                  <i :class="showAdvanced ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
+                  {{ showAdvanced ? 'Tutup Filter Lain' : 'Filter Lain' }}
+                </button>
               </div>
 
-              <!-- Tombol Cari -->
-              <div class="col-md-2 d-grid">
+              <!-- === Filter Lanjutan (Collapsible) === -->
+              <transition name="fade">
+                <div v-if="showAdvanced" class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Posyandu</label>
+                    <select v-model="filters.posyandu" class="form-select text-muted">
+                      <option value="">All</option>
+                      <option v-for="item in posyanduList" :key="item.id" :value="item.id">
+                        {{ item.nama_posyandu }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">RW</label>
+                    <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
+                      <option value="">All</option>
+                      <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">RT</label>
+                    <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
+                      <option value="">All</option>
+                      <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4 position-relative">
+                    <label class="form-label">Intervensi</label>
+                    <div class="dropdown w-100">
+                      <button
+                        class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        style="max-width: 100%;"
+                      >
+                        <span v-if="filters.intervensi.length === 0" class="text-muted">Pilih Intervensi</span>
+                        <span v-else class="selected-text">{{ filters.intervensi.join(', ') }}</span>
+                      </button>
+
+                      <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                        <li
+                          v-for="item in intervensiOptions"
+                          :key="item"
+                          class="dropdown-item d-flex align-items-center"
+                        >
+                          <input
+                            type="checkbox"
+                            class="form-check-input me-2"
+                            :id="'chk-' + item"
+                            :value="item"
+                            v-model="filters.intervensi"
+                          />
+                          <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                        </li>
+
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li class="d-flex justify-content-between px-2">
+                          <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_intervensi">
+                            Pilih Semua
+                          </button>
+                          <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_intervensi">
+                            Hapus Semua
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+
+                  <div class="col-md-8 text-center">
+                    <label class="form-label">Periode</label>
+                    <div class="d-flex justify-content-between gap-2">
+                      <select v-model="filters.periodeAwal" class="form-select text-muted">
+                        <option value="">All</option>
+                        <option v-for="periode in periodeOptions" :key="periode" :value="periode">
+                          {{ periode }}
+                        </option>
+                      </select>
+                      <select v-model="filters.periodeAkhir" class="form-select text-muted">
+                        <option value="">All</option>
+                        <option v-for="periode in periodeOptions" :key="periode" :value="periode">
+                          {{ periode }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </transition>
+
+              <!-- === Tombol Aksi (Selalu Tampil) === -->
+              <div class="col-md-12 d-flex justify-content-between mt-3">
                 <button type="submit" class="btn btn-gradient fw-semibold">
                   <i class="bi bi-search me-1"></i> Cari
+                </button>
+                <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Reset
                 </button>
               </div>
             </form>
@@ -298,12 +536,12 @@
           <div class="container-fluid mt-4">
             <h5 class="fw-bold text-success mb-3">Data Anak</h5>
             <div class="row mt-4">
-              <div :class="selectedAnak ? 'col-md-8' : 'col-md-12'">
+              <div :class="selectedAnak ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
                 <div class="card bg-light px-2 py-5">
                   <div class="table-responsive">
                     <EasyDataTable
                       :headers="headers"
-                      :items="kunjungan_posyandu"
+                      :items="filteredData"
                       table-class="table table-striped align-middle text-center"
                       header-text-direction="center"
                       body-text-direction="center"
@@ -324,7 +562,7 @@
                         <span>{{ intervensi || '-' }}</span>
                       </template>
 
-                      <!-- STATUS GIZI -->
+                      <!-- STATUS TBU -->
                       <template #item-tbu="{ tbu }">
                         <span
                           :class="{
@@ -336,13 +574,39 @@
                           {{ tbu }}
                         </span>
                       </template>
+
+                      <!-- STATUS BBU -->
+                      <template #item-bbu="{ bbu }">
+                        <span
+                          :class="{
+                            'badge px-3 py-2 bg-danger': bbu === 'Severely Underweight',
+                            'badge px-3 py-2 bg-warning text-dark': bbu === 'Underweight',
+                            'text-dark': bbu === 'Normal',
+                          }"
+                        >
+                          {{ bbu }}
+                        </span>
+                      </template>
+
+                      <!-- STATUS BBTB -->
+                      <template #item-bbtb="{ bbtb }">
+                        <span
+                          :class="{
+                            'badge px-3 py-2 bg-danger': bbtb === 'Severely Wasted',
+                            'badge px-3 py-2 bg-warning text-dark': bbtb === 'Wasted',
+                            'text-dark': bbtb === 'Normal',
+                          }"
+                        >
+                          {{ bbtb }}
+                        </span>
+                      </template>
                     </EasyDataTable>
                   </div>
                 </div>
               </div>
 
               <!-- DETAIL DATA -->
-              <div class="col-md-4 mt-3" v-if="selectedAnak">
+              <div class="col-md-4" v-if="selectedAnak">
                 <div v-if="selectedAnak" class="card shadow-sm p-4 text-center small position-relative">
 
                   <!-- Tombol Close -->
@@ -367,12 +631,12 @@
                     <span
                       class="badge px-3 py-2 fs-6"
                       :class="{
-                        'bg-danger': selectedAnak.status_gizi === 'Stunting',
-                        'bg-warning text-dark': ['Wasting', 'Underweight'].includes(selectedAnak.status_gizi),
-                        'bg-success': selectedAnak.status_gizi === 'Normal'
+                        'bg-danger': ['Severely Wasted','Obesitas'].includes(selectedAnak.bbtb),
+                        'bg-warning text-dark': ['Wasted','Possible risk of Overweight','Overweight'].includes(selectedAnak.bbtb),
+                        'bg-success': selectedAnak.bbtb === 'Normal'
                       }"
                     >
-                      {{ selectedAnak.status_gizi }} {{ selectedAnak.status_gizi_kategori || 'BB/U' }}
+                      {{ selectedAnak.bbtb }}
                     </span>
                   </div>
 
@@ -391,18 +655,40 @@
                       <tbody>
                         <tr v-for="(r, i) in selectedAnak.riwayat_penimbangan || []" :key="i">
                           <td>{{ r.tanggal }}</td>
-                          <td>{{ r.bb }}</td>
-                          <td>{{ r.tb }}</td>
                           <td>
                             <span
                               class="badge"
                               :class="{
-                                'bg-danger': r.bb_tb === 'Stunting',
-                                'bg-warning text-dark': ['Wasting', 'Underweight'].includes(r.bb_tb),
-                                'bg-success': r.bb_tb === 'Normal'
+                                'bg-danger': r.bbu === 'Severely Underweight',
+                                'bg-warning text-dark': ['Risiko BB Lebih', 'Underweight'].includes(r.bbu),
+                                'bg-success': r.bbu === 'Normal'
                               }"
                             >
-                              {{ r.bb_tb }}
+                              {{ r.bbu }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="{
+                                'bg-danger': r.tbu === 'Severely Stunted',
+                                'bg-warning text-dark': r.tbu === 'Stunted',
+                                'bg-success': r.tbu === 'Normal'
+                              }"
+                            >
+                              {{ r.tbu }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="{
+                                'bg-danger': r.bbtb === 'Stunting',
+                                'bg-warning text-dark': ['Wasting', 'Underweight'].includes(r.bbtb),
+                                'bg-success': r.bbtb === 'Normal'
+                              }"
+                            >
+                              {{ r.bbtb }}
                             </span>
                           </td>
                         </tr>
@@ -441,7 +727,7 @@
                 </div>
               </div>
 
-              <!-- Detail Anak -->
+              <!-- Detail Riwayat Anak -->
               <div class="col-md-12 mt-4" v-if="selectedAnak">
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
                   <!-- Tombol Close -->
@@ -516,6 +802,18 @@
                           role="tab"
                         >
                           <i class="bi bi-activity me-1"></i> Intervensi
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link"
+                          id="tab-tpk"
+                          data-bs-toggle="tab"
+                          data-bs-target="#tab-pane-tpk"
+                          type="button"
+                          role="tab"
+                        >
+                          <i class="bi bi-clipboard2-check me-1"></i> Pendampingan TPK
                         </button>
                       </li>
                     </ul>
@@ -617,12 +915,12 @@
                                   <td>{{ riwayat.tb }}</td>
                                   <td
                                     :class="{
-                                      'text-danger fw-bold': riwayat.bb_tb === 'Stunting',
-                                      'text-warning fw-bold': riwayat.bb_tb === 'Underweight',
-                                      'text-success fw-bold': riwayat.bb_tb === 'Normal'
+                                      'text-danger fw-bold': riwayat.bbtb === 'Stunting',
+                                      'text-warning fw-bold': riwayat.bbtb === 'Underweight',
+                                      'text-success fw-bold': riwayat.bbtb === 'Normal'
                                     }"
                                   >
-                                    {{ riwayat.bb_tb }}
+                                    {{ riwayat.bbtb }}
                                   </td>
                                 </tr>
                               </tbody>
@@ -652,6 +950,44 @@
                                   <td>{{ item.tanggal }}</td>
                                   <td>{{ item.kader }}</td>
                                   <td>{{ item.intervensi }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Data Intervensi -->
+                      <div class="tab-pane fade" id="tab-pane-tpk" role="tabpanel">
+                        <div class="card bg-light border-0 shadow-sm p-3">
+                          <h6 class="fw-bold mb-3 text-danger">Riwayat Intervensi</h6>
+                          <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle">
+                              <thead class="table-secondary">
+                                <tr>
+                                  <th>Tanggal</th>
+                                  <th>Petugas</th>
+                                  <th>Usia</th>
+                                  <th>RT</th>
+                                  <th>RW</th>
+                                  <th>Berat Lahir</th>
+                                  <th>Panjang Lahir</th>
+                                  <th>Berat Badan</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  v-for="(item, i) in selectedAnak.riwayat_pendampingan"
+                                  :key="'pendampingan-' + i"
+                                >
+                                  <td>{{ item.tgl_pendampingan }}</td>
+                                  <td>{{ item.petugas }}</td>
+                                  <td>{{ item.usia }}</td>
+                                  <td>{{ item.rt }}</td>
+                                  <td>{{ item.rw }}</td>
+                                  <td>{{ item.bb_lahir }}</td>
+                                  <td>{{ item.pb_lahir }}</td>
+                                  <td>{{ item.bb }}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -709,17 +1045,18 @@ export default {
       windowWidth: window.innerWidth,
       isFormOpen:false,
       isDataDrag:false,
+      showAdvanced: false,
       filters: {
-        bbu:'',
-        tbu:'',
-        bbtb:'',
-        stagnan:'',
-        intervensi: '',
-        kelurahan: '',
+        bbu:[],
+        tbu:[],
+        bbtb:[],
+        stagnan:[],
+        intervensi: [],
         posyandu: '',
         rw: '',
         rt: '',
-        periode: '',
+        periodeAwal: '',
+        periodeAkhir:''
       },
       posyanduList: [],
       rwList: [],
@@ -727,7 +1064,39 @@ export default {
       periodeOptions: [],
       rwReadonly: true,
       rtReadonly: true,
-
+      intervensiOptions: [
+        "MBG",
+        "KIE",
+        "Bansos",
+        "PMT",
+        "Bantuan Lainnya",
+        "Belum mendapatkan intervensi"
+      ],
+      bbuOptions: [
+        "Severely Underweight",
+        "Underweight",
+        "Normal",
+        "Risiko BB Lebih",
+      ],
+      tbuOptions: [
+        "Severely Stunted",
+        "Stunted",
+        "Normal",
+        "Tinggi",
+      ],
+      bbtbOptions: [
+        "Severely Wasted",
+        "Wasted",
+        "Normal",
+        "Possible risk of Overweight",
+        "Overweight",
+        "Obesitas"
+      ],
+      stagnanOptions: [
+        "1 T",
+        "2 T",
+        "> 2 T",
+      ],
       // upload file
       file: null,
       fileName: '',
@@ -765,8 +1134,8 @@ export default {
       kunjungan_posyandu: [
         {
           id:1,
-          posyandu: 'Posyandu Mawar',
-          status_gizi_kategori: 'BB/U',
+          posyandu: 'Mawar',
+          //status_gizi_kategori: 'BB/U',
           profile_anak:[
             {
               no_kk:'3127890384059987',
@@ -790,14 +1159,46 @@ export default {
             }
           ],
           riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
-            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
+            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
+            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
           ],
           riwayat_intervensi: [
             { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          riwayat_pendampingan:[
+            {
+              tgl_pendampingan:'2025-01-20',
+              petugas:'Siti R.',
+              usia:24,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:10,
+            },
+            {
+              tgl_pendampingan:'2025-02-20',
+              petugas:'Siti R.',
+              usia:25,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:12,
+            },
+            {
+              tgl_pendampingan:'2025-03-20',
+              petugas:'Siti R.',
+              usia:26,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:15,
+            }
           ],
           no_telp: '087838894555',
           alamat: 'Jalan Mewah',
@@ -816,14 +1217,14 @@ export default {
           usia: 24,
           gender: 'P',
           intervensi: 'PMT',
-          bbtb: 'Stunting',
-          bbu: 3.3,
-          tbu: 2.3
+          bbtb: 'Severely Wasted',
+          bbu: 'Underweight',
+          tbu: 'Stunted'
         },
         {
           id:2,
-          posyandu: 'Posyandu Mawar',
-          status_gizi_kategori: 'BB/U',
+          posyandu: 'Mawar',
+          //status_gizi_kategori: 'BB/U',
           profile_anak:[
             {
               no_kk:'3127890384059987',
@@ -847,14 +1248,46 @@ export default {
             }
           ],
           riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
-            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
+            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
+            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
           ],
           riwayat_intervensi: [
             { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          riwayat_pendampingan:[
+            {
+              tgl_pendampingan:'2025-01-20',
+              petugas:'Siti R.',
+              usia:24,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:10,
+            },
+            {
+              tgl_pendampingan:'2025-02-20',
+              petugas:'Siti R.',
+              usia:25,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:12,
+            },
+            {
+              tgl_pendampingan:'2025-03-20',
+              petugas:'Siti R.',
+              usia:26,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:15,
+            }
           ],
           tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
@@ -871,16 +1304,15 @@ export default {
           nik: '3403010508980002',
           usia: 26,
           gender: 'L',
-          intervensi: 'PMT',
-          bbtb: 'Stunting',
-          bb: 1.5,
-          tb: 1.5,
-          bb_tb: 1.5
+          intervensi: 'MBG',
+          bbtb: 'Wasted',
+          bbu: 'Underweight',
+          tbu: 'Stunted'
         },
         {
           id:3,
-          posyandu: 'Posyandu Mawar',
-          status_gizi_kategori: 'BB/U',
+          posyandu: 'Mawar',
+          //status_gizi_kategori: 'BB/U',
           profile_anak:[
             {
               no_kk:'3127890384059987',
@@ -904,14 +1336,46 @@ export default {
             }
           ],
           riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-            { tanggal: '18/06/2025', bb: '1.22', tb: '1.89', bb_tb: 'Wasting' },
-            { tanggal: '20/07/2025', bb: '2.3', tb: '2.3', bb_tb: 'Wasting' },
+            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
+            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
+            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
           ],
           riwayat_intervensi: [
             { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'Bansos' },
+          ],
+          riwayat_pendampingan:[
+            {
+              tgl_pendampingan:'2025-01-20',
+              petugas:'Siti R.',
+              usia:24,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:10,
+            },
+            {
+              tgl_pendampingan:'2025-02-20',
+              petugas:'Siti R.',
+              usia:25,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:12,
+            },
+            {
+              tgl_pendampingan:'2025-03-20',
+              petugas:'Siti R.',
+              usia:26,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:15,
+            }
           ],
           tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
@@ -928,16 +1392,15 @@ export default {
           nik: '3403011105950001',
           usia: 20,
           gender: 'L',
-          intervensi: 'BLT',
-          bbtb: 'Wasting',
-          bb: 2.3,
-          tb: 2.3,
-          bb_tb: 2.3
+          intervensi: 'Bansos',
+          bbtb: 'Normal',
+          bbu: 'Normal',
+          tbu: 'Normal'
         },
         {
           id:4,
           posyandu: 'Posyandu Mawar',
-          status_gizi_kategori: 'BB/U',
+          //status_gizi_kategori: 'BB/U',
           profile_anak:[
             {
               no_kk:'3127890384059987',
@@ -961,14 +1424,46 @@ export default {
             }
           ],
           riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
-            { tanggal: '20/07/2025', bb: '1.8', tb: '0.92', bb_tb: 'Underweight' },
+            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
+            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
+            { tanggal: '20/07/2025', bb: 'Obesistasa', tb: 'Resiko BB Lebih', bbtb: 'Tinggi' },
           ],
           riwayat_intervensi: [
             { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          riwayat_pendampingan:[
+            {
+              tgl_pendampingan:'2025-01-20',
+              petugas:'Siti R.',
+              usia:24,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:10,
+            },
+            {
+              tgl_pendampingan:'2025-02-20',
+              petugas:'Siti R.',
+              usia:25,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:12,
+            },
+            {
+              tgl_pendampingan:'2025-03-20',
+              petugas:'Siti R.',
+              usia:26,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:15,
+            }
           ],
           tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
@@ -986,16 +1481,15 @@ export default {
           usia: 23,
           gender: 'L',
           intervensi: 'PKH',
-          bbtb: 'Underweight',
-          bb: 1.8,
-          tb: 1.8,
-          bb_tb: 1.8
+          bbtb: 'Obesistasa',
+          bbu: 'Resiko BB Lebih',
+          tbu: 'Tinggi'
         },
         {
           id:5,
           posyandu: 'Posyandu Mawar',
-          status_gizi_kategori: 'BB/U',
-           profile_anak:[
+          //status_gizi_kategori: 'BB/U',
+          profile_anak:[
             {
               no_kk:'3127890384059987',
               nik_ayah:'332196037476523',
@@ -1018,14 +1512,46 @@ export default {
             }
           ],
           riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
-            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
+            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
+            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
           ],
           riwayat_intervensi: [
             { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          riwayat_pendampingan:[
+            {
+              tgl_pendampingan:'2025-01-20',
+              petugas:'Siti R.',
+              usia:24,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:10,
+            },
+            {
+              tgl_pendampingan:'2025-02-20',
+              petugas:'Siti R.',
+              usia:25,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:12,
+            },
+            {
+              tgl_pendampingan:'2025-03-20',
+              petugas:'Siti R.',
+              usia:26,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:15,
+            }
           ],
           tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
@@ -1037,11 +1563,15 @@ export default {
           nama_ibu: 'Manah',
           rw: '03',
           rt: '04',
-          tgl_ukur:'2025-01-20', nama: 'Irshad Ghani Arvarizi', nik: '3403012507930001', usia: 28, gender: 'L', intervensi: '-', bbtb: 'Normal', bb: 6.5, tb: 6.5, bb_tb: 6.5 },
+          tgl_ukur:'2025-01-20',
+          nama: 'Irshad Ghani Arvarizi',
+          nik: '3403012507930001',
+          usia: 28,
+          gender: 'L', intervensi: '-', bbtb: 'Normal', bbu: 'Normal', tbu: 'Normal' },
         {
           id:6,
           posyandu: 'Posyandu Mawar',
-          status_gizi_kategori: 'BB/U',
+          //status_gizi_kategori: 'BB/U',
            profile_anak:[
             {
               no_kk:'3127890384059987',
@@ -1065,14 +1595,46 @@ export default {
             }
           ],
           riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: '0.35', tb: '0.85', bb_tb: 'Stunting' },
-            { tanggal: '18/06/2025', bb: '0.22', tb: '0.89', bb_tb: 'Stunting' },
-            { tanggal: '20/07/2025', bb: '0.25', tb: '0.92', bb_tb: 'Stunting' },
+            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
+            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
+            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
           ],
           riwayat_intervensi: [
             { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
             { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
+          ],
+          riwayat_pendampingan:[
+            {
+              tgl_pendampingan:'2025-01-20',
+              petugas:'Siti R.',
+              usia:24,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:10,
+            },
+            {
+              tgl_pendampingan:'2025-02-20',
+              petugas:'Siti R.',
+              usia:25,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:12,
+            },
+            {
+              tgl_pendampingan:'2025-03-20',
+              petugas:'Siti R.',
+              usia:26,
+              rt:'03',
+              rw:'04',
+              bb_lahir:3,
+              pb_lahir:50,
+              bb:15,
+            }
           ],
           tgl_lahir: '20-01-2021',
           no_telp: '087838894555',
@@ -1084,11 +1646,168 @@ export default {
           nama_ibu: 'Syiffa',
           rw: '03',
           rt: '04',
-          tgl_ukur:'2025-01-20', nama: 'Syiffa Azahra', nik: '3403012806910002', usia: 24, gender: 'P', intervensi: '-', bbtb: 'Normal', bb: 5.5, tb: 5.5, bb_tb: 5.5 },
+          tgl_ukur:'2025-01-20',
+          nama: 'Syiffa Azahra',
+          nik: '3403012806910002',
+          usia: 24,
+          gender: 'P',
+          intervensi: '-',
+          bbtb: 'Normal',
+          bbu: 'Normal',
+          tbu: 'Normal' },
       ],
+      filteredData: [],        // data hasil filter
     }
   },
   methods: {
+    isStagnan(item) {
+      const STATUS_DIBAWAH_NORMAL = [
+        'Underweight', 'Severely Underweight',
+        'Stunted', 'Severely Stunted',
+        'Wasted', 'Severely Wasted'
+      ]
+
+      const penimbangan = item.riwayat_penimbangan
+      if (!penimbangan || penimbangan.length < 2) return false
+
+      // Ambil dua penimbangan terakhir
+      const last = penimbangan[penimbangan.length - 1]
+      const prev = penimbangan[penimbangan.length - 2]
+
+      const bbSama = last.bb === prev.bb && STATUS_DIBAWAH_NORMAL.includes(last.bb)
+      const tbSama = last.tb === prev.tb && STATUS_DIBAWAH_NORMAL.includes(last.tb)
+      const bbtbSama = last.bbtb === prev.bbtb && STATUS_DIBAWAH_NORMAL.includes(last.bbtb)
+
+      return bbSama || tbSama || bbtbSama
+    },
+
+    applyFilter() {
+      this.filteredData = this.kunjungan_posyandu.filter(item => {
+        const f = this.filters
+
+        // === 1. Filter Underweight (BBU)
+        const bbuMatch = f.bbu.length === 0 || f.bbu.includes(item.bbu)
+
+        // === 2. Filter Stunting (TBU)
+        const tbuMatch = f.tbu.length === 0 || f.tbu.includes(item.tbu)
+
+        // === 3. Filter Wasting (BBTB)
+        const bbtbMatch = f.bbtb.length === 0 || f.bbtb.includes(item.bbtb)
+
+        // === 4. Filter BB Stagnan
+        const stagnanMatch =
+        f.stagnan.length === 0 ||
+        f.stagnan.some(opt => {
+          if (opt === 'Ya') return this.isStagnan(item)
+          if (opt === 'Tidak') return !this.isStagnan(item)
+          return true
+        })
+
+
+        // === 5. Filter Posyandu
+        const posyanduMatch =
+          !f.posyandu || item.posyandu === f.posyandu || item.nama_posyandu === f.posyandu
+
+        // === 6. Filter RW & RT
+        const rwMatch = !f.rw || item.rw === f.rw
+        const rtMatch = !f.rt || item.rt === f.rt
+
+        // === 7. Filter Intervensi (multi)
+        const intervensiMatch =
+          f.intervensi.length === 0 ||
+          f.intervensi.some(i => (item.intervensi || '').includes(i))
+
+        // === 8. Filter Periode (antara dua periode)
+        const periodeMatch = (() => {
+          if (!f.periodeAwal && !f.periodeAkhir) return true
+
+          const tgl = new Date(item.tgl_ukur)
+          const periodeNum = tgl.getFullYear() * 100 + (tgl.getMonth() + 1)
+
+          const awal = f.periodeAwal
+            ? (() => {
+                const [y, m] = f.periodeAwal.split('-')
+                return parseInt(y) * 100 + parseInt(m)
+              })()
+            : -Infinity
+
+          const akhir = f.periodeAkhir
+            ? (() => {
+                const [y, m] = f.periodeAkhir.split('-')
+                return parseInt(y) * 100 + parseInt(m)
+              })()
+            : Infinity
+
+          return periodeNum >= awal && periodeNum <= akhir
+        })()
+
+
+        return (
+          bbuMatch &&
+          tbuMatch &&
+          bbtbMatch &&
+          stagnanMatch &&
+          posyanduMatch &&
+          rwMatch &&
+          rtMatch &&
+          intervensiMatch &&
+          periodeMatch
+        )
+      })
+    },
+
+    resetFilter() {
+      this.filters = {
+        bbu: [],
+        tbu: [],
+        bbtb: [],
+        stagnan: [],
+        intervensi: [],
+        posyandu: '',
+        rw: '',
+        rt: '',
+        periodeAwal: '',
+        periodeAkhir: ''
+      }
+
+      this.rwList = []
+      this.rtList = []
+      this.rwReadonly = true
+      this.rtReadonly = true
+
+      this.filteredData = [...this.kunjungan_posyandu]
+    },
+    selectAll_bbu() {
+      this.filters.bbu = [...this.bbuOptions]
+    },
+    selectAll_tbu() {
+      this.filters.tbu = [...this.tbuOptions]
+    },
+    selectAll_bbtb() {
+      this.filters.bbtb = [...this.bbtbOptions]
+    },
+    selectAll_stagnan() {
+      this.filters.stagnan = [...this.stagnanOptions]
+    },
+    selectAll_intervensi() {
+      this.filters.intervensi = [...this.intervensiOptions]
+    },
+
+    clearAll_bbu() {
+      this.filters.bbu = []
+    },
+    clearAll_tbu() {
+      this.filters.tbu = []
+    },
+    clearAll_bbtb() {
+      this.filters.bbtb = []
+    },
+    clearAll_stagnan() {
+      this.filters.stagnan = []
+    },
+    clearAll_intervensi() {
+      this.filters.intervensi = []
+    },
     async loadConfigWithCache() {
       try {
         // cek di localStorage
@@ -1241,16 +1960,11 @@ export default {
       console.log('Klik props:', props)
       this.selectedAnak = props
     },
-    applyFilter() {
-      console.log('Filter diterapkan:', this.filters)
-      // nanti bisa dipakai buat fetch data laporan
-    },
     triggerFileDialog() {
       if (this.$refs.fileInput) {
         this.$refs.fileInput.click()
       }
     },
-
     onDragOver(e) {
       this.isDataDrag = true
       console.log(e);
@@ -1259,7 +1973,6 @@ export default {
       this.isDataDrag = false
       console.log(e);
     },
-
     handleFileChange(e) {
       const file = e.target.files && e.target.files[0]
       if (!file) return
@@ -1414,17 +2127,52 @@ export default {
     this.isLoading = true
 
     try {
-      // Ambil data dulu
+      // Ambil query dulu
+      const { tipe, status } = this.$route.query
+      console.log('data dari dashboard:', tipe, status)
+
+      // 1️⃣ Ambil data dulu
       await this.getWilayahUser()
       this.generatePeriodeOptions()
-      this.filters.kelurahan = this.kelurahan
+
+      // isi default posyanduList kayak yang udah lu buat
+      this.posyanduList = [
+        ...new Set(this.kunjungan_posyandu.map(item => item.posyandu))
+      ].map((nama, index) => ({
+        id: index + 1,
+        nama_posyandu: nama
+      }))
+
+      // tampilkan semua data awal
+      this.filteredData = [...this.kunjungan_posyandu]
+
+      // 2️⃣ Baru terapkan filter kalau ada query dari chart
+      if (tipe && status) {
+        // Kosongkan dulu semua filter gizi biar gak tumpang tindih
+        this.filters.bbu = []
+        this.filters.tbu = []
+        this.filters.bbtb = []
+
+        if (tipe === 'BB/U') {
+          this.filters.bbu = [status]
+        } else if (tipe === 'TB/U') {
+          this.filters.tbu = [status]
+        } else if (tipe === 'BB/TB') {
+          this.filters.bbtb = [status]
+        }
+
+        // Apply setelah data sudah siap
+        if (typeof this.applyFilter === 'function') {
+          this.applyFilter()
+        }
+      }
+
       await this.loadConfigWithCache()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
-      // Kasih sedikit delay biar animasi fade spinner kelihatan
       setTimeout(() => {
         this.isLoading = false
       }, 300)
@@ -1432,6 +2180,11 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
+  },
+  watch: {
+    'filters.posyandu'(val) {
+      this.handlePosyanduChange(val)
+    }
   },
 }
 </script>

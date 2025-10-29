@@ -26,7 +26,8 @@
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
-      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+      <div class="flex-grow-1 d-flex flex-column">
+
         <!-- Content -->
         <div class="py-4 container-fluid" >
 
@@ -106,7 +107,7 @@
           </div>
 
           <!-- Filter Form -->
-          <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0">
+          <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 sticky-filter">
             <div class="mb-2 fw-bold text-primary">Filter:</div>
 
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
@@ -603,6 +604,69 @@
   </div>
 </template>
 
+<style scoped>
+.sticky-filter {
+  position: sticky;
+  top: 75px; /* sesuaikan dengan tinggi HeaderAdmin kamu */
+  z-index: 1020; /* supaya tetap di atas card/chart */
+  background: #f8f9fa; /* warna bg-light */
+}
+
+.filter-wrapper {
+  position: sticky;
+  top: 70px;
+  z-index: 1050;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+  .active-tab {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+  }
+  .chart-placeholder {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    min-height: 150px;
+  }
+
+  .svg-line {
+    width: 100%;
+    height: 40px;
+    opacity: 0.9;
+  }
+
+  .border-violet { border-color: #4f0891 !important; } /* Overweight - Hitam */
+  .text-violet {color: #4f0891 !important;}
+
+  /* === Warna garis sesuai item.color === */
+  .stroke-danger polyline {
+    stroke: #dc3545;
+  }
+  .stroke-warning polyline {
+    stroke: #ffc107;
+  }
+  .stroke-success polyline {
+    stroke: #198754;
+  }
+  .stroke-info polyline {
+    stroke: #0dcaf0;
+  }
+  .stroke-dark polyline {
+    stroke: #343a40;
+  }
+  .stroke-violet polyline {
+    stroke: #4f0891;
+  }
+  /* Hover efek */
+  .card:hover .svg-line polyline {
+    opacity: 1;
+    stroke-width: 3;
+    transition: all 0.3s ease;
+  }
+
+</style>
+
 <script>
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
@@ -686,7 +750,7 @@ export default {
       rtReadonly: true,
       dataTable_bb: [
         {
-          status: 'Sangat Kurang',
+          status: 'Severely Underweight',
           jumlah: 24,
           persen: 2.8,
           tren: '2.80%',
@@ -694,7 +758,7 @@ export default {
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
-          status: 'Kurang',
+          status: 'Underweight',
           jumlah: 94,
           persen: 10.96,
           tren: '10.96%',
@@ -710,16 +774,8 @@ export default {
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
-          status: 'Risiko Lebih',
+          status: 'Risiko BB Lebih',
           jumlah: 15,
-          persen: 33.45,
-          tren: '33.45%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Tidak Naik',
-          jumlah: 287,
           persen: 33.45,
           tren: '33.45%',
           trenClass: 'text-danger',
@@ -728,7 +784,7 @@ export default {
       ],
       dataTable_tb: [
         {
-          status: 'Sangat Pendek',
+          status: 'Severely Stunted',
           jumlah: 21,
           persen: 2.45,
           tren: '2.45%',
@@ -736,7 +792,7 @@ export default {
           trenIcon: 'bi bi-caret-down-fill',
         },
         {
-          status: 'Pendek',
+          status: 'Stunted',
           jumlah: 149,
           persen: 17.37,
           tren: '17.37%',
@@ -762,7 +818,7 @@ export default {
       ],
       dataTable_status: [
         {
-          status: 'Gizi Buruk',
+          status: 'Severely Wasted',
           jumlah: 4,
           persen: 2.80 ,
           tren: '2.80%',
@@ -770,7 +826,7 @@ export default {
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
-          status: 'Gizi Kurang',
+          status: 'Wasted',
           jumlah: 20,
           persen: 10.96 ,
           tren: '10.96%',
@@ -778,7 +834,7 @@ export default {
           trenIcon: 'bi bi-caret-down-fill',
         },
         {
-          status: 'Gizi Baik',
+          status: 'Normal',
           jumlah: 769,
           persen: 84.50 ,
           tren: ' 84.50%',
@@ -786,7 +842,7 @@ export default {
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
-          status: 'Risiko Gizi Lebih',
+          status: 'Possible risk of Overweight',
           jumlah: 53,
           persen: 1.75,
           tren: '1.75%',
@@ -794,7 +850,7 @@ export default {
           trenIcon: 'bi bi-caret-up-fill',
         },
         {
-          status: 'Gizi Lebih',
+          status: 'Overweight',
           jumlah: 8,
           persen: 33.45,
           tren: '33.45%',
@@ -1133,30 +1189,32 @@ export default {
           onHover: (event, elements) => {
             event.native.target.style.cursor = elements.length ? 'pointer' : 'default'
           },
-          /* onClick: (event, elements) => {
+          onClick: (event, elements) => {
             if (elements.length > 0) {
               const index = elements[0].index
               const item = dataSource[index]
               const status = item.status
 
-              // Tentukan tipe chart berdasarkan refName
-              let chartType = ''
-              if (refName === 'pieChart_bb') chartType = 'Berat Badan / Usia'
-              else if (refName === 'pieChart_tb') chartType = 'Tinggi Badan / Usia'
-              else if (refName === 'pieChart_status') chartType = 'Berat Badan / Tinggi Badan'
+              // Tentukan tipe chart → disesuaikan biar konsisten dengan filter di /admin/anak
+              let tipe = ''
+              if (refName === 'pieChart_bb') tipe = 'BB/U'
+              else if (refName === 'pieChart_tb') tipe = 'TB/U'
+              else if (refName === 'pieChart_status') tipe = 'BB/TB'
 
-              // 🔥 Update reactive data untuk show table
+              // Simpan untuk tampilan internal (opsional)
               this.selectedChartStatus = status
-              this.selectedChartType = chartType
-              this.showDetailSection = true
+              this.selectedChartType = tipe
 
-              // Scroll ke section detail biar user langsung lihat
-              this.$nextTick(() => {
-                const section = document.querySelector('#detail-section')
-                if (section) section.scrollIntoView({ behavior: 'smooth' })
+              // 🔁 Redirect ke halaman anak + kirim filter via query param
+              this.$router.push({
+                path: '/admin/anak',
+                query: {
+                  tipe: tipe,
+                  status: status
+                }
               })
             }
-          }, */
+          },
         },
         plugins: [ChartDataLabels],
       })
@@ -1228,50 +1286,4 @@ export default {
 }
 </script>
 
-<style scoped>
-  .active-tab {
-    background-color: var(--bs-primary) !important;
-    color: white !important;
-  }
-  .chart-placeholder {
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    min-height: 150px;
-  }
 
-  .svg-line {
-    width: 100%;
-    height: 40px;
-    opacity: 0.9;
-  }
-
-  .border-violet { border-color: #4f0891 !important; } /* Overweight - Hitam */
-  .text-violet {color: #4f0891 !important;}
-
-  /* === Warna garis sesuai item.color === */
-  .stroke-danger polyline {
-    stroke: #dc3545;
-  }
-  .stroke-warning polyline {
-    stroke: #ffc107;
-  }
-  .stroke-success polyline {
-    stroke: #198754;
-  }
-  .stroke-info polyline {
-    stroke: #0dcaf0;
-  }
-  .stroke-dark polyline {
-    stroke: #343a40;
-  }
-  .stroke-violet polyline {
-    stroke: #4f0891;
-  }
-  /* Hover efek */
-  .card:hover .svg-line polyline {
-    opacity: 1;
-    stroke-width: 3;
-    transition: all 0.3s ease;
-  }
-
-</style>

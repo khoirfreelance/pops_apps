@@ -17,6 +17,23 @@ $font-family-base: 'Inter', sans-serif;
 // Import Bootstrap source
 @import 'bootstrap/scss/bootstrap';
 
+.btn-outline-additional2 {
+  border: solid 1px $additional2;
+  color: $additional2;
+  background: #fff;
+  border: none;
+}
+.btn-outline-additional2:hover {
+  border: solid 1px #fff;
+  background-color: $additional2;
+  color: #fff;
+  border: none;
+}
+.btn-gradient:hover {
+  background: linear-gradient(180deg, $additional, $primary);
+  color: #fff;
+  opacity: 0.9;
+}
 .bg-additional {
   background-color: $additional !important;
 }
@@ -98,7 +115,7 @@ ul.nav .nav-link.active {
   margin-top: 80px;
   flex: 1;
   flex-direction: row;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   transition: margin-left 0.3s ease;
 }
 
