@@ -2,6 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
+.navbar, .header-admin {
+  font-family: 'Neuton', serif;
+}
+
 // Override Bootstrap variables sebelum import bootstrap
 $primary: #006341;
 $secondary: #b3a369;
@@ -112,7 +116,7 @@ ul.nav .nav-link.active {
 
 .content {
   display: flex;
-  margin-top: 80px;
+  margin-top: 65px;
   flex: 1;
   flex-direction: row;
   /* overflow-x: hidden; */

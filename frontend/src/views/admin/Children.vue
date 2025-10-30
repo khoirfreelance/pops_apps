@@ -31,20 +31,19 @@
         <div class="py-4 container-fluid" >
 
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
+          <div class="card welcome-card shadow-sm mb-1 border-0">
             <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
               <!-- Kiri: Teks Welcome -->
               <div class="text-start">
-                <h3>
+                <h4>
                   <span class="fw-normal fs-6">Selamat datang,</span> <br />
                   {{ username }}
-                </h3>
+                </h4>
                 <img
                   v-if="logoLoaded"
                   :src="logoSrc"
                   alt="Logo"
-                  height="50"
-                  class="mt-4"
+                  height="30"
                   @error="logoLoaded = false"
                 />
                 <!-- jika gagal load logo, tampilkan kelurahan -->
@@ -522,7 +521,6 @@
                   <div class="flex-grow-1 d-flex flex-column justify-content-center">
                     <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
                   </div>
-                  <i class="bi bi-people fs-3 text-secondary"></i>
                 </div>
               </div>
             </div>
@@ -535,69 +533,115 @@
               <div :class="selectedAnak ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
                 <div class="card bg-light px-2 py-5">
                   <div class="table-responsive">
-                    <EasyDataTable
-                      :headers="headers"
-                      :items="filteredData"
-                      table-class="table table-striped align-middle text-center"
-                      header-text-direction="center"
-                      body-text-direction="center"
-                    >
+                    <table class="table table-bordered table-hover align-middle text-center">
+                      <thead class="table-light small">
+                        <tr>
+                          <th @click="sortBy('nama')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            Nama <SortIcon :field="'nama'" />
+                          </th>
+                          <th @click="sortBy('posyandu')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            Posyandu <SortIcon :field="'posyandu'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            Usia (bln) <SortIcon :field="'usia'" />
+                          </th>
+                          <th style="width:60px" @click="sortBy('gender')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            JK <SortIcon :field="'gender'" />
+                          </th>
+                          <th @click="sortBy('tgl_ukur')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            Tgl Ukur Terakhir <SortIcon :field="'tgl_ukur'" />
+                          </th>
+                          <th @click="sortBy('intervensi')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            Intervensi <SortIcon :field="'intervensi'" />
+                          </th>
+                          <th colspan="3" class="text-center">Status</th>
+                          <th @click="sortBy('rw')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            RW <SortIcon :field="'rw'" />
+                          </th>
+                          <th @click="sortBy('rt')" class="cursor-pointer align-middle text-center" rowspan="2">
+                            RT <SortIcon :field="'rt'" />
+                          </th>
+                        </tr>
+                        <tr>
+                          <th @click="sortBy('tbu')" class="cursor-pointer text-center">TB/U <SortIcon :field="'tbu'" /></th>
+                          <th @click="sortBy('bbu')" class="cursor-pointer text-center">BB/U <SortIcon :field="'bbu'" /></th>
+                          <th @click="sortBy('bbtb')" class="cursor-pointer text-center">BB/TB <SortIcon :field="'bbtb'" /></th>
+                        </tr>
+                      </thead>
 
-                      <template #item-nama="props">
-                        <a
-                          href="#"
-                          @click.prevent="showDetail(props)"
-                          class="fw-semibold text-decoration-none text-primary text-start"
-                        >
-                          {{ props.nama }}
-                        </a>
-                      </template>
-
-                      <!-- INTERVENSI -->
-                      <template #item-intervensi="{ intervensi }">
-                        <span>{{ intervensi || '-' }}</span>
-                      </template>
-
-                      <!-- STATUS TBU -->
-                      <template #item-tbu="{ tbu }">
-                        <span
-                          :class="{
-                            'badge px-3 py-2 bg-danger': tbu === 'Severely Stunted',
-                            'badge px-3 py-2 bg-warning text-dark': tbu === 'Stunted',
-                            'text-dark': tbu === 'Normal',
-                          }"
-                        >
-                          {{ tbu }}
-                        </span>
-                      </template>
-
-                      <!-- STATUS BBU -->
-                      <template #item-bbu="{ bbu }">
-                        <span
-                          :class="{
-                            'badge px-3 py-2 bg-danger': bbu === 'Severely Underweight',
-                            'badge px-3 py-2 bg-warning text-dark': bbu === 'Underweight',
-                            'text-dark': bbu === 'Normal',
-                          }"
-                        >
-                          {{ bbu }}
-                        </span>
-                      </template>
-
-                      <!-- STATUS BBTB -->
-                      <template #item-bbtb="{ bbtb }">
-                        <span
-                          :class="{
-                            'badge px-3 py-2 bg-danger': bbtb === 'Severely Wasted',
-                            'badge px-3 py-2 bg-warning text-dark': bbtb === 'Wasted',
-                            'text-dark': bbtb === 'Normal',
-                          }"
-                        >
-                          {{ bbtb }}
-                        </span>
-                      </template>
-                    </EasyDataTable>
+                      <tbody>
+                        <tr v-for="anak in paginatedData" :key="anak.id" class="small">
+                          <td class="text-start">
+                            <a href="#" @click.prevent="showDetail(anak)" class="fw-semibold text-decoration-none text-primary">
+                              {{ anak.nama }}
+                            </a>
+                          </td>
+                          <td>{{ anak.posyandu }}</td>
+                          <td>{{ anak.usia }}</td>
+                          <td>{{ anak.gender }}</td>
+                          <td>{{ anak.tgl_ukur }}</td>
+                          <td>{{ anak.intervensi || '-' }}</td>
+                          <td>
+                            <span
+                              :class="{
+                                'badge px-3 py-2 bg-danger': anak.tbu === 'Severely Stunted',
+                                'badge px-3 py-2 bg-warning text-dark': anak.tbu === 'Stunted',
+                                'text-dark': anak.tbu === 'Normal'
+                              }"
+                            >
+                              {{ anak.tbu }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              :class="{
+                                'badge px-3 py-2 bg-danger': anak.bbu === 'Severely Underweight',
+                                'badge px-3 py-2 bg-warning text-dark': anak.bbu === 'Underweight',
+                                'text-dark': anak.bbu === 'Normal'
+                              }"
+                            >
+                              {{ anak.bbu }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              :class="{
+                                'badge px-3 py-2 bg-danger': anak.bbtb === 'Severely Wasted',
+                                'badge px-3 py-2 bg-warning text-dark': anak.bbtb === 'Wasted',
+                                'text-dark': anak.bbtb === 'Normal'
+                              }"
+                            >
+                              {{ anak.bbtb }}
+                            </span>
+                          </td>
+                          <td>{{ anak.rw }}</td>
+                          <td>{{ anak.rt }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
+
+                  <!-- Pagination -->
+                  <nav>
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
+                      </li>
+
+                      <li
+                        class="page-item"
+                        v-for="page in totalPages"
+                        :key="page"
+                        :class="{ active: currentPage === page }"
+                      >
+                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                      </li>
+
+                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
+                      </li>
+                    </ul>
+                  </nav>
                 </div>
               </div>
 
@@ -1011,9 +1055,15 @@
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
-import EasyDataTable from 'vue3-easy-data-table'
-import 'vue3-easy-data-table/dist/style.css'
 import axios from 'axios'
+import { ref, computed } from 'vue'
+
+// Simple sort icon component
+const SortIcon = {
+  props: ['field'],
+  template: `<span v-if="$parent.sortKey === field">{{ $parent.sortDir === 'asc' ? '▲' : '▼' }}</span>`
+}
+
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -1026,7 +1076,7 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Children',
-  components: { NavbarAdmin, CopyRight, HeaderAdmin, EasyDataTable },
+  components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon },
   data() {
     return {
       /* Wajib ada */
@@ -1111,20 +1161,71 @@ export default {
 
       /* Just for som pages */
       gizi:[],
-      headers: [
-        { text: 'Nama', value: 'nama' },
-        { text: 'Posyandu', value: 'posyandu' },
-        { text: 'Usia (bln)', value: 'usia' },
-        { text: 'JK', value: 'gender', width: 60 },
-        { text: 'Tgl Ukur Terakhir', value: 'tgl_ukur' },
-        { text: 'Intervensi', value: 'intervensi' },
-        { text: 'TB/U', value: 'tbu' },
-        { text: 'BB/U', value: 'bbu' },
-        { text: 'BB/TB', value: 'bbtb' }
-      ],
       selectedAnak:'',
       children: [],
       filteredData: [],        // data hasil filter
+    }
+  },
+  setup() {
+    const searchQuery = ref('')
+    const currentPage = ref(1)
+    const perPage = ref(10)
+    const sortKey = ref('')
+    const sortDir = ref('asc')
+    const filteredData = ref([])
+
+    const applySearch = () => {
+      const query = searchQuery.value.toLowerCase()
+      filteredData.value = window.children.filter((c) =>
+        Object.values(c).some((v) =>
+          String(v).toLowerCase().includes(query)
+        )
+      )
+      currentPage.value = 1
+    }
+
+    const sortBy = (key) => {
+      if (sortKey.value === key) {
+        sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+      } else {
+        sortKey.value = key
+        sortDir.value = 'asc'
+      }
+      filteredData.value.sort((a, b) => {
+        if (a[key] < b[key]) return sortDir.value === 'asc' ? -1 : 1
+        if (a[key] > b[key]) return sortDir.value === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
+    const totalPages = computed(() =>
+      Math.ceil(filteredData.value.length / perPage.value)
+    )
+
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * perPage.value
+      const end = start + perPage.value
+      return filteredData.value.slice(start, end)
+    })
+
+    const changePage = (page) => {
+      if (page < 1 || page > totalPages.value) return
+      currentPage.value = page
+    }
+
+    return {
+      searchQuery,
+      // eslint-disable-next-line vue/no-dupe-keys
+      filteredData,
+      currentPage,
+      perPage,
+      sortKey,
+      sortDir,
+      totalPages,
+      paginatedData,
+      applySearch,
+      sortBy,
+      changePage
     }
   },
   methods: {

@@ -1,5 +1,5 @@
 <template>
-  <header class="navbar navbar-light bg-gradient shadow-sm px-3 py-2 position-fixed top-0 w-100">
+  <header class="navbar navbar-light bg-primary shadow-sm px-3 py-2 position-fixed top-0 w-100">
     <!-- Left -->
     <div class="d-flex align-items-center">
       <a class="navbar-brand p-2 ms-5" href="#">
@@ -8,7 +8,7 @@
           v-if="logoLoaded"
           :src="logoSrc"
           alt="Logo"
-          height="50"
+          height="35"
           @error="logoLoaded = false"
         />
         <!-- jika gagal load logo, tampilkan kelurahan -->
@@ -19,14 +19,14 @@
           {{ kelurahan || 'Wilayah' }}
         </span>
       </a>
+      <p class="m-0 ms-3 fs-4 text-white">
+        Pusat Operasi Penurunan Stunting Desa {{ kelurahan || '...' }}
+      </p>
     </div>
+
 
     <!-- Right -->
     <div class="ms-auto d-flex align-items-center gap-3">
-      <!-- Kecamatan -->
-      <div class="text-white fw-semibold me-3 pe-3 border-end border-white"> <span class="fw-normal">Kelurahan / Desa: </span>
-        {{ kelurahan || '...' }}
-      </div>
 
       <!-- Notification -->
       <div class="dropdown">
