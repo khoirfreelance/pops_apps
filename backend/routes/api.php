@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PosyanduController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\BrideController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ChildrenController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -23,6 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWilayah']);
 
+// Children Endpoint
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('children', ChildrenController::class)->only(['index']);
+});
 
 // Family Endpoint
 Route::middleware('auth:sanctum')->group(function () {

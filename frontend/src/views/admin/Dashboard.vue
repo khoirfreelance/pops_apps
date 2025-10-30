@@ -78,7 +78,7 @@
               <div
                 v-for="(stat, index) in stats"
                 :key="index"
-                class="stat-card col-lg-2 col-sm-5 col-12 mx-3 my-2 shadow-bottom border-0 border-top border-4 border-primary"
+                class="stat-card col-xl-2 col-lg-3 p-lg-2 col-md-3 col-sm-5 col-12 mx-3 my-2 shadow-bottom border-0 border-top border-4 border-primary"
               >
                 <div class="container-fluid">
                   <div class="card-body d-flex align-items-center justify-content-between mx-2">
@@ -112,15 +112,15 @@
 
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
-              <div class="col-md-2">
-                <label class="form-label">Kelurahan/Desa</label>
+              <div class="col-xl-2 col-lg-4 col-md-4">
+                <label class="form-label fs-md-1">Kelurahan/Desa</label>
                 <select v-model="filters.kelurahan" class="form-select text-muted" disabled>
                   <option :value="kelurahan">{{ kelurahan }}</option>
                 </select>
               </div>
 
               <!-- Posyandu -->
-              <div class="col-md-2">
+              <div class="col-xl-2 col-lg-4 col-md-4">
                 <label class="form-label">Posyandu</label>
                 <select v-model="filters.posyandu" class="form-select text-muted">
                   <option value="">All</option>
@@ -131,7 +131,7 @@
               </div>
 
               <!-- RW -->
-              <div class="col-md-2">
+              <div class="col-xl-2 col-lg-4 col-md-4">
                 <label class="form-label">RW</label>
                 <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
                   <option value="">All</option>
@@ -140,7 +140,7 @@
               </div>
 
               <!-- RT -->
-              <div class="col-md-2">
+              <div class="col-xl-2 col-lg-4 col-md-4">
                 <label class="form-label">RT</label>
                 <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
                   <option value="">All</option>
@@ -151,7 +151,7 @@
               <!-- Periode -->
 
               <!-- Periode -->
-              <div class="col-md-2">
+              <div class="col-xl-2 col-lg-4 col-md-4">
                 <label class="form-label">Periode</label>
                 <select v-model="filters.periode" class="form-select text-muted">
                   <option value="">All</option>
@@ -162,9 +162,9 @@
               </div>
 
               <!-- Tombol Cari -->
-              <div class="col-md-2 d-grid">
+              <div class="col-xl-2 col-lg-4 col-md-4 d-grid">
                 <button type="submit" class="btn btn-gradient fw-semibold">
-                  <i class="bi bi-search me-1"></i> Cari
+                  <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
               </div>
             </form>
@@ -228,12 +228,12 @@
                 <div class="col-md-8">
                   <h5 class="fw-bold text-success mb-4">Ringkasan Status Gizi Bulan Ini</h5>
                   <div class="row">
-                    <div class="col-md-10 col-sm-12">
+                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
                       <div class="row justify-content-center">
                         <div
                           v-for="(item, index) in gizi"
                           :key="index"
-                          class="col-lg-4 col-sm-6 col-12 mb-3"
+                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
                         >
                           <div
                             class="card shadow-sm border-0 rounded-3 overflow-hidden"
@@ -269,9 +269,9 @@
                     </div>
 
                     <!-- TOTAL ANAK -->
-                    <div class="col-md-2 col-sm-12">
-                      <div class="card text-center shadow-sm border-0 h-100 d-flex flex-column justify-content-center">
-                        <h6 class="text-muted my-4">Total Anak Balita</h6>
+                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12">
+                      <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
+                        <h6 class="text-muted my-4 fw-bold">Total Anak Balita</h6>
                         <div class="flex-grow-1 d-flex flex-column justify-content-center">
                           <h2 class="fw-bold text-success mb-0">111</h2>
                         </div>
@@ -307,13 +307,13 @@
                 <div class="col-md-12">
                   <h5 class="fw-bold text-primary mb-4">Ringkasan Status Gizi Bulan Ini</h5>
                 </div>
-                <div class="col-12 col-md-8">
+                <div class="col-12 col-xl-8">
                   <!-- Berat Badan / Usia -->
                   <div class="card border border-primary shadow p-3 my-3">
                     <h4 class="fw-bold text-primary">Berat Badan / Usia</h4>
                     <div class="row">
                       <!-- Table -->
-                      <div class="col-12 col-md-7 table-responsive">
+                      <div class="col-12 col-xl-7 table-responsive">
                         <table class="table table-borderless align-middle">
                           <tbody>
                             <tr>
@@ -336,14 +336,14 @@
                           </tbody>
                           <tfoot>
                             <tr>
-                              <td colspan="4" class="pt-4"><a href="">Lihat Grafik Selengkapnya</a></td>
+                              <td colspan="4" class="pt-4"><a href="/admin/anak">Lihat Grafik Selengkapnya</a></td>
                             </tr>
                           </tfoot>
                         </table>
                       </div>
 
                       <!-- Chart -->
-                      <div class="col-12 col-md-5 text-center">
+                      <div class="col-12 col-xl-5 text-center">
                         <canvas ref="pieChart_bb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
                       </div>
                     </div>
@@ -353,7 +353,7 @@
                   <div class="card border border-primary shadow p-3 my-3">
                     <h4 class="fw-bold text-primary">Tinggi Badan / Usia</h4>
                     <div class="row">
-                      <div class="col-12 col-md-7 table-responsive">
+                      <div class="col-12 col-xl-7 table-responsive">
                         <table class="table table-borderless align-middle">
                           <tbody>
                             <tr>
@@ -376,18 +376,18 @@
                           </tbody>
                           <tfoot>
                             <tr>
-                              <td colspan="4" class="pt-4"><a href="">Lihat Grafik Selengkapnya</a></td>
+                              <td colspan="4" class="pt-4"><a href="/admin/anak">Lihat Grafik Selengkapnya</a></td>
                             </tr>
                           </tfoot>
                         </table>
                       </div>
-                      <div class="col-12 col-md-5 text-center">
+                      <div class="col-12 col-xl-5 text-center">
                         <canvas ref="pieChart_tb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-xl-4">
                   <!-- Berat Badan / Tinggi Badan -->
                   <div class="card border border-primary shadow p-3 my-3">
                     <h4 class="fw-bold text-primary">Berat Badan / Tinggi Badan</h4>
@@ -422,7 +422,7 @@
                           style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"
                         ></canvas>
                         <div class="d-flex flex-wrap justify-content-between mt-3">
-                          <a href="">Lihat Grafik Selengkapnya</a>
+                          <a href="/admin/anak">Lihat Grafik Selengkapnya</a>
                         </div>
                       </div>
                     </div>
@@ -450,46 +450,43 @@
                         </h4>
 
                         <!-- TAB NAV -->
-                        <div
-                          class="d-flex justify-content-center position-relative"
-                          style="margin-top: -20px;"
-                        >
-                          <ul
-                            class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-50"
-                            id="myTab"
-                            role="tablist"
-                            style="max-width: 800px;"
-                          >
-                            <li class="nav-item flex-fill text-center" role="presentation">
-                              <button
-                                class="nav-link active w-100 text-truncate fw-semibold rounded-pill border-bottom border-primary shadow-sm btn btn-outline-primary"
-                                id="belum-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#belum-tab-pane"
-                                type="button"
-                                role="tab"
-                                aria-controls="belum-tab-pane"
-                                aria-selected="true"
-                              >
-                                Anak belum dapat Intervensi
-                              </button>
-                            </li>
-                            <li class="nav-item flex-fill text-center" role="presentation">
-                              <button
-                                class="nav-link w-100 text-truncate fw-semibold rounded-pill shadow-sm btn btn-dark"
-                                id="dapat-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#dapat-tab-pane"
-                                type="button"
-                                role="tab"
-                                aria-controls="dapat-tab-pane"
-                                aria-selected="false"
-                              >
-                                Anak sudah dapat Intervensi
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
+<div class="container mt-n3">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <ul class="nav nav-pills row g-2" id="myTab" role="tablist">
+        <li class="col-6 text-center" role="presentation">
+          <button
+            class="nav-link active w-100 text-truncate fw-semibold rounded-pill border-bottom border-primary shadow-sm btn btn-outline-primary"
+            id="belum-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#belum-tab-pane"
+            type="button"
+            role="tab"
+            aria-controls="belum-tab-pane"
+            aria-selected="true"
+          >
+            Anak belum dapat Intervensi
+          </button>
+        </li>
+        <li class="col-6 text-center" role="presentation">
+          <button
+            class="nav-link w-100 text-truncate fw-semibold rounded-pill shadow-sm btn btn-dark"
+            id="dapat-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#dapat-tab-pane"
+            type="button"
+            role="tab"
+            aria-controls="dapat-tab-pane"
+            aria-selected="false"
+          >
+            Anak sudah dapat Intervensi
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
                       </div>
 
 

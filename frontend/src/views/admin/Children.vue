@@ -279,9 +279,13 @@
                 <div v-if="showAdvanced" class="row g-3">
                   <div class="col-md-4">
                     <label class="form-label">Posyandu</label>
-                    <select v-model="filters.posyandu" class="form-select text-muted">
+                    <select
+                      v-model="filters.posyandu"
+                      class="form-select text-muted"
+                      @change="handlePosyanduChange"
+                    >
                       <option value="">All</option>
-                      <option v-for="item in posyanduList" :key="item.id" :value="item.id">
+                      <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
                         {{ item.nama_posyandu }}
                       </option>
                     </select>
@@ -289,7 +293,11 @@
 
                   <div class="col-md-4">
                     <label class="form-label">RW</label>
-                    <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
+                    <select
+                      v-model="filters.rw"
+                      class="form-select text-muted"
+                      :disabled="rwReadonly"
+                    >
                       <option value="">All</option>
                       <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
                     </select>
@@ -297,7 +305,11 @@
 
                   <div class="col-md-4">
                     <label class="form-label">RT</label>
-                    <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
+                    <select
+                      v-model="filters.rt"
+                      class="form-select text-muted"
+                      :disabled="rtReadonly"
+                    >
                       <option value="">All</option>
                       <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
                     </select>
@@ -371,7 +383,7 @@
               <!-- === Tombol Aksi (Selalu Tampil) === -->
               <div class="col-md-12 d-flex justify-content-between mt-3">
                 <button type="submit" class="btn btn-gradient fw-semibold">
-                  <i class="bi bi-search me-1"></i> Cari
+                  <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
                 <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
                   <i class="bi bi-arrow-clockwise me-1"></i> Reset
@@ -479,52 +491,36 @@
           <div class="container-fluid my-4">
 
             <div class="row">
-              <div class="col-md-10 col-sm-12">
+              <div class="col-xl-10 col-sm-12">
                 <div class="row justify-content-center">
                   <div
                     v-for="(item, index) in gizi"
                     :key="index"
-                    class="col-lg-2 col-sm-6 col-12 mb-3"
+                    class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
                   >
                     <div
                       class="card shadow-sm border-0 rounded-3 overflow-hidden"
                       :class="`border-start border-4 border-${item.color}`"
                     >
-                      <div class="card-body py-3 d-flex justify-content-between">
-                        <div>
-                          <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                          <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
-                        </div>
+                      <div class="card-header">
+                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                      </div>
+                      <div class="card-body py-3 d-flex justify-content-between align-items-center">
                         <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                        <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
                       </div>
 
-                      <!-- SVG LINE CHART -->
-                      <div class="card-footer bg-transparent border-0 pt-0">
-                        <svg
-                          viewBox="0 0 100 30"
-                          class="svg-line"
-                          preserveAspectRatio="none"
-                          :class="`stroke-${item.color}`"
-                        >
-                          <polyline
-                            fill="none"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                          />
-                        </svg>
-                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- TOTAL ANAK -->
-              <div class="col-md-2 col-sm-12">
-                <div class="card text-center shadow-sm border-0 h-100 d-flex flex-column justify-content-center">
+              <div class="col-xl-2 col-sm-12">
+                <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
                   <h6 class="text-muted fw-bold">Total Anak Balita</h6>
                   <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h1 class="fw-bold text-success mb-0">111</h1>
+                    <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
                   </div>
                   <i class="bi bi-people fs-3 text-secondary"></i>
                 </div>
@@ -623,7 +619,7 @@
                     {{ selectedAnak.gender === 'L' ? 'Laki-laki' : selectedAnak.gender === 'P' ? 'Perempuan' : selectedAnak.gender }}
                   </p>
 
-                  <p class="text-muted mb-0">{{ selectedAnak.alamat || 'Desa Wonosari, Kec. Bojong Gede' }}</p>
+                  <p class="text-muted mb-0 text-capitalize">{{ selectedAnak.alamat || 'Desa Wonosari, Kec. Bojong Gede' }}</p>
                   <p class="text-muted">{{ selectedAnak.posyandu || 'Posyandu Mawar' }}</p>
 
                   <!-- Badge Status Gizi -->
@@ -631,12 +627,12 @@
                     <span
                       class="badge px-3 py-2 fs-6"
                       :class="{
-                        'bg-danger': ['Severely Wasted','Obesitas'].includes(selectedAnak.bbtb),
-                        'bg-warning text-dark': ['Wasted','Possible risk of Overweight','Overweight'].includes(selectedAnak.bbtb),
-                        'bg-success': selectedAnak.bbtb === 'Normal'
+                        'bg-danger': ['Severely Wasted','Obesitas'].includes(selectedAnak.status_gizi),
+                        'bg-warning text-dark': ['Wasted','Possible risk of Overweight','Overweight'].includes(selectedAnak.status_gizi),
+                        'bg-success': selectedAnak.status_gizi === 'Normal'
                       }"
                     >
-                      {{ selectedAnak.bbtb }}
+                      {{ selectedAnak.status_gizi }}
                     </span>
                   </div>
 
@@ -653,7 +649,10 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(r, i) in selectedAnak.riwayat_penimbangan || []" :key="i">
+                        <tr
+                          v-for="(r, i) in (selectedAnak.riwayat_penimbangan || []).slice(-3)"
+                          :key="i"
+                        >
                           <td>{{ r.tanggal }}</td>
                           <td>
                             <span
@@ -683,8 +682,8 @@
                             <span
                               class="badge"
                               :class="{
-                                'bg-danger': r.bbtb === 'Stunting',
-                                'bg-warning text-dark': ['Wasting', 'Underweight'].includes(r.bbtb),
+                                'bg-danger': r.bbtb === 'Severely Wasted',
+                                'bg-warning text-dark': ['Wasted', 'Possible risk of Overweight', 'Overweight'].includes(r.bbtb),
                                 'bg-success': r.bbtb === 'Normal'
                               }"
                             >
@@ -692,6 +691,7 @@
                             </span>
                           </td>
                         </tr>
+
                       </tbody>
                     </table>
                   </div>
@@ -957,7 +957,7 @@
                         </div>
                       </div>
 
-                      <!-- Data Intervensi -->
+                      <!-- Data TPK -->
                       <div class="tab-pane fade" id="tab-pane-tpk" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
                           <h6 class="fw-bold mb-3 text-danger">Riwayat Intervensi</h6>
@@ -967,7 +967,6 @@
                                 <tr>
                                   <th>Tanggal</th>
                                   <th>Petugas</th>
-                                  <th>Usia</th>
                                   <th>RT</th>
                                   <th>RW</th>
                                   <th>Berat Lahir</th>
@@ -982,7 +981,6 @@
                                 >
                                   <td>{{ item.tgl_pendampingan }}</td>
                                   <td>{{ item.petugas }}</td>
-                                  <td>{{ item.usia }}</td>
                                   <td>{{ item.rt }}</td>
                                   <td>{{ item.rw }}</td>
                                   <td>{{ item.bb_lahir }}</td>
@@ -1046,6 +1044,7 @@ export default {
       isFormOpen:false,
       isDataDrag:false,
       showAdvanced: false,
+      totalAnak: 0,
       filters: {
         bbu:[],
         tbu:[],
@@ -1111,14 +1110,7 @@ export default {
       MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
 
       /* Just for som pages */
-      gizi:[
-        { title: "Stunting", value: 1, percent: "0%", color: "danger" },
-        { title: "Wasting", value: 1, percent: "0%", color: "warning" },
-        { title: "Underweight", value: 1, percent: "0%", color: "violet" },
-        { title: "Normal", value: 1, percent: "0%", color: "success" },
-        { title: "BB Stagnan", value: 1, percent: "0%", color: "info" },
-        { title: "Overweight", value: 1, percent: "0%", color: "dark" },
-      ],
+      gizi:[],
       headers: [
         { text: 'Nama', value: 'nama' },
         { text: 'Posyandu', value: 'posyandu' },
@@ -1131,535 +1123,144 @@ export default {
         { text: 'BB/TB', value: 'bbtb' }
       ],
       selectedAnak:'',
-      kunjungan_posyandu: [
-        {
-          id:1,
-          posyandu: 'Mawar',
-          //status_gizi_kategori: 'BB/U',
-          profile_anak:[
-            {
-              no_kk:'3127890384059987',
-              nik_ayah:'1870965231876523',
-              nama_ayah: 'Suhartanto',
-              nik_ibu:'3127093421874560',
-              nama_ibu: 'Fiska Bisatika'
-            }
-          ],
-          kelahiran:[
-            {
-              no_kia: '1893456723456123',
-              tmpt_dilahirkan:'Jakarta',
-              tgl_lahir:'2024-03-22',
-              bb:'3',
-              pb:'50',
-              anak_ke:'1',
-              usia_ibu:'23',
-              jarak:'-',
-              jenis:'normal',
-            }
-          ],
-          riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
-            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
-            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
-          ],
-          riwayat_intervensi: [
-            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          ],
-          riwayat_pendampingan:[
-            {
-              tgl_pendampingan:'2025-01-20',
-              petugas:'Siti R.',
-              usia:24,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:10,
-            },
-            {
-              tgl_pendampingan:'2025-02-20',
-              petugas:'Siti R.',
-              usia:25,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:12,
-            },
-            {
-              tgl_pendampingan:'2025-03-20',
-              petugas:'Siti R.',
-              usia:26,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:15,
-            }
-          ],
-          no_telp: '087838894555',
-          alamat: 'Jalan Mewah',
-          kecamatan: 'Bojong Gede',
-          desa: 'Cimanggis',
-          no_kia: '3403012605200002',
-          nik_ayah:'1870965231876523',
-          nama_ayah: 'Suhartanto',
-          nik_ibu:'3127093421874560',
-          nama_ibu: 'Fiska Bisatika',
-          rw: '03',
-          rt: '04',
-          tgl_ukur:'2025-01-20',
-          nama: 'Aluna Daneen Azqiara',
-          nik: '3403012012930002',
-          usia: 24,
-          gender: 'P',
-          intervensi: 'PMT',
-          bbtb: 'Severely Wasted',
-          bbu: 'Underweight',
-          tbu: 'Stunted'
-        },
-        {
-          id:2,
-          posyandu: 'Mawar',
-          //status_gizi_kategori: 'BB/U',
-          profile_anak:[
-            {
-              no_kk:'3127890384059987',
-              nik_ayah:'3321965231876523',
-              nama_ayah: 'Dani',
-              nama_ibu: 'Dini',
-              nik_ibu:'3457093421874560',
-            }
-          ],
-          kelahiran:[
-            {
-              no_kia: '1893456723456123',
-              tmpt_dilahirkan:'Jakarta',
-              tgl_lahir:'2024-03-22',
-              bb:'3',
-              pb:'50',
-              anak_ke:'1',
-              usia_ibu:'30',
-              jarak:'-',
-              jenis:'normal',
-            }
-          ],
-          riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
-            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
-            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
-          ],
-          riwayat_intervensi: [
-            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          ],
-          riwayat_pendampingan:[
-            {
-              tgl_pendampingan:'2025-01-20',
-              petugas:'Siti R.',
-              usia:24,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:10,
-            },
-            {
-              tgl_pendampingan:'2025-02-20',
-              petugas:'Siti R.',
-              usia:25,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:12,
-            },
-            {
-              tgl_pendampingan:'2025-03-20',
-              petugas:'Siti R.',
-              usia:26,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:15,
-            }
-          ],
-          tgl_lahir: '20-01-2021',
-          no_telp: '087838894555',
-          alamat: 'Jalan Mewah',
-          kecamatan: 'Bojong Gede',
-          desa: 'Cimanggis',
-          no_kia: '3403012605200002',
-          nama_ayah: 'Dani',
-          nama_ibu: 'Dini',
-          rw: '03',
-          rt: '04',
-          tgl_ukur:'2025-01-20',
-          nama: 'Arkhansa Raffasya Pamulat',
-          nik: '3403010508980002',
-          usia: 26,
-          gender: 'L',
-          intervensi: 'MBG',
-          bbtb: 'Wasted',
-          bbu: 'Underweight',
-          tbu: 'Stunted'
-        },
-        {
-          id:3,
-          posyandu: 'Mawar',
-          //status_gizi_kategori: 'BB/U',
-          profile_anak:[
-            {
-              no_kk:'3127890384059987',
-              nik_ayah:'332196037476523',
-              nama_ayah: 'Suhartanto',
-          nama_ibu: 'Fiska Bisatika',
-              nik_ibu:'3123093421874560',
-            }
-          ],
-          kelahiran:[
-            {
-              no_kia: '1871456723456123',
-              tmpt_dilahirkan:'Jakarta',
-              tgl_lahir:'2024-03-22',
-              bb:'3',
-              pb:'50',
-              anak_ke:'1',
-              usia_ibu:'30',
-              jarak:'-',
-              jenis:'normal',
-            }
-          ],
-          riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
-            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
-            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
-          ],
-          riwayat_intervensi: [
-            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'Bansos' },
-          ],
-          riwayat_pendampingan:[
-            {
-              tgl_pendampingan:'2025-01-20',
-              petugas:'Siti R.',
-              usia:24,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:10,
-            },
-            {
-              tgl_pendampingan:'2025-02-20',
-              petugas:'Siti R.',
-              usia:25,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:12,
-            },
-            {
-              tgl_pendampingan:'2025-03-20',
-              petugas:'Siti R.',
-              usia:26,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:15,
-            }
-          ],
-          tgl_lahir: '20-01-2021',
-          no_telp: '087838894555',
-          alamat: 'Jalan Mewah',
-          kecamatan: 'Bojong Gede',
-          desa: 'Cimanggis',
-          no_kia: '3403012605200002',
-          nama_ayah: 'Suhartanto',
-          nama_ibu: 'Fiska Bisatika',
-          rw: '03',
-          rt: '04',
-          tgl_ukur:'2025-01-20',
-          nama: 'Askara Gedhe Manah Sinatrya',
-          nik: '3403011105950001',
-          usia: 20,
-          gender: 'L',
-          intervensi: 'Bansos',
-          bbtb: 'Normal',
-          bbu: 'Normal',
-          tbu: 'Normal'
-        },
-        {
-          id:4,
-          posyandu: 'Posyandu Mawar',
-          //status_gizi_kategori: 'BB/U',
-          profile_anak:[
-            {
-              no_kk:'3127890384059987',
-              nik_ayah:'332196037476523',
-              nama_ayah: 'Suhendra',
-              nama_ibu: 'Milanti',
-              nik_ibu:'3123093421874560',
-            }
-          ],
-          kelahiran:[
-            {
-              no_kia: '3321456723456123',
-              tmpt_dilahirkan:'Jakarta',
-              tgl_lahir:'2024-03-22',
-              bb:'3',
-              pb:'50',
-              anak_ke:'1',
-              usia_ibu:'30',
-              jarak:'-',
-              jenis:'normal',
-            }
-          ],
-          riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
-            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
-            { tanggal: '20/07/2025', bb: 'Obesistasa', tb: 'Resiko BB Lebih', bbtb: 'Tinggi' },
-          ],
-          riwayat_intervensi: [
-            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          ],
-          riwayat_pendampingan:[
-            {
-              tgl_pendampingan:'2025-01-20',
-              petugas:'Siti R.',
-              usia:24,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:10,
-            },
-            {
-              tgl_pendampingan:'2025-02-20',
-              petugas:'Siti R.',
-              usia:25,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:12,
-            },
-            {
-              tgl_pendampingan:'2025-03-20',
-              petugas:'Siti R.',
-              usia:26,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:15,
-            }
-          ],
-          tgl_lahir: '20-01-2021',
-          no_telp: '087838894555',
-          alamat: 'Jalan Mewah',
-          kecamatan: 'Bojong Gede',
-          desa: 'Cimanggis',
-          no_kia: '3403012605200002',
-          nama_ayah: 'Suhendra',
-          nama_ibu: 'Milanti',
-          rw: '03',
-          rt: '04',
-          tgl_ukur:'2025-01-20',
-          nama: 'Azka Maulana Fadil',
-          nik: '3403011212980002',
-          usia: 23,
-          gender: 'L',
-          intervensi: 'PKH',
-          bbtb: 'Obesistasa',
-          bbu: 'Resiko BB Lebih',
-          tbu: 'Tinggi'
-        },
-        {
-          id:5,
-          posyandu: 'Posyandu Mawar',
-          //status_gizi_kategori: 'BB/U',
-          profile_anak:[
-            {
-              no_kk:'3127890384059987',
-              nik_ayah:'332196037476523',
-              nama_ayah: 'Hendra',
-              nama_ibu: 'Manah',
-              nik_ibu:'3123093421874560',
-            }
-          ],
-          kelahiran:[
-            {
-              no_kia: '3321456723456123',
-              tmpt_dilahirkan:'Jakarta',
-              tgl_lahir:'2024-03-22',
-              bb:'3',
-              pb:'50',
-              anak_ke:'1',
-              usia_ibu:'30',
-              jarak:'-',
-              jenis:'normal',
-            }
-          ],
-          riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
-            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
-            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
-          ],
-          riwayat_intervensi: [
-            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          ],
-          riwayat_pendampingan:[
-            {
-              tgl_pendampingan:'2025-01-20',
-              petugas:'Siti R.',
-              usia:24,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:10,
-            },
-            {
-              tgl_pendampingan:'2025-02-20',
-              petugas:'Siti R.',
-              usia:25,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:12,
-            },
-            {
-              tgl_pendampingan:'2025-03-20',
-              petugas:'Siti R.',
-              usia:26,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:15,
-            }
-          ],
-          tgl_lahir: '20-01-2021',
-          no_telp: '087838894555',
-          alamat: 'Jalan Mewah',
-          kecamatan: 'Bojong Gede',
-          desa: 'Cimanggis',
-          no_kia: '3403012605200002',
-          nama_ayah: 'Hendra',
-          nama_ibu: 'Manah',
-          rw: '03',
-          rt: '04',
-          tgl_ukur:'2025-01-20',
-          nama: 'Irshad Ghani Arvarizi',
-          nik: '3403012507930001',
-          usia: 28,
-          gender: 'L', intervensi: '-', bbtb: 'Normal', bbu: 'Normal', tbu: 'Normal' },
-        {
-          id:6,
-          posyandu: 'Posyandu Mawar',
-          //status_gizi_kategori: 'BB/U',
-           profile_anak:[
-            {
-              no_kk:'3127890384059987',
-              nik_ayah:'332196037476523',
-              nama_ayah: 'Syafi',
-              nama_ibu: 'Syiffa',
-              nik_ibu:'3123093421874560',
-            }
-          ],
-          kelahiran:[
-            {
-              no_kia: '3321456723456123',
-              tmpt_dilahirkan:'Jakarta',
-              tgl_lahir:'2024-03-22',
-              bb:'3',
-              pb:'50',
-              anak_ke:'1',
-              usia_ibu:'30',
-              jarak:'-',
-              jenis:'normal',
-            }
-          ],
-          riwayat_penimbangan: [
-            { tanggal: '22/05/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Severely Wasted' },
-            { tanggal: '18/06/2025', bb: 'Underweight', tb: 'Stunted', bbtb: 'Wasted' },
-            { tanggal: '20/07/2025', bb: 'Normal', tb: 'Normal', bbtb: 'Normal' },
-          ],
-          riwayat_intervensi: [
-            { tanggal: '22/05/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '18/06/2025', kader: 'Siti R.', intervensi: 'PMT' },
-            { tanggal: '20/07/2025', kader: 'Siti R.', intervensi: 'PMT' },
-          ],
-          riwayat_pendampingan:[
-            {
-              tgl_pendampingan:'2025-01-20',
-              petugas:'Siti R.',
-              usia:24,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:10,
-            },
-            {
-              tgl_pendampingan:'2025-02-20',
-              petugas:'Siti R.',
-              usia:25,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:12,
-            },
-            {
-              tgl_pendampingan:'2025-03-20',
-              petugas:'Siti R.',
-              usia:26,
-              rt:'03',
-              rw:'04',
-              bb_lahir:3,
-              pb_lahir:50,
-              bb:15,
-            }
-          ],
-          tgl_lahir: '20-01-2021',
-          no_telp: '087838894555',
-          alamat: 'Jalan Mewah',
-          kecamatan: 'Bojong Gede',
-          desa: 'Cimanggis',
-          no_kia: '3403012605200002',
-          nama_ayah: 'Syafi',
-          nama_ibu: 'Syiffa',
-          rw: '03',
-          rt: '04',
-          tgl_ukur:'2025-01-20',
-          nama: 'Syiffa Azahra',
-          nik: '3403012806910002',
-          usia: 24,
-          gender: 'P',
-          intervensi: '-',
-          bbtb: 'Normal',
-          bbu: 'Normal',
-          tbu: 'Normal' },
-      ],
+      children: [],
       filteredData: [],        // data hasil filter
     }
   },
   methods: {
+    async loadChildren() {
+      try {
+        const res = await axios.get(`${baseURL}/api/children`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        // API structure: { status, message, data_anak: [...] }
+        const items = res.data.data_anak || []
+
+        this.children = items.map((item) => {
+          const kelahiran = item.kelahiran?.[0] || {}
+          const keluarga = item.keluarga?.[0] || {}
+          const pendamping = item.pendampingan?.[item.pendampingan.length - 1] || {}
+          const posyandu = item.posyandu?.[item.posyandu.length - 1] || {}
+          const intervensi = item.intervensi?.[item.intervensi.length - 1] // ambil intervensi terakhir
+
+          return {
+            // === Identitas Anak ===
+            id: item.id,
+            nama: item.nama || '-',
+            nik: item.nik || '-',
+            gender: item.jk || '-',
+            provinsi: item.provinsi || '-',
+            kota: item.kota || '-',
+            kecamatan: item.kecamatan || '-',
+            kelurahan: item.kelurahan || '-',
+            rt: item.rt || '-',
+            rw: item.rw || '-',
+
+            // === Data Posyandu terakhir ===
+            posyandu: posyandu.posyandu || '-',
+            usia: posyandu.usia || '-',
+            tgl_ukur: posyandu.tgl_ukur || '-',
+            bbu: posyandu.bbu || '-',
+            tbu: posyandu.tbu || '-',
+            bbtb: posyandu.bbtb || '-',
+            bb: posyandu.bb || '-',
+            tb: posyandu.tb || '-',
+            bb_naik: posyandu.bb_naik || false,
+
+            // === Data Intervensi ===
+            intervensi: intervensi ? intervensi.jenis : 'Belum dapat Intervensi',
+
+            // === Tambahan opsional ===
+            tmpt_dilahirkan: kelahiran.tmpt_dilahirkan || '-',
+            tgl_lahir: kelahiran.tgl_lahir || '-',
+            bb_lahir: kelahiran.bb_lahir || '-',
+            pb_lahir: kelahiran.pb_lahir || '-',
+            persalinan: kelahiran.persalinan || '-',
+            nama_ayah: keluarga.nama_ayah || '-',
+            nama_ibu: keluarga.nama_ibu || '-',
+            pekerjaan_ayah: keluarga.pekerjaan_ayah || '-',
+            pekerjaan_ibu: keluarga.pekerjaan_ibu || '-',
+            usia_ayah: keluarga.usia_ayah || '-',
+            usia_ibu: keluarga.usia_ibu || '-',
+            anak_ke: keluarga.anak_ke || '-',
+            kader_pendamping: pendamping.kader || '-',
+            tgl_pendampingan: pendamping.tanggal || '-',
+
+            // === Simpan data mentah (buat showDetail nanti) ===
+            raw: {
+              kelahiran: item.kelahiran || [],
+              keluarga: item.keluarga || [],
+              pendampingan: item.pendampingan || [],
+              posyandu: item.posyandu || [],
+              intervensi: item.intervensi || []
+            }
+          }
+
+        })
+
+        // Setelah data dimuat, langsung apply filter awal
+        this.applyFilter()
+        // 🔹 Hitung total anak dengan usia < 60 bulan
+        this.totalAnak = this.children.filter((anak) => anak.usia < 60).length;
+
+        // 🔹 Inisialisasi filteredData
+        this.filteredData = [...this.children];
+
+        // 🔹 Hitung status gizi awal
+        this.hitungStatusGizi();
+        this.generateListsFromChildren()
+      } catch (e) {
+        this.showError('Error Ambil Data Anak', e)
+      }
+    },
+    hitungStatusGizi() {
+      const dataAnak = this.filteredData.length ? this.filteredData : this.children;
+      const total = dataAnak.length;
+
+      const count = {
+        Stunting: 0,
+        Wasting: 0,
+        Underweight: 0,
+        Normal: 0,
+        'BB Stagnan': 0,
+        Overweight: 0,
+      };
+
+      dataAnak.forEach((anak) => {
+        const { bbu, tbu, bbtb } = anak;
+
+        if (tbu?.includes('Stunted')) count.Stunting++;
+        if (bbtb?.includes('Wasted')) count.Wasting++;
+        if (bbu?.includes('Underweight')) count.Underweight++;
+        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++;
+        if (bbtb?.includes('Overweight')) count.Overweight++;
+
+        // === cek stagnan (3 kali BB sama)
+        const riwayat = anak.raw?.posyandu || [];
+        if (riwayat.length >= 3) {
+          const last3 = riwayat.slice(-3);
+          const allEqual = last3.every((r) => r.bb === last3[0].bb);
+          if (allEqual) count['BB Stagnan']++;
+        }
+      });
+
+      this.gizi = Object.entries(count).map(([title, value]) => {
+        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+        const colorMap = {
+          Stunting: 'danger',
+          Wasting: 'warning',
+          Underweight: 'violet',
+          Normal: 'success',
+          'BB Stagnan': 'info',
+          Overweight: 'dark',
+        };
+        return { title, value, percent, color: colorMap[title] };
+      });
+    },
     isStagnan(item) {
       const STATUS_DIBAWAH_NORMAL = [
         'Underweight', 'Severely Underweight',
@@ -1680,9 +1281,54 @@ export default {
 
       return bbSama || tbSama || bbtbSama
     },
+    generateListsFromChildren() {
+      // === Posyandu unik ===
+      const posyanduSet = new Set(this.children.map(c => c.posyandu).filter(Boolean))
+      this.posyanduList = Array.from(posyanduSet).map((nama, index) => ({
+        id: index + 1,
+        nama_posyandu: nama
+      }))
+
+      // === RW dan RT global (kalau gak pilih posyandu) ===
+      const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
+      const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
+      this.rwList = Array.from(rwSet)
+      this.rtList = Array.from(rtSet)
+
+      // awalnya di-disable
+      this.rwReadonly = true
+      this.rtReadonly = true
+    },
+
+    handlePosyanduChange() {
+      const pos = this.filters.posyandu
+
+      if (pos) {
+        const filteredChildren = this.children.filter(c => c.posyandu === pos)
+
+        const rwSet = new Set(filteredChildren.map(c => c.rw).filter(Boolean))
+        const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean))
+
+        this.rwList = Array.from(rwSet)
+        this.rtList = Array.from(rtSet)
+        this.rwReadonly = false
+        this.rtReadonly = false
+      } else {
+        // reset kalau posyandu dikosongin
+        const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
+        const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
+        this.rwList = Array.from(rwSet)
+        this.rtList = Array.from(rtSet)
+        this.rwReadonly = true
+        this.rtReadonly = true
+        this.filters.rw = ''
+        this.filters.rt = ''
+      }
+    },
+
 
     applyFilter() {
-      this.filteredData = this.kunjungan_posyandu.filter(item => {
+      this.filteredData = this.children.filter(item => {
         const f = this.filters
 
         // === 1. Filter Underweight (BBU)
@@ -1775,7 +1421,7 @@ export default {
       this.rwReadonly = true
       this.rtReadonly = true
 
-      this.filteredData = [...this.kunjungan_posyandu]
+      this.filteredData = [...this.children]
     },
     selectAll_bbu() {
       this.filters.bbu = [...this.bbuOptions]
@@ -1850,13 +1496,13 @@ export default {
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
+        //await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
     },
-    async fetchPosyanduByWilayah(id_wilayah) {
+    /* async fetchPosyanduByWilayah(id_wilayah) {
       try {
         const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -1867,7 +1513,7 @@ export default {
       }
     },
     handlePosyanduChange() {
-      console.log('Posyandu dipilih:', this.filters.posyandu)
+      //console.log('Posyandu dipilih:', this.filters.posyandu)
       if (this.filters.posyandu) {
         this.rtReadonly = false
         this.rwReadonly = false
@@ -1886,12 +1532,12 @@ export default {
         })
         this.rwList = res.data.rw || []
         this.rtList = res.data.rt || []
-        console.log('data', res.data);
+        //console.log('data', res.data);
 
       } catch (err) {
         console.error('Gagal ambil RW/RT:', err)
       }
-    },
+    }, */
     generatePeriodeOptions() {
       const bulan = [
         'Januari', 'Februari', 'Maret', 'April',
@@ -1957,9 +1603,94 @@ export default {
       this.isFormOpen = !this.isFormOpen
     },
     showDetail(props) {
-      console.log('Klik props:', props)
-      this.selectedAnak = props
+      ////console.log('Klik props:', props)
+
+      const raw = props.raw || {}
+
+      const posyanduList = Array.isArray(raw.posyandu) ? raw.posyandu : []
+      const intervensiList = Array.isArray(raw.intervensi) ? raw.intervensi : []
+      const pendampinganList = Array.isArray(raw.pendampingan) ? raw.pendampingan : []
+      const kelahiranList = Array.isArray(raw.kelahiran) ? raw.kelahiran : []
+      const keluargaList = Array.isArray(raw.keluarga) ? raw.keluarga : []
+
+      const lastPosyandu = posyanduList.length
+        ? posyanduList.sort((a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)).slice(-1)[0]
+        : {}
+
+      this.selectedAnak = {
+        // --- Identitas Anak ---
+        id: props.id,
+        nik: props.nik || '-',
+        nama: props.nama || '-',
+        gender: props.gender || props.jk || '-',
+        usia: lastPosyandu.usia || '-',
+        alamat: `${props.kelurahan || '-'}, RT ${props.rt || '-'} / RW ${props.rw || '-'}`,
+        desa: props.kelurahan || '-',
+        kecamatan: props.kecamatan || '-',
+        provinsi: props.provinsi || '-',
+        kota: props.kota || '-',
+        status_gizi:props.bbtb || '-',
+
+        // --- Orang Tua (keluarga[0]) ---
+        nama_ayah: keluargaList[0]?.nama_ayah || '-',
+        nik_ayah: keluargaList[0]?.nik_ayah || '-',
+        nama_ibu: keluargaList[0]?.nama_ibu || '-',
+        nik_ibu: keluargaList[0]?.nik_ibu || '-',
+        no_telp: keluargaList[0]?.no_telp || '-',
+
+        // --- Data Kelahiran ---
+        kelahiran: kelahiranList.map(k => ({
+          no_kia: k.no_kia || '-',
+          tmpt_dilahirkan: k.tmpt_dilahirkan || '-',
+          tgl_lahir: k.tgl_lahir || '-',
+          bb: k.bb_lahir || '-',
+          pb: k.pb_lahir || '-',
+          jenis: k.persalinan || '-',
+        })),
+
+        // --- Riwayat Penimbangan (Posyandu) ---
+        riwayat_penimbangan: posyanduList.map(p => ({
+          tanggal: p.tgl_ukur || '-',
+          bb: p.bb || '-',
+          tb: p.tb || '-',
+          bbu: p.bbu || '-',
+          tbu: p.tbu || '-',
+          bbtb: p.bbtb || '-',
+        })),
+
+         // ambil status terakhir
+        status_terakhir: {
+          bbu: lastPosyandu.bbu || '-',
+          tbu: lastPosyandu.tbu || '-',
+          bbtb: lastPosyandu.bbtb || '-',
+        },
+
+        // --- Riwayat Intervensi ---
+        riwayat_intervensi: intervensiList.map(i => ({
+          tanggal: i.tanggal || '-',
+          kader: i.kader || '-',
+          intervensi: i.jenis || '-',
+        })),
+
+        // --- Riwayat Pendampingan (TPK) ---
+        riwayat_pendampingan: pendampinganList.map(p => ({
+          tgl_pendampingan: p.tanggal || '-',
+          petugas: p.kader || '-',
+          usia: p.usia || '-',
+          rt: props.rt || '-',
+          rw: props.rw || '-',
+          bb_lahir: kelahiranList[0]?.bb_lahir || '-',
+          pb_lahir: kelahiranList[0]?.pb_lahir || '-',
+          bb: p.bb || '-'
+        })),
+
+        // --- Status Gizi Terakhir (untuk badge) ---
+        //status_gizi: lastPosyandu.bbtb || '-',
+      }
+
+      //console.log('selectedAnak detail:', this.selectedAnak)
     },
+
     triggerFileDialog() {
       if (this.$refs.fileInput) {
         this.$refs.fileInput.click()
@@ -2090,7 +1821,7 @@ export default {
         // sukses — tangani response sesuai API
         this.$bvToast && this.$bvToast.toast
           ? this.$bvToast.toast('Upload berhasil', { variant: 'success' })
-          : console.log('Upload berhasil', res.data)
+          : //console.log('Upload berhasil', res.data)
 
         // reset file atau lakukan apa yg dibutuhkan
         this.removeFile()
@@ -2124,60 +1855,24 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   async mounted() {
-    this.isLoading = true
+  this.isLoading = true
+  try {
+    await this.getWilayahUser()
+    await this.loadConfigWithCache()
+    this.generatePeriodeOptions()
 
-    try {
-      // Ambil query dulu
-      const { tipe, status } = this.$route.query
-      console.log('data dari dashboard:', tipe, status)
+    await this.loadChildren() // 🔥 semua list otomatis di-generate di dalamnya
 
-      // 1️⃣ Ambil data dulu
-      await this.getWilayahUser()
-      this.generatePeriodeOptions()
-
-      // isi default posyanduList kayak yang udah lu buat
-      this.posyanduList = [
-        ...new Set(this.kunjungan_posyandu.map(item => item.posyandu))
-      ].map((nama, index) => ({
-        id: index + 1,
-        nama_posyandu: nama
-      }))
-
-      // tampilkan semua data awal
-      this.filteredData = [...this.kunjungan_posyandu]
-
-      // 2️⃣ Baru terapkan filter kalau ada query dari chart
-      if (tipe && status) {
-        // Kosongkan dulu semua filter gizi biar gak tumpang tindih
-        this.filters.bbu = []
-        this.filters.tbu = []
-        this.filters.bbtb = []
-
-        if (tipe === 'BB/U') {
-          this.filters.bbu = [status]
-        } else if (tipe === 'TB/U') {
-          this.filters.tbu = [status]
-        } else if (tipe === 'BB/TB') {
-          this.filters.bbtb = [status]
-        }
-
-        // Apply setelah data sudah siap
-        if (typeof this.applyFilter === 'function') {
-          this.applyFilter()
-        }
-      }
-
-      await this.loadConfigWithCache()
-      this.handleResize()
-      window.addEventListener('resize', this.handleResize)
-    } catch (err) {
-      console.error('Error loading data:', err)
-    } finally {
-      setTimeout(() => {
-        this.isLoading = false
-      }, 300)
-    }
-  },
+    this.filteredData = [...this.children]
+    this.hitungStatusGizi()
+    this.handleResize()
+    window.addEventListener('resize', this.handleResize)
+  } catch (err) {
+    console.error('Error mounted:', err)
+  } finally {
+    this.isLoading = false
+  }
+},
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
