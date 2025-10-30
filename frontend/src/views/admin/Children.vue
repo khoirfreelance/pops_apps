@@ -1326,7 +1326,6 @@ export default {
       }
     },
 
-
     applyFilter() {
       this.filteredData = this.children.filter(item => {
         const f = this.filters
@@ -1502,42 +1501,6 @@ export default {
         this.kelurahan = '-'
       }
     },
-    /* async fetchPosyanduByWilayah(id_wilayah) {
-      try {
-        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        this.posyanduList = res.data
-      } catch (err) {
-        console.error('Gagal ambil data posyandu:', err)
-      }
-    },
-    handlePosyanduChange() {
-      //console.log('Posyandu dipilih:', this.filters.posyandu)
-      if (this.filters.posyandu) {
-        this.rtReadonly = false
-        this.rwReadonly = false
-        this.fetchRwRtByPosyandu(this.filters.posyandu)
-      } else {
-        this.rtReadonly = true
-        this.rwReadonly = true
-        this.rwList = []
-        this.rtList = []
-      }
-    },
-    async fetchRwRtByPosyandu(idPosyandu) {
-      try {
-        const res = await axios.get(`${baseURL}/api/posyandu/${idPosyandu}/wilayah`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        this.rwList = res.data.rw || []
-        this.rtList = res.data.rt || []
-        //console.log('data', res.data);
-
-      } catch (err) {
-        console.error('Gagal ambil RW/RT:', err)
-      }
-    }, */
     generatePeriodeOptions() {
       const bulan = [
         'Januari', 'Februari', 'Maret', 'April',
@@ -1684,8 +1647,6 @@ export default {
           bb: p.bb || '-'
         })),
 
-        // --- Status Gizi Terakhir (untuk badge) ---
-        //status_gizi: lastPosyandu.bbtb || '-',
       }
 
       //console.log('selectedAnak detail:', this.selectedAnak)
@@ -1821,7 +1782,7 @@ export default {
         // sukses — tangani response sesuai API
         this.$bvToast && this.$bvToast.toast
           ? this.$bvToast.toast('Upload berhasil', { variant: 'success' })
-          : //console.log('Upload berhasil', res.data)
+          : console.log('Upload berhasil', res.data)
 
         // reset file atau lakukan apa yg dibutuhkan
         this.removeFile()
@@ -1855,24 +1816,50 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   async mounted() {
-  this.isLoading = true
-  try {
-    await this.getWilayahUser()
-    await this.loadConfigWithCache()
-    this.generatePeriodeOptions()
+    this.isLoading = true
+    try {
+      await this.getWilayahUser()
+      await this.loadConfigWithCache()
+      this.generatePeriodeOptions()
 
-    await this.loadChildren() // 🔥 semua list otomatis di-generate di dalamnya
+      this.hitungStatusGizi()
+      // 🔥 Load children dulu
+      await this.loadChildren()
 
-    this.filteredData = [...this.children]
-    this.hitungStatusGizi()
-    this.handleResize()
-    window.addEventListener('resize', this.handleResize)
-  } catch (err) {
-    console.error('Error mounted:', err)
-  } finally {
-    this.isLoading = false
-  }
-},
+      // Ambil query param
+      const { tipe, status } = this.$route.query
+      //console.log('data dari dashboard:', tipe, status)
+
+      // Copy semua children
+      this.filteredData = [...this.children]
+
+      // Terapkan filter dari chart
+      if (tipe && status) {
+        this.filters.bbu = []
+        this.filters.tbu = []
+        this.filters.bbtb = []
+
+        if (tipe === 'BB/U') this.filters.bbu = [status]
+        else if (tipe === 'TB/U') this.filters.tbu = [status]
+        else if (tipe === 'BB/TB') this.filters.bbtb = [status]
+
+        // Pastikan dropdown reactive ter-update sebelum applyFilter
+        await this.$nextTick()
+
+        if (typeof this.applyFilter === 'function') {
+          this.applyFilter()
+        }
+      }
+
+
+      this.handleResize()
+      window.addEventListener('resize', this.handleResize)
+    } catch (err) {
+      console.error('Error mounted:', err)
+    } finally {
+      this.isLoading = false
+    }
+  },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
