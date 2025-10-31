@@ -2,7 +2,7 @@
   <header class="navbar navbar-light bg-primary shadow-sm px-3 py-2 position-fixed top-0 w-100">
     <!-- Left -->
     <div class="d-flex align-items-center">
-      <a class="navbar-brand p-2 ms-5" href="#">
+      <a class="navbar-brand p-2" href="#">
         <!-- tampilkan logo jika berhasil load -->
         <img
           v-if="logoLoaded"
@@ -19,9 +19,9 @@
           {{ kelurahan || 'Wilayah' }}
         </span>
       </a>
-      <p class="m-0 ms-3 fs-4 text-white">
+      <h5 class="header-title">
         Pusat Operasi Penurunan Stunting Desa {{ kelurahan || '...' }}
-      </p>
+      </h5>
     </div>
 
 
@@ -34,7 +34,7 @@
           class="btn btn-link position-relative p-0 text-white"
           @click="toggleNotification = !toggleNotification"
         >
-          <i class="bi bi-bell fs-5"></i>
+          <i class="bi bi-bell"></i>
           <span
             v-if="events.length > 0"
             class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
@@ -65,7 +65,7 @@
           id="userMenu"
           data-bs-toggle="dropdown"
         >
-          <i class="bi bi-person-circle fs-5"></i>
+          <i class="bi bi-person-circle"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
           <li>

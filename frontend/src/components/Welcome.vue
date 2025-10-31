@@ -1,0 +1,142 @@
+<template>
+  <div class="card welcome-card shadow-sm mb-1 border-0 rounded">
+    <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
+      <!-- Kiri -->
+      <div class="text-start my-2">
+        <small class="mb-0">Selamat datang,</small>
+        <h5 class="mt-0">{{ username }}</h5>
+        <!-- Logo / fallback -->
+        <img
+          v-if="logoLoaded"
+          :src="logoSrc"
+          alt="Logo"
+          height="50"
+          @error="logoLoaded = false"
+        />
+        <span v-else class="text-muted fw-bold fs-5 mt-4">
+          {{ kelurahan || 'Wilayah' }}
+        </span>
+
+        <p class="small d-flex align-items-center mt-1">
+          Data terakhir diperbarui pada&nbsp;<strong>{{ today }}</strong>
+        </p>
+      </div>
+
+      <!-- Kanan -->
+      <div class="mt-3 mt-md-0">
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+
+const API_PORT = 8000
+const { protocol, hostname } = window.location
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
+
+export default {
+  // eslint-disable-next-line vue/multi-word-component-names
+  name: 'Welcome',
+  data() {
+    return {
+      username: '',
+      kelurahan: '',
+      logoSrc: null,
+      logoLoaded: true,
+      today: '',
+      configCacheKey: 'site_config_cache',
+    }
+  },
+  async mounted() {
+    this.today = this.getTodayDate()
+    await this.loadConfigWithCache()
+    await this.getWilayahUser()
+  },
+  methods: {
+    getTodayDate() {
+      const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']
+      const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+      const now = new Date()
+      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+
+    async loadConfigWithCache() {
+      try {
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+        const res = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      } catch (err) {
+        console.warn('Gagal load config:', err)
+        this.logoLoaded = false
+      }
+    },
+
+    async getWilayahUser() {
+      try {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        const wilayah = res.data
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+      } catch (err) {
+        console.error('Gagal ambil wilayah user:', err)
+        this.kelurahan = '-'
+      }
+    },
+  },
+  created() {
+    const storedEmail = localStorage.getItem('userEmail')
+    if (storedEmail) {
+      let namePart = storedEmail.split('@')[0]
+      namePart = namePart.replace(/[._]/g, ' ')
+      this.username = namePart
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ')
+    } else {
+      this.username = 'User'
+    }
+    this.today = this.getTodayDate()
+  },
+}
+</script>
+
+<style scoped>
+.welcome-card {
+  background-image: url(/welcome0.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position-x: right;
+}
+
+.welcome-img {
+  object-fit: contain;
+}
+
+/* ====== Versi mobile (≤991px) ====== */
+@media (max-width: 991px) {
+  .welcome-card {
+    margin-top: 60px;
+    background: linear-gradient(0deg, #10754f 10%, #f7fcf4 13% ) !important;
+  }
+}
+</style>

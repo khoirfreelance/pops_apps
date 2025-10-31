@@ -31,44 +31,7 @@
         <div class="py-4 container-fluid" >
 
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-1 border-0">
-            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <h4>
-                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
-                  {{ username }}
-                </h4>
-                <img
-                  v-if="logoLoaded"
-                  :src="logoSrc"
-                  alt="Logo"
-                  height="30"
-                  @error="logoLoaded = false"
-                />
-                <!-- jika gagal load logo, tampilkan kelurahan -->
-                <span
-                  v-else
-                  class="text-muted fw-bold fs-5 mt-4"
-                >
-                  {{ kelurahan || 'Wilayah' }}
-                </span>
-                <p class="small d-flex align-items-center mt-1">
-                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
-                </p>
-              </div>
-
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img
-                  src="/banner.png"
-                  alt="Welcome"
-                  class="img-fluid welcome-img"
-                  style="max-width: 280px"
-                />
-              </div>
-            </div>
-          </div>
+          <Welcome />
 
           <!-- Judul Laporan -->
           <div class="text-center mt-4">
@@ -1055,6 +1018,7 @@
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
+import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 import { ref, computed } from 'vue'
 
@@ -1076,7 +1040,7 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Children',
-  components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon },
+  components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon, Welcome },
   data() {
     return {
       /* Wajib ada */

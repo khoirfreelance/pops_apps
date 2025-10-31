@@ -203,4 +203,10 @@ export default {
 .sidebar-footer {
   border-top: 1px solid #eee;
 }
+
+@media (max-width: 991px) {
+  .sidebar-container {
+    top: 100px;
+  }
+}
 </style>

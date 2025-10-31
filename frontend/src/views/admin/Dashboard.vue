@@ -32,84 +32,46 @@
         <div class="py-4 container-fluid" >
 
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <h3>
-                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
-                  {{ username }}
-                </h3>
-                <img
-                  v-if="logoLoaded"
-                  :src="logoSrc"
-                  alt="Logo"
-                  height="50"
-                  class="mt-4"
-                  @error="logoLoaded = false"
-                />
-                <!-- jika gagal load logo, tampilkan kelurahan -->
-                <span
-                  v-else
-                  class="text-muted fw-bold fs-5 mt-4"
-                >
-                  {{ kelurahan || 'Wilayah' }}
-                </span>
-                <p class="small d-flex align-items-center mt-1">
-                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
-                </p>
-              </div>
-
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img
-                  src="/banner.png"
-                  alt="Welcome"
-                  class="img-fluid welcome-img"
-                  style="max-width: 280px"
-                />
-              </div>
-            </div>
-          </div>
+          <Welcome />
 
           <!-- Statistic Cards -->
-          <div class="container-fluid mt-2">
-            <div class="row justify-content-center">
+          <div class="container-fluid mt-3">
+            <div class="row g-4 justify-content-center">
               <div
                 v-for="(stat, index) in stats"
                 :key="index"
-                class="stat-card col-xl-2 col-lg-3 p-lg-2 col-md-3 col-sm-5 col-12 mx-3 my-2 shadow-bottom border-0 border-top border-4 border-primary"
+                class="col-xl-1_9 col-lg-2 col-md-3 col-sm-6 col-6"
               >
-                <div class="container-fluid">
-                  <div class="card-body d-flex align-items-center justify-content-between mx-2">
-                    <div class="icon-wrap d-flex align-items-center justify-content-center">
-                      <span :class="['stat-icon', stat.icon]"></span>
+                <div class="stat-card shadow-sm rounded h-100">
+                  <div class="card-body d-flex align-items-stretch justify-content-between p-2">
+                    <!-- Text -->
+                    <div class="stat-text text-start ms-2">
+                      <h6 class="text-muted small fw-semibold">{{ stat.title }}</h6>
+                      <div class="spacer"></div> <!-- buat dorong value ke bawah -->
+                      <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
                     </div>
-                    <div class="text-end ms-2">
-                      <h5 class="text-muted mb-1">{{ stat.title }}</h5>
-                      <h2 class="card-title fw-bold mb-0">{{ stat.value }}</h2>
+
+                    <!-- Icon -->
+                    <div class="icon-wrap d-flex align-items-center justify-content-center">
+                      <i :class="[stat.icon]"></i>
                     </div>
                   </div>
-
                 </div>
               </div>
-
             </div>
           </div>
 
           <!-- Judul Laporan -->
-          <div class="text-center mt-4">
-            <div class="bg-primary text-white py-2 px-4 d-inline-block rounded-top">
-              <h5 class="mb-0">
-                Laporan Status Gizi <span class="text-capitalize fw-bold">{{ kelurahan }}</span> Bulan <span class="fw-bold">{{ thisMonth }}</span>
+          <div class="text-center mt-3">
+            <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
+              <h5 class="title mb-0 text-capitalize fw-bold">
+                Laporan Status Gizi {{ kelurahan }} Bulan {{ thisMonth }}
               </h5>
             </div>
           </div>
 
           <!-- Filter Form -->
           <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 sticky-filter">
-            <div class="mb-2 fw-bold text-primary">Filter:</div>
-
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
               <div class="col-xl-2 col-lg-4 col-md-4">
@@ -181,8 +143,8 @@
           </div>
 
           <!-- Main -->
-          <div class="d-flex justify-content-center mt-5">
-            <ul class="nav nav-pills mb-3 d-flex flex-wrap justify-content-center gap-2 w-100" id="myTab" role="tablist" style="max-width: 800px;">
+          <div class="d-flex justify-content-center mt-3">
+            <ul class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100" id="myTab" role="tablist" style="max-width: 800px;">
               <li class="nav-item flex-fill text-center" role="presentation">
                 <button
                   class="nav-link active w-100 text-truncate"
@@ -232,9 +194,8 @@
           <div class="tab-content" id="myTabContent">
             <!-- Tab 1 -->
             <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" tabindex="0">
-
               <!-- Issue and Stat Card -->
-              <div class="container-fluid my-4 row">
+              <div class="container-fluid my-2 row">
                 <div class="col-md-8">
                   <h5 class="fw-bold text-success mb-4">Ringkasan Status Gizi Bulan Ini</h5>
                   <div class="row">
@@ -621,20 +582,20 @@
 </template>
 
 <style scoped>
-.sticky-filter {
-  position: sticky;
-  top: 75px; /* sesuaikan dengan tinggi HeaderAdmin kamu */
-  z-index: 1020; /* supaya tetap di atas card/chart */
-  background: #f8f9fa; /* warna bg-light */
-}
+  .sticky-filter {
+    position: sticky;
+    top: 75px; /* sesuaikan dengan tinggi HeaderAdmin kamu */
+    z-index: 1020; /* supaya tetap di atas card/chart */
+    background: #f8f9fa; /* warna bg-light */
+  }
 
-.filter-wrapper {
-  position: sticky;
-  top: 70px;
-  z-index: 1050;
-  background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
+  .filter-wrapper {
+    position: sticky;
+    top: 70px;
+    z-index: 1050;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
 
   .active-tab {
     background-color: var(--bs-primary) !important;
@@ -681,12 +642,106 @@
     transition: all 0.3s ease;
   }
 
+  /* custom kolom 9 per baris */
+@media (min-width: 1400px) {
+  .col-xl-1_9 {
+    flex: 0 0 auto;
+    width: 11.11%;
+  }
+}
+
+/* fallback grid untuk ukuran lain */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .col-lg-2 {
+    flex: 0 0 auto;
+    width: 20%; /* 5 kolom */
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .col-md-3 {
+    flex: 0 0 auto;
+    width: 25%; /* 4 kolom */
+  }
+}
+
+@media (max-width: 767.98px) {
+  .col-sm-4 {
+    flex: 0 0 auto;
+    width: 33.33%; /* 3 kolom */
+  }
+}
+
+.stat-card {
+  background-color: #fff;
+  border-top: 4px solid var(--bs-secondary);
+  height: 90px; /* proporsional */
+  transition: all 0.2s ease-in-out;
+  min-width: 120px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .icon-wrap {
+    background-color: var(--bs-secondary);
+    color: #fff;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  h6 {
+    font-family: "Inter", sans-serif;
+    font-size: 0.75rem;
+    margin: 0;
+  }
+
+  h4 {
+    font-family: "Inter", sans-serif;
+    color: #000;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+.stat-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  height: 60px;
+  h6 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: #000;
+    margin: 0;
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+
 </style>
 
 <script>
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
+import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 import {
   Chart,
@@ -728,7 +783,7 @@ Chart.register(
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Dashboard',
-  components: { NavbarAdmin, CopyRight, HeaderAdmin },
+  components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
       currentPage: 1,
@@ -763,124 +818,6 @@ export default {
       periodeOptions: [],
       rwReadonly: true,
       rtReadonly: true,
-      /* dataTable_bb: [
-        {
-          status: 'Severely Underweight',
-          jumlah: 24,
-          persen: 2.8,
-          tren: '2.80%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Underweight',
-          jumlah: 94,
-          persen: 10.96,
-          tren: '10.96%',
-          trenClass: 'text-success',
-          trenIcon: 'bi bi-caret-down-fill',
-        },
-        {
-          status: 'Normal',
-          jumlah: 725,
-          persen: 55,
-          tren: '55 %',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Risiko BB Lebih',
-          jumlah: 15,
-          persen: 33.45,
-          tren: '33.45%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-      ], */
-      /* dataTable_tb: [
-        {
-          status: 'Severely Stunted',
-          jumlah: 21,
-          persen: 2.45,
-          tren: '2.45%',
-          trenClass: 'text-success',
-          trenIcon: 'bi bi-caret-down-fill',
-        },
-        {
-          status: 'Stunted',
-          jumlah: 149,
-          persen: 17.37,
-          tren: '17.37%',
-          trenClass: 'text-success',
-          trenIcon: 'bi bi-caret-down-fill',
-        },
-        {
-          status: 'Normal',
-          jumlah: 688,
-          persen: 80.19,
-          tren: ' 80.19%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Tinggi',
-          jumlah: 34,
-          persen: 2,
-          tren: '2%',
-          trenClass: 'text-muted',
-          trenIcon: '',
-        },
-      ],
-      dataTable_status: [
-        {
-          status: 'Severely Wasted',
-          jumlah: 4,
-          persen: 2.80 ,
-          tren: '2.80%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Wasted',
-          jumlah: 20,
-          persen: 10.96 ,
-          tren: '10.96%',
-          trenClass: 'text-success',
-          trenIcon: 'bi bi-caret-down-fill',
-        },
-        {
-          status: 'Normal',
-          jumlah: 769,
-          persen: 84.50 ,
-          tren: ' 84.50%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Possible risk of Overweight',
-          jumlah: 53,
-          persen: 1.75,
-          tren: '1.75%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Overweight',
-          jumlah: 8,
-          persen: 33.45,
-          tren: '33.45%',
-          trenClass: 'text-danger',
-          trenIcon: 'bi bi-caret-up-fill',
-        },
-        {
-          status: 'Obesitas',
-          jumlah: 10,
-          persen: 12,
-          tren: '12%',
-          trenClass: 'text-muted',
-          trenIcon: '',
-        },
-      ], */
       sampleData: [
         {
           nama: "Ahsan Dimasi Aqilana",
@@ -1068,7 +1005,7 @@ export default {
       this.infoBoxes = [
         {
           type: 'danger',
-          title: `Stunting ${naik >= 0 ? 'naik' : 'turun'} ${Math.abs(naik).toFixed(1)} p.p`,
+          title: `Stunting ${naik >= 0 ? 'naik' : 'turun'} ${Math.abs(naik).toFixed(1)}`,
           desc: `Dibanding pengukuran sebelumnya, tertinggi di Desa <strong>${capitalizeWords(desaTertinggi)}</strong>.`,
         },
         {
@@ -1627,7 +1564,7 @@ data.forEach((child) => {
         this[refName + 'Instance'].destroy()
       }
 
-      // Buat warna transparan & border
+      // Warna transparan & border
       const transparentColors = colors.map(color =>
         color.replace('rgb', 'rgba').replace(')', ', 0.8)')
       )
@@ -1649,30 +1586,42 @@ data.forEach((child) => {
         },
         options: {
           responsive: true,
-          layout: { padding: 20 },
+          layout: { padding: 25 },
           plugins: {
-            legend: {
-              display: false,
-              position: 'bottom',
-              labels: {
-                usePointStyle: true,
-                pointStyle: 'circle',
-                padding: 16,
-                font: { size: 11 },
-                color: '#333',
-              },
-            },
+            legend: { display: false },
             tooltip: {
               callbacks: {
                 label: function (context) {
                   const label = context.label || ''
                   const value = context.parsed
-                  return `${label}: ${value}%`
+                  return value > 0 ? `${label}: ${value}%` : ''
                 },
               },
             },
             datalabels: {
-              display: false, // ❌ tidak tampilkan label di dalam chart
+              display: ctx => {
+                const value = ctx.dataset.data[ctx.dataIndex]
+                return value > 0 // ✅ tampilkan label hanya jika persen > 0
+              },
+              align: 'end',
+              anchor: 'end',
+              offset: 8,
+              clamp: true,
+              color: ctx => {
+                const label = ctx.chart.data.labels[ctx.dataIndex]
+                if (label.includes('Kurang')) return 'red'
+                if (label.includes('Tidak Naik')) return '#e0b000'
+                if (label.includes('Risiko')) return '#6a5acd'
+                return '#333'
+              },
+              font: {
+                size: 11,
+                weight: '600',
+              },
+              formatter: (value, ctx) => {
+                const label = ctx.chart.data.labels[ctx.dataIndex]
+                return `${value}% ${label}`
+              },
             },
           },
           onHover: (event, elements) => {
@@ -1684,23 +1633,17 @@ data.forEach((child) => {
               const item = dataSource[index]
               const status = item.status
 
-              // Tentukan tipe chart → disesuaikan biar konsisten dengan filter di /admin/anak
               let tipe = ''
               if (refName === 'pieChart_bb') tipe = 'BB/U'
               else if (refName === 'pieChart_tb') tipe = 'TB/U'
               else if (refName === 'pieChart_status') tipe = 'BB/TB'
 
-              // Simpan untuk tampilan internal (opsional)
               this.selectedChartStatus = status
               this.selectedChartType = tipe
 
-              // 🔁 Redirect ke halaman anak + kirim filter via query param
               this.$router.push({
                 path: '/admin/anak',
-                query: {
-                  tipe: tipe,
-                  status: status
-                }
+                query: { tipe, status },
               })
             }
           },
@@ -1840,5 +1783,3 @@ data.forEach((child) => {
   }
 }
 </script>
-
-
