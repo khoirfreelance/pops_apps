@@ -193,6 +193,7 @@
             </ul>
           </div>
           <div class="tab-content" id="myTabContent">
+            <!-- Tab 1 -->
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
               <!-- Issue and Stat Card -->
               <div class="container-fluid my-2 row">
@@ -305,14 +306,14 @@
                           </tbody>
                           <tfoot>
                             <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/anak">Lihat Grafik Selengkapnya</a></td>
+                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail">Lihat Grafik Selengkapnya</a></td>
                             </tr>
                           </tfoot>
                         </table>
                       </div>
 
                       <!-- Chart -->
-                      <div class="col-12 col-xl-5 text-center">
+                      <div class="col-12 col-xl-5 table-responsive text-center">
                         <canvas ref="pieChart_bb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
                       </div>
                     </div>
@@ -345,12 +346,12 @@
                           </tbody>
                           <tfoot>
                             <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/anak">Lihat Grafik Selengkapnya</a></td>
+                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail">Lihat Grafik Selengkapnya</a></td>
                             </tr>
                           </tfoot>
                         </table>
                       </div>
-                      <div class="col-12 col-xl-5 text-center">
+                      <div class="col-12 col-xl-5 table-responsive text-center">
                         <canvas ref="pieChart_tb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
                       </div>
                     </div>
@@ -384,14 +385,14 @@
                           </tbody>
                         </table>
                       </div>
-                      <div class="col-12 text-center">
+                      <div class="col-12 table-responsive text-center">
                         <canvas
                           ref="pieChart_status"
                           class="mx-auto"
                           style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"
                         ></canvas>
                         <div class="d-flex flex-wrap justify-content-between mt-3">
-                          <a href="/admin/anak">Lihat Grafik Selengkapnya</a>
+                          <a href="/admin/dashboard/detail">Lihat Grafik Selengkapnya</a>
                         </div>
                       </div>
                     </div>
@@ -419,38 +420,33 @@
                      <!-- HEADER -->
                       <div class="text-center position-relative mb-0">
                         <h6
-                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary w-75"
+                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
+                          style="width: 55% !important;"
                         >
                           {{ totalAnak }} dengan Masalah Gizi Ganda
                         </h6>
 
                         <!-- TAB NAV -->
                         <div class="container position-relative" style="margin-top: -2.5rem;">
-                          <div class="row justify-content-center">
-                            <div class="col-12 col-md-8">
-                              <ul class="row g-2" id="myTab" role="tablist">
-                                <li class="col-6 text-center" role="presentation">
-                                  <button
-                                    class="w-100 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                                    style="border-bottom-width: 5px !important;"
-                                    @click="toggleSudah(false)"
-                                  >
-                                    Anak belum dapat Intervensi <br> {{belum}}
-                                  </button>
-                                </li>
-                                <li class="col-6 text-center" role="presentation">
-                                  <button
-                                    class="w-100 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                                    style="border-bottom-width: 5px !important;"
-                                    @click="toggleSudah(true)"
-                                  >
-                                    Anak sudah dapat Intervensi <br> {{sudah}}
-                                  </button>
-                                </li>
-                              </ul>
-                            </div>
+                          <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
+                            <button
+                              class="w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                              style="border-bottom-width: 5px !important;"
+                              @click="toggleSudah(false)"
+                            >
+                              Anak belum dapat Intervensi <br> {{ belum }}
+                            </button>
+
+                            <button
+                              class="w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                              style="border-bottom-width: 5px !important;"
+                              @click="toggleSudah(true)"
+                            >
+                              Anak sudah dapat Intervensi <br> {{ sudah }}
+                            </button>
                           </div>
                         </div>
+
                       </div>
 
                       <!-- ISI GRID -->
@@ -606,7 +602,6 @@
                               </ul>
                             </nav>
                           </div>
-
                         </div>
                       </div>
                     </div>

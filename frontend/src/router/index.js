@@ -16,6 +16,7 @@ import Membership from '@/views/admin/Membership.vue'
 import Profile from '@/views/admin/Profile.vue'
 import Chart from '@/views/admin/Chart.vue'
 import Log from '@/views/admin/Log.vue'
+import Detail from '@/views/admin/Detail.vue'
 
 const routes = [
   {
@@ -27,6 +28,12 @@ const routes = [
     path: '/admin',
     name: 'dashboard',
     component: Dashboard,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/dashboard/detail',
+    name: 'detail',
+    component: Detail,
     meta: { requiresAuth: true },
   },
   {
