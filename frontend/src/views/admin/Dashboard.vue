@@ -43,16 +43,12 @@
                 class="col-xl-1_9 col-lg-2 col-md-3 col-sm-6 col-6"
               >
                 <div class="stat-card shadow-sm rounded h-100">
-                  <div class="card-body d-flex align-items-stretch justify-content-between p-2">
+                  <h6 class="text-muted small pt-2 ps-2" style="font-size: 10px;">{{ stat.title }}</h6>
+                  <div class="card-body d-flex align-items-center justify-content-between px-2">
                     <!-- Text -->
-                    <div class="stat-text text-start ms-2">
-                      <h6 class="text-muted small fw-semibold">{{ stat.title }}</h6>
-                      <div class="spacer"></div> <!-- buat dorong value ke bawah -->
-                      <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
-                    </div>
-
+                    <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
                     <!-- Icon -->
-                    <div class="icon-wrap d-flex align-items-center justify-content-center">
+                    <div class="icon-wrap d-flex align-items-center justify-content-center mb-1">
                       <i :class="[stat.icon]"></i>
                     </div>
                   </div>
@@ -74,15 +70,15 @@
           <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 sticky-filter">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
-              <div class="col-xl-2 col-lg-4 col-md-4">
-                <label class="form-label fs-md-1">Kelurahan/Desa</label>
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
+                <label class="form-label fs-md-1">Kel/Desa</label>
                 <select v-model="filters.kelurahan" class="form-select text-muted" disabled>
                   <option :value="kelurahan">{{ kelurahan }}</option>
                 </select>
               </div>
 
               <!-- Posyandu -->
-              <div class="col-xl-2 col-lg-4 col-md-4">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
                 <label class="form-label">Posyandu</label>
                 <select
                   v-model="filters.posyandu"
@@ -97,7 +93,7 @@
               </div>
 
               <!-- RW -->
-              <div class="col-xl-2 col-lg-4 col-md-4">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
                 <label class="form-label">RW</label>
                 <select
                   v-model="filters.rw"
@@ -110,7 +106,7 @@
               </div>
 
               <!-- RT -->
-              <div class="col-xl-2 col-lg-4 col-md-4">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
                 <label class="form-label">RT</label>
                 <select
                   v-model="filters.rt"
@@ -123,18 +119,23 @@
               </div>
 
               <!-- Periode -->
-              <div class="col-xl-2 col-lg-4 col-md-4">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
                 <label class="form-label">Periode</label>
-                <select v-model="filters.periode" class="form-select text-muted">
+                <select v-model="filters.periode" class="form-select">
                   <option value="">All</option>
-                  <option v-for="periode in periodeOptions" :key="periode" :value="periode">
-                    {{ periode }}
+                  <option
+                    v-for="p in periodeOptions"
+                    :key="p.value"
+                    :value="p.value"
+                  >
+                    {{ p.label }}
                   </option>
                 </select>
+
               </div>
 
               <!-- Tombol Cari -->
-              <div class="col-xl-2 col-lg-4 col-md-4 d-grid">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-6 col-sm-4 d-grid">
                 <button type="submit" class="btn btn-gradient fw-semibold">
                   <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
@@ -143,17 +144,17 @@
           </div>
 
           <!-- Main -->
-          <div class="d-flex justify-content-center mt-3">
+          <div class="d-flex justify-content-center mt-4">
             <ul class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100" id="myTab" role="tablist" style="max-width: 800px;">
               <li class="nav-item flex-fill text-center" role="presentation">
                 <button
                   class="nav-link active w-100 text-truncate"
-                  id="home-tab"
+                  id="anak-tab"
                   data-bs-toggle="tab"
-                  data-bs-target="#home-tab-pane"
+                  data-bs-target="#anak-tab-pane"
                   type="button"
                   role="tab"
-                  aria-controls="home-tab-pane"
+                  aria-controls="anak-tab-pane"
                   aria-selected="true"
                 >
                   Status Gizi Anak
@@ -163,12 +164,12 @@
               <li class="nav-item flex-fill text-center" role="presentation">
                 <button
                   class="nav-link w-100 text-truncate"
-                  id="profile-tab"
+                  id="bumil-tab"
                   data-bs-toggle="tab"
-                  data-bs-target="#profile-tab-pane"
+                  data-bs-target="#bumil-tab-pane"
                   type="button"
                   role="tab"
-                  aria-controls="profile-tab-pane"
+                  aria-controls="bumil-tab-pane"
                   aria-selected="false"
                 >
                   Status Kesehatan Ibu Hamil
@@ -178,12 +179,12 @@
               <li class="nav-item flex-fill text-center" role="presentation">
                 <button
                   class="nav-link w-100 text-truncate"
-                  id="contact-tab"
+                  id="catin-tab"
                   data-bs-toggle="tab"
-                  data-bs-target="#contact-tab-pane"
+                  data-bs-target="#catin-tab-pane"
                   type="button"
                   role="tab"
-                  aria-controls="contact-tab-pane"
+                  aria-controls="catin-tab-pane"
                   aria-selected="false"
                 >
                   Calon Pengantin Berisiko
@@ -192,13 +193,17 @@
             </ul>
           </div>
           <div class="tab-content" id="myTabContent">
-            <!-- Tab 1 -->
-            <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" tabindex="0">
+            <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
               <!-- Issue and Stat Card -->
               <div class="container-fluid my-2 row">
-                <div class="col-md-8">
-                  <h5 class="fw-bold text-success mb-4">Ringkasan Status Gizi Bulan Ini</h5>
-                  <div class="row">
+                <!-- RINGKASAN STATUS GIZI -->
+                <div class="col-md-8 d-flex flex-column">
+                  <!-- judul tetap di atas -->
+                  <h5 class="fw-bold text-success mb-3">Ringkasan Status Gizi Bulan Ini</h5>
+
+                  <!-- row isi gizi & total anak -->
+                  <div class="row flex-grow-1 align-items-center">
+                    <!-- GIZI CARDS -->
                     <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
                       <div class="row justify-content-center">
                         <div
@@ -240,8 +245,8 @@
                     </div>
 
                     <!-- TOTAL ANAK -->
-                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12">
-                      <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
+                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
+                      <div class="card text-center shadow-sm border p-2 w-100">
                         <h6 class="text-muted my-4 fw-bold">Total Anak Balita</h6>
                         <div class="flex-grow-1 d-flex flex-column justify-content-center">
                           <h2 class="fw-bold text-success mb-0">{{totalAnak}}</h2>
@@ -253,29 +258,28 @@
                 </div>
 
                 <!-- INFO BOXES -->
-                <div class="col-md-4 mt-3">
+                <div class="col-md-4 mt-3 d-flex flex-column">
                   <div
                     v-for="(box, idx) in infoBoxes"
                     :key="idx"
-                    class="alert p-3 mb-2"
+                    class="alert mb-2"
                     :class="`alert-${box.type}`"
                   >
                     <strong>{{ box.title }}</strong><br />
                     <span v-html="box.desc"></span> <!-- pakai v-html -->
                   </div>
                 </div>
-
               </div>
 
               <!-- Pie Chart-->
-              <div class="container-fluid my-4 row">
+              <div class="container-fluid row">
                 <div class="col-md-12">
-                  <h5 class="fw-bold text-primary mb-4">Ringkasan Status Gizi Bulan Ini</h5>
+                  <h5 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h5>
                 </div>
                 <div class="col-12 col-xl-8">
                   <!-- Berat Badan / Usia -->
                   <div class="card border border-primary shadow p-3 my-3">
-                    <h4 class="fw-bold text-primary">Berat Badan / Usia</h4>
+                    <h6 class="fw-bold text-primary">Berat Badan / Usia</h6>
                     <div class="row">
                       <!-- Table -->
                       <div class="col-12 col-xl-7 table-responsive">
@@ -316,16 +320,16 @@
 
                   <!-- Tinggi Badan / Usia -->
                   <div class="card border border-primary shadow p-3 my-3">
-                    <h4 class="fw-bold text-primary">Tinggi Badan / Usia</h4>
+                    <h6 class="fw-bold text-primary">Tinggi Badan / Usia</h6>
                     <div class="row">
                       <div class="col-12 col-xl-7 table-responsive">
                         <table class="table table-borderless align-middle">
                           <tbody>
                             <tr>
                               <td class="text-additional fw-bold">Status</td>
-                              <td class="text-muted fw-bold">Jumlah</td>
-                              <td class="text-muted fw-bold">Persen</td>
-                              <td class="text-muted fw-bold">Tren</td>
+                              <td class="text-additional fw-bold">Jumlah</td>
+                              <td class="text-additional fw-bold">Persen</td>
+                              <td class="text-additional fw-bold">Tren</td>
                             </tr>
                             <tr v-for="(row, index) in dataTable_tb" :key="index">
                               <td class="text-additional small">{{ row.status }}</td>
@@ -355,16 +359,16 @@
                 <div class="col-12 col-xl-4">
                   <!-- Berat Badan / Tinggi Badan -->
                   <div class="card border border-primary shadow p-3 my-3">
-                    <h4 class="fw-bold text-primary">Berat Badan / Tinggi Badan</h4>
+                    <h6 class="fw-bold text-primary">Berat Badan / Tinggi Badan</h6>
                     <div class="row">
                       <div class="col-12 table-responsive">
                         <table class="table table-borderless align-middle">
                           <tbody>
                             <tr>
                               <td class="text-additional fw-bold">Status</td>
-                              <td class="text-muted fw-bold">Jumlah</td>
-                              <td class="text-muted fw-bold">Persen</td>
-                              <td class="text-muted fw-bold">Tren</td>
+                              <td class="text-additional fw-bold">Jumlah</td>
+                              <td class="text-additional fw-bold">Persen</td>
+                              <td class="text-additional fw-bold">Tren</td>
                             </tr>
                             <tr v-for="(row, index) in dataTable_status" :key="index">
                               <td class="text-additional small">{{ row.status }}</td>
@@ -396,96 +400,93 @@
               </div>
 
               <!-- Ringkasan -->
-              <div class="container-fluid my-4">
+              <div class="container-fluid mt-3">
                 <div class="row">
-                  <div class="col-12">
-                    <h5 class="fw-bold text-primary mb-4">Anak Dengan Masalah Gizi Ganda</h5>
+                  <div class="col-12 d-flex justify-content-between mb-2">
+                    <h5 class="fw-bold text-primary">Anak Dengan Masalah Gizi Ganda</h5>
+                    <select v-model="filterPeriode" @change="renderRingkasan(filterPeriode)" class="form-select w-auto">
+                      <option :value="3">3 Bulan Terakhir</option>
+                      <option :value="6">6 Bulan Terakhir</option>
+                      <option :value="9">9 Bulan Terakhir</option>
+                      <option :value="12">1 Tahun Terakhir</option>
+                    </select>
                   </div>
 
                   <!-- CARD UTAMA -->
                   <div class="col-12">
-                    <div class="card shadow-sm border-0 p-4 rounded-4">
+                    <div class="card shadow-sm border-0 rounded-4">
 
-                      <!-- HEADER -->
+                     <!-- HEADER -->
                       <div class="text-center position-relative mb-0">
-                        <h4
-                          class="fw-bold text-white py-4 px-3 rounded-bottom-5 d-inline-block bg-primary w-75"
+                        <h6
+                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary w-75"
                         >
-                          Jumlah {{ totalAnak }} Anak
-                        </h4>
+                          {{ totalAnak }} dengan Masalah Gizi Ganda
+                        </h6>
 
                         <!-- TAB NAV -->
-                        <div class="container mt-n3">
+                        <div class="container position-relative" style="margin-top: -2.5rem;">
                           <div class="row justify-content-center">
                             <div class="col-12 col-md-8">
-                              <ul class="nav nav-pills row g-2" id="myTab" role="tablist">
+                              <ul class="row g-2" id="myTab" role="tablist">
                                 <li class="col-6 text-center" role="presentation">
                                   <button
-                                    class="nav-link active w-100 text-truncate fw-semibold rounded-pill border-bottom border-primary shadow-sm btn btn-outline-primary"
-                                    id="belum-tab"
-                                    data-bs-toggle="tab"
-                                    data-bs-target="#belum-tab-pane"
-                                    type="button"
-                                    role="tab"
-                                    aria-controls="belum-tab-pane"
-                                    aria-selected="true"
+                                    class="w-100 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                                    style="border-bottom-width: 5px !important;"
+                                    @click="toggleSudah(false)"
                                   >
-                                    Anak belum dapat Intervensi
+                                    Anak belum dapat Intervensi <br> {{belum}}
                                   </button>
                                 </li>
                                 <li class="col-6 text-center" role="presentation">
                                   <button
-                                    class="nav-link w-100 text-truncate fw-semibold rounded-pill shadow-sm btn btn-dark"
-                                    id="dapat-tab"
-                                    data-bs-toggle="tab"
-                                    data-bs-target="#dapat-tab-pane"
-                                    type="button"
-                                    role="tab"
-                                    aria-controls="dapat-tab-pane"
-                                    aria-selected="false"
+                                    class="w-100 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                                    style="border-bottom-width: 5px !important;"
+                                    @click="toggleSudah(true)"
                                   >
-                                    Anak sudah dapat Intervensi
+                                    Anak sudah dapat Intervensi <br> {{sudah}}
                                   </button>
                                 </li>
                               </ul>
                             </div>
                           </div>
                         </div>
-
                       </div>
-
 
                       <!-- ISI GRID -->
                       <div class="row g-3 mt-3">
                         <!-- KIRI ATAS -->
                         <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3">
-                            <h6 class="text-center text-success mb-2">
-                              Jumlah anak tidak membaik<br />
-                              <span class="fw-bold text-dark">3 bulan terakhir</span>
-                            </h6>
-                            <div class="chart-placeholder text-muted text-center py-4">
-                              <canvas ref="lineChart"></canvas>
+                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
+                            <div>
+                              <h6 class="text-center text-success mb-2">
+                                Jumlah anak tidak membaik<br />
+                                <span class="fw-semibold">dalam {{ filterPeriode }} bulan terakhir</span>
+                              </h6>
+                            </div>
+                            <div class="chart-placeholder text-muted text-center mt-auto">
+                              <canvas ref="lineChart" style="max-height: 250px;"></canvas>
                             </div>
                           </div>
                         </div>
 
                         <!-- TENGAH ATAS -->
                         <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3">
+                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                             <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
                             <div class="chart-placeholder text-muted text-center py-4">
-                              <canvas ref="funnelChart"></canvas>
+                              <canvas v-if="isSudah" ref="sudahChart"></canvas>
+                              <canvas v-else ref="funnelChart"></canvas>
                             </div>
                           </div>
                         </div>
 
                         <!-- KANAN ATAS -->
                         <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3">
+                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                             <h6 class="text-center text-success mb-2">
                               Top 5 Posyandu<br />
-                              <span class="text-dark">dengan anak tidak membaik dalam 3 bulan terakhir</span>
+                              <span class="fw-semibold">dengan anak tidak membaik dalam {{filterPeriode}} bulan terakhir</span>
                             </h6>
                             <div class="chart-placeholder text-muted text-center py-4">
                               <canvas ref="barChart"></canvas>
@@ -494,35 +495,47 @@
                         </div>
 
                         <!-- BAWAH: TABEL -->
-                        <div class="col-md-8 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
-                            <table class="table table-sm align-middle">
-                              <thead class="table-light">
+                        <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
+                          <div v-if="isSudah">
+                            <table class="table table-striped table-sm align-middle p-2">
+                              <thead class="table-success">
                                 <tr>
-                                  <th>No</th>
-                                  <th width="500">Nama</th>
-                                  <th>Rumusan</th>
-                                  <th>Stunting</th>
-                                  <th>Wasting</th>
-                                  <th>Underweight</th>
-                                  <th>BB Sangat</th>
-                                  <th>Overweight</th>
+                                  <th class="text-center p-2">No</th>
+                                  <th class="text-center p-2" width="300">Nama</th>
+                                  <th class="text-center p-2">Jenis Intervensi</th>
+                                  <th class="text-center p-2">Stunting</th>
+                                  <th class="text-center p-2">Wasting</th>
+                                  <th class="text-center p-2">Underweight</th>
+                                  <th class="text-center p-2">BB Sangat</th>
+                                  <th class="text-center p-2">Overweight</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 <tr v-for="(anak, i) in paginatedChildren" :key="i">
-                                  <td>{{ (currentPage-1)*perPage + i + 1 }}</td>
+                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
                                   <td>{{ anak.nama }}</td>
-                                  <td>{{ anak.rumusan }}</td>
-                                  <td><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                  <td><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                  <td><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                  <td><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                  <td><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                  <td class="text-center">{{ anak.rumusan }}</td>
+                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
                                 </tr>
                               </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="100%" class="text-end">
+                                    <button
+                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                      @click="exportToCSV(true)"
+                                    >
+                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                      Export CSV
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tfoot>
                             </table>
-
                             <!-- Pagination -->
                             <nav>
                               <ul class="pagination justify-content-center">
@@ -538,21 +551,62 @@
                               </ul>
                             </nav>
                           </div>
-                        </div>
-
-                        <!-- BAWAH: KARTU RINGKAS -->
-                        <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3 alert alert-success">
-                            <h6 class="fw-bold mb-3 text-primary text-center">Kartu Ringkas Gap</h6>
-                            <p class="small text-muted">
-                              Dari {{ totalKasus }} Anak yang tidak membaik:
-                            </p>
-                            <ul class="small">
-                              <li><b>{{ belumPMT }}</b> ({{ persenBelumPMT }}%) belum menerima PMT</li>
-                              <li><b>{{ belumBantuan }}</b> ({{ persenBelumBantuan }}%) belum menerima bantuan apapun</li>
-                              <li><b>{{ belumKader }}</b> ({{ persenBelumKader }}%) belum dikunjungi kader</li>
-                            </ul>
+                          <div v-else>
+                            <table class="table table-striped table-sm align-middle p-2">
+                              <thead class="table-success">
+                                <tr>
+                                  <th class="text-center p-2">No</th>
+                                  <th class="text-center p-2" width="300">Nama</th>
+                                  <th class="text-center p-2">Jenis Intervensi</th>
+                                  <th class="text-center p-2">Stunting</th>
+                                  <th class="text-center p-2">Wasting</th>
+                                  <th class="text-center p-2">Underweight</th>
+                                  <th class="text-center p-2">BB Sangat</th>
+                                  <th class="text-center p-2">Overweight</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="(anak, i) in paginatedChildren_belum" :key="i">
+                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
+                                  <td>{{ anak.nama }}</td>
+                                  <td class="text-center">{{ anak.rumusan }}</td>
+                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                </tr>
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="100%" class="text-end">
+                                    <button
+                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                      @click="exportToCSV(false)"
+                                    >
+                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                      Export CSV
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                            <!-- Pagination -->
+                            <nav>
+                              <ul class="pagination justify-content-center">
+                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                  <button class="page-link" @click="currentPage--">Previous</button>
+                                </li>
+                                <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
+                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
+                                </li>
+                                <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
+                                  <button class="page-link" @click="currentPage++">Next</button>
+                                </li>
+                              </ul>
+                            </nav>
                           </div>
+
                         </div>
                       </div>
                     </div>
@@ -563,13 +617,131 @@
             </div>
 
             <!-- Tab 2 -->
-            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" tabindex="0">
-              Status Kesehatan Ibu Hamil
+            <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
+              <!-- Issue and Stat Card -->
+              <div class="container-fluid my-2 row">
+                <!-- RINGKASAN STATUS Kesehatan Ibu Hamil -->
+                  <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Kesehatan Ibu Hamil</h5>
+
+                  <!-- row isi gizi & total anak -->
+                  <div class="row flex-grow-1 align-items-center justify-content-center">
+                    <!-- GIZI CARDS -->
+                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
+                      <div class="row justify-content-center">
+                        <div
+                          v-for="(item, index) in kesehatan_bumil"
+                          :key="index"
+                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
+                        >
+                          <div
+                            class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                            :class="`border-start border-4 border-${item.color}`"
+                          >
+                            <div class="card-body py-3 d-flex justify-content-between">
+                              <div>
+                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                                <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
+                              </div>
+                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                            </div>
+
+                            <!-- SVG LINE CHART -->
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                              <svg
+                                viewBox="0 0 100 30"
+                                class="svg-line"
+                                preserveAspectRatio="none"
+                                :class="`stroke-${item.color}`"
+                              >
+                                <polyline
+                                  fill="none"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- TOTAL ANAK -->
+                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
+                      <div class="card text-center shadow-sm border p-2 w-100">
+                        <h6 class="text-muted my-4 fw-bold">Total Ibu Hamil</h6>
+                        <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                          <h2 class="fw-bold text-success mb-0">{{totalBumil}}</h2>
+                        </div>
+                        <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
+                      </div>
+                    </div>
+                  </div>
+              </div>
             </div>
 
             <!-- Tab 3 -->
-            <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" tabindex="0">
-              Calon Pengantin Berisiko
+            <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
+              <!-- Issue and Stat Card -->
+              <div class="container-fluid my-2 row">
+                <!-- judul tetap di atas -->
+                  <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Status Kesehatan Calon Pengantin</h5>
+
+                  <!-- row isi gizi & total anak -->
+                  <div class="row flex-grow-1 align-items-center">
+                    <!-- GIZI CARDS -->
+                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
+                      <div class="row justify-content-center">
+                        <div
+                          v-for="(item, index) in kesehatan_catin"
+                          :key="index"
+                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
+                        >
+                          <div
+                            class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                            :class="`border-start border-4 border-${item.color}`"
+                          >
+                            <div class="card-body py-3 d-flex justify-content-between">
+                              <div>
+                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                                <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
+                              </div>
+                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                            </div>
+
+                            <!-- SVG LINE CHART -->
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                              <svg
+                                viewBox="0 0 100 30"
+                                class="svg-line"
+                                preserveAspectRatio="none"
+                                :class="`stroke-${item.color}`"
+                              >
+                                <polyline
+                                  fill="none"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- TOTAL ANAK -->
+                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
+                      <div class="card text-center shadow-sm border p-2 w-100">
+                        <h6 class="text-muted my-4 fw-bold">Total Calon Pengantin</h6>
+                        <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                          <h2 class="fw-bold text-success mb-0">{{totalCatin}}</h2>
+                        </div>
+                        <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
+                      </div>
+                    </div>
+                  </div>
+              </div>
             </div>
           </div>
         </div>
@@ -786,10 +958,21 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      isSudah: false,
+      rawData: [], // data asli anak
+      filteredData: [], // data hasil filter
+      totalAnak: 0,
+      sudah: 0,
+      belum: 0,
+      anakMasalah: [],
+      filterPeriode: 3,
+      lineChart: null,
+      funnelChart: null,
+      sudahChart:null,
+      barChart: null,
       currentPage: 1,
       perPage: 5,
       infoBoxes: [],
-      totalAnak: 0,
       configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
@@ -818,26 +1001,8 @@ export default {
       periodeOptions: [],
       rwReadonly: true,
       rtReadonly: true,
-      sampleData: [
-        {
-          nama: "Ahsan Dimasi Aqilana",
-          rumusan: "BLH, PMT, Bantuan",
-          stunting: true,
-          wasting: false,
-          underweight: true,
-          bb_sangat: false,
-          overweight: false,
-        },
-        {
-          nama: "Anak Kedua",
-          rumusan: "BLH, PMT",
-          stunting: false,
-          wasting: true,
-          underweight: false,
-          bb_sangat: false,
-          overweight: true,
-        },
-      ],
+      kesehatan_catin:[],
+      kesehatan_bumil:[],
     }
   },
   methods: {
@@ -852,9 +1017,16 @@ export default {
 
         // API structure: { status, message, data_anak: [...] }
         const items = res.data.data_anak || []
-        console.log(items);
+        this.rawData = items
+        //console.log(items);
 
-        this.children = items.map((item) => {
+         // 🔹 Filter langsung berdasarkan kelurahan user
+        const filteredByKelurahan = items.filter(
+          (item) =>
+            item.kelurahan?.toLowerCase() === this.kelurahan?.toLowerCase()
+        );
+
+        this.children = filteredByKelurahan.map((item) => {
           const kelahiran = item.kelahiran?.[0] || {}
           const keluarga = item.keluarga?.[0] || {}
           const pendamping = item.pendampingan?.[item.pendampingan.length - 1] || {}
@@ -918,11 +1090,12 @@ export default {
 
         // Setelah data dimuat, langsung apply filter awal
         this.applyFilter()
-        // 🔹 Hitung total anak dengan usia < 60 bulan
-        this.totalAnak = this.children.filter((anak) => anak.usia < 60).length;
 
         // 🔹 Inisialisasi filteredData
         this.filteredData = [...this.children];
+
+        // 🔹 Hitung total anak dengan usia < 60 bulan
+        this.totalAnak = this.children.filter((anak) => anak.usia < 60).length;
 
         // 🔹 Hitung status gizi awal
         this.hitungStatusGizi();
@@ -933,7 +1106,140 @@ export default {
         //this.showError('Error Ambil Data Anak', e)
       }
     },
+    async loadBride() {
+      try {
+        const res = await axios.get(`${baseURL}/api/bride`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        this.bride = res.data.map(item => {
+        const pendamping = item.catin?.pendampingan?.[0] || {} // ambil pendampingan pertama
+
+        return {
+          id: item.id,
+          tgl_daftar: item.tgl_daftar,
+          tgl_rencana_menikah: item.tgl_rencana_menikah,
+          rencana_tinggal: item.rencana_tinggal,
+
+          // --- Data Catin Perempuan ---
+          nama_perempuan: item.catin?.nama || '',
+          nik_perempuan: item.catin?.nik || '',
+          pekerjaan_perempuan: item.catin?.pekerjaan || '',
+          tgl_lahir_perempuan: item.catin?.tgl_lahir || '',
+          usia_perempuan: item.catin?.usia || '',
+          hp_perempuan: item.catin?.no_hp || '',
+
+          // --- Data Catin Pria ---
+          nama_pria: item.catin?.pasangan?.nama || '',
+          nik_pria: item.catin?.pasangan?.nik || '',
+          pekerjaan_pria: item.catin?.pasangan?.pekerjaan || '',
+          tgl_lahir_pria: item.catin?.pasangan?.tgl_lahir || '',
+          usia_pria: item.catin?.pasangan?.usia || '',
+          hp_pria: item.catin?.pasangan?.no_hp || '',
+
+          // --- Data Pendampingan ---
+          tgl_pemeriksaan: pendamping.tgl_pemeriksaan || '',
+          tgl_pendampingan: pendamping.tgl_pendampingan || '',
+          dampingan_ke: pendamping.dampingan_ke || '',
+          bb: pendamping.bb || '',
+          tb: pendamping.tb || '',
+          lila: pendamping.lila || '',
+          hb: pendamping.hb || '',
+          imt: pendamping.imt || '',
+          status_hb: pendamping.anemia || '',
+          status_gizi: pendamping.kek || '',
+          catin_terpapar_rokok: pendamping.catin_terpapar_rokok || '',
+          catin_ttd: pendamping.catin_ttd || '',
+          punya_riwayat_penyakit: pendamping.punya_riwayat_penyakit || '',
+          riwayat_penyakit: pendamping.riwayat_penyakit || '',
+          fasilitas_rujukan: pendamping.fasilitas_rujukan || '',
+          edukasi: pendamping.edukasi || '',
+          pmt: pendamping.pmt || '',
+          catatan: pendamping.catatan ?? ''
+        }})
+
+        //console.log('Data Flatten:', this.bride)
+      } catch (e) {
+        //console.error('Gagal ambil data:', e)
+        this.showError('Error Ambil Data', e)
+      }
+    },
+    exportToCSV(val) {
+      this.isSudah = val;
+      const data = this.isSudah ? this.processedChildren : this.processedChildren_belum;
+
+      if (!data.length) {
+        alert('Tidak ada data untuk diexport!');
+        return;
+      }
+
+      // 🔹 Header CSV
+      const headers = [
+        'No',
+        'Nama',
+        'Jenis Intervensi',
+        'Stunting',
+        'Wasting',
+        'Underweight',
+        'BB Sangat',
+        'Overweight',
+      ];
+
+      // 🔹 Isi CSV sesuai tabel
+      const rows = data.map((anak, index) => [
+        (this.currentPage - 1) * this.perPage + index + 1, // Nomor urut tabel
+        anak.nama,
+        anak.rumusan,
+        anak.stunting ? '✔' : '',
+        anak.wasting ? '✔' : '',
+        anak.underweight ? '✔' : '',
+        anak.bb_sangat ? '✔' : '',
+        anak.overweight ? '✔' : '',
+      ]);
+
+      // 🔹 Gabung jadi string CSV
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+      // 🔹 Download otomatis
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = this.isSudah ? 'anak_sudah_intervensi.csv' : 'anak_belum_intervensi.csv';
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    toggleSudah(val) {
+      this.isSudah = val;
+    },
+    hitungIntervensi() {
+      const data = this.filteredData || []
+      if (!data.length) return { belum: 0, dapat: 0 }
+
+      let belum = 0
+      let sudah = 0
+
+      data.forEach((anak) => {
+        const intervensi = anak.raw?.intervensi || []
+        // cek apakah punya intervensi valid
+        const punyaIntervensi = intervensi.some((i) => i?.jenis && i.jenis !== 'Belum Mendapatkan Bantuan')
+
+        if (punyaIntervensi) {
+          sudah++
+        } else {
+          belum++
+        }
+      })
+
+      return { belum, sudah }
+    },
     generateInfoBoxes() {
+
       let stuntingNow = 0
       let stuntingPrev = 0
       let intervensiKurang = 0
@@ -1011,7 +1317,7 @@ export default {
         {
           type: 'warning',
           title: 'Intervensi',
-          desc: `${intervensiKurang} anak bermasalah gizi belum mendapat bantuan PMT.`,
+          desc: `${intervensiKurang} anak bermasalah gizi belum mendapat bantuan.`,
         },
         {
           type: 'info',
@@ -1025,125 +1331,171 @@ export default {
         },
       ]
     },
-
-    // === Berat Badan per Umur ===
     generateDataTableBB() {
-      if (!this.children?.length) return
+      const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
+      //console.log(data);
+
+      if (!data.length) return;
 
       const categories = [
         'Severely Underweight',
         'Underweight',
         'Normal',
         'Risiko BB Lebih',
-      ]
+      ];
 
-      const counts = {}
-      const data = this.filteredData || []
-data.forEach((child) => {
-        const status = (child.bbu || 'Tidak diketahui').trim()
-        counts[status] = (counts[status] || 0) + 1
-      })
+      const counts = {};
+      const trenStats = {}; // simpan tren naik/turun per kategori
 
-      const total = data.length
+      // Dapatkan periode aktif dari filter (kalau ada)
+      const periodeAktif = this.filters?.periode || null;
 
-      const mapping = {
-        'Severely Underweight': 'text-danger',
-        'Underweight': 'text-warning',
-        'Normal': 'text-success',
-        'Risiko BB Lebih': 'text-info',
-        'Tidak diketahui': 'text-muted',
-      }
+      data.forEach((child) => {
+        const posyanduRecords = child.raw?.posyandu || [];
+        if (!posyanduRecords.length) return;
+
+        // Urutkan berdasarkan tanggal (ascending)
+        const sorted = [...posyanduRecords].sort(
+          (a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)
+        );
+
+        // Ambil 2 record terakhir (atau sesuai periode)
+        let latest, prev;
+        if (periodeAktif) {
+          // cari record untuk periode aktif dan sebelumnya
+          const idx = sorted.findIndex((r) => r.tgl_ukur === periodeAktif);
+          if (idx !== -1) {
+            latest = sorted[idx];
+            prev = sorted[idx - 1] || null;
+          } else {
+            latest = sorted.at(-1);
+            prev = sorted.at(-2);
+          }
+        } else {
+          latest = sorted.at(-1);
+          prev = sorted.at(-2);
+        }
+
+        if (!latest) return;
+
+        // Hitung kategori BBU terbaru
+        const currentStatus = (latest.bbu || 'Tidak diketahui').trim();
+        counts[currentStatus] = (counts[currentStatus] || 0) + 1;
+
+        // Tentukan tren
+        let naik = false;
+        if (prev) {
+          // bandingkan ranking status
+          const rank = (val) =>
+            categories.indexOf(val) !== -1 ? categories.indexOf(val) : 999;
+          const curRank = rank(currentStatus);
+          const prevRank = rank(prev.bbu || 'Tidak diketahui');
+
+          // kalau nilai rank makin kecil berarti status makin membaik (naik)
+          naik = curRank < prevRank;
+        }
+
+        if (!trenStats[currentStatus]) trenStats[currentStatus] = { naik: 0, turun: 0 };
+        if (naik) trenStats[currentStatus].naik++;
+        else trenStats[currentStatus].turun++;
+      });
+
+      const total = data.length;
 
       this.dataTable_bb = categories.map((status) => {
-        const jumlah = counts[status] || 0
-        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0
+        const jumlah = counts[status] || 0;
+        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+
+        const trenData = trenStats[status] || { naik: 0, turun: 0 };
+        const naik = trenData.naik >= trenData.turun;
+        const trenClass = naik ? 'text-danger' : 'text-additional';
+        const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
+
         return {
           status,
           jumlah,
           persen: parseFloat(persen),
           tren: `${persen}%`,
-          trenClass: mapping[status] || 'text-secondary',
-          trenIcon: jumlah > 10 ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
-        }
-      })
+          trenClass,
+          trenIcon,
+        };
+      });
 
-      // Tambahan kategori lain (jika ada)
+      // Tambahkan kategori lain yang muncul
       Object.keys(counts).forEach((status) => {
         if (!categories.includes(status)) {
-          const jumlah = counts[status]
-          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0
+          const jumlah = counts[status];
+          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+          const trenData = trenStats[status] || { naik: 0, turun: 0 };
+          const naik = trenData.naik >= trenData.turun;
           this.dataTable_bb.push({
             status,
             jumlah,
             persen: parseFloat(persen),
             tren: `${persen}%`,
-            trenClass: mapping[status] || 'text-secondary',
-            trenIcon: jumlah > 10 ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
-          })
+            trenClass: naik ? 'text-danger' : 'text-additional',
+            trenIcon: naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
+          });
         }
-      })
+      });
     },
-
-    // === Tinggi Badan per Umur ===
     generateDataTableTB() {
-      if (!this.children?.length) return
+      const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
+      if (!data.length) return;
 
       const categories = [
         'Severely Stunted',
         'Stunted',
         'Normal',
         'Tinggi',
-      ]
+      ];
 
-      const counts = {}
-      const data = this.filteredData || []
-data.forEach((child) => {
-        const status = (child.tbu || 'Tidak diketahui').trim()
-        counts[status] = (counts[status] || 0) + 1
-      })
+      const counts = {};
+      data.forEach((child) => {
+        const status = (child.tbu || 'Tidak diketahui').trim();
+        counts[status] = (counts[status] || 0) + 1;
+      });
 
-      const total = data.length
-
-      const mapping = {
-        'Severely Stunted': 'text-danger',
-        'Stunted': 'text-warning',
-        'Normal': 'text-success',
-        'Tinggi': 'text-info',
-        'Tidak diketahui': 'text-muted',
-      }
+      const total = data.length;
 
       this.dataTable_tb = categories.map((status) => {
-        const jumlah = counts[status] || 0
-        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0
+        const jumlah = counts[status] || 0;
+        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+
+        // logika tren: jumlah > 10 = naik, <=10 = turun (contoh sederhana)
+        const naik = jumlah > 10;
+        const trenClass = naik ? 'text-danger' : 'text-additional';
+        const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
+
         return {
           status,
           jumlah,
           persen: parseFloat(persen),
           tren: `${persen}%`,
-          trenClass: mapping[status] || 'text-secondary',
-          trenIcon: jumlah > 10 ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
-        }
-      })
+          trenClass,
+          trenIcon,
+        };
+      });
 
       Object.keys(counts).forEach((status) => {
         if (!categories.includes(status)) {
-          const jumlah = counts[status]
-          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0
+          const jumlah = counts[status];
+          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+          const naik = jumlah > 10;
           this.dataTable_tb.push({
             status,
             jumlah,
             persen: parseFloat(persen),
             tren: `${persen}%`,
-            trenClass: mapping[status] || 'text-secondary',
-            trenIcon: jumlah > 10 ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
-          })
+            trenClass: naik ? 'text-danger' : 'text-additional',
+            trenIcon: naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
+          });
         }
-      })
+      });
     },
-
-    // === Berat Badan per Tinggi Badan ===
     generateDataTableStatus() {
-      if (!this.children?.length) return
+      const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
+      if (!data.length) return;
 
       const categories = [
         'Severely Wasted',
@@ -1152,59 +1504,58 @@ data.forEach((child) => {
         'Possible risk of Overweight',
         'Overweight',
         'Obesitas',
-      ]
+      ];
 
-      const counts = {}
-      const data = this.filteredData || []
-data.forEach((child) => {
-        const status = (child.bbtb || 'Tidak diketahui').trim()
-        counts[status] = (counts[status] || 0) + 1
-      })
+      const counts = {};
+      data.forEach((child) => {
+        const status = (child.bbtb || 'Tidak diketahui').trim();
+        counts[status] = (counts[status] || 0) + 1;
+      });
 
-      const total = data.length
-
-      const mapping = {
-        'Severely Wasted': 'text-danger',
-        'Wasted': 'text-warning',
-        'Normal': 'text-success',
-        'Possible risk of Overweight': 'text-info',
-        'Overweight': 'text-primary',
-        'Obesitas': 'text-dark',
-        'Tidak diketahui': 'text-muted',
-      }
+      const total = data.length;
 
       this.dataTable_status = categories.map((status) => {
-        const jumlah = counts[status] || 0
-        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0
+        const jumlah = counts[status] || 0;
+        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+
+        const naik = jumlah > 10;
+        const trenClass = naik ? 'text-danger' : 'text-additional';
+        const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
+
         return {
           status,
           jumlah,
           persen: parseFloat(persen),
           tren: `${persen}%`,
-          trenClass: mapping[status] || 'text-secondary',
-          trenIcon: jumlah > 10 ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
-        }
-      })
+          trenClass,
+          trenIcon,
+        };
+      });
 
       Object.keys(counts).forEach((status) => {
         if (!categories.includes(status)) {
-          const jumlah = counts[status]
-          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0
+          const jumlah = counts[status];
+          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+          const naik = jumlah > 10;
           this.dataTable_status.push({
             status,
             jumlah,
             persen: parseFloat(persen),
             tren: `${persen}%`,
-            trenClass: mapping[status] || 'text-secondary',
-            trenIcon: jumlah > 10 ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
-          })
+            trenClass: naik ? 'text-danger' : 'text-additional',
+            trenIcon: naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
+          });
         }
-      })
+      });
     },
-
     hitungStatusGizi() {
+      // 🔹 Ambil data anak yang sudah difilter
       const dataAnak = this.filteredData.length ? this.filteredData : this.children;
-      const total = dataAnak.length;
+      const f = this.filters;
+
+      // 🔹 Bikin range periode (jika difilter)
+      const [y, m] = f.periode ? f.periode.split('-') : [];
+      const periodeNum = f.periode ? parseInt(y) * 100 + parseInt(m) : null;
 
       const count = {
         Stunting: 0,
@@ -1215,8 +1566,30 @@ data.forEach((child) => {
         Overweight: 0,
       };
 
+      let total = 0;
+
       dataAnak.forEach((anak) => {
-        const { bbu, tbu, bbtb } = anak;
+        const riwayat = anak.raw?.posyandu || [];
+        if (!riwayat.length) return;
+
+        // 🔹 Filter riwayat berdasarkan periode (jika difilter)
+        const filteredRiwayat = periodeNum
+          ? riwayat.filter((r) => {
+              if (!r.tgl_ukur) return false;
+              const tgl = new Date(r.tgl_ukur);
+              const itemPeriode = tgl.getFullYear() * 100 + (tgl.getMonth() + 1);
+              return itemPeriode === periodeNum;
+            })
+          : riwayat;
+
+        // 🔹 Ambil data terakhir di periode itu
+        const latest = filteredRiwayat[filteredRiwayat.length - 1];
+        if (!latest) return;
+
+        total++;
+
+        // eslint-disable-next-line no-unused-vars
+        const { bbu, tbu, bbtb, bb } = latest;
 
         if (tbu?.includes('Stunted')) count.Stunting++;
         if (bbtb?.includes('Wasted')) count.Wasting++;
@@ -1224,8 +1597,7 @@ data.forEach((child) => {
         if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++;
         if (bbtb?.includes('Overweight')) count.Overweight++;
 
-        // === cek stagnan (3 kali BB sama)
-        const riwayat = anak.raw?.posyandu || [];
+        // 🔹 Cek stagnan (3 kali BB terakhir sama — dari seluruh riwayat anak)
         if (riwayat.length >= 3) {
           const last3 = riwayat.slice(-3);
           const allEqual = last3.every((r) => r.bb === last3[0].bb);
@@ -1233,6 +1605,7 @@ data.forEach((child) => {
         }
       });
 
+      // 🔹 Buat array untuk ditampilkan di ringkasan
       this.gizi = Object.entries(count).map(([title, value]) => {
         const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
         const colorMap = {
@@ -1245,6 +1618,8 @@ data.forEach((child) => {
         };
         return { title, value, percent, color: colorMap[title] };
       });
+
+      this.totalAnak = total;
     },
     async loadConfigWithCache() {
       try {
@@ -1274,74 +1649,345 @@ data.forEach((child) => {
         this.logoLoaded = false
       }
     },
-    renderLineChart() {
-      new Chart(this.$refs.lineChart, {
+    renderRingkasan(periodeBulan = 3) {
+      const n = parseInt(periodeBulan) || 3
+
+      // Kirim filter ke semua chart
+      this.renderLineChart(n)
+      this.renderBarChart(n)
+      this.renderFunnelChart(n)
+      this.renderSudahChart(n)
+    },
+    renderLineChart(periodeBulan = 3) {
+      const data = this.filteredData || []
+      if (!data.length) return
+
+      const now = new Date()
+      const startDate = new Date()
+      startDate.setMonth(now.getMonth() - periodeBulan + 1) // +1 biar include bulan sekarang
+
+      // 🔸 Filter hanya anak tanpa intervensi (null atau 0)
+      const tanpaIntervensi = data.filter(a => a.intervensi == null || a.intervensi == 0)
+
+      // Flatten semua data posyandu dari anak tanpa intervensi
+      const allPosyandu = tanpaIntervensi.flatMap((anak) =>
+        (anak.raw?.posyandu || []).map((p) => ({
+          tanggal: new Date(p.tgl_ukur),
+          bb_naik: p.bb_naik,
+        }))
+      )
+
+      // Filter hanya data dalam periode
+      const recent = allPosyandu.filter(
+        (p) => p.tanggal >= startDate && p.tanggal <= now
+      )
+
+      const monthNames = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      ]
+
+      // Siapkan struktur bulan
+      const monthlyData = {}
+      for (let i = 0; i < periodeBulan; i++) {
+        const temp = new Date(startDate)
+        temp.setMonth(startDate.getMonth() + i)
+        const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}`
+        monthlyData[key] = { total: 0, tidakMembaik: 0 }
+      }
+
+      // Isi data sesuai bulan
+      recent.forEach((p) => {
+        const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2, '0')}`
+        if (monthlyData[key]) {
+          monthlyData[key].total++
+          if (!p.bb_naik) monthlyData[key].tidakMembaik++
+        }
+      })
+
+      const sortedKeys = Object.keys(monthlyData).sort()
+      const labels = sortedKeys.map((key) => {
+        const [, month] = key.split('-')
+        return monthNames[parseInt(month) - 1]
+      })
+      const dataTidakMembaik = sortedKeys.map((key) => monthlyData[key].tidakMembaik)
+
+      // Hapus chart lama
+      if (this.lineChart) this.lineChart.destroy()
+
+      // Render Chart.js
+      const ctx = this.$refs.lineChart.getContext('2d')
+      this.lineChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+          labels,
           datasets: [
             {
-              label: 'Tidak membaik (%)',
-              data: [10, 13, 12, 11],
+              label: 'Jumlah Anak Tidak Membaik (Tanpa Intervensi)',
+              data: dataTidakMembaik,
               borderColor: 'goldenrod',
               backgroundColor: 'rgba(255, 215, 0, 0.3)',
               fill: true,
               tension: 0.3,
+              pointRadius: 4,
+              pointBackgroundColor: 'goldenrod',
             },
           ],
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.parsed.y} anak tidak membaik`,
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1 },
+            },
+          },
         },
       })
     },
-    renderBarChart() {
-      new Chart(this.$refs.barChart, {
+    renderBarChart(periodeBulan = 3) {
+      const data = this.filteredData || []
+      if (!data.length) return
+
+      // 🔹 Tentukan rentang waktu (default 3 bulan terakhir)
+      const now = new Date()
+      const startDate = new Date()
+      startDate.setMonth(now.getMonth() - periodeBulan)
+
+      // 🔹 Ambil semua entri posyandu dari setiap anak
+      const allPosyandu = data.flatMap((anak) =>
+        (anak.raw?.posyandu || []).map((p) => ({
+          posyandu: p.posyandu || 'Tidak Diketahui',
+          tanggal: new Date(p.tgl_ukur),
+          bb_naik: p.bb_naik,
+        }))
+      )
+
+      // 🔹 Ambil daftar unik semua posyandu (agar yang 0 juga muncul)
+      const allPosyanduNames = [
+        ...new Set(allPosyandu.map((p) => p.posyandu || 'Tidak Diketahui')),
+      ]
+
+      // 🔹 Filter hanya data dalam periode waktu
+      const recent = allPosyandu.filter(
+        (p) => p.tanggal >= startDate && p.tanggal <= now
+      )
+
+      // 🔹 Kelompokkan berdasarkan nama posyandu
+      const posyanduCounts = {}
+      allPosyanduNames.forEach((name) => (posyanduCounts[name] = 0)) // inisialisasi 0
+
+      recent.forEach((p) => {
+        const key = p.posyandu || 'Tidak Diketahui'
+        if (!p.bb_naik) posyanduCounts[key]++
+      })
+
+      // 🔹 Siapkan data untuk Chart.js
+      const labels = Object.keys(posyanduCounts)
+      const values = Object.values(posyanduCounts)
+
+      // 🔹 Hancurkan chart lama kalau ada
+      if (this.barChart) this.barChart.destroy()
+
+      // 🔹 Render chart baru
+      const ctx = this.$refs.barChart.getContext('2d')
+      this.barChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['Mawar', 'Tulip', 'Melati', 'Anggrek', 'Teratai'],
+          labels,
           datasets: [
             {
-              label: 'Kasus',
-              data: [10, 6, 12, 8, 10],
+              label: 'Anak Tidak Membaik',
+              data: values,
               backgroundColor: 'rgba(255, 99, 132, 0.6)',
               borderRadius: 8,
             },
           ],
         },
         options: {
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } },
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: false,
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.parsed.y} anak tidak membaik`,
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Jumlah Anak',
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Posyandu',
+              },
+            },
+          },
         },
       })
     },
-    renderFunnelChart() {
-      new Chart(this.$refs.funnelChart, {
-        type: 'bar',
-        data: {
-          labels: ['Ditugaskan kader', 'Dikunjungi kader', 'Dapat PMT','Belum Mendapat Bantuan'],
-          datasets: [
-            {
-              data: [8, 20, 9, 13],
-              backgroundColor: ['#006341', '#6FA287', '#6D8B7B', '#9FE0BD'],
-              color: '#FFFFFF',
-            },
-          ],
-        },
-        options: {
-          indexAxis: 'y',
-          plugins: { legend: { display: false }, datalabels: {
-          color: '#FFFFFF',        // warna teks label
-          anchor: 'center',        // posisi di tengah bar
-          align: 'center',         // teks di tengah
-          font: { weight: 'bold' } // biar lebih jelas
-        }, },
-          scales: {
-            x: { beginAtZero: true },
+    renderFunnelChart(periodeBulan = 3) {
+      this.$nextTick(() => {
+        const canvas = this.$refs.funnelChart
+        if (!canvas) return // belum dirender
+
+        const ctx = canvas.getContext('2d')
+        const data = this.filteredData || []
+        if (!data.length) return
+
+        const now = new Date()
+        const startDate = new Date()
+        startDate.setMonth(now.getMonth() - periodeBulan)
+
+        // 🔹 Flatten semua intervensi dari semua anak
+        const allIntervensi = data.flatMap(anak =>
+          (anak.raw?.intervensi || []).map(i => ({
+            tanggal: new Date(i.tanggal),
+            jenis: i.jenis && i.jenis.trim() !== "" ? i.jenis : "Belum Mendapatkan Bantuan"
+          }))
+        )
+
+        // 🔹 Filter intervensi dalam periode
+        const recentIntervensi = allIntervensi.filter(
+          i => i.tanggal >= startDate && i.tanggal <= now
+        )
+
+        // 🔹 Daftar jenis tetap (supaya tampil meski 0)
+        const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya', 'Belum Mendapatkan Bantuan']
+        const counts = jenisList.map(jenis =>
+          recentIntervensi.filter(i => i.jenis === jenis).length
+        )
+
+        // 🔹 Hapus chart lama
+        if (this.funnelChart) this.funnelChart.destroy()
+
+        // 🔹 Render Chart.js horizontal bar
+        this.funnelChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: jenisList,
+            datasets: [
+              {
+                data: counts,
+                backgroundColor: [
+                  '#006341',
+                  '#007d52',
+                  '#009562',
+                  '#6fa287',
+                  '#6d8b7b',
+                  '#ea7f7f'
+                ],
+                color: '#FFFFFF'
+              }
+            ]
           },
-        },
+          options: {
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                color: '#FFFFFF',
+                anchor: 'center',
+                align: 'center',
+                font: { weight: 'bold' },
+                formatter: value => value || '0'
+              },
+              title: { display: false }
+            },
+            scales: { x: { beginAtZero: true } }
+          }
+        })
+      })
+    },
+    renderSudahChart(periodeBulan = 3) {
+      this.$nextTick(() => {
+        const canvas = this.$refs.sudahChart
+        if (!canvas) return
+
+        const ctx = canvas.getContext('2d')
+        const data = this.filteredData || []
+        if (!data.length) return
+
+        const now = new Date()
+        const startDate = new Date()
+        startDate.setMonth(now.getMonth() - periodeBulan)
+
+        // 🔹 Flatten intervensi valid (jenis tidak null/0/kosong)
+        const allIntervensi = data.flatMap(anak =>
+          (anak.raw?.intervensi || [])
+            .filter(i => i && i.jenis && i.jenis !== "0" && i.jenis.trim() !== "")
+            .map(i => ({
+              tanggal: new Date(i.tanggal),
+              jenis: i.jenis
+            }))
+        )
+
+        // 🔹 Filter dalam periode
+        const recentIntervensi = allIntervensi.filter(
+          i => i.tanggal >= startDate && i.tanggal <= now
+        )
+
+        // 🔹 Pakai daftar tetap supaya muncul meski kosong
+        const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
+        const counts = jenisList.map(jenis =>
+          recentIntervensi.filter(i => i.jenis === jenis).length
+        )
+
+        // 🔹 Hapus chart lama
+        if (this.sudahChart) this.sudahChart.destroy()
+
+        // 🔹 Render chart
+        this.sudahChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: jenisList,
+            datasets: [
+              {
+                data: counts,
+                backgroundColor: [
+                  '#006341',
+                  '#007d52',
+                  '#009562',
+                  '#6fa287',
+                  '#6d8b7b'
+                ],
+                color: '#FFFFFF'
+              }
+            ]
+          },
+          options: {
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                color: '#FFFFFF',
+                anchor: 'center',
+                align: 'center',
+                font: { weight: 'bold' },
+                formatter: value => value || '0'
+              },
+              title: { display: false }
+            },
+            scales: { x: { beginAtZero: true } }
+          }
+        })
       })
     },
     async getWilayahUser() {
@@ -1365,83 +2011,83 @@ data.forEach((child) => {
       }
     },
     generateListsFromChildren() {
-      console.log('🔄 Generate list dari children:', this.children.length)
+      if (!this.children.length) return
 
+      // 🔹 Ambil daftar Posyandu unik
       const posyanduSet = new Set(this.children.map(c => c.posyandu).filter(Boolean))
       this.posyanduList = Array.from(posyanduSet).map((nama, index) => ({
         id: index + 1,
         nama_posyandu: nama
       }))
 
-      const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
-      const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
-      this.rwList = Array.from(rwSet)
-      this.rtList = Array.from(rtSet)
-
-      this.rwReadonly = true
-      this.rtReadonly = true
-    },
-    handlePosyanduChange() {
-      const pos = this.filters.posyandu
-
-      if (pos) {
-        const filteredChildren = this.children.filter(c => c.posyandu === pos)
-
-        const rwSet = new Set(filteredChildren.map(c => c.rw).filter(Boolean))
-        const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean))
-
-        this.rwList = Array.from(rwSet)
-        this.rtList = Array.from(rtSet)
-        this.rwReadonly = false
-        this.rtReadonly = false
-      } else {
-        // reset kalau posyandu dikosongin
-        const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
-        const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
-        this.rwList = Array.from(rwSet)
-        this.rtList = Array.from(rtSet)
-        this.rwReadonly = true
-        this.rtReadonly = true
-        this.filters.rw = ''
-        this.filters.rt = ''
-      }
-    },
-    /* async fetchPosyanduByWilayah(id_wilayah) {
-      try {
-        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        this.posyanduList = res.data
-      } catch (err) {
-        console.error('Gagal ambil data posyandu:', err)
-      }
-    },
-    handlePosyanduChange() {
-      console.log('Posyandu dipilih:', this.filters.posyandu)
+      // 🔹 Jika filter posyandu dipilih, ambil RW & RT berdasarkan posyandu tersebut
       if (this.filters.posyandu) {
-        this.rtReadonly = false
-        this.rwReadonly = false
-        this.fetchRwRtByPosyandu(this.filters.posyandu)
+        const filteredByPosyandu = this.children.filter(
+          c => c.posyandu === this.filters.posyandu
+        )
+
+        const rwSet = new Set(filteredByPosyandu.map(c => c.rw).filter(Boolean))
+        this.rwList = Array.from(rwSet).map((nama, index) => ({
+          id: index + 1,
+          nama_rw: nama
+        }))
+
+        // Jika filter RW dipilih, ambil RT
+        if (this.filters.rw) {
+          const filteredByRW = filteredByPosyandu.filter(c => c.rw === this.filters.rw)
+          const rtSet = new Set(filteredByRW.map(c => c.rt).filter(Boolean))
+          this.rtList = Array.from(rtSet).map((nama, index) => ({
+            id: index + 1,
+            nama_rt: nama
+          }))
+        } else {
+          this.rtList = []
+        }
       } else {
-        this.rtReadonly = true
-        this.rwReadonly = true
+        // Kalau belum pilih posyandu, kosongkan RW & RT
         this.rwList = []
         this.rtList = []
       }
     },
-    async fetchRwRtByPosyandu(idPosyandu) {
-      try {
-        const res = await axios.get(`${baseURL}/api/posyandu/${idPosyandu}/wilayah`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        this.rwList = res.data.rw || []
-        this.rtList = res.data.rt || []
-        console.log('data', res.data);
-
-      } catch (err) {
-        console.error('Gagal ambil RW/RT:', err)
+    handlePosyanduChange() {
+      const pos = this.filters.posyandu;
+      if (!pos) {
+        this.rwList = [];
+        this.rtList = [];
+        this.rwReadonly = true;
+        this.rtReadonly = true;
+        return;
       }
-    }, */
+
+      // 🔹 Ambil data RW & RT dari anak-anak di posyandu ini
+      const filteredChildren = this.children.filter(c => c.posyandu === pos);
+      const rwSet = new Set(filteredChildren.map(c => c.rw).filter(Boolean));
+      const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean));
+
+      this.rwList = Array.from(rwSet);
+      this.rtList = Array.from(rtSet);
+
+      this.rwReadonly = false;
+      this.rtReadonly = false;
+    },
+    handleRwChange() {
+      const pos = this.filters.posyandu;
+      const rw = this.filters.rw;
+
+      if (!rw) {
+        this.rtList = [];
+        this.rtReadonly = true;
+        return;
+      }
+
+      const filteredChildren = this.children.filter(
+        c => c.posyandu === pos && c.rw === rw
+      );
+
+      const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean));
+      this.rtList = Array.from(rtSet);
+      this.rtReadonly = false;
+    },
     generatePeriodeOptions() {
       const bulan = [
         'Januari', 'Februari', 'Maret', 'April',
@@ -1454,11 +2100,14 @@ data.forEach((child) => {
 
       for (let i = 0; i < 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` // ✅ pakai tanda "-"
         const label = `${bulan[d.getMonth()]} ${d.getFullYear()}`
-        result.push(label)
+        result.push({ label, value })
       }
 
       this.periodeOptions = result
+      //console.log('Periode options:', this.periodeOptions)
+
     },
     applyFilter() {
       const f = this.filters
@@ -1472,9 +2121,16 @@ data.forEach((child) => {
         // Periode (single bulan YYYY-MM)
         const periodeMatch = (() => {
           if (!f.periode) return true
+
           const [y, m] = f.periode.split('-')
           const periodeNum = parseInt(y) * 100 + parseInt(m)
-          const tgl = new Date(item.tgl_ukur)
+          //console.log('filter periode', periodeNum)
+
+          // Hindari timezone offset
+          const [year, month, day] = item.tgl_ukur.split('-').map(Number)
+          const tgl = new Date(year, month - 1, day)
+          //console.log('tgl ukur', tgl)
+
           const itemPeriode = tgl.getFullYear() * 100 + (tgl.getMonth() + 1)
           return itemPeriode === periodeNum
         })()
@@ -1490,6 +2146,19 @@ data.forEach((child) => {
       this.generateDataTableStatus()
       this.generateInfoBoxes()
       this.generateListsFromChildren() // update dropdown RW/RT/Posyandu
+
+
+      // Re-render pie chart pakai data terbaru dari tabel
+      this.renderChart('pieChart_bb', this.dataTable_bb, [
+        '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
+      ])
+      this.renderChart('pieChart_tb', this.dataTable_tb, [
+        '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
+      ])
+      this.renderChart('pieChart_status', this.dataTable_status, [
+        '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
+      ])
+
     },
     async fetchStats() {
       try {
@@ -1555,31 +2224,35 @@ data.forEach((child) => {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
-    renderChart(refName, dataSource, colors) {
-      const ctx = this.$refs[refName]?.getContext('2d')
-      if (!ctx) return
+    renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
+      const ctx = this.$refs[refName]?.getContext('2d');
+      if (!ctx) return;
 
-      // Hancurkan chart lama
+      // Hancurkan chart lama kalau ada
       if (this[refName + 'Instance']) {
-        this[refName + 'Instance'].destroy()
+        this[refName + 'Instance'].destroy();
       }
 
-      // Warna transparan & border
-      const transparentColors = colors.map(color =>
-        color.replace('rgb', 'rgba').replace(')', ', 0.8)')
-      )
+      if (!Array.isArray(dataTable) || !dataTable.length) {
+        console.warn(`⚠️ Tidak ada data untuk chart ${refName}`);
+        return;
+      }
+
+      const labels = dataTable.map(row => row[labelKey]);
+      const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+
+      // Solid colors langsung dari array colors
+      const solidColors = colors;
 
       this[refName + 'Instance'] = new Chart(ctx, {
         type: 'pie',
         data: {
-          labels: dataSource.map(row => row.status),
+          labels: labels,
           datasets: [
             {
-              data: dataSource.map(row => row.persen),
-              backgroundColor: transparentColors,
-              borderColor: '#fff',
-              borderWidth: 1,
-              borderAlign: 'inner',
+              data: values,
+              backgroundColor: solidColors,
+              borderWidth: 0, // ✅ tanpa border putih
               hoverOffset: 12,
             },
           ],
@@ -1591,66 +2264,58 @@ data.forEach((child) => {
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: function (context) {
-                  const label = context.label || ''
-                  const value = context.parsed
-                  return value > 0 ? `${label}: ${value}%` : ''
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  return value > 0 ? [`${label}`, `${value}%`] : [];
                 },
               },
             },
             datalabels: {
-              display: ctx => {
-                const value = ctx.dataset.data[ctx.dataIndex]
-                return value > 0 // ✅ tampilkan label hanya jika persen > 0
-              },
-              align: 'end',
-              anchor: 'end',
-              offset: 8,
-              clamp: true,
-              color: ctx => {
-                const label = ctx.chart.data.labels[ctx.dataIndex]
-                if (label.includes('Kurang')) return 'red'
-                if (label.includes('Tidak Naik')) return '#e0b000'
-                if (label.includes('Risiko')) return '#6a5acd'
-                return '#333'
-              },
-              font: {
-                size: 11,
-                weight: '600',
-              },
-              formatter: (value, ctx) => {
-                const label = ctx.chart.data.labels[ctx.dataIndex]
-                return `${value}% ${label}`
-              },
+            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+            color: 'rgb(0, 0, 0)',      // solid hitam
+            font: {
+              size: 11,
+              weight: 'bold',
+              opacity: 1,               // pastikan tidak transparan
+            },
+            backgroundColor: 'rgba(255,255,255,0)', // transparan di belakang teks
+            align: 'center',
+            anchor: 'center',
+            clamp: true,
+            offset: 0,
+            formatter: (value, ctx) => {
+              const label = ctx.chart.data.labels[ctx.dataIndex];
+              return [label, `${value}%`];
             },
           },
+          },
           onHover: (event, elements) => {
-            event.native.target.style.cursor = elements.length ? 'pointer' : 'default'
+            event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
           },
           onClick: (event, elements) => {
-            if (elements.length > 0) {
-              const index = elements[0].index
-              const item = dataSource[index]
-              const status = item.status
+            if (!elements.length) return;
+            const index = elements[0].index;
+            const item = dataTable[index];
+            const status = item.status;
 
-              let tipe = ''
-              if (refName === 'pieChart_bb') tipe = 'BB/U'
-              else if (refName === 'pieChart_tb') tipe = 'TB/U'
-              else if (refName === 'pieChart_status') tipe = 'BB/TB'
+            let tipe = '';
+            if (refName === 'pieChart_bb') tipe = 'BB/U';
+            else if (refName === 'pieChart_tb') tipe = 'TB/U';
+            else if (refName === 'pieChart_status') tipe = 'BB/TB';
 
-              this.selectedChartStatus = status
-              this.selectedChartType = tipe
+            this.selectedChartStatus = status;
+            this.selectedChartType = tipe;
 
-              this.$router.push({
-                path: '/admin/anak',
-                query: { tipe, status },
-              })
-            }
+            this.$router.push({
+              path: '/admin/anak',
+              query: { tipe, status },
+            });
           },
         },
         plugins: [ChartDataLabels],
-      })
-    },
+      });
+    }
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1672,11 +2337,14 @@ data.forEach((child) => {
 
     try {
       await this.$nextTick()
-      await this.loadConfigWithCache()
       await this.getWilayahUser()
-
+      await this.loadConfigWithCache()
       // ⏳ ambil data anak lebih dulu (supaya filter muncul)
       await this.loadChildren() // ini udah panggil generateListsFromChildren()
+
+      const { belum, sudah } = this.hitungIntervensi()
+      this.belum = belum
+      this.sudah = sudah
       this.generateInfoBoxes()
       this.generateListsFromChildren()
       this.generateDataTableBB()
@@ -1701,6 +2369,7 @@ data.forEach((child) => {
       this.renderLineChart()
       this.renderBarChart()
       this.renderFunnelChart()
+      this.renderSudahChart()
 
       this.filteredData = [...this.children]
       this.handleResize()
@@ -1718,24 +2387,96 @@ data.forEach((child) => {
   watch: {
     'filters.posyandu'(val) {
       this.handlePosyanduChange(val)
+    },
+    isSudah(newVal) {
+      this.$nextTick(() => {
+        if (newVal) {
+          this.renderSudahChart();
+        } else {
+          this.renderFunnelChart();
+        }
+      });
     }
   },
   computed: {
     processedChildren() {
-      // pastikan filteredData valid, fallback ke children
       const data = Array.isArray(this.filteredData) && this.filteredData.length
         ? this.filteredData
         : Array.isArray(this.children) ? this.children : [];
 
       const lastItem = arr => Array.isArray(arr) && arr.length ? arr[arr.length - 1] : {};
 
-      return data.map(child => {
+      // 🔸 Filter hanya anak dengan intervensi yang memiliki jenis valid (tidak null/kosong/"0")
+      const denganIntervensi = data.filter(child => {
+        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
+
+        // Ambil hanya anak yang punya intervensi dengan jenis tidak null, tidak kosong, dan tidak "0"
+        return intervensiList.some(i => i && i.jenis && i.jenis !== "0" && i.jenis.trim() !== "");
+      });
+
+
+      return denganIntervensi.map(child => {
+        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
+
+        // Ambil semua jenis intervensi unik
+        const jenisUnik = [...new Set(
+          intervensiList
+            .map(i => i.jenis)
+            .filter(j => j && j.trim() !== '')
+        )];
+
+        // Jika ada, gabungkan dengan koma
+        const rumusan = jenisUnik.length ? jenisUnik.join(', ') : '-';
+
         const lastPosyandu = lastItem(child.raw?.posyandu);
-        const lastIntervensi = lastItem(child.raw?.intervensi);
 
         return {
           nama: child.nama || '-',
-          rumusan: lastIntervensi.jenis || '-', // Ambil jenis intervensi terakhir
+          rumusan, // tampilkan semua intervensi unik
+          stunting: ['Stunted', 'Severely Stunted'].includes(lastPosyandu.tbu),
+          wasting: ['Wasted', 'Severely Wasted'].includes(lastPosyandu.bbtb),
+          underweight: ['Underweight', 'Severely Underweight'].includes(lastPosyandu.bbu),
+          bb_sangat: lastPosyandu.bbu === 'Severely Underweight',
+          overweight: lastPosyandu.bbu === 'Overweight',
+        };
+      });
+    },
+    processedChildren_belum() {
+      // Pastikan data valid
+      const data = Array.isArray(this.filteredData) && this.filteredData.length
+        ? this.filteredData
+        : Array.isArray(this.children)
+          ? this.children
+          : [];
+
+      const lastItem = arr => Array.isArray(arr) && arr.length ? arr[arr.length - 1] : {};
+
+      // 🔸 Filter: hanya anak dengan intervensi kosong/null ATAU semua jenis = "0"
+      const tanpaIntervensi = data.filter(child => {
+        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
+        // Belum pernah intervensi
+        if (intervensiList.length === 0) return true;
+        // Semua intervensinya bernilai jenis = "0"
+        return intervensiList.every(i => !i || i.jenis === "0" || i.jenis == null || i.jenis.trim() === "");
+      });
+
+      // 🔸 Lanjut proses data yang tersaring
+      return tanpaIntervensi.map(child => {
+        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
+
+        // Ambil semua jenis intervensi unik
+        const jenisUnik = [...new Set(
+          intervensiList
+            .map(i => i.jenis)
+            .filter(j => j && j.trim() !== '')
+        )];
+
+        const rumusan = jenisUnik.length ? jenisUnik.join(', ') : '-';
+        const lastPosyandu = lastItem(child.raw?.posyandu);
+
+        return {
+          nama: child.nama || '-',
+          rumusan,
           stunting: ['Stunted', 'Severely Stunted'].includes(lastPosyandu.tbu),
           wasting: ['Wasted', 'Severely Wasted'].includes(lastPosyandu.bbtb),
           underweight: ['Underweight', 'Severely Underweight'].includes(lastPosyandu.bbu),
@@ -1747,39 +2488,17 @@ data.forEach((child) => {
     totalPages() {
       return Math.ceil(this.processedChildren.length / this.perPage)
     },
+    totalPages_belum() {
+      return Math.ceil(this.processedChildren_belum.length / this.perPage)
+    },
     paginatedChildren() {
       const start = (this.currentPage - 1) * this.perPage
       return this.processedChildren.slice(start, start + this.perPage)
     },
-    // eslint-disable-next-line vue/no-dupe-keys
-    totalKasus() {
-      return this.children.length
+    paginatedChildren_belum() {
+      const start = (this.currentPage - 1) * this.perPage
+      return this.processedChildren_belum.slice(start, start + this.perPage)
     },
-    belumPMT() {
-      return this.children.filter(child => {
-        const lastPosyandu = child.raw?.posyandu?.[child.raw.posyandu.length - 1] || {}
-        const bermasalah = ['Underweight', 'Severely Underweight'].includes(lastPosyandu.bbu) ||
-                           ['Stunted', 'Severely Stunted'].includes(lastPosyandu.tbu) ||
-                           ['Wasted', 'Severely Wasted'].includes(lastPosyandu.bbtb)
-        const adaPMT = child.raw?.intervensi?.some(i => i.jenis === 'PMT')
-        return bermasalah && !adaPMT
-      }).length
-    },
-    belumBantuan() {
-      return this.children.filter(child => !(child.raw?.intervensi && child.raw.intervensi.length)).length
-    },
-    belumKader() {
-      return this.children.filter(child => !(child.raw?.pendampingan && child.raw.pendampingan.length)).length
-    },
-    persenBelumPMT() {
-      return this.totalKasus ? ((this.belumPMT / this.totalKasus) * 100).toFixed(0) : 0
-    },
-    persenBelumBantuan() {
-      return this.totalKasus ? ((this.belumBantuan / this.totalKasus) * 100).toFixed(0) : 0
-    },
-    persenBelumKader() {
-      return this.totalKasus ? ((this.belumKader / this.totalKasus) * 100).toFixed(0) : 0
-    }
   }
 }
 </script>
