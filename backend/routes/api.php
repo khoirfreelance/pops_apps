@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\BrideController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ChildrenController;
+use App\Http\Controllers\Api\PregnancyController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -80,6 +81,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bride/search/{nik}', [BrideController::class, 'search']);
     Route::get('/bride/{id}/pending', [BrideController::class, 'pending']);
     Route::put('/bride/{id}', [BrideController::class, 'update']);
+    Route::post('/bride/import', [BrideController::class, 'import']);
+});
+
+// Pregnancy Endpoint
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/pregnancy/import', [PregnancyController::class, 'import']);
 });
 
 // Region Endpoint

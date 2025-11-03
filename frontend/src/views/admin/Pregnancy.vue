@@ -13,9 +13,9 @@
     </transition>
 
     <!-- Header -->
-    <HeaderAdmin/>
+    <HeaderAdmin />
 
-     <div
+    <div
       class="content flex-grow-1 d-flex flex-column flex-md-row"
       :class="{
         'sidebar-collapsed': isCollapsed,
@@ -23,158 +23,473 @@
       }"
     >
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
       <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <!-- Content -->
-        <div class="py-4 container-fluid" >
-
+        <div class="py-4 container-fluid">
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <h3>
-                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
-                  {{ username }}
-                </h3>
-                <img
-                  v-if="logoLoaded"
-                  :src="logoSrc"
-                  alt="Logo"
-                  height="50"
-                  class="mt-4"
-                  @error="logoLoaded = false"
-                />
-                <!-- jika gagal load logo, tampilkan kelurahan -->
-                <span
-                  v-else
-                  class="text-muted fw-bold fs-5 mt-4"
-                >
-                  {{ kelurahan || 'Wilayah' }}
-                </span>
-                <p class="small d-flex align-items-center mt-1">
-                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
-                </p>
-              </div>
+          <Welcome />
 
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img
-                  src="/banner.png"
-                  alt="Welcome"
-                  class="img-fluid welcome-img"
-                  style="max-width: 280px"
-                />
-              </div>
+          <!-- Judul Laporan -->
+          <div class="text-center mt-4">
+            <div class="bg-primary text-white py-1 px-4 d-inline-block rounded-top">
+              <h5 class="mb-0">
+                Laporan Status Kesehatan Ibu Hamil Desa
+                <span class="text-capitalize fw-bold">{{ kelurahan }}</span>
+                Periode
+                <span class="fw-bold">{{ thisMonth }}</span>
+              </h5>
             </div>
           </div>
 
-          <!-- Filter -->
-          <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
+          <!-- Filter Form -->
+          <div class="bg-light border rounded-bottom shadow-sm px-4 py-3">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-              <!-- NIK (selalu tampil, realtime filter) -->
-              <div class="col-md-12">
-                <label for="nik" class="form-label">NIK</label>
-                <input
-                  type="text"
-                  v-model="filter.nik"
-                  id="nik"
-                  class="form-control"
-                  placeholder="Cari berdasarkan NIK"
-                />
+              <div
+                v-for="(filter, key) in filterOptions"
+                :key="key"
+                class="col-md-3 position-relative"
+              >
+                <label class="form-label text-primary">{{ filter.label }}</label>
+                <div class="dropdown w-100">
+                  <button
+                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                  >
+                    <span v-if="!filters[key].length" class="text-muted">{{ filter.placeholder }}</span>
+                    <span v-else>{{ filters[key].join(', ') }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                    <li
+                      v-for="item in filter.options"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="`${key}-${item}`"
+                        :value="item"
+                        v-model="filters[key]"
+                      />
+                      <label class="form-check-label w-100" :for="`${key}-${item}`">{{ item }}</label>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="d-flex justify-content-between px-2">
+                      <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" @click="selectAll(key)">
+                        Pilih Semua
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold" @click="clearAll(key)">
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <!-- Expandable section -->
-              <div v-if="isFilterOpen" class="row g-3 align-items-end mt-2">
-                <!-- Nama -->
-                <div class="col-md-4">
-                  <label for="nama" class="form-label">Nama</label>
-                  <input type="text" v-model="advancedFilter.nama" id="nama" class="form-control" />
+              <!-- Periode -->
+              <div class="col-md-6 text-center">
+                <label class="form-label text-primary">Pilih Periode:</label>
+                <div class="d-flex justify-content-between gap-2">
+                  <select v-model="filters.periodeAwal" class="form-select text-muted">
+                    <option value="">Awal</option>
+                    <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
+                  </select>
+                  <select v-model="filters.periodeAkhir" class="form-select text-muted">
+                    <option value="">Akhir</option>
+                    <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
+                  </select>
                 </div>
+              </div>
 
-                <!-- RT -->
-                <div class="col-md-2">
-                  <label for="rt" class="form-label">RT</label>
-                  <input type="number" v-model="advancedFilter.rt" id="rt" class="form-control" />
-                </div>
-
-                <!-- RW -->
-                <div class="col-md-2">
-                  <label for="rw" class="form-label">RW</label>
-                  <input type="number" v-model="advancedFilter.rw" id="rw" class="form-control" />
-                </div>
-
-                <!-- Kunjungan -->
-                <div class="col-md-4">
-                  <label for="kunjungan" class="form-label">Kunjungan</label>
-                  <input
-                    type="date"
-                    v-model="advancedFilter.kunjungan"
-                    id="kunjungan"
-                    class="form-control"
-                  />
-                </div>
-
-                <!-- Tombol -->
-                <div class="col-md-12">
-                  <button type="submit" class="btn btn-primary float-start" @click="applyFilter">
-                    <i class="bi bi-search"></i> Cari
-                  </button>
-                  <button type="button" class="btn btn-secondary float-end" @click="resetFilter">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                  </button>
-                </div>
+              <!-- Tombol Aksi -->
+              <div class="col-md-3 d-flex justify-content-between">
+                <button type="submit" class="btn btn-gradient fw-semibold">
+                  <i class="bi bi-filter me-1"></i> Terapkan
+                </button>
+                <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                </button>
               </div>
             </form>
+          </div>
 
-            <!-- Expand/Collapse Button -->
-            <div class="text-end mt-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm" @click="toggleExpand">
-                <i :class="isFilterOpen ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
-                {{ isFilterOpen ? 'Tutup Filter Lain' : 'Filter Lain' }}
-              </button>
+          <!-- Ringkasan Statistik-->
+          <div class="container-fluid my-4">
+
+            <div class="row">
+              <div class="col-xl-10 col-sm-12">
+                <div class="row justify-content-center">
+                  <div
+                    v-for="(item, index) in kesehatan"
+                    :key="index"
+                    class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-12 mb-3"
+                  >
+                    <div
+                      class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                      :class="`border-start border-4 border-${item.color}`"
+                    >
+                      <div class="card-header">
+                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                      </div>
+                      <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                        <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                        <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TOTAL BUMIL -->
+              <div class="col-xl-2 col-sm-12">
+                <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
+                  <h6 class="text-muted fw-bold">Total Ibu Hamil</h6>
+                  <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                    <h1 class="fw-bold text-success mb-0">{{totalBumil}}</h1>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Button Group -->
-          <div class="container-fluid mt-4 d-flex flex-wrap gap-2 justify-content-end">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
-              <i class="bi bi-plus-square"></i> Tambah Data
-            </button>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
-              <i class="bi bi-filetype-csv"></i> Import Pendampingan TPK (bumil)
-            </button>
-          </div>
+          <!-- Table and detail Section -->
+          <div class="container-fluid mt-4">
+            <h5 class="fw-bold text-success mb-3">Data Ibu Hamil</h5>
+            <div class="row mt-4">
+              <div :class="selectedBumil ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
+                <div class="card bg-light px-2 py-5">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                      <thead class="table-light small">
+                        <tr>
+                          <th @click="sortBy('nama')" class="cursor-pointer align-middle text-center">
+                            Nama <SortIcon :field="'nama'" />
+                          </th>
+                          <th @click="sortBy('anemia')" class="cursor-pointer align-middle text-center">
+                            Anemia <SortIcon :field="'anemia'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('berisiko')" class="cursor-pointer align-middle text-center">
+                            Kehamilan Berisiko <SortIcon :field="'berisiko'" />
+                          </th>
+                          <th style="width:60px" @click="sortBy('kek')" class="cursor-pointer align-middle text-center">
+                            KEK <SortIcon :field="'kek'" />
+                          </th>
+                          <th @click="sortBy('intervensi')" class="cursor-pointer align-middle text-center">
+                            Intervensi <SortIcon :field="'intervensi'" />
+                          </th>
+                          <th @click="sortBy('rw')" class="cursor-pointer align-middle text-center">
+                            RW <SortIcon :field="'rw'" />
+                          </th>
+                          <th @click="sortBy('rt')" class="cursor-pointer align-middle text-center">
+                            RT <SortIcon :field="'rt'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia')" class="cursor-pointer align-middle text-center">
+                            Usia (Tahun) <SortIcon :field="'usia'" />
+                          </th>
+                        </tr>
+                      </thead>
 
-          <!-- Alert -->
-          <!-- <div class="container-fluid mt-4">
-            <div class="alert alert-success shadow-sm mb-2">
-              <i class="bi bi-info-circle-fill"></i>&nbsp; Sebanyak 110 data tidak tercatat di data
-              keluarga
-              <router-link
-                to="/admin/keluarga"
-                class="text-decoration-none fw-semibold text-primary-50"
-              >
-                Lihat Data . . .
-              </router-link>
-            </div>
-          </div> -->
+                      <tbody>
+                        <tr v-for="bumil in paginatedData" :key="bumil.id" class="small">
+                          <td class="text-start">
+                            <a href="#" @click.prevent="showDetail(bumil)" class="fw-semibold text-decoration-none text-primary">
+                              {{ bumil.nama }}
+                            </a>
+                          </td>
+                          <td>{{ bumil.anemia }}</td>
+                          <td>{{ bumil.kek }}</td>
+                          <td>{{ bumil.intervensi || '-' }}</td>
+                          <td>{{ bumil.rw }}</td>
+                          <td>{{ bumil.rt }}</td>
+                          <td>{{ bumil.usia }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-          <!-- Table -->
-          <div class="container-fluid">
-            <div class="card modern-card mt-4">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <EasyDataTable
-                    :headers="headers"
-                    :items="filteredBumil"
-                    buttons-pagination
-                    :rows-per-page="5"
-                    table-class="table-modern"
-                    theme-color="var(--bs-primary)"
-                  />
+                  <!-- Pagination -->
+                  <nav>
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
+                      </li>
+
+                      <li
+                        class="page-item"
+                        v-for="page in totalPages"
+                        :key="page"
+                        :class="{ active: currentPage === page }"
+                      >
+                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                      </li>
+
+                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+
+              <!-- DETAIL DATA -->
+              <div class="col-md-4" v-if="selectedBumil">
+                <div v-if="selectedBumil" class="card shadow-sm p-4 text-center small position-relative">
+
+                  <!-- Tombol Close -->
+                  <button
+                    type="button"
+                    class="btn-close position-absolute top-0 end-0 m-3"
+                    aria-label="Close"
+                    @click="selectedBumil = null"
+                  ></button>
+
+                  <!-- Nama dan Identitas -->
+                  <h5 class="fw-bold text-dark mb-1">{{ selectedBumil.nama }}</h5>
+                  <p class="text-muted mb-0 text-capitalize">{{ selectedBumil.kelurahan || 'Desa Wonosari, Kec. Bojong Gede' }}</p>
+                  <p class="text-muted">{{ selectedBumil.kecamatan || 'Posyandu Mawar' }}</p>
+
+                  <!-- Badge Status Gizi -->
+                  <div class="mb-3">
+                    <span
+                      class="badge px-3 py-2 small"
+                      :class="{
+                        'bg-danger': ['Kehamilan Berisiko'].includes(selectedBumil.status_gizi),
+                        'bg-warning text-dark': ['KEK'].includes(selectedBumil.status_gizi),
+                        'bg-success': selectedBumil.status_gizi === 'Normal'
+                      }"
+                    >
+                      {{ selectedBumil.status_gizi }}
+                    </span>
+                  </div>
+
+                  <!-- Riwayat Penimbangan -->
+                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Pemeriksaan</h6>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle text-center">
+                      <thead class="table-light">
+                        <tr>
+                          <th rowspan="2">Tanggal</th>
+                          <th colspan="3">Status</th>
+                        </tr>
+                        <tr>
+                          <th>Anemia</th>
+                          <th>KEK</th>
+                          <th>Risiko</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(r, i) in (selectedBumil.riwayat_pemeriksaan || []).slice(-3)"
+                          :key="i"
+                        >
+                          <td>{{ r.tanggal }}</td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="{
+                                'bg-danger': r.anemia === 'Ya',
+                              }"
+                            >
+                              {{ r.anemia }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="{
+                                'bg-danger': r.kek === 'Ya',
+                              }"
+                            >
+                              {{ r.kek }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="{
+                                'bg-danger': r.risiko === 'Tinggi',
+                              }"
+                            >
+                              {{ r.risiko }}
+                            </span>
+                          </td>
+                        </tr>
+
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Riwayat Intervensi -->
+                  <h6 class="fw-bold text-start text-secondary mt-3">Riwayat Intervensi / Bantuan</h6>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle text-center">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Kader</th>
+                          <th>Intervensi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(i, idx) in selectedBumil.riwayat_intervensi || []" :key="idx">
+                          <td>{{ i.tanggal }}</td>
+                          <td>{{ i.kader }}</td>
+                          <td>{{ i.intervensi }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Tombol Download -->
+                  <button
+                    class="btn btn-gradient rounded-pill px-4 mt-2 fw-semibold"
+                    @click="downloadRiwayat"
+                  >
+                    Download Riwayat
+                  </button>
+                </div>
+              </div>
+
+              <!-- Detail Riwayat Anak -->
+              <div class="col-md-12 mt-4" v-if="selectedBumil">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
+                  <!-- Tombol Close -->
+                  <button
+                    class="btn-close position-absolute top-0 end-0 m-3"
+                    aria-label="Close"
+                    @click="selectedBumil = null"
+                  ></button>
+
+                  <!-- Header -->
+                  <div class="bg-primary text-white p-4 text-center rounded-top">
+                    <h5 class="fw-bold mb-0">{{ selectedBumil.nama }}</h5>
+                    <p class="text-white mb-0 small">
+                      {{ selectedBumil.usia }} Tahun - {{ selectedBumil.risiko }} Tahun
+                    </p>
+                  </div>
+
+                  <!-- Tabs -->
+                  <div class="p-3">
+                    <ul
+                      class="nav nav-pills justify-content-center mb-4 flex-wrap gap-2"
+                      id="bumilDetailTab"
+                      role="tablist"
+                    >
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link active"
+                          id="tab-profile-bumil"
+                          data-bs-toggle="tab"
+                          data-bs-target="#tab-pane-profile-bumil"
+                          type="button"
+                          role="tab"
+                        >
+                          <i class="bi bi-person-badge me-1"></i> Profile Ibu Hamil
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link"
+                          id="tab-kehamilan"
+                          data-bs-toggle="tab"
+                          data-bs-target="#tab-pane-kehamilan"
+                          type="button"
+                          role="tab"
+                        >
+                          <i class="bi bi-clipboard-heart me-1"></i> Data Kehamilan
+                        </button>
+                      </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="bumilDetailTabContent">
+                      <!-- Profile Anak -->
+                      <div
+                        class="tab-pane fade show active"
+                        id="tab-pane-profile-bumil"
+                        role="tabpanel"
+                      >
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <div class="card bg-light border-0 shadow-sm p-3 h-100">
+                              <h6 class="fw-bold mb-3 text-danger">Identitas Anak</h6>
+                              <p class="mb-1"><strong>Nama:</strong> {{ selectedBumil.nama }}</p>
+                              <p class="mb-1"><strong>NIK:</strong> {{ selectedBumil.nik }}</p>
+                              <p class="mb-1"><strong>Usia:</strong> {{ selectedBumil.usia }} Tahun</p>
+                              <p class="mb-1"><strong>Nama Suami:</strong> {{ selectedBumil.nama_suami }}</p>
+
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="card bg-light border-0 shadow-sm p-3 h-100">
+                              <h6 class="fw-bold mb-3 text-danger">Alamat</h6>
+                              <p class="mb-1"><strong>Alamat:</strong> {{ selectedBumil.alamat }}</p>
+                              <p class="mb-1"><strong>Desa:</strong> {{ selectedBumil.kelurahan }}</p>
+                              <p class="mb-1"><strong>RW:</strong> {{ selectedBumil.rw }}</p>
+                              <p class="mb-1"><strong>RT:</strong> {{ selectedBumil.rt }}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Data Kelahiran -->
+                      <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
+                        <div class="card bg-light border-0 shadow-sm p-3">
+                          <h6 class="fw-bold mb-3 text-danger">Data Kehamilan</h6>
+                          <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle">
+                              <thead>
+                                <tr>
+                                  <th>Tanggal Pemeriksaan</th>
+                                  <th>Kehamilan ke</th>
+                                  <th>Risiko</th>
+                                  <th>TB (cm)</th>
+                                  <th>BB (kg)</th>
+                                  <th>Lila (cm)</th>
+                                  <th>KEK</th>
+                                  <th>Hb</th>
+                                  <th>Anemia</th>
+                                  <th>Terpapar Asap Rokok</th>
+                                  <th>Mendapat Bantuan Sosial</th>
+                                  <th>Jamban Sehat</th>
+                                  <th>Sumber Air Bersih</th>
+                                  <th>Keluhan</th>
+                                  <th>Intervensi</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  v-for="(item, i) in selectedBumil.kehamilan"
+                                  :key="'kehamilan-' + i"
+                                >
+                                  <td>{{ item.tgl_pendampingan }}</td>
+                                  <td>{{ item.kehamilan_ke }}</td>
+                                  <td>{{ item.risiko }}</td>
+                                  <td>{{ item.tb }}</td>
+                                  <td>{{ item.bb }}</td>
+                                  <td>{{ item.lila}}</td>
+                                  <td>{{ item.kek}}</td>
+                                  <td>{{ item.hb }}</td>
+                                  <td>{{ item.anemia }}</td>
+                                  <td>{{ item.asap_rokok }}</td>
+                                  <td>{{ item.bantuan_sosial }}</td>
+                                  <td>{{ item.jamban_sehat}}</td>
+                                  <td>{{ item.sumber_air_bershi}}</td>
+                                  <td>{{ item.keluhan}}</td>
+                                  <td>{{ item.intervensi}}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -184,624 +499,226 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal Tambah -->
-  <div class="modal fade" id="modalTambah" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div
-        class="modal-content shadow-lg border-0 rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title fw-bold text-primary">Tambah Data Ibu Hamil</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <form class="row g-4" @submit.prevent="saveData">
-            <!-- NIK -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">NIK</label>
-              <input
-                type="text"
-                class="form-control shadow-sm"
-                v-model="form.nik"
-                maxlength="16"
-                @input="form.nik = form.nik.replace(/\D/g, '')"
-                required
-              />
-            </div>
-
-            <!-- Nama -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Nama</label>
-              <input type="text" class="form-control shadow-sm" v-model="form.nama" required />
-            </div>
-
-            <!-- Usia -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Usia</label>
-              <input
-                type="number"
-                min="15"
-                class="form-control bg-light shadow-sm"
-                v-model="form.usia"
-              />
-            </div>
-
-            <!-- Anemia -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Anemia</label>
-              <select class="form-select shadow-sm" v-model="form.anemia">
-                <option value="-">Tidak</option>
-                <option value="Ya">Ya</option>
-              </select>
-            </div>
-
-            <!-- Kehamilan -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">Kehamilan Beresiko</label>
-              <select class="form-select shadow-sm" v-model="form.kehamilan">
-                <option value="-">Tidak</option>
-                <option value="Ya">Ya</option>
-              </select>
-            </div>
-
-            <!-- KEK -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">KEK</label>
-              <select class="form-select shadow-sm" v-model="form.kek">
-                <option value="-">Tidak</option>
-                <option value="Ya">Ya</option>
-              </select>
-            </div>
-
-            <!-- Alamat -->
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">Alamat</label>
-              <textarea class="form-control shadow-sm" v-model="form.alamat" rows="2"></textarea>
-            </div>
-
-            <!-- RT -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">RT</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rt" />
-            </div>
-
-            <!-- RW -->
-            <div class="col-md-6">
-              <label class="form-label small fw-semibold text-secondary">RW</label>
-              <input type="number" min="0" class="form-control shadow-sm" v-model="form.rw" />
-            </div>
-
-            <!-- Kunjungan -->
-            <div class="col-md-12">
-              <label class="form-label small fw-semibold text-secondary">Tanggal Kunjungan</label>
-              <input type="date" class="form-control shadow-sm" v-model="form.kunjungan" />
-            </div>
-          </form>
-        </div>
-
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="saveData">
-            <i class="bi bi-save me-2"></i> Simpan
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Import -->
-  <div class="modal fade" id="modalImport" ref="modalImport" tabindex="-1">
-    <div class="modal-dialog">
-      <div
-        class="modal-content"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title">Import File Ibu Hamil</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning p-2">
-            <ul>
-              <li>Import data untuk kunjungan kehamilan oleh pendampingan TPK</li>
-              <li>Pastikan data yang diimport, berformat csv</li>
-              <li>Pastikan data sudah lengkap sebelum di import</li>
-            </ul>
-          </div>
-          <input type="file" class="form-control" ref="csvFile" accept=".csv" />
-        </div>
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="handleImport">
-            <i class="bi bi-upload me-2"></i> Unggah
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div
-        class="modal-content border-0 shadow-lg rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">✅ Berhasil</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">Data Anak berhasil disimpan ke <strong>localStorage</strong>.</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Loader Overlay with Animated Progress -->
-  <div
-    v-if="isLoadingImport"
-    class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-50"
-    style="z-index: 2000"
-  >
-    <div class="w-50">
-      <div class="progress" style="height: 1.8rem; border-radius: 1rem; overflow: hidden">
-        <div
-          class="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          :style="{ width: importProgress + '%' }"
-          :data-progress="progressLevel"
-        >
-          <span class="fw-bold">{{ animatedProgress }}%</span>
-        </div>
-      </div>
-    </div>
-    <p class="text-white mt-3">Mengimpor data... {{ currentRow }}/{{ totalRows }} baris</p>
-  </div>
 </template>
 
 <script>
 import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
-import EasyDataTable from 'vue3-easy-data-table'
-import 'vue3-easy-data-table/dist/style.css'
-import { Modal } from 'bootstrap'
 import axios from 'axios'
+import Welcome from '@/components/Welcome.vue'
 
-// PORT backend kamu
-const API_PORT = 8000;
-
-// Bangun base URL dari window.location
-const { protocol, hostname } = window.location;
-// contoh hasil: "http://192.168.0.5:8000"
-const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+const API_PORT = 8000
+const { protocol, hostname } = window.location
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Pregnancy',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
   data() {
     return {
-      configCacheKey: 'site_config_cache',
-      // required
       isLoading: true,
       isCollapsed: false,
       username: '',
       today: '',
-      thisMonth:'',
+      thisMonth: '',
       kelurahan: '',
-      logoSrc: '/cipayung.png',
-      logoLoaded: true,
       windowWidth: window.innerWidth,
-      // -------------------
-      isFilterOpen: false,
-      importTitle: 'Import File',
-      showAlert: false,
-      isLoadingImport: false,
-      importProgress: 0,
-      animatedProgress: 0,
-      currentRow: 0,
-      totalRows: 1, // default 1 agar tidak bagi 0
-      form: {
-        nik: '',
-        nama: '',
-        anemia: '',
-        kehamilan: '',
-        kek: '',
-        alamat: '',
-        rt: '',
-        rw: '',
-        usia: '',
-        kunjungan: '',
+      configCacheKey: 'site_config_cache',
+      kesehatan:[],
+      bumil: [],
+      filteredBumil: [],
+      totalBumil: 0,
+      filters: {
+        kek: [],
+        anemia: [],
+        beresiko: [],
+        usia: [],
+        intervensi: [],
+        periodeAwal: '',
+        periodeAkhir: '',
       },
-      bumil: [
-        {
-          nik: '3276012309870001',
-          nama: 'Dummyah',
-          anemia: '-',
-          kehamilan: '-',
-          kek: '-',
-          alamat: 'Jl. Damai 3 No. 36',
-          rt: '5',
-          rw: '2',
-          usia: '28',
-          kunjungan: '2025-08-10',
-        },
-        {
-          nik: '1266792309870001',
-          nama: 'Dina K',
-          anemia: '-',
-          kehamilan: '-',
-          kek: '-',
-          alamat: 'Jl. Damai 3 No. 42',
-          rt: '5',
-          rw: '2',
-          usia: '21',
-          kunjungan: '2025-08-10',
-        },
-      ],
-      headers: [
-        { text: 'NIK', value: 'nik' },
-        { text: 'Nama', value: 'nama' },
-        { text: 'Anemia', value: 'anemia' },
-        { text: 'Kehamilan Beresiko', value: 'kehamilan' },
-        { text: 'KEK', value: 'kek' },
-        { text: 'Usia', value: 'usia' },
-        { text: 'Alamat', value: 'alamat' },
-        { text: 'RT', value: 'rt' },
-        { text: 'RW', value: 'rw' },
-        { text: 'Kunjungan Terakhir', value: 'kunjungan' },
-      ],
-      // filter
-      filter: {
-        nik: '',
-      },
-      advancedFilter: {
-        nama: '',
-        rt: '',
-        rw: '',
-        kunjungan: '',
-      },
-      appliedFilter: {}, // hasil filter simpan di sini
+
+      periodeOptions: [],
     }
   },
   computed: {
-    background() {
-      try {
-        const config = JSON.parse(localStorage.getItem('siteConfig'))
-        return config?.background || null
-      } catch {
-        return null
+    filterOptions() {
+      return {
+        anemia: { label: 'Anemia', placeholder: 'Pilih Anemia', options: ['Ya', 'Tidak'] },
+        kek: { label: 'KEK', placeholder: 'Pilih KEK', options: ['Ya', 'Tidak'] },
+        beresiko: { label: 'Beresiko', placeholder: 'Pilih Risiko', options: ['Tinggi', 'Rendah', 'Normal'] },
+        usia: { label: 'Usia', placeholder: 'Pilih Usia', options: ['<20', '20-35', '>35'] },
+        intervensi: { label: 'Intervensi', placeholder: 'Pilih Intervensi', options: ["MBG","KIE","Bansos", "PMT", "Bantuan Lainnya", "Belum mendapatkan intervensi"] },
       }
     },
-    filteredBumil() {
-      return this.bumil.filter((item) => {
-        return (
-          // NIK realtime
-          (!this.filter.nik || item.nik.includes(this.filter.nik)) &&
-          // Advanced filter hanya aktif setelah "Cari"
-          (!this.appliedFilter.nama ||
-            item.nama.toLowerCase().includes(this.appliedFilter.nama.toLowerCase())) &&
-          (!this.appliedFilter.rt || item.rt === this.appliedFilter.rt) &&
-          (!this.appliedFilter.rw || item.rw === this.appliedFilter.rw) &&
-          (!this.appliedFilter.kunjungan || item.kunjungan === this.appliedFilter.kunjungan)
-        )
-      })
+    intervesiDisplayText() {
+      const total = this.filters.intervensi.length;
+      const allSelected = total === this.intervensiOptions.length;
+
+      if (allSelected) return 'All';
+      if (total === 1) return this.filters.intervensi[0];
+      return `${total} Selected`;
     },
   },
   methods: {
     async loadConfigWithCache() {
       try {
-        // cek di localStorage
         const cached = localStorage.getItem(this.configCacheKey)
         if (cached) {
           const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
+          this.logoSrc = parsed.logo || this.logoSrc
           return
         }
-         // kalau belum ada cache, fetch dari API
+
         const res = await axios.get(`${baseURL}/api/config`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
 
         const data = res.data?.data
         if (data) {
-          this.logoSrc = data.logo || null
-          // simpan di localStorage untuk load cepat di page berikutnya
+          this.logoSrc = data.logo || this.logoSrc
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-      }catch (error) {
-        console.warn('Gagal load config:', error)
-        this.logoLoaded = false
+      } catch (e) {
+        console.warn('Gagal load config:', e)
       }
     },
+
     async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
-
         const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
-
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
+        this.kelurahan = wilayah.kelurahan || '-'
+      } catch (e) {
+        console.error('Gagal ambil wilayah user:', e)
         this.kelurahan = '-'
       }
     },
+
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      this.isCollapsed = this.windowWidth < 992
+    },
+
+    selectAll(key) {
+      this.filters[key] = [...this.filterOptions[key].options]
+    },
+
+    clearAll(key) {
+      this.filters[key] = []
+    },
+
+    applyFilter() {
+      // TODO: Tambahkan logika filter data
+      this.filteredBumil = this.bumil
+    },
+
+    resetFilter() {
+      Object.keys(this.filters).forEach(k => {
+        if (Array.isArray(this.filters[k])) this.filters[k] = []
+        else this.filters[k] = ''
+      })
+      this.filteredBumil = this.bumil
+    },
+
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
+    },
+
     getTodayDate() {
-      const hari = [
-        'Minggu', 'Senin', 'Selasa', 'Rabu',
-        'Kamis', 'Jumat', 'Sabtu'
-      ]
+      const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
       const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
       ]
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
+
     getThisMonth() {
       const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
       ]
-
       const now = new Date()
-      let monthIndex = now.getMonth() - 1
-      let year = now.getFullYear()
-
-      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
-      if (monthIndex < 0) {
-        monthIndex = 11
-        year -= 1
-      }
-
-      return `${bulan[monthIndex]} ${year}`
+      return `${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
-    handleResize() {
-      this.windowWidth = window.innerWidth
-      if (this.windowWidth < 992) {
-        this.isCollapsed = true // auto collapse di tablet/mobile
-      } else {
-        this.isCollapsed = false // normal lagi di desktop
-      }
-    },
-    closeModal(id) {
-      const el = document.getElementById(id)
-      if (el) {
-        const instance = Modal.getOrCreateInstance(el)
-        instance.hide()
-      }
 
-      // jaga-jaga kalau backdrop masih nyangkut
-      setTimeout(() => {
-        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-        document.body.classList.remove('modal-open')
-        document.body.style.removeProperty('overflow')
-        document.body.style.removeProperty('padding-right')
-      }, 300) // delay biar nunggu animasi fade
-    },
-    updateProgressBar(percent, row, total) {
-      this.importProgress = percent
-      this.currentRow = row
-      this.totalRows = total
+    hitungStatusKesehatan() {
+      //const dataBumil = this.filteredData.length ? this.filteredData : this.bumil;
+      const total = 0; //dataBumil.length;
 
-      const start = this.animatedProgress
-      const end = percent
-      const step = (end - start) / 10
-      let i = 0
-      const interval = setInterval(() => {
-        this.animatedProgress = Math.min(end, Math.round(start + step * i))
-        i++
-        if (this.animatedProgress >= end) clearInterval(interval)
-      }, 30)
-    },
-    toggleExpand() {
-      this.isFilterOpen = !this.isFilterOpen
-    },
-    applyFilter() {
-      // copy isi advancedFilter ke appliedFilter saat tombol Cari ditekan
-      this.appliedFilter = { ...this.advancedFilter }
-    },
-    resetFilter() {
-      this.filter.nik = ''
-      this.advancedFilter = {
-        nama: '',
-        rt: '',
-        rw: '',
-        kunjungan: '',
-      }
-      this.appliedFilter = {}
-    },
-    toggleSidebar() {
-      this.isCollapsed = !this.isCollapsed
-    },
-    saveData() {
-      this.closeModal('modalTambah')
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
-      this.currentRow = 0
-      this.totalRows = 1 // hanya 1 record, bisa disesuaikan kalau batch
+      const count = {
+        KEK: 0,
+        Anemia: 0,
+        Berisiko: 0,
+        Normal: 0,
+      };
 
-      // simulasi progress bertahap
-      let step = 0
-      const interval = setInterval(() => {
-        step += 10
-        this.importProgress = Math.min(step, 100)
-        this.animatedProgress = this.importProgress
-        this.currentRow = Math.round((this.totalRows * this.importProgress) / 100)
+      /* dataBumil.forEach((ibu_hamil) => {
+        const { bbu, tbu, bbtb } = ibu_hamil;
 
-        if (this.importProgress >= 100) {
-          clearInterval(interval)
+        if (tbu?.includes('Stunted')) count.Stunting++;
+        if (bbtb?.includes('Wasted')) count.Wasting++;
+        if (bbu?.includes('Underweight')) count.Underweight++;
+        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++;
+        if (bbtb?.includes('Overweight')) count.Overweight++;
 
-          // lanjut simpan data
-
-          this.bumil.push({ ...this.form })
-          this.showAlert = true
-          setTimeout(() => (this.showAlert = false), 3000)
-
-          // reset form
-          this.form = {
-            nik: '',
-            nama: '',
-            usia: 0,
-            anemia: '',
-            kehamilan: '',
-            kek: '',
-            rt: '',
-            rw: '',
-            kunjungan: '',
-          }
-
-          this.$nextTick(() => {
-            const el = document.getElementById('successModal')
-            if (el) {
-              const instance = Modal.getOrCreateInstance(el)
-              instance.show()
-            }
-          })
-
-          this.isLoadingImport = false
+        // === cek stagnan (3 kali BB sama)
+        const riwayat = ibu_hamil.raw?.posyandu || [];
+        if (riwayat.length >= 3) {
+          const last3 = riwayat.slice(-3);
+          const allEqual = last3.every((r) => r.bb === last3[0].bb);
+          if (allEqual) count['BB Stagnan']++;
         }
-      }, 150) // jeda antar progress
-    },
-    handleImport() {
-      this.closeModal('modalImport')
+      }); */
 
-      const fileInput = this.$refs.csvFile
-      if (!fileInput || !fileInput.files.length) return
-
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
-
-      const file = fileInput.files[0]
-      const reader = new FileReader()
-
-      reader.onload = (e) => {
-        const text = e.target.result
-        const rows = text
-          .split('\n')
-          .map((r) => r.trim())
-          .filter((r) => r)
-        const headers = rows[0].split(',').map((h) => h.trim())
-        const total = rows.length - 1
-        this.totalRows = total
-
-        rows.slice(1).forEach((row, idx) => {
-          const values = row.split(',').map((v) => v.trim())
-          const obj = {}
-          headers.forEach((h, i) => {
-            obj[h] = values[i] || ''
-          })
-
-          this.bumil.push({
-            nik: obj.nik || '',
-            nama: obj.nama || '',
-            anemia: obj.anemia || '',
-            kehamilan: obj.kehamilan || '',
-            kek: obj.kek || '',
-            alamat: obj.alamat || '',
-            rt: obj.rt || '',
-            rw: obj.rw || '',
-            usia: obj.usia || '',
-            kunjungan: obj.kunjungan || '',
-          })
-
-          const percent = Math.round(((idx + 1) / total) * 100)
-          this.updateProgressBar(percent, idx + 1, total)
-        })
-
-        setTimeout(() => {
-          this.isLoadingImport = false
-          const el = document.getElementById('successModal')
-          const instance = Modal.getOrCreateInstance(el)
-          instance.show()
-        }, 500)
-      }
-
-      reader.readAsText(file)
+      this.kesehatan = Object.entries(count).map(([title, value]) => {
+        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+        const colorMap = {
+          KEK: 'danger',
+          Anemia: 'warning',
+          Beresiko: 'violet',
+          Normal: 'success',
+        };
+        return { title, value, percent, color: colorMap[title] };
+      });
     },
   },
+
   created() {
     const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-      let namePart = storedEmail.split('@')[0]
-      namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
-        .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ')
-    } else {
-      this.username = 'User'
-    }
+    this.username = storedEmail
+      ? storedEmail.split('@')[0].replace(/[._]/g, ' ')
+          .split(' ')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ')
+      : 'User'
+
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
+
   async mounted() {
     this.isLoading = true
-
     try {
-      // Ambil data dulu
       await this.getWilayahUser()
+      await this.loadConfigWithCache()
+      this.hitungStatusKesehatan()
       this.handleResize()
-      this.loadConfigWithCache()
       window.addEventListener('resize', this.handleResize)
+      this.filteredBumil = this.bumil
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
-      // Kasih sedikit delay biar animasi fade spinner kelihatan
-      setTimeout(() => {
-        this.isLoading = false
-      }, 300)
+      setTimeout(() => { this.isLoading = false }, 300)
     }
   },
+
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
@@ -809,7 +726,10 @@ export default {
 </script>
 
 <style scoped>
-
+.dropdown-menu .form-check-label {
+    white-space: normal !important;
+    word-break: break-word;
+  }
 .filter-wrapper {
   position: relative; /* biar ikut alur layout */
   z-index: 0; /* pastikan di bawah sidebar */

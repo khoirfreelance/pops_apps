@@ -51,6 +51,16 @@
       <li class="menu-section mt-4" v-if="!isCollapsed">Master Data</li>
       <li>
         <router-link
+          to="/admin/import"
+          class="nav-link"
+          :class="{ active: isActive('/admin/import') }"
+        >
+            <i class="bi bi-cloud-upload-fill"></i>
+          <span v-if="!isCollapsed"> Import</span>
+        </router-link>
+      </li>
+      <li>
+        <router-link
           to="/admin/keluarga"
           class="nav-link"
           :class="{ active: isActive('/admin/keluarga') }"

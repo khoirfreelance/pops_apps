@@ -17,6 +17,7 @@ import Profile from '@/views/admin/Profile.vue'
 import Chart from '@/views/admin/Chart.vue'
 import Log from '@/views/admin/Log.vue'
 import Detail from '@/views/admin/Detail.vue'
+import Import from '@/views/admin/Import.vue'
 
 const routes = [
   {
@@ -58,6 +59,12 @@ const routes = [
     path: '/admin/jadwal',
     name: 'schedule',
     component: Schedule,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/import',
+    name: 'import',
+    component: Import,
     meta: { requiresAuth: true },
   },
   {

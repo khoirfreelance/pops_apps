@@ -56,10 +56,10 @@
                     aria-expanded="false"
                   >
                     <span v-if="filters.bbu.length === 0" class="text-muted">Pilih Underweight</span>
-                    <span v-else class="selected-text">{{ filters.bbu.join(', ') }}</span>
+                    <span v-else class="selected-text">{{ underDisplayText }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
                     <li
                       v-for="item in bbuOptions"
                       :key="item"
@@ -98,10 +98,10 @@
                     aria-expanded="false"
                   >
                     <span v-if="filters.tbu.length === 0" class="text-muted">Pilih Stunting</span>
-                    <span v-else class="selected-text">{{ filters.tbu.join(', ') }}</span>
+                    <span v-else class="selected-text">{{ StuntingDisplayText }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
                     <li
                       v-for="item in tbuOptions"
                       :key="item"
@@ -140,10 +140,10 @@
                     aria-expanded="false"
                   >
                     <span v-if="filters.bbtb.length === 0" class="text-muted">Pilih Wasting</span>
-                    <span v-else class="selected-text">{{ filters.bbtb.join(', ') }}</span>
+                    <span v-else class="selected-text">{{ WastingDisplayText }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
                     <li
                       v-for="item in bbtbOptions"
                       :key="item"
@@ -173,7 +173,7 @@
                 </div>
               </div>
 
-              <div class="col-md-2">
+              <div class="col-md-3">
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
@@ -182,10 +182,10 @@
                     aria-expanded="false"
                   >
                     <span v-if="filters.stagnan.length === 0" class="text-muted">Pilih BB Stagnan</span>
-                    <span v-else class="selected-text">{{ filters.stagnan.join(', ') }}</span>
+                    <span v-else class="selected-text">{{ stagnanDisplayText }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
                     <li
                       v-for="item in stagnanOptions"
                       :key="item"
@@ -215,7 +215,7 @@
                 </div>
               </div>
 
-              <div class="col-md-4 position-relative">
+              <div class="col-md-3 position-relative">
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
@@ -224,10 +224,10 @@
                     aria-expanded="false"
                   >
                     <span v-if="filters.intervensi.length === 0" class="text-muted">Pilih Intervensi</span>
-                    <span v-else class="selected-text">{{ filters.intervensi.join(', ') }}</span>
+                    <span v-else class="selected-text">{{ intervesiDisplayText }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
                     <li
                       v-for="item in intervensiOptions"
                       :key="item"
@@ -1171,6 +1171,51 @@ export default {
     }
   },
   methods: {
+    downloadRiwayat() {
+      if (!this.selectedAnak) {
+        alert('Silakan pilih anak terlebih dahulu.')
+        return
+      }
+
+      // Data utama anak
+      const anak = this.selectedAnak
+      let csvContent = `Data Anak\n`
+      csvContent += `Nama,${anak.nama}\n`
+      csvContent += `NIK,${anak.nik}\n`
+      csvContent += `Jenis Kelamin,${anak.gender === 'L' ? 'Laki-laki' : anak.gender === 'P' ? 'Perempuan' : anak.gender}\n`
+      csvContent += `Usia (${anak.usia} bulan),${anak.usia}\n`
+      csvContent += `Tgl Ukur Terakhir,${anak.tgl_ukur}\n`
+      csvContent += `Status Gizi,${anak.status_gizi}\n`
+      csvContent += `Intervensi,${anak.intervensi}\n\n`
+
+      // Riwayat penimbangan (jika ada)
+      if (anak.riwayat_penimbangan && anak.riwayat_penimbangan.length) {
+        csvContent += `Riwayat Penimbangan\nTanggal,Status BB/U,Status TB/U,Status BB/TB\n`
+        anak.riwayat_penimbangan.forEach(r => {
+          csvContent += `${r.tanggal},${r.bb},${r.tb},${r.bb_tb}\n`
+        })
+        csvContent += `\n`
+      }
+
+      // Riwayat intervensi/bantuan (jika ada)
+      if (anak.riwayat_intervensi && anak.riwayat_intervensi.length) {
+        csvContent += `Riwayat Intervensi / Bantuan\nTanggal,Kader,Intervensi\n`
+        anak.riwayat_intervensi.forEach(r => {
+          csvContent += `${r.tanggal},${r.kader},${r.intervensi}\n`
+        })
+        csvContent += `\n`
+      }
+
+      // Konversi ke blob dan download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Riwayat_${anak.nama.replace(/\s+/g, '_')}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
     async loadChildren() {
       try {
         const res = await axios.get(`${baseURL}/api/children`, {
@@ -2085,6 +2130,48 @@ export default {
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
+  computed:{
+    underDisplayText() {
+      const total = this.filters.bbu.length;
+      const allSelected = total === this.bbuOptions.length;
+
+      if (allSelected) return 'All';
+      if (total === 1) return this.filters.bbu[0];
+      return `${total} Selected`;
+    },
+    StuntingDisplayText() {
+      const total = this.filters.tbu.length;
+      const allSelected = total === this.tbuOptions.length;
+
+      if (allSelected) return 'All';
+      if (total === 1) return this.filters.tbu[0];
+      return `${total} Selected`;
+    },
+    WastingDisplayText() {
+      const total = this.filters.bbtb.length;
+      const allSelected = total === this.bbtbOptions.length;
+
+      if (allSelected) return 'All';
+      if (total === 1) return this.filters.bbtb[0];
+      return `${total} Selected`;
+    },
+    stagnanDisplayText() {
+      const total = this.filters.stagnan.length;
+      const allSelected = total === this.stagnanOptions.length;
+
+      if (allSelected) return 'All';
+      if (total === 1) return this.filters.stagnan[0];
+      return `${total} Selected`;
+    },
+    intervesiDisplayText() {
+      const total = this.filters.intervensi.length;
+      const allSelected = total === this.intervensiOptions.length;
+
+      if (allSelected) return 'All';
+      if (total === 1) return this.filters.intervensi[0];
+      return `${total} Selected`;
+    },
+  },
   async mounted() {
     this.isLoading = true
     try {
@@ -2142,6 +2229,11 @@ export default {
 </script>
 
 <style scoped>
+  .dropdown-menu .form-check-label {
+    white-space: normal !important;
+    word-break: break-word;
+  }
+
   .collapse-enter-active,
   .collapse-leave-active {
     transition: all 0.3s ease;
