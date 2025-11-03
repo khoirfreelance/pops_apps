@@ -1234,80 +1234,136 @@ export default {
       return { belum, sudah }
     },
     generateInfoBoxes() {
-
-      let stuntingNow = 0
-      let stuntingPrev = 0
       let intervensiKurang = 0
       let kasusBaru = 0
       let dataPending = 0
+      let maxDiffBulan = 0
 
       const stuntingByDesa = {}
-
+      const stuntingPerBulan = {} // 🌟 key: 'YYYY-MM', value: jumlah anak stunting
       const data = this.filteredData || []
-        data.forEach(child => {
-        // --- ambil pengukuran terakhir dan sebelumnya dari raw.posyandu
-        const posyandu = child.raw?.posyandu || []
 
+      // ambil periode filter (format: 'YYYY-MM')
+      const periodeFilter = this.filters?.periode
+      const periodeDate = periodeFilter ? new Date(periodeFilter + '-01') : null
+
+      data.forEach(child => {
+        const posyandu = child.raw?.posyandu || []
         if (posyandu.length === 0) return
 
+        // --- Hitung stunting per bulan per anak
+        posyandu.forEach(p => {
+          const d = new Date(p.tgl_ukur)
+          const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+          const isStunting = ['Stunted', 'Severely Stunted'].includes(p.tbu)
+          if (isStunting) {
+            stuntingPerBulan[ym] = (stuntingPerBulan[ym] || 0) + 1
+            if (child.kelurahan) {
+              stuntingByDesa[child.kelurahan] = (stuntingByDesa[child.kelurahan] || 0) + 1
+            }
+          }
+        })
+
+        // sort tanggal
         const sorted = [...posyandu].sort(
           (a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)
         )
 
-        const last = sorted[sorted.length - 1]
-        const prev = sorted[sorted.length - 2]
+        // cari current (periode sekarang) & prev (bulan sebelumnya)
+        let current = null
+        let prev = null
 
-        // --- Stunting sekarang & sebelumnya
-        if (last && ['Stunted', 'Severely Stunted'].includes(last.tbu)) {
-          stuntingNow++
-          if (child.kelurahan) {
-            stuntingByDesa[child.kelurahan] = (stuntingByDesa[child.kelurahan] || 0) + 1
+        if (periodeDate) {
+          // cari data di bulan sesuai filter
+          const match = sorted.find(p => {
+            const t = new Date(p.tgl_ukur)
+            return (
+              t.getFullYear() === periodeDate.getFullYear() &&
+              t.getMonth() === periodeDate.getMonth()
+            )
+          })
+          if (match) {
+            const idx = sorted.indexOf(match)
+            current = sorted[idx]
+            prev = sorted[idx - 1] || null
           }
+        } else {
+          current = sorted[sorted.length - 1]
+          prev = sorted[sorted.length - 2]
         }
-        if (prev && ['Stunted', 'Severely Stunted'].includes(prev.tbu)) stuntingPrev++
 
-        // --- Intervensi kurang (bermasalah tapi belum dapat PMT)
+        // --- Intervensi kurang
         const bermasalah =
-          ['Underweight', 'Severely Underweight'].includes(last?.bbu) ||
-          ['Stunted', 'Severely Stunted'].includes(last?.tbu) ||
-          ['Wasted', 'Severely Wasted'].includes(last?.bbtb)
+          ['Underweight', 'Severely Underweight'].includes(current?.bbu) ||
+          ['Stunted', 'Severely Stunted'].includes(current?.tbu) ||
+          ['Wasted', 'Severely Wasted'].includes(current?.bbtb)
 
         const intervensi = child.raw?.intervensi || []
-        const adaPMT = intervensi.some(i => i.jenis?.toUpperCase() === 'PMT') || child.intervensi === 'PMT'
+        const adaPMT =
+          intervensi.some(i => i.jenis?.toUpperCase() === 'PMT') ||
+          child.intervensi === 'PMT'
 
         if (bermasalah && !adaPMT) intervensiKurang++
 
-        // --- Kasus baru (baru muncul bulan terakhir)
+        // --- Kasus baru
         if (
           prev &&
           !['Stunted', 'Severely Stunted'].includes(prev.tbu) &&
-          ['Stunted', 'Severely Stunted'].includes(last.tbu)
+          ['Stunted', 'Severely Stunted'].includes(current?.tbu)
         ) kasusBaru++
 
-        // --- Data pending (lebih dari 2 bulan dari pengukuran terakhir)
-        if (last) {
+        // --- Data pending
+        if (current) {
+          const refDate = periodeDate || new Date()
           const diffBulan =
-            (new Date().getFullYear() - new Date(last.tgl_ukur).getFullYear()) * 12 +
-            (new Date().getMonth() - new Date(last.tgl_ukur).getMonth())
+            (refDate.getFullYear() - new Date(current.tgl_ukur).getFullYear()) * 12 +
+            (refDate.getMonth() - new Date(current.tgl_ukur).getMonth())
+
+          if (diffBulan > maxDiffBulan) maxDiffBulan = diffBulan
           if (diffBulan >= 2) dataPending++
         }
       })
 
-      const naik = stuntingPrev === 0 ? 0 : ((stuntingNow - stuntingPrev) / stuntingPrev) * 100
+      // --- 🚀 Hitung tren stunting per bulan
+      const bulanSorted = Object.keys(stuntingPerBulan).sort()
+      let stuntingNow = 0
+      let stuntingPrev = 0
 
-      let desaTertinggi = 'Tidak ada data'
+      if (periodeDate) {
+        const ymNow = `${periodeDate.getFullYear()}-${String(periodeDate.getMonth() + 1).padStart(2, '0')}`
+        const ymPrev = `${periodeDate.getFullYear()}-${String(periodeDate.getMonth()).padStart(2, '0')}`
+        stuntingNow = stuntingPerBulan[ymNow] || 0
+        stuntingPrev = stuntingPerBulan[ymPrev] || 0
+      } else if (bulanSorted.length > 0) {
+        const last = bulanSorted[bulanSorted.length - 1]
+        const prev = bulanSorted[bulanSorted.length - 2]
+        stuntingNow = stuntingPerBulan[last] || 0
+        stuntingPrev = stuntingPerBulan[prev] || 0
+      }
+
+      const naik =
+        stuntingPrev === 0 ? 0 : ((stuntingNow - stuntingPrev) / stuntingPrev) * 100
+
+      // --- Desa dengan stunting tertinggi
+      let desaTertinggi = this.kelurahan
       if (Object.keys(stuntingByDesa).length > 0) {
         desaTertinggi = Object.entries(stuntingByDesa).sort((a, b) => b[1] - a[1])[0][0]
       }
 
       function capitalizeWords(str) {
-        return str.replace(/\b\w/g, c => c.toUpperCase());
+        return str.replace(/\b\w/g, c => c.toUpperCase())
       }
+
+      const bulanTerakhir =
+        maxDiffBulan > 1 ? `${maxDiffBulan} bulan terakhir` : 'bulan ini'
+
       this.infoBoxes = [
         {
           type: 'danger',
-          title: `Stunting ${naik >= 0 ? 'naik' : 'turun'} ${Math.abs(naik).toFixed(1)}`,
-          desc: `Dibanding pengukuran sebelumnya, tertinggi di Desa <strong>${capitalizeWords(desaTertinggi)}</strong>.`,
+          title: `Stunting ${naik >= 0 ? 'naik' : 'turun'} ${Math.abs(naik).toFixed(1)}%`,
+          desc: `Dibanding periode sebelumnya, tertinggi di Desa <strong>${capitalizeWords(
+            desaTertinggi
+          )}</strong>.`,
         },
         {
           type: 'warning',
@@ -1317,19 +1373,17 @@ export default {
         {
           type: 'info',
           title: 'Kasus baru',
-          desc: `${kasusBaru} kasus stunting baru terdeteksi dari posyandu terakhir.`,
+          desc: `${kasusBaru} kasus stunting baru terdeteksi pada periode ini.`,
         },
         {
           type: 'success',
           title: 'Data Pending',
-          desc: `${dataPending} anak belum update data pengukuran 2 bulan terakhir.`,
+          desc: `${dataPending} anak belum update data pengukuran ${bulanTerakhir}.`,
         },
       ]
     },
     generateDataTableBB() {
       const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
-      //console.log(data);
-
       if (!data.length) return;
 
       const categories = [
@@ -1339,97 +1393,77 @@ export default {
         'Risiko BB Lebih',
       ];
 
-      const counts = {};
-      const trenStats = {}; // simpan tren naik/turun per kategori
+      // hasil akhir: { '2025-08': { 'Normal': 12, 'Underweight': 5, ... }, ... }
+      const perPeriode = {};
 
-      // Dapatkan periode aktif dari filter (kalau ada)
-      const periodeAktif = this.filters?.periode || null;
-
-      data.forEach((child) => {
-        const posyanduRecords = child.raw?.posyandu || [];
-        if (!posyanduRecords.length) return;
-
-        // Urutkan berdasarkan tanggal (ascending)
-        const sorted = [...posyanduRecords].sort(
-          (a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)
-        );
-
-        // Ambil 2 record terakhir (atau sesuai periode)
-        let latest, prev;
-        if (periodeAktif) {
-          // cari record untuk periode aktif dan sebelumnya
-          const idx = sorted.findIndex((r) => r.tgl_ukur === periodeAktif);
-          if (idx !== -1) {
-            latest = sorted[idx];
-            prev = sorted[idx - 1] || null;
-          } else {
-            latest = sorted.at(-1);
-            prev = sorted.at(-2);
-          }
-        } else {
-          latest = sorted.at(-1);
-          prev = sorted.at(-2);
-        }
-
-        if (!latest) return;
-
-        // Hitung kategori BBU terbaru
-        const currentStatus = (latest.bbu || 'Tidak diketahui').trim();
-        counts[currentStatus] = (counts[currentStatus] || 0) + 1;
-
-        // Tentukan tren
-        let naik = false;
-        if (prev) {
-          // bandingkan ranking status
-          const rank = (val) =>
-            categories.indexOf(val) !== -1 ? categories.indexOf(val) : 999;
-          const curRank = rank(currentStatus);
-          const prevRank = rank(prev.bbu || 'Tidak diketahui');
-
-          // kalau nilai rank makin kecil berarti status makin membaik (naik)
-          naik = curRank < prevRank;
-        }
-
-        if (!trenStats[currentStatus]) trenStats[currentStatus] = { naik: 0, turun: 0 };
-        if (naik) trenStats[currentStatus].naik++;
-        else trenStats[currentStatus].turun++;
+      // --- 1️⃣ Kelompokkan data per bulan berdasarkan hasil BBU
+      data.forEach(child => {
+        const posyandu = child.raw?.posyandu || [];
+        posyandu.forEach(p => {
+          const t = new Date(p.tgl_ukur);
+          const periode = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`;
+          const status = (p.bbu || 'Tidak diketahui').trim();
+          if (!perPeriode[periode]) perPeriode[periode] = {};
+          perPeriode[periode][status] = (perPeriode[periode][status] || 0) + 1;
+        });
       });
 
-      const total = data.length;
+      // --- 2️⃣ Urutkan periode kronologis
+      const periodeList = Object.keys(perPeriode).sort();
 
-      this.dataTable_bb = categories.map((status) => {
-        const jumlah = counts[status] || 0;
-        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+      // --- 3️⃣ Tentukan periode aktif
+      const periodeAktif = this.filters?.periode || periodeList.at(-1);
+      const periodeSebelum = periodeList[periodeList.indexOf(periodeAktif) - 1] || null;
 
-        const trenData = trenStats[status] || { naik: 0, turun: 0 };
-        const naik = trenData.naik >= trenData.turun;
+      // --- 4️⃣ Hitung total anak per periode
+      const totalNow = Object.values(perPeriode[periodeAktif] || {}).reduce((a, b) => a + b, 0);
+      const totalPrev = Object.values(perPeriode[periodeSebelum] || {}).reduce((a, b) => a + b, 0);
+
+      // --- 5️⃣ Bangun tabel data kategori + tren antar-periode
+      this.dataTable_bb = categories.map(status => {
+        const jumlahNow = (perPeriode[periodeAktif]?.[status]) || 0;
+        const jumlahPrev = (perPeriode[periodeSebelum]?.[status]) || 0;
+
+        const persenNow = totalNow ? ((jumlahNow / totalNow) * 100).toFixed(2) : 0;
+        const persenPrev = totalPrev ? ((jumlahPrev / totalPrev) * 100).toFixed(2) : 0;
+
+        const delta = persenNow - persenPrev;
+        const naik = delta >= 0;
         const trenClass = naik ? 'text-danger' : 'text-additional';
         const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
 
         return {
           status,
-          jumlah,
-          persen: parseFloat(persen),
-          tren: `${persen}%`,
+          jumlah: jumlahNow,
+          persen: parseFloat(persenNow),
+          tren: `${naik ? '+' : ''}${delta.toFixed(1)}%`,
           trenClass,
           trenIcon,
         };
       });
 
-      // Tambahkan kategori lain yang muncul
-      Object.keys(counts).forEach((status) => {
+      // --- 6️⃣ Tambahkan kategori tambahan yang tidak ada di daftar utama
+      const allStatuses = new Set(Object.keys(perPeriode[periodeAktif] || {}));
+      allStatuses.forEach(status => {
         if (!categories.includes(status)) {
-          const jumlah = counts[status];
-          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
-          const trenData = trenStats[status] || { naik: 0, turun: 0 };
-          const naik = trenData.naik >= trenData.turun;
+          const jumlahNow = (perPeriode[periodeAktif]?.[status]) || 0;
+          const jumlahPrev = (perPeriode[periodeSebelum]?.[status]) || 0;
+
+          const persenNow = totalNow ? ((jumlahNow / totalNow) * 100).toFixed(2) : 0;
+          const persenPrev = totalPrev ? ((jumlahPrev / totalPrev) * 100).toFixed(2) : 0;
+
+          const delta = persenNow - persenPrev;
+          const naik = delta >= 0;
+          const trenClass = naik ? 'text-danger' : 'text-additional';
+          const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
+
           this.dataTable_bb.push({
             status,
-            jumlah,
-            persen: parseFloat(persen),
-            tren: `${persen}%`,
-            trenClass: naik ? 'text-danger' : 'text-additional',
-            trenIcon: naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
+            jumlah: jumlahNow,
+            persen: parseFloat(persenNow),
+            tren: `${naik ? '+' : ''}${delta.toFixed(1)}%`,
+            trenClass,
+            trenIcon,
           });
         }
       });
@@ -1438,56 +1472,77 @@ export default {
       const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
       if (!data.length) return;
 
-      const categories = [
-        'Severely Stunted',
-        'Stunted',
-        'Normal',
-        'Tinggi',
-      ];
+      const categories = ['Severely Stunted', 'Stunted', 'Normal', 'Tinggi'];
+      const perPeriode = {};
 
-      const counts = {};
-      data.forEach((child) => {
-        const status = (child.tbu || 'Tidak diketahui').trim();
-        counts[status] = (counts[status] || 0) + 1;
+      // --- 1️⃣ kelompokkan per-periode berdasarkan TB/U (tbu)
+      data.forEach(child => {
+        const posyandu = child.raw?.posyandu || [];
+        posyandu.forEach(p => {
+          const t = new Date(p.tgl_ukur);
+          const periode = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`;
+          const status = (p.tbu || 'Tidak diketahui').trim();
+          if (!perPeriode[periode]) perPeriode[periode] = {};
+          perPeriode[periode][status] = (perPeriode[periode][status] || 0) + 1;
+        });
       });
 
-      const total = data.length;
+      const periodeList = Object.keys(perPeriode).sort();
+      const periodeAktif = this.filters?.periode || periodeList.at(-1);
+      const periodeSebelum = periodeList[periodeList.indexOf(periodeAktif) - 1] || null;
 
-      this.dataTable_tb = categories.map((status) => {
-        const jumlah = counts[status] || 0;
-        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+      const totalNow = Object.values(perPeriode[periodeAktif] || {}).reduce((a, b) => a + b, 0);
+      const totalPrev = Object.values(perPeriode[periodeSebelum] || {}).reduce((a, b) => a + b, 0);
 
-        // logika tren: jumlah > 10 = naik, <=10 = turun (contoh sederhana)
-        const naik = jumlah > 10;
+      this.dataTable_tb = categories.map(status => {
+        const jumlahNow = (perPeriode[periodeAktif]?.[status]) || 0;
+        const jumlahPrev = (perPeriode[periodeSebelum]?.[status]) || 0;
+
+        const persenNow = totalNow ? ((jumlahNow / totalNow) * 100).toFixed(2) : 0;
+        const persenPrev = totalPrev ? ((jumlahPrev / totalPrev) * 100).toFixed(2) : 0;
+
+        const delta = persenNow - persenPrev;
+        const naik = delta >= 0;
         const trenClass = naik ? 'text-danger' : 'text-additional';
         const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
 
         return {
           status,
-          jumlah,
-          persen: parseFloat(persen),
-          tren: `${persen}%`,
+          jumlah: jumlahNow,
+          persen: parseFloat(persenNow),
+          tren: `${naik ? '+' : ''}${delta.toFixed(1)}%`,
           trenClass,
           trenIcon,
         };
       });
 
-      Object.keys(counts).forEach((status) => {
+      // --- kategori tambahan di luar daftar utama
+      const allStatuses = new Set(Object.keys(perPeriode[periodeAktif] || {}));
+      allStatuses.forEach(status => {
         if (!categories.includes(status)) {
-          const jumlah = counts[status];
-          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
-          const naik = jumlah > 10;
+          const jumlahNow = (perPeriode[periodeAktif]?.[status]) || 0;
+          const jumlahPrev = (perPeriode[periodeSebelum]?.[status]) || 0;
+
+          const persenNow = totalNow ? ((jumlahNow / totalNow) * 100).toFixed(2) : 0;
+          const persenPrev = totalPrev ? ((jumlahPrev / totalPrev) * 100).toFixed(2) : 0;
+
+          const delta = persenNow - persenPrev;
+          const naik = delta >= 0;
+          const trenClass = naik ? 'text-danger' : 'text-additional';
+          const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
+
           this.dataTable_tb.push({
             status,
-            jumlah,
-            persen: parseFloat(persen),
-            tren: `${persen}%`,
-            trenClass: naik ? 'text-danger' : 'text-additional',
-            trenIcon: naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
+            jumlah: jumlahNow,
+            persen: parseFloat(persenNow),
+            tren: `${naik ? '+' : ''}${delta.toFixed(1)}%`,
+            trenClass,
+            trenIcon,
           });
         }
       });
     },
+
     generateDataTableStatus() {
       const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
       if (!data.length) return;
@@ -1500,49 +1555,76 @@ export default {
         'Overweight',
         'Obesitas',
       ];
+      const perPeriode = {};
 
-      const counts = {};
-      data.forEach((child) => {
-        const status = (child.bbtb || 'Tidak diketahui').trim();
-        counts[status] = (counts[status] || 0) + 1;
+      // --- 1️⃣ kelompokkan per-periode berdasarkan BB/TB (bbtb)
+      data.forEach(child => {
+        const posyandu = child.raw?.posyandu || [];
+        posyandu.forEach(p => {
+          const t = new Date(p.tgl_ukur);
+          const periode = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`;
+          const status = (p.bbtb || 'Tidak diketahui').trim();
+          if (!perPeriode[periode]) perPeriode[periode] = {};
+          perPeriode[periode][status] = (perPeriode[periode][status] || 0) + 1;
+        });
       });
 
-      const total = data.length;
+      const periodeList = Object.keys(perPeriode).sort();
+      const periodeAktif = this.filters?.periode || periodeList.at(-1);
+      const periodeSebelum = periodeList[periodeList.indexOf(periodeAktif) - 1] || null;
 
-      this.dataTable_status = categories.map((status) => {
-        const jumlah = counts[status] || 0;
-        const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
+      const totalNow = Object.values(perPeriode[periodeAktif] || {}).reduce((a, b) => a + b, 0);
+      const totalPrev = Object.values(perPeriode[periodeSebelum] || {}).reduce((a, b) => a + b, 0);
 
-        const naik = jumlah > 10;
+      this.dataTable_status = categories.map(status => {
+        const jumlahNow = (perPeriode[periodeAktif]?.[status]) || 0;
+        const jumlahPrev = (perPeriode[periodeSebelum]?.[status]) || 0;
+
+        const persenNow = totalNow ? ((jumlahNow / totalNow) * 100).toFixed(2) : 0;
+        const persenPrev = totalPrev ? ((jumlahPrev / totalPrev) * 100).toFixed(2) : 0;
+
+        const delta = persenNow - persenPrev;
+        const naik = delta >= 0;
         const trenClass = naik ? 'text-danger' : 'text-additional';
         const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
 
         return {
           status,
-          jumlah,
-          persen: parseFloat(persen),
-          tren: `${persen}%`,
+          jumlah: jumlahNow,
+          persen: parseFloat(persenNow),
+          tren: `${naik ? '+' : ''}${delta.toFixed(1)}%`,
           trenClass,
           trenIcon,
         };
       });
 
-      Object.keys(counts).forEach((status) => {
+      // --- kategori tambahan di luar daftar utama
+      const allStatuses = new Set(Object.keys(perPeriode[periodeAktif] || {}));
+      allStatuses.forEach(status => {
         if (!categories.includes(status)) {
-          const jumlah = counts[status];
-          const persen = total ? ((jumlah / total) * 100).toFixed(2) : 0;
-          const naik = jumlah > 10;
+          const jumlahNow = (perPeriode[periodeAktif]?.[status]) || 0;
+          const jumlahPrev = (perPeriode[periodeSebelum]?.[status]) || 0;
+
+          const persenNow = totalNow ? ((jumlahNow / totalNow) * 100).toFixed(2) : 0;
+          const persenPrev = totalPrev ? ((jumlahPrev / totalPrev) * 100).toFixed(2) : 0;
+
+          const delta = persenNow - persenPrev;
+          const naik = delta >= 0;
+          const trenClass = naik ? 'text-danger' : 'text-additional';
+          const trenIcon = naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill';
+
           this.dataTable_status.push({
             status,
-            jumlah,
-            persen: parseFloat(persen),
-            tren: `${persen}%`,
-            trenClass: naik ? 'text-danger' : 'text-additional',
-            trenIcon: naik ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill',
+            jumlah: jumlahNow,
+            persen: parseFloat(persenNow),
+            tren: `${naik ? '+' : ''}${delta.toFixed(1)}%`,
+            trenClass,
+            trenIcon,
           });
         }
       });
     },
+
     hitungStatusGizi() {
       // 🔹 Ambil data anak yang sudah difilter
       const dataAnak = this.filteredData.length ? this.filteredData : this.children;

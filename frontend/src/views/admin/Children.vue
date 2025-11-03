@@ -35,7 +35,7 @@
 
           <!-- Judul Laporan -->
           <div class="text-center mt-4">
-            <div class="bg-primary text-white py-2 px-4 d-inline-block rounded-top">
+            <div class="bg-primary text-white py-1 px-4 d-inline-block rounded-top">
               <h5 class="mb-0">
                 Laporan Status Gizi dan Stagnansi <span class="text-capitalize fw-bold">{{ kelurahan }}</span> Bulan <span class="fw-bold">{{ thisMonth }}</span>
               </h5>
@@ -44,19 +44,16 @@
 
           <!-- Filter Form -->
           <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0">
-            <div class="mb-2 fw-bold text-primary">Filter:</div>
-
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- === Filter Utama === -->
-              <div class="col-md-3 position-relative">
-                <label class="form-label">Underweight (BB/U)</label>
+              <div class="col-md-2 position-relative">
+                <label class="form-label text-primary">Filter Status Gizi:</label>
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    style="max-width: 100%;"
                   >
                     <span v-if="filters.bbu.length === 0" class="text-muted">Pilih Underweight</span>
                     <span v-else class="selected-text">{{ filters.bbu.join(', ') }}</span>
@@ -92,15 +89,13 @@
                 </div>
               </div>
 
-              <div class="col-md-3">
-                <label class="form-label">Stunting (TB/U)</label>
+              <div class="col-md-2">
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    style="max-width: 100%;"
                   >
                     <span v-if="filters.tbu.length === 0" class="text-muted">Pilih Stunting</span>
                     <span v-else class="selected-text">{{ filters.tbu.join(', ') }}</span>
@@ -136,15 +131,13 @@
                 </div>
               </div>
 
-              <div class="col-md-3">
-                <label class="form-label">Wasting (BB/TB)</label>
+              <div class="col-md-2">
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    style="max-width: 100%;"
                   >
                     <span v-if="filters.bbtb.length === 0" class="text-muted">Pilih Wasting</span>
                     <span v-else class="selected-text">{{ filters.bbtb.join(', ') }}</span>
@@ -180,15 +173,13 @@
                 </div>
               </div>
 
-              <div class="col-md-3">
-                <label class="form-label">BB Stagnan</label>
+              <div class="col-md-2">
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    style="max-width: 100%;"
                   >
                     <span v-if="filters.stagnan.length === 0" class="text-muted">Pilih BB Stagnan</span>
                     <span v-else class="selected-text">{{ filters.stagnan.join(', ') }}</span>
@@ -224,125 +215,95 @@
                 </div>
               </div>
 
-              <!-- Tombol Expand/Collapse -->
-              <div class="col-md-12 d-flex justify-content-end">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary fw-semibold"
-                  @click="showAdvanced = !showAdvanced"
-                >
-                  <i :class="showAdvanced ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
-                  {{ showAdvanced ? 'Tutup Filter Lain' : 'Filter Lain' }}
-                </button>
+              <div class="col-md-4 position-relative">
+                <div class="dropdown w-100">
+                  <button
+                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <span v-if="filters.intervensi.length === 0" class="text-muted">Pilih Intervensi</span>
+                    <span v-else class="selected-text">{{ filters.intervensi.join(', ') }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
+                    <li
+                      v-for="item in intervensiOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-' + item"
+                        :value="item"
+                        v-model="filters.intervensi"
+                      />
+                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li class="d-flex justify-content-between px-2">
+                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_intervensi">
+                        Pilih Semua
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_intervensi">
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              <!-- === Filter Lanjutan (Collapsible) === -->
-              <transition name="fade">
-                <div v-if="showAdvanced" class="row g-3">
-                  <div class="col-md-4">
-                    <label class="form-label">Posyandu</label>
-                    <select
-                      v-model="filters.posyandu"
-                      class="form-select text-muted"
-                      @change="handlePosyanduChange"
-                    >
-                      <option value="">All</option>
-                      <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
-                        {{ item.nama_posyandu }}
-                      </option>
-                    </select>
-                  </div>
+              <div class="col-md-2">
+                <label class="form-label text-primary">Filter Lokasi</label>
+                <select
+                  v-model="filters.posyandu"
+                  class="form-select text-muted"
+                  @change="handlePosyanduChange"
+                >
+                  <option value="">Pilih Posyandu</option>
+                  <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
+                    {{ item.nama_posyandu }}
+                  </option>
+                </select>
+              </div>
 
-                  <div class="col-md-4">
-                    <label class="form-label">RW</label>
-                    <select
-                      v-model="filters.rw"
-                      class="form-select text-muted"
-                      :disabled="rwReadonly"
-                    >
-                      <option value="">All</option>
-                      <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
-                    </select>
-                  </div>
+              <div class="col-md-2">
+                <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
+                  <option value="">Pilih RW</option>
+                  <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                </select>
+              </div>
 
-                  <div class="col-md-4">
-                    <label class="form-label">RT</label>
-                    <select
-                      v-model="filters.rt"
-                      class="form-select text-muted"
-                      :disabled="rtReadonly"
-                    >
-                      <option value="">All</option>
-                      <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
-                    </select>
-                  </div>
+              <div class="col-md-2">
+                <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
+                  <option value="">Pilih RT</option>
+                  <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
+                </select>
+              </div>
 
-                  <div class="col-md-4 position-relative">
-                    <label class="form-label">Intervensi</label>
-                    <div class="dropdown w-100">
-                      <button
-                        class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                        style="max-width: 100%;"
-                      >
-                        <span v-if="filters.intervensi.length === 0" class="text-muted">Pilih Intervensi</span>
-                        <span v-else class="selected-text">{{ filters.intervensi.join(', ') }}</span>
-                      </button>
-
-                      <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
-                        <li
-                          v-for="item in intervensiOptions"
-                          :key="item"
-                          class="dropdown-item d-flex align-items-center"
-                        >
-                          <input
-                            type="checkbox"
-                            class="form-check-input me-2"
-                            :id="'chk-' + item"
-                            :value="item"
-                            v-model="filters.intervensi"
-                          />
-                          <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
-                        </li>
-
-                        <li><hr class="dropdown-divider"></li>
-
-                        <li class="d-flex justify-content-between px-2">
-                          <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_intervensi">
-                            Pilih Semua
-                          </button>
-                          <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_intervensi">
-                            Hapus Semua
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-
-                  <div class="col-md-8 text-center">
-                    <label class="form-label">Periode</label>
-                    <div class="d-flex justify-content-between gap-2">
-                      <select v-model="filters.periodeAwal" class="form-select text-muted">
-                        <option value="">All</option>
-                        <option v-for="periode in periodeOptions" :key="periode" :value="periode">
-                          {{ periode }}
-                        </option>
-                      </select>
-                      <select v-model="filters.periodeAkhir" class="form-select text-muted">
-                        <option value="">All</option>
-                        <option v-for="periode in periodeOptions" :key="periode" :value="periode">
-                          {{ periode }}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
+              <div class="col-md-6 text-center">
+                <label class="form-label text-primary">Pilih Periode:</label>
+                <div class="d-flex justify-content-between gap-2">
+                  <select v-model="filters.periodeAwal" class="form-select text-muted">
+                    <option value="">Awal</option>
+                    <option v-for="periode in periodeOptions" :key="periode" :value="periode">
+                      {{ periode }}
+                    </option>
+                  </select>
+                  <select v-model="filters.periodeAkhir" class="form-select text-muted">
+                    <option value="">Akhir</option>
+                    <option v-for="periode in periodeOptions" :key="periode" :value="periode">
+                      {{ periode }}
+                    </option>
+                  </select>
                 </div>
-              </transition>
+              </div>
 
-              <!-- === Tombol Aksi (Selalu Tampil) === -->
+              <!-- === Tombol Aksi === -->
               <div class="col-md-12 d-flex justify-content-between mt-3">
                 <button type="submit" class="btn btn-gradient fw-semibold">
                   <i class="bi bi-filter me-1"></i> Terapkan
@@ -352,101 +313,6 @@
                 </button>
               </div>
             </form>
-          </div>
-
-          <!-- Button Group -->
-          <div class="container-fluid mt-4">
-            <!-- Expand/Collapse Button -->
-            <div class="d-flex justify-content-between">
-              <h5 class="fw-bold text-success mb-3">Ringkasan Statistik</h5>
-              <div class="mb-3">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary mx-3"
-                  @click="toggleExpandForm"
-                >
-                  <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
-                  {{ isFormOpen ? 'Tutup Form' : 'Unggah Data' }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Collapsible Form -->
-            <div class="card shadow-sm" v-if="isFormOpen">
-              <div class="card-body">
-                <label class="form-label fw-semibold">Upload Data Anak (CSV)</label>
-                <div
-                  class="dropzone-full position-relative p-4 rounded-3 border text-center"
-                  :class="{
-                    'border-primary bg-light': isDataDrag,
-                    'border-danger': fileError
-                  }"
-                  @click="triggerFileDialog"
-                  @dragover.prevent="onDragOver"
-                  @dragleave.prevent="onDragLeave"
-                  @drop.prevent="handleDrop($event)"
-                  role="button"
-                  tabindex="0"
-                  @keydown.enter.prevent="triggerFileDialog"
-                  @keydown.space.prevent="triggerFileDialog"
-                >
-                  <i class="bi bi-cloud-upload fs-1 text-primary"></i>
-                  <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
-                  <small class="text-muted">atau klik untuk pilih file</small>
-
-                  <!-- Invisible input (terikat ke parent relatif) -->
-                  <input
-                    ref="fileInput"
-                    type="file"
-                    accept=".csv,text/csv"
-                    class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                    @change="handleFileChange($event)"
-                  />
-                </div>
-
-                <!-- Preview / status -->
-                <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                  <div v-if="file">
-                    <div><strong>Nama:</strong> {{ fileName }}</div>
-                    <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
-                    <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
-                  </div>
-
-                  <div v-else class="text-muted small">Belum ada file dipilih</div>
-
-                  <div class="d-flex gap-2">
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-outline-danger btn-sm"
-                      @click="removeFile"
-                      type="button"
-                    >
-                      <i class="bi bi-trash me-1"></i> Hapus
-                    </button>
-
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-success btn-sm"
-                      @click="uploadFile"
-                      type="button"
-                    >
-                      <i class="bi bi-upload me-1"></i> Upload
-                    </button>
-
-                    <div v-if="uploading" class="d-flex align-items-center gap-2">
-                      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                      <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Error message -->
-                <div v-if="fileError" class="mt-2 text-danger small">
-                  {{ fileError }}
-                </div>
-              </div>
-            </div>
-
           </div>
 
           <!-- Ringkasan Statistik-->
@@ -632,7 +498,7 @@
                   <!-- Badge Status Gizi -->
                   <div class="mb-3">
                     <span
-                      class="badge px-3 py-2 fs-6"
+                      class="badge px-3 py-2 small"
                       :class="{
                         'bg-danger': ['Severely Wasted','Obesitas'].includes(selectedAnak.status_gizi),
                         'bg-warning text-dark': ['Wasted','Possible risk of Overweight','Overweight'].includes(selectedAnak.status_gizi),
@@ -747,7 +613,7 @@
                   <!-- Header -->
                   <div class="bg-primary text-white p-4 text-center rounded-top">
                     <h5 class="fw-bold mb-0">{{ selectedAnak.nama }}</h5>
-                    <p class="mb-0 small">
+                    <p class="text-white mb-0 small">
                       NIK: {{ selectedAnak.nik }} •
                       <span class="text-capitalize">
                         {{ selectedAnak.gender === 'L' ? 'Laki-laki' : 'Perempuan' }}
@@ -902,7 +768,7 @@
                       <div class="tab-pane fade" id="tab-pane-kunjungan" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
                           <h6 class="fw-bold mb-3 text-danger">Riwayat Penimbangan</h6>
-                          <div class="table-responsive">
+                          <div class="table-responsive mb-4">
                             <table class="table table-sm table-hover align-middle">
                               <thead class="table-secondary">
                                 <tr>
@@ -913,10 +779,7 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr
-                                  v-for="(riwayat, i) in selectedAnak.riwayat_penimbangan"
-                                  :key="'penimbangan-' + i"
-                                >
+                                <tr v-for="(riwayat, i) in selectedAnak.riwayat_penimbangan" :key="'penimbangan-' + i">
                                   <td>{{ riwayat.tanggal }}</td>
                                   <td>{{ riwayat.bb }}</td>
                                   <td>{{ riwayat.tb }}</td>
@@ -933,6 +796,39 @@
                               </tbody>
                             </table>
                           </div>
+
+                          <div class="row g-3">
+                            <!-- Chart BB/U -->
+                            <div class="col-md-6 col-12">
+                              <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                  <h6 class="mb-2">BB/U (0–60 bln)</h6>
+                                  <div style="height: 200px;">
+                                    <canvas ref="chartBB"></canvas>
+                                  </div>
+                                  <div class="small text-muted mt-2">
+                                    Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Chart TB/U -->
+                            <div class="col-md-6 col-12">
+                              <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                  <h6 class="mb-2">TB/U (0–60 bln)</h6>
+                                  <div style="height: 200px;">
+                                    <canvas ref="chartTB"></canvas>
+                                  </div>
+                                  <div class="small text-muted mt-2">
+                                    Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
                         </div>
                       </div>
 
@@ -1021,13 +917,36 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 import { ref, computed } from 'vue'
+import {
+  Chart,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  CategoryScale,
+  Legend,
+  Tooltip,
+  Filler
+} from 'chart.js'
+
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  CategoryScale,
+  Legend,
+  Tooltip,
+  Filler
+)
 
 // Simple sort icon component
 const SortIcon = {
   props: ['field'],
   template: `<span v-if="$parent.sortKey === field">{{ $parent.sortDir === 'asc' ? '▲' : '▼' }}</span>`
 }
-
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -1043,7 +962,65 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon, Welcome },
   data() {
     return {
+      curveBB: [], // akan diisi sesuai gender
+      curveTB: [], // akan diisi sesuai gender
+      chartBB: null,
+      chartTB: null,
+      ageMonths: 24,
+      currentWeight: 12,
+      currentHeight: 87,
+      gender: 'male',
+
+      kmsColors: {
+        top: '#F2D803',
+        midTop: '#84BA24',
+        mid: '#2CA339',
+        midMed: '#2DA83C',
+        midBottom: '#80B626',
+        bottom: '#DCBF1E',
+      },
+
+      wfaBoys: [
+        { m: 0, median: 3.3, sd: 0.3 }, { m: 1, median: 4.5, sd: 0.35 },
+        { m: 2, median: 5.6, sd: 0.4 }, { m: 3, median: 6.4, sd: 0.45 },
+        { m: 4, median: 7.0, sd: 0.5 }, { m: 5, median: 7.5, sd: 0.55 },
+        { m: 6, median: 7.9, sd: 0.6 }, { m: 12, median: 9.6, sd: 0.8 },
+        { m: 24, median: 12.2, sd: 1.1 }, { m: 36, median: 14.3, sd: 1.4 },
+        { m: 48, median: 16.3, sd: 1.6 }, { m: 60, median: 18.3, sd: 1.8 }
+      ],
+      wfaGirls: [
+        { m: 0, median: 3.2, sd: 0.3 }, { m: 1, median: 4.2, sd: 0.35 },
+        { m: 2, median: 5.1, sd: 0.4 }, { m: 3, median: 5.8, sd: 0.45 },
+        { m: 4, median: 6.4, sd: 0.5 }, { m: 5, median: 6.9, sd: 0.55 },
+        { m: 6, median: 7.3, sd: 0.6 }, { m: 12, median: 8.9, sd: 0.8 },
+        { m: 24, median: 11.5, sd: 1.1 }, { m: 36, median: 13.9, sd: 1.4 },
+        { m: 48, median: 16.0, sd: 1.6 }, { m: 60, median: 18.2, sd: 1.8 }
+      ],
+      hfaBoys: [
+        { m: 0, median: 49.9, sd: 1.9 }, { m: 1, median: 54.7, sd: 2.0 },
+        { m: 2, median: 58.4, sd: 2.1 }, { m: 3, median: 61.4, sd: 2.2 },
+        { m: 4, median: 63.9, sd: 2.3 }, { m: 5, median: 65.9, sd: 2.4 },
+        { m: 6, median: 67.6, sd: 2.5 }, { m: 12, median: 75.7, sd: 2.9 },
+        { m: 24, median: 87.8, sd: 3.2 }, { m: 36, median: 96.1, sd: 3.4 },
+        { m: 48, median: 103.3, sd: 3.6 }, { m: 60, median: 110.0, sd: 3.8 }
+      ],
+      hfaGirls: [
+        { m: 0, median: 49.1, sd: 1.9 }, { m: 1, median: 53.7, sd: 2.0 },
+        { m: 2, median: 57.1, sd: 2.1 }, { m: 3, median: 59.8, sd: 2.2 },
+        { m: 4, median: 62.1, sd: 2.3 }, { m: 5, median: 64.0, sd: 2.4 },
+        { m: 6, median: 65.7, sd: 2.5 }, { m: 12, median: 74.0, sd: 2.8 },
+        { m: 24, median: 86.4, sd: 3.2 }, { m: 36, median: 95.1, sd: 3.4 },
+        { m: 48, median: 102.7, sd: 3.6 }, { m: 60, median: 109.4, sd: 3.8 }
+      ],
+
       /* Wajib ada */
+      file: null,
+      fileName: '',
+      fileSize: 0,
+      filePreviewLines: '',
+      fileError: '',
+      uploading: false,
+      uploadProgress: 0,
       configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
@@ -1110,14 +1087,6 @@ export default {
         "2 T",
         "> 2 T",
       ],
-      // upload file
-      file: null,
-      fileName: '',
-      fileSize: 0,
-      fileError: '',
-      filePreviewLines: '', // (opsional) capture beberapa char/baris pertama dari CSV
-      uploading: false,
-      uploadProgress: 0,
       // config
       ACCEPTED_EXT: ['csv'],
       ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
@@ -1364,7 +1333,6 @@ export default {
       this.rwReadonly = true
       this.rtReadonly = true
     },
-
     handlePosyanduChange() {
       const pos = this.filters.posyandu
 
@@ -1390,7 +1358,6 @@ export default {
         this.filters.rt = ''
       }
     },
-
     applyFilter() {
       this.filteredData = this.children.filter(item => {
         const f = this.filters
@@ -1465,7 +1432,6 @@ export default {
         )
       })
     },
-
     resetFilter() {
       this.filters = {
         bbu: [],
@@ -1717,34 +1683,6 @@ export default {
       //console.log('selectedAnak detail:', this.selectedAnak)
     },
 
-    triggerFileDialog() {
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.click()
-      }
-    },
-    onDragOver(e) {
-      this.isDataDrag = true
-      console.log(e);
-    },
-    onDragLeave(e) {
-      this.isDataDrag = false
-      console.log(e);
-    },
-    handleFileChange(e) {
-      const file = e.target.files && e.target.files[0]
-      if (!file) return
-      this.setFile(file)
-      // reset input value biar bisa pilih file sama lagi kalau ingin
-      e.target.value = ''
-    },
-
-    handleDrop(e) {
-      this.isDataDrag = false
-      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]
-      if (!file) return
-      this.setFile(file)
-    },
-
     setFile(file) {
       this.fileError = ''
       // validasi
@@ -1800,29 +1738,13 @@ export default {
       reader.readAsText(file.slice(0, 2000))
     },
 
-    removeFile() {
-      this.file = null
-      this.fileName = ''
-      this.fileSize = 0
-      this.filePreviewLines = ''
-      this.fileError = ''
-    },
-
-    humanFileSize(size) {
-      if (!size) return '0 B'
-      const i = Math.floor(Math.log(size) / Math.log(1024))
-      const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-      return (size / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + sizes[i]
-    },
-
-    async uploadFile() {
+    async uploadCSV() {
       if (!this.file) {
         this.fileError = 'Tidak ada file untuk di-upload.'
         return
       }
 
-      // Ubah URL ini sesuai backend-mu
-      const UPLOAD_URL = '/api/uploads/csv' // <-- sesuaikan
+      const UPLOAD_URL = `${baseURL}/api/children/import`
 
       const formData = new FormData()
       formData.append('file', this.file)
@@ -1835,35 +1757,272 @@ export default {
         const res = await axios.post(UPLOAD_URL, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
+            // Jika Laravel pakai Sanctum / JWT:
             Authorization: `Bearer ${localStorage.getItem('token')}`
           },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.lengthComputable) {
-              this.uploadProgress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              this.uploadProgress = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              )
             }
           }
         })
 
-        // sukses — tangani response sesuai API
-        this.$bvToast && this.$bvToast.toast
-          ? this.$bvToast.toast('Upload berhasil', { variant: 'success' })
-          : console.log('Upload berhasil', res.data)
+        // ✅ Tangani respons sukses
+        console.log('Upload berhasil:', res.data)
+        if (this.$bvToast) {
+          this.$bvToast.toast('Upload CSV berhasil diproses.', {
+            variant: 'success',
+            solid: true
+          })
+        }
 
-        // reset file atau lakukan apa yg dibutuhkan
+        // Reset file input
         this.removeFile()
       } catch (err) {
-        console.error('Upload error', err)
-        this.fileError = (err.response && err.response.data && err.response.data.message) || 'Gagal upload file.'
+        console.error('Upload error:', err)
+        this.fileError =
+          (err.response && err.response.data && err.response.data.message) ||
+          'Gagal upload file. Periksa format CSV atau koneksi server.'
       } finally {
         this.uploading = false
         this.uploadProgress = 0
       }
     },
 
+    triggerFileDialog() {
+      this.$refs.fileInput.click()
+    },
+    handleFileChange(e) {
+      const file = e.target.files[0]
+      this.loadFilePreview(file)
+    },
+    handleDrop(e) {
+      const file = e.dataTransfer.files[0]
+      this.loadFilePreview(file)
+      this.isDataDrag = false
+    },
+    onDragOver() {
+      this.isDataDrag = true
+    },
+    onDragLeave() {
+      this.isDataDrag = false
+    },
+    removeFile() {
+      this.file = null
+      this.fileName = ''
+      this.fileSize = 0
+      this.filePreviewLines = ''
+      this.$refs.fileInput.value = ''
+    },
+    humanFileSize(size) {
+      const i = Math.floor(Math.log(size) / Math.log(1024))
+      return (
+        (size / Math.pow(1024, i)).toFixed(2) * 1 +
+        ' ' +
+        ['B', 'kB', 'MB', 'GB', 'TB'][i]
+      )
+    },
+    async loadFilePreview(file) {
+      if (!file) return
+      if (!file.name.endsWith('.csv')) {
+        this.fileError = 'Hanya file CSV yang diperbolehkan.'
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      const text = await file.text()
+      const lines = text.split('\n').slice(0, 2).join(' | ')
+      this.filePreviewLines = lines
+    },
     goToDetail(id) {
       // misal arahkan ke route detail anak
       this.$router.push({ name: 'AnakDetail', params: { id } })
     },
+
+    //KMS
+    onHitung() {
+      //console.log(selectedAnak.riwayat_penimbangan);
+
+      if (!this.birthDate || !this.gender || !this.currentWeight || !this.currentHeight) return
+
+      this.ageMonths = this.calcAgeMonths(this.birthDate, new Date())
+
+      // set kurva dulu
+      this.curveBB = this.gender === 'female' ? this.wfaGirls : this.wfaBoys
+      this.curveTB = this.gender === 'female' ? this.hfaGirls : this.hfaBoys
+
+      this.idealWeight = this.interpolateMedian(this.curveBB, this.ageMonths)
+      const sdW = this.interpolateSD(this.curveBB, this.ageMonths)
+      const zW = (this.currentWeight - this.idealWeight) / sdW
+      this.statusWfa = this.classifyWFA(zW)
+
+      const medianH = this.interpolateMedian(this.curveTB, this.ageMonths)
+      const sdH = this.interpolateSD(this.curveTB, this.ageMonths)
+      const zH = (this.currentHeight - medianH) / sdH
+      this.statusHfa = this.classifyHFA(zH)
+
+      this.calculated = true
+      this.$nextTick(() => {
+        this.renderBB()
+        this.renderTB()
+      })
+    },
+    // Convert hex ke rgba
+    hexA(hex, alpha = 0.3) {
+      hex = hex.replace('#','')
+      const r = parseInt(hex.substring(0,2),16)
+      const g = parseInt(hex.substring(2,4),16)
+      const b = parseInt(hex.substring(4,6),16)
+      return `rgba(${r},${g},${b},${alpha})`
+    },
+
+    // Hitung umur dalam bulan
+    calcAgeMonths(birth, date) {
+      const b = new Date(birth)
+      const d = new Date(date)
+      return (d.getFullYear() - b.getFullYear()) * 12 + (d.getMonth() - b.getMonth())
+    },
+
+    // Interpolasi linear median
+    interpolateMedian(curve, month) {
+      if (!curve) return 0
+      for (let i = 0; i < curve.length - 1; i++) {
+        if (month >= curve[i].m && month <= curve[i+1].m) {
+          const t = (month - curve[i].m) / (curve[i+1].m - curve[i].m)
+          return curve[i].median + t * (curve[i+1].median - curve[i].median)
+        }
+      }
+      return curve[curve.length-1].median
+    },
+
+    // Interpolasi linear SD
+    interpolateSD(curve, month) {
+      if (!curve) return 1
+      for (let i = 0; i < curve.length - 1; i++) {
+        if (month >= curve[i].m && month <= curve[i+1].m) {
+          const t = (month - curve[i].m) / (curve[i+1].m - curve[i].m)
+          return curve[i].sd + t * (curve[i+1].sd - curve[i].sd)
+        }
+      }
+      return curve[curve.length-1].sd
+    },
+
+    // Render BB/U
+    renderBB() {
+      const labels = Array.from({length:61}, (_, i) => i)
+      const median = labels.map(m => this.interpolateMedian(this.curveBB, m))
+      const sdAt = m => this.interpolateSD(this.curveBB, m)
+
+      const plus1 = labels.map((m,i) => median[i] + sdAt(m))
+      const minus1 = labels.map((m,i) => median[i] - sdAt(m))
+      const plus2 = labels.map((m,i) => median[i] + 2*sdAt(m))
+      const minus2 = labels.map((m,i) => median[i] - 2*sdAt(m))
+      const plus3 = labels.map((m,i) => median[i] + 3*sdAt(m))
+      const minus3 = labels.map((m,i) => median[i] - 3*sdAt(m))
+
+      const datasets = [
+        { label: '+3 SD', data: plus3, borderColor: this.kmsColors.top, backgroundColor: this.hexA(this.kmsColors.top), fill: '-1', pointRadius: 0 },
+        { label: '+2 SD', data: plus2, borderColor: this.kmsColors.midTop, backgroundColor: this.hexA(this.kmsColors.midTop), fill: '-1', pointRadius: 0 },
+        { label: '+1 SD', data: plus1, borderColor: this.kmsColors.mid, backgroundColor: this.hexA(this.kmsColors.mid), fill: '-1', pointRadius: 0 },
+        { label: 'Median', data: median, borderColor: '#000', borderWidth: 2, fill: false, pointRadius: 0 },
+        { label: '-1 SD', data: minus1, borderColor: this.kmsColors.midMed, backgroundColor: this.hexA(this.kmsColors.midMed), fill: '-1', pointRadius: 0 },
+        { label: '-2 SD', data: minus2, borderColor: this.kmsColors.midBottom, backgroundColor: this.hexA(this.kmsColors.midBottom), fill: '-1', pointRadius: 0 },
+        { label: '-3 SD', data: minus3, borderColor: this.kmsColors.bottom, backgroundColor: this.hexA(this.kmsColors.bottom), fill: '-1', pointRadius: 0 },
+      ]
+
+      // Titik riwayat anak
+      const anakData = this.selectedAnak?.riwayat_penimbangan?.map(r => ({
+        x: this.calcAgeMonths(this.selectedAnak.tanggal_lahir, r.tanggal),
+        y: parseFloat(r.bb)
+      })) || []
+
+      datasets.push({
+        label: 'Anak',
+        data: anakData,
+        borderColor: 'red',
+        backgroundColor: 'red',
+        pointRadius: 6,
+        showLine: false,
+        parsing: false
+      })
+
+      if (this.chartBB) this.chartBB.destroy()
+      const ctx = this.$refs.chartBB.getContext('2d')
+      this.chartBB = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { type: 'linear', min:0, max:60, title: { display:true, text:'Umur (bulan)' } },
+            y: { title: { display:true, text:'Berat Badan (kg)' } }
+          }
+        }
+      })
+    },
+
+    // Render TB/U
+    renderTB() {
+      const labels = Array.from({length:61}, (_, i) => i)
+      const median = labels.map(m => this.interpolateMedian(this.curveTB, m))
+      const sdAt = m => this.interpolateSD(this.curveTB, m)
+
+      const plus1 = labels.map((m,i) => median[i] + sdAt(m))
+      const minus1 = labels.map((m,i) => median[i] - sdAt(m))
+      const plus2 = labels.map((m,i) => median[i] + 2*sdAt(m))
+      const minus2 = labels.map((m,i) => median[i] - 2*sdAt(m))
+      const plus3 = labels.map((m,i) => median[i] + 3*sdAt(m))
+      const minus3 = labels.map((m,i) => median[i] - 3*sdAt(m))
+
+      const datasets = [
+        { label: '+3 SD', data: plus3, borderColor: this.kmsColors.top, backgroundColor: this.hexA(this.kmsColors.top), fill: '-1', pointRadius: 0 },
+        { label: '+2 SD', data: plus2, borderColor: this.kmsColors.midTop, backgroundColor: this.hexA(this.kmsColors.midTop), fill: '-1', pointRadius: 0 },
+        { label: '+1 SD', data: plus1, borderColor: this.kmsColors.mid, backgroundColor: this.hexA(this.kmsColors.mid), fill: '-1', pointRadius: 0 },
+        { label: 'Median', data: median, borderColor: '#000', borderWidth: 2, fill: false, pointRadius: 0 },
+        { label: '-1 SD', data: minus1, borderColor: this.kmsColors.midMed, backgroundColor: this.hexA(this.kmsColors.midMed), fill: '-1', pointRadius: 0 },
+        { label: '-2 SD', data: minus2, borderColor: this.kmsColors.midBottom, backgroundColor: this.hexA(this.kmsColors.midBottom), fill: '-1', pointRadius: 0 },
+        { label: '-3 SD', data: minus3, borderColor: this.kmsColors.bottom, backgroundColor: this.hexA(this.kmsColors.bottom), fill: '-1', pointRadius: 0 },
+      ]
+
+      // Titik riwayat anak
+      const anakData = this.selectedAnak?.riwayat_penimbangan?.map(r => ({
+        x: this.calcAgeMonths(this.selectedAnak.tanggal_lahir, r.tanggal),
+        y: parseFloat(r.tb)
+      })) || []
+
+      datasets.push({
+        label: 'Anak',
+        data: anakData,
+        borderColor: 'red',
+        backgroundColor: 'red',
+        pointRadius: 6,
+        showLine: false,
+        parsing: false
+      })
+
+      if (this.chartTB) this.chartTB.destroy()
+      const ctx = this.$refs.chartTB.getContext('2d')
+      this.chartTB = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { type: 'linear', min:0, max:60, title: { display:true, text:'Umur (bulan)' } },
+            y: { title: { display:true, text:'Tinggi Badan (cm)' } }
+          }
+        }
+      })
+    }
+
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1931,6 +2090,20 @@ export default {
   watch: {
     'filters.posyandu'(val) {
       this.handlePosyanduChange(val)
+    },
+    selectedAnak: {
+      immediate: true,
+      handler(newVal) {
+        if (!newVal || !newVal.riwayat_penimbangan?.length) return
+
+        const last = newVal.riwayat_penimbangan.at(-1)
+        this.birthDate = newVal.tanggal_lahir || ''
+        this.gender = newVal.jenis_kelamin?.toLowerCase() === 'perempuan' ? 'female' : 'male'
+        this.currentWeight = parseFloat(last.bb)
+        this.currentHeight = parseFloat(last.tb)
+
+        this.onHitung()
+      },
     }
   },
 }

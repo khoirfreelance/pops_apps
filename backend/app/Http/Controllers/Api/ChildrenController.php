@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Child;
+use Illuminate\Support\Facades\Validator;
 
 class ChildrenController extends Controller
 {
@@ -86,19 +88,19 @@ class ChildrenController extends Controller
                 'posyandu'=>
                     [
                         [
-                        'tgl_ukur'=>'2025-02-01',
-                        'posyandu'=>'Mawar',
-                        'puskesmas'=>'Kluwut',
-                        'cara_ukur'=>'Terlentang',
-                        'usia'=>1,
-                        'bb'=>4.1,
-                        'tb'=>54.1,
-                        'bbu'=>'Normal',
-                        'tbu'=>'Normal',
-                        'bbtb'=>'Normal',
-                        'lila'=>12,
-                        'lika'=>36,
-                        'bb_naik'=>true
+                            'tgl_ukur'=>'2025-02-01',
+                            'posyandu'=>'Mawar',
+                            'puskesmas'=>'Kluwut',
+                            'cara_ukur'=>'Terlentang',
+                            'usia'=>1,
+                            'bb'=>4.1,
+                            'tb'=>54.1,
+                            'bbu'=>'Normal',
+                            'tbu'=>'Normal',
+                            'bbtb'=>'Normal',
+                            'lila'=>12,
+                            'lika'=>36,
+                            'bb_naik'=>true
                         ],
                         [
                         'tgl_ukur'=>'2025-03-01',
@@ -147,6 +149,36 @@ class ChildrenController extends Controller
                         ],
                         [
                         'tgl_ukur'=>'2025-06-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>5,
+                        'bb'=>4.6,
+                        'tb'=>55,
+                        'bbu'=>'Severely Underweight',
+                        'tbu'=>'Severely Stunted',
+                        'bbtb'=>'Severely Wasted',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>true,
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-07-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>4,
+                        'bb'=>4.5,
+                        'tb'=>54.5,
+                        'bbu'=>'Severely Underweight',
+                        'tbu'=>'Severely Stunted',
+                        'bbtb'=>'Severely Wasted',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>true,
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-08-01',
                         'posyandu'=>'Mawar',
                         'puskesmas'=>'Kluwut',
                         'cara_ukur'=>'Terlentang',
@@ -329,6 +361,36 @@ class ChildrenController extends Controller
                     'lika'=>39,
                     'bb_naik'=>false,
                     ],
+                    [
+                        'tgl_ukur'=>'2025-07-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>4,
+                        'bb'=>4.5,
+                        'tb'=>54.5,
+                        'bbu'=>'Severely Underweight',
+                        'tbu'=>'Severely Stunted',
+                        'bbtb'=>'Severely Wasted',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>true,
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-08-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>5,
+                        'bb'=>4.6,
+                        'tb'=>55,
+                        'bbu'=>'Severely Underweight',
+                        'tbu'=>'Severely Stunted',
+                        'bbtb'=>'Severely Wasted',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>true,
+                        ],
                 ],
                 'intervensi'=>
                 [
@@ -3053,6 +3115,3049 @@ class ChildrenController extends Controller
                     ]
                 ]
             ],
+
+            [
+                'id' => 19,
+                'nik' => null,
+                'nama'=>'Assa Putri',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'01',
+                'rw'=>'08',
+                'kelahiran'=>
+                    [
+                        [
+                        'tmpt_dilahirkan'=>'Semarang',
+                        'tgl_lahir'=>'2025-01-01',
+                        'bb_lahir'=>3,
+                        'pb_lahir'=>48,
+                        'persalinan'=>'Normal',
+                        'riwayat_penyakit'=>false,
+                        ]
+                    ],
+                'keluarga'=>
+                    [
+                        [
+                        'no_kk'=>null,
+                        'nik_ayah'=>null,
+                        'nama_ayah'=>'Soleh',
+                        'pekerjaan_ayah'=>'Wiraswasta',
+                        'usia_ayah'=>32,
+                        'nik_ibu'=>'3329146407960001',
+                        'nama_ibu'=>'Nur faizah',
+                        'pekerjaan_ibu'=>'Ibu rumah tangga',
+                        'usia_ibu'=>25,
+                        'anak_ke'=>2,
+                        'riwayat_4t'=>'BUKAN 4T',
+                        'penggunaan_kb'=>false,
+                        'jns_kb'=>null,
+                        'asi_esklusif'=>true,
+                        'imunisasi_lengkap'=>false,
+                        'diasuh_oleh'=>'ayah/ibu',
+                        'rutin_posyandu'=>true,
+                        'riwayat_penyakit'=>false,
+                        'asap_rokok'=>true,
+                        'jamban_bersih'=>true,
+                        'sumber_air_bersih'=>true,
+                        'rujuk'=>false,
+                        'jaminan_kesehatan'=>false,
+                        'edukasi'=>false,
+                        ]
+                    ],
+                'pendampingan'=>
+                    [
+                        [
+                        'tanggal'=>'2025-04-03',
+                        'kader'=>'Marwiyah',
+                        'bb'=>4.3,
+                        'tb'=>54.3,
+                        ],
+                        [
+                        'tanggal'=>'2025-05-02',
+                        'kader'=>'Marwiyah',
+                        'bb'=>4.5,
+                        'tb'=>54.5,
+                        ],
+                        [
+                        'tanggal'=>'2025-06-06',
+                        'kader'=>'Marwiyah',
+                        'bb'=>4.6,
+                        'tb'=>55,
+                        ]
+                    ],
+                'posyandu'=>
+                    [
+                        [
+                        'tgl_ukur'=>'2025-02-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>1,
+                        'bb'=>4.1,
+                        'tb'=>54.1,
+                        'bbu'=>'Normal',
+                        'tbu'=>'Normal',
+                        'bbtb'=>'Normal',
+                        'lila'=>12,
+                        'lika'=>36,
+                        'bb_naik'=>true
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-03-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>2,
+                        'bb'=>4.3,
+                        'tb'=>54.3,
+                        'bbu'=>'Normal',
+                        'tbu'=>'Normal',
+                        'bbtb'=>'Normal',
+                        'lila'=>15,
+                        'lika'=>38,
+                        'bb_naik'=>true
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-04-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>3,
+                        'bb'=>4.3,
+                        'tb'=>54.3,
+                        'bbu'=>'Underweight',
+                        'tbu'=>'Stunted',
+                        'bbtb'=>'Normal',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>false,
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-05-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>4,
+                        'bb'=>4.5,
+                        'tb'=>54.5,
+                        'bbu'=>'Severely Underweight',
+                        'tbu'=>'Severely Stunted',
+                        'bbtb'=>'Severely Wasted',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>true,
+                        ],
+                        [
+                        'tgl_ukur'=>'2025-06-01',
+                        'posyandu'=>'Mawar',
+                        'puskesmas'=>'Kluwut',
+                        'cara_ukur'=>'Terlentang',
+                        'usia'=>5,
+                        'bb'=>4.6,
+                        'tb'=>55,
+                        'bbu'=>'Severely Underweight',
+                        'tbu'=>'Severely Stunted',
+                        'bbtb'=>'Severely Wasted',
+                        'lila'=>16,
+                        'lika'=>39,
+                        'bb_naik'=>true,
+                        ],
+                    ],
+                'intervensi'=>
+                    [
+                        [
+                        'tanggal'=>'2025-04-03',
+                        'kader'=>'Marwiyah',
+                        'jenis'=>'PMT'
+                        ],
+                        [
+                        'tanggal'=>'2025-05-02',
+                        'kader'=>'Marwiyah',
+                        'jenis'=>'PMT'
+                        ],
+                        [
+                        'tanggal'=>'2025-06-06',
+                        'kader'=>'Marwiyah',
+                        'jenis'=>'PMT'
+                        ]
+                    ]
+            ],
+            [
+                'id' => 20,
+                'nik' => null,
+                'nama'=>'Nabila Uks',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'05',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>3.2,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Junedi',
+                    'pekerjaan_ayah'=>'Wiraswasta',
+                    'usia_ayah'=>38,
+                    'nik_ibu'=>'3329146002910009',
+                    'nama_ibu'=>'Erni susilawati',
+                    'pekerjaan_ibu'=>'Ibu rumah tangga',
+                    'usia_ibu'=>33,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>9,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>37,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>10,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>11,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ]
+                ]
+            ],
+            [
+                'id' => 21,
+                'nik' => null,
+                'nama'=>'Gilang Aditya',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2023-01-01',
+                    'bb_lahir'=>3.1,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Septian Krisiarto',
+                    'pekerjaan_ayah'=>'Karyawan Swasta',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3216076403930005',
+                    'nama_ibu'=>'Susi Sulastri',
+                    'pekerjaan_ibu'=>'Karyawan Swasta',
+                    'usia_ibu'=>31,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>21,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>14,
+                    'lika'=>53,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>22,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ]
+                ]
+            ],
+            [
+                'id' => 22,
+                'nik' => null,
+                'nama'=>'Almahyra Nawa',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2023-01-01',
+                    'bb_lahir'=>2.4,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Dwi Hartanto',
+                    'pekerjaan_ayah'=>'Karyawan Bumd',
+                    'usia_ayah'=>39,
+                    'nik_ibu'=>'3329146204900001',
+                    'nama_ibu'=>'Kurni Apriyana',
+                    'pekerjaan_ibu'=>'Perangkat Desa',
+                    'usia_ibu'=>34,
+                    'anak_ke'=>1,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>'',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>true,
+                    'diasuh_oleh'=>'Nenek',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>9.8,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>26,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>27,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ]
+                ]
+                ],
+                [
+                'id' => 5,
+                'nik' => null,
+                'nama'=>'Fatih Hamizan',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'01',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2023-01-01',
+                    'bb_lahir'=>3,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Edi susanto',
+                    'pekerjaan_ayah'=>'Tidak bekerja',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3329146407840004',
+                    'nama_ibu'=>'Dawimah',
+                    'pekerjaan_ibu'=>'ART',
+                    'usia_ibu'=>40,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>null,
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>21,
+                    'bb'=>10,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>36,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>22,
+                    'bb'=>10,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>23,
+                    'bb'=>10.3,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>24,
+                    'bb'=>10.7,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>25,
+                    'bb'=>10.8,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ]
+                ]
+            ],
+            [
+                'id' => 23,
+                'nik' => null,
+                'nama'=>'Ainun Zani',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'05',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>3.2,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Junedi',
+                    'pekerjaan_ayah'=>'Wiraswasta',
+                    'usia_ayah'=>38,
+                    'nik_ibu'=>'3329146002910009',
+                    'nama_ibu'=>'Erni susilawati',
+                    'pekerjaan_ibu'=>'Ibu rumah tangga',
+                    'usia_ibu'=>33,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>9,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>37,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>10,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>11,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ]
+                ]
+            ],
+            [
+                'id' => 24,
+                'nik' => null,
+                'nama'=>'Muhammad Fadillah',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2024-01-01',
+                    'bb_lahir'=>3.1,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Wasroni',
+                    'pekerjaan_ayah'=>'Karyawan Swasta',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3216076403930005',
+                    'nama_ibu'=>'Suciati',
+                    'pekerjaan_ibu'=>'Karyawan Swasta',
+                    'usia_ibu'=>31,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'TERLALU TUA (Ibu Balita > 35 Tahun Saat Melahirkan)',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>21,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>14,
+                    'lika'=>53,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>22,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ]
+                ]
+            ],
+            [
+                'id' => 25,
+                'nik' => null,
+                'nama'=>'Vano Saputra',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>2.4,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Dwi Hartanto',
+                    'pekerjaan_ayah'=>'Karyawan Bumd',
+                    'usia_ayah'=>39,
+                    'nik_ibu'=>'3329146204900001',
+                    'nama_ibu'=>'Kurni Apriyana',
+                    'pekerjaan_ibu'=>'Perangkat Desa',
+                    'usia_ibu'=>34,
+                    'anak_ke'=>1,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>'',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>true,
+                    'diasuh_oleh'=>'Nenek',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>9.8,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>26,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>27,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ]
+                ]
+            ],
+            [
+                'id' => 26,
+                'nik' => null,
+                'nama'=>'Putri Iku',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'01',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>3,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Soleh',
+                    'pekerjaan_ayah'=>'Wiraswasta',
+                    'usia_ayah'=>32,
+                    'nik_ibu'=>'3329146407960001',
+                    'nama_ibu'=>'Nur faizah',
+                    'pekerjaan_ibu'=>'Ibu rumah tangga',
+                    'usia_ibu'=>25,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>null,
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>1,
+                    'bb'=>4.1,
+                    'tb'=>54.1,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>36,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>2,
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>3,
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Stunted',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>4,
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    'bbu'=>'Severely Underweight',
+                    'tbu'=>'Severely Stunted',
+                    'bbtb'=>'Severely Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>5,
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    'bbu'=>'Severely Underweight',
+                    'tbu'=>'Severely Stunted',
+                    'bbtb'=>'Severely Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ]
+                ]
+            ],
+            [
+                'id' => 27,
+                'nik' => null,
+                'nama'=>'Mulyani',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'05',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>3.2,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Junedi',
+                    'pekerjaan_ayah'=>'Wiraswasta',
+                    'usia_ayah'=>38,
+                    'nik_ibu'=>'3329146002910009',
+                    'nama_ibu'=>'Erni susilawati',
+                    'pekerjaan_ibu'=>'Ibu rumah tangga',
+                    'usia_ibu'=>33,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>9,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>37,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>10,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>11,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ]
+                ]
+            ],
+            [
+                'id' => 28,
+                'nik' => null,
+                'nama'=>'Irmam Baihaqi',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2023-01-01',
+                    'bb_lahir'=>3.1,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Septian Krisiarto',
+                    'pekerjaan_ayah'=>'Karyawan Swasta',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3216076403930005',
+                    'nama_ibu'=>'Susi Sulastri',
+                    'pekerjaan_ibu'=>'Karyawan Swasta',
+                    'usia_ibu'=>31,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>21,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>14,
+                    'lika'=>53,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>22,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ]
+                ]
+            ],
+            [
+                'id' => 29,
+                'nik' => null,
+                'nama'=>'M. Khafiz Khaerul Ihsan',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2023-01-01',
+                    'bb_lahir'=>2.4,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Dwi Hartanto',
+                    'pekerjaan_ayah'=>'Karyawan Bumd',
+                    'usia_ayah'=>39,
+                    'nik_ibu'=>'3329146204900001',
+                    'nama_ibu'=>'Kurni Apriyana',
+                    'pekerjaan_ibu'=>'Perangkat Desa',
+                    'usia_ibu'=>34,
+                    'anak_ke'=>1,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>'',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>true,
+                    'diasuh_oleh'=>'Nenek',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>9.8,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>26,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>27,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ]
+                ]
+            ],
+            [
+                'id' => 30,
+                'nik' => null,
+                'nama'=>'Moch Abkari Adnan',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'01',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2023-01-01',
+                    'bb_lahir'=>3,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Edi susanto',
+                    'pekerjaan_ayah'=>'Tidak bekerja',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3329146407840004',
+                    'nama_ibu'=>'Dawimah',
+                    'pekerjaan_ibu'=>'ART',
+                    'usia_ibu'=>40,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>null,
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>21,
+                    'bb'=>10,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>36,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>22,
+                    'bb'=>10,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>23,
+                    'bb'=>10.3,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>24,
+                    'bb'=>10.7,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>25,
+                    'bb'=>10.8,
+                    'tb'=>80,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>true,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'PMT'
+                    ]
+                ]
+            ],
+            [
+                'id' => 31,
+                'nik' => null,
+                'nama'=>'Din Teo Alfandi',
+                'jk'=>'L',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'dukuhlo',
+                'rt'=>'05',
+                'rw'=>'08',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>3.2,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Junedi',
+                    'pekerjaan_ayah'=>'Wiraswasta',
+                    'usia_ayah'=>38,
+                    'nik_ibu'=>'3329146002910009',
+                    'nama_ibu'=>'Erni susilawati',
+                    'pekerjaan_ibu'=>'Ibu rumah tangga',
+                    'usia_ibu'=>33,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>true,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>false,
+                    'jaminan_kesehatan'=>false,
+                    'edukasi'=>false,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.5,
+                    'tb'=>54.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>9,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>12,
+                    'lika'=>37,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>10,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>11,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Terlentang',
+                    'usia'=>12,
+                    'bb'=>8,
+                    'tb'=>71.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'jenis'=>'MBG'
+                    ]
+                ]
+            ],
+            [
+                'id' => 32,
+                'nik' => null,
+                'nama'=>'Tri Septiani Maulida',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2024-01-01',
+                    'bb_lahir'=>3.1,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Wasroni',
+                    'pekerjaan_ayah'=>'Karyawan Swasta',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3216076403930005',
+                    'nama_ibu'=>'Suciati',
+                    'pekerjaan_ibu'=>'Karyawan Swasta',
+                    'usia_ibu'=>31,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'TERLALU TUA (Ibu Balita > 35 Tahun Saat Melahirkan)',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>21,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>14,
+                    'lika'=>53,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>22,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-05-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-09-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ]
+                ]
+            ],
+            [
+                'id' => 33,
+                'nik' => null,
+                'nama'=>'Hafizah Kiki',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>2.4,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Dwi Hartanto',
+                    'pekerjaan_ayah'=>'Karyawan Bumd',
+                    'usia_ayah'=>39,
+                    'nik_ibu'=>'3329146204900001',
+                    'nama_ibu'=>'Kurni Apriyana',
+                    'pekerjaan_ibu'=>'Perangkat Desa',
+                    'usia_ibu'=>34,
+                    'anak_ke'=>1,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>'',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>true,
+                    'diasuh_oleh'=>'Nenek',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>9.8,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-06-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>26,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-08-01',
+                    'posyandu'=>'Mawar',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>27,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ]
+                ]
+            ],
+            [
+                'id' => 34,
+                'nik' => null,
+                'nama'=>'Aprilia Agustin',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2024-01-01',
+                    'bb_lahir'=>3.1,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Sudibyo',
+                    'pekerjaan_ayah'=>'Karyawan Swasta',
+                    'usia_ayah'=>37,
+                    'nik_ibu'=>'3216076487630005',
+                    'nama_ibu'=>'Sumirah',
+                    'pekerjaan_ibu'=>'Karyawan Swasta',
+                    'usia_ibu'=>31,
+                    'anak_ke'=>2,
+                    'riwayat_4t'=>'TERLALU TUA (Ibu Balita > 35 Tahun Saat Melahirkan)',
+                    'penggunaan_kb'=>true,
+                    'jns_kb'=>'Suntik',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>false,
+                    'diasuh_oleh'=>'ayah/ibu',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.3,
+                    'tb'=>54.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Marwiyah',
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Marwiyah',
+                    'bb'=>4.6,
+                    'tb'=>55,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>21,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>14,
+                    'lika'=>53,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>22,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>15,
+                    'lika'=>38,
+                    'bb_naik'=>false
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-08-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-09-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>8.7,
+                    'tb'=>82.3,
+                    'bbu'=>'Underweight',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Wasted',
+                    'lila'=>16,
+                    'lika'=>39,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'KIE'
+                    ]
+                ]
+            ],
+            [
+                'id' => 35,
+                'nik' => null,
+                'nama'=>'Sri Dini Sumini',
+                'jk'=>'P',
+                'provinsi'=>'Jawa Tengah',
+                'kota'=>'Brebes',
+                'kecamatan'=>'Bulakamba',
+                'kelurahan'=>'Dukuhlo',
+                'rt'=>'01',
+                'rw'=>'03',
+                'kelahiran'=>
+                [
+                    [
+                    'tmpt_dilahirkan'=>'Semarang',
+                    'tgl_lahir'=>'2025-01-01',
+                    'bb_lahir'=>2.4,
+                    'pb_lahir'=>48,
+                    'persalinan'=>'Normal',
+                    'riwayat_penyakit'=>false,
+                    ]
+                ],
+                'keluarga'=>
+                [
+                    [
+                    'no_kk'=>null,
+                    'nik_ayah'=>null,
+                    'nama_ayah'=>'Dwika',
+                    'pekerjaan_ayah'=>'Karyawan Bumd',
+                    'usia_ayah'=>39,
+                    'nik_ibu'=>'332914609800001',
+                    'nama_ibu'=>'Apriyana',
+                    'pekerjaan_ibu'=>'Perangkat Desa',
+                    'usia_ibu'=>34,
+                    'anak_ke'=>1,
+                    'riwayat_4t'=>'BUKAN 4T',
+                    'penggunaan_kb'=>false,
+                    'jns_kb'=>'',
+                    'asi_esklusif'=>true,
+                    'imunisasi_lengkap'=>true,
+                    'diasuh_oleh'=>'Nenek',
+                    'rutin_posyandu'=>true,
+                    'riwayat_penyakit'=>false,
+                    'asap_rokok'=>false,
+                    'jamban_bersih'=>true,
+                    'sumber_air_bersih'=>true,
+                    'rujuk'=>true,
+                    'jaminan_kesehatan'=>true,
+                    'edukasi'=>true,
+                    ]
+                ],
+                'pendampingan'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    ]
+                ],
+                'posyandu'=>
+                [
+                    [
+                    'tgl_ukur'=>'2025-02-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>23,
+                    'bb'=>9.8,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-03-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>24,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-04-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>25,
+                    'bb'=>10,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-09-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>26,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>true
+                    ],
+                    [
+                    'tgl_ukur'=>'2025-11-01',
+                    'posyandu'=>'Melati',
+                    'puskesmas'=>'Kluwut',
+                    'cara_ukur'=>'Berdiri',
+                    'usia'=>27,
+                    'bb'=>10.2,
+                    'tb'=>84.5,
+                    'bbu'=>'Normal',
+                    'tbu'=>'Normal',
+                    'bbtb'=>'Normal',
+                    'lila'=>14,
+                    'lika'=>48,
+                    'bb_naik'=>false,
+                    ],
+                ],
+                'intervensi'=>
+                [
+                    [
+                    'tanggal'=>'2025-04-03',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>'PMT'
+                    ],
+                    [
+                    'tanggal'=>'2025-05-02',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ],
+                    [
+                    'tanggal'=>'2025-06-06',
+                    'kader'=>'Ai Alisyah',
+                    'jenis'=>''
+                    ]
+                ]
+            ],
         ];
 
         return response()->json([
@@ -3060,5 +6165,215 @@ class ChildrenController extends Controller
             'message' => 'Data anak berhasil dimuat',
             'data_anak' => $data_anak
         ]);
+    }
+
+    public function index_()
+    {
+        // Ambil semua data anak
+        $children = \App\Models\Child::orderBy('nik')->get();
+
+        // Group berdasarkan NIK
+        $grouped = $children->groupBy('nik')->map(function ($items, $nik) {
+            $first = $items->first();
+
+            return [
+                'id' => $first->id,
+                'nik' => $first->nik,
+                'nama' => $first->nama,
+                'jk' => $first->jk,
+                'provinsi' => $first->prov ?? null,
+                'kota' => $first->kab ?? null,
+                'kecamatan' => $first->kec ?? null,
+                'kelurahan' => $first->desa ?? null,
+                'rt' => $first->rt ?? null,
+                'rw' => $first->rw ?? null,
+
+                // --- Kelahiran ---
+                'kelahiran' => [
+                    [
+                        'tmpt_dilahirkan' => $first->kab ?? null, // misal pakai kabupaten
+                        'tgl_lahir' => $first->tgl_lahir,
+                        'bb_lahir' => (float) $first->bb_lahir,
+                        'pb_lahir' => (float) $first->tb_lahir,
+                        'persalinan' => null,
+                        'riwayat_penyakit' => false,
+                    ]
+                ],
+
+                // --- Keluarga ---
+                'keluarga' => [
+                    [
+                        'no_kk' => null,
+                        'nik_ayah' => null,
+                        'nama_ayah' => $first->nama_ortu ?? null,
+                        'pekerjaan_ayah' => null,
+                        'usia_ayah' => null,
+                        'nik_ibu' => null,
+                        'nama_ibu' => null,
+                        'pekerjaan_ibu' => null,
+                        'usia_ibu' => null,
+                        'anak_ke' => null,
+                        'riwayat_4t' => null,
+                        'penggunaan_kb' => false,
+                        'jns_kb' => null,
+                        'asi_esklusif' => false,
+                        'imunisasi_lengkap' => false,
+                        'diasuh_oleh' => 'ayah/ibu',
+                        'rutin_posyandu' => true,
+                        'riwayat_penyakit' => false,
+                        'asap_rokok' => false,
+                        'jamban_bersih' => true,
+                        'sumber_air_bersih' => true,
+                        'rujuk' => false,
+                        'jaminan_kesehatan' => false,
+                        'edukasi' => false,
+                    ]
+                ],
+
+                // --- Pendampingan (gabung dari catatan dengan tanggal_pengukuran) ---
+                'pendampingan' => $items->map(function ($row) {
+                    return [
+                        'tanggal' => $row->tanggal_pengukuran,
+                        'kader' => null,
+                        'bb' => (float) $row->berat,
+                        'tb' => (float) $row->tinggi,
+                    ];
+                })->values(),
+
+                // --- Posyandu ---
+                'posyandu' => $items->map(function ($row) {
+                    return [
+                        'tgl_ukur' => $row->tanggal_pengukuran,
+                        'posyandu' => $row->posyandu,
+                        'puskesmas' => $row->puskesmas,
+                        'cara_ukur' => 'Terlentang',
+                        'usia' => $row->usia_saat_ukur,
+                        'bb' => (float) $row->berat,
+                        'tb' => (float) $row->tinggi,
+                        'bbu' => $row->bb_u,
+                        'tbu' => $row->tb_u,
+                        'bbtb' => $row->bb_tb,
+                        'lila' => (float) $row->lila,
+                        'lika' => null,
+                        'bb_naik' => $row->naik_berat_badan === 'T' ? false : true,
+                    ];
+                })->values(),
+
+                // --- Intervensi (dummy di-generate dari posyandu) ---
+                'intervensi' => $items->map(function ($row) {
+                    return [
+                        'tanggal' => $row->tanggal_pengukuran,
+                        'kader' => null,
+                        'jenis' => 'PMT', // default contoh
+                    ];
+                })->values(),
+            ];
+        })->values();
+
+        return response()->json($grouped);
+    }
+
+    public function import(Request $request)
+    {
+        // Validasi file
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|mimes:csv,txt|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $file = $request->file('file');
+
+        if (!$file->isValid()) {
+            return response()->json(['message' => 'File tidak valid.'], 400);
+        }
+
+        $path = $file->getRealPath();
+        $handle = fopen($path, 'r');
+
+        $header = null;
+        $rows = [];
+        $count = 0;
+
+        while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+            // skip baris kosong
+            if (empty($data[0])) continue;
+
+            // baris pertama = header
+            if (!$header) {
+                $header = $data;
+                continue;
+            }
+
+            $count++;
+
+            // mapping kolom sesuai urutan CSV
+            $rows[] = [
+                'nik' => $data[1] ?? null,
+                'nama' => $data[2] ?? null,
+                'jk' => $data[3] ?? null,
+                'tgl_lahir' => $this->convertDate($data[4] ?? null),
+                'bb_lahir' => $data[5] ?? null,
+                'tb_lahir' => $data[6] ?? null,
+                'nama_ortu' => $data[7] ?? null,
+                'prov' => $data[8] ?? null,
+                'kab' => $data[9] ?? null,
+                'kec' => $data[10] ?? null,
+                'puskesmas' => $data[11] ?? null,
+                'desa' => $data[12] ?? null,
+                'posyandu' => $data[13] ?? null,
+                'rt' => $data[14] ?? null,
+                'rw' => $data[15] ?? null,
+                'alamat' => $data[16] ?? null,
+                'usia_saat_ukur' => $data[17] ?? null,
+                'tanggal_pengukuran' => $this->convertDate($data[18] ?? null),
+                'berat' => $data[19] ?? null,
+                'tinggi' => $data[20] ?? null,
+                'lila' => $data[21] ?? null,
+                'bb_u' => $data[22] ?? null,
+                'zs_bb_u' => $data[23] ?? null,
+                'tb_u' => $data[24] ?? null,
+                'zs_tb_u' => $data[25] ?? null,
+                'bb_tb' => $data[26] ?? null,
+                'zs_bb_tb' => $data[27] ?? null,
+                'naik_berat_badan' => $data[28] ?? null,
+                'jml_vit_a' => $data[29] ?? null,
+                'kpsp' => $data[30] ?? null,
+                'kia' => $data[31] ?? null,
+                'detail' => $data[32] ?? null,
+            ];
+        }
+
+        fclose($handle);
+
+        // Simpan batch (gunakan chunk untuk efisiensi besar)
+        if (!empty($rows)) {
+            foreach (array_chunk($rows, 100) as $chunk) {
+                Child::insert($chunk);
+            }
+        }
+
+        return response()->json([
+            'message' => "Berhasil import {$count} data anak",
+            'count' => $count,
+        ], 200);
+    }
+
+    private function convertDate($date)
+    {
+        if (!$date) return null;
+
+        // Format dari CSV: d/m/Y atau d-m-Y
+        $date = str_replace('/', '-', $date);
+        try {
+            return \Carbon\Carbon::parse($date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

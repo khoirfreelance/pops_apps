@@ -27,6 +27,7 @@ Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWi
 // Children Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('children', ChildrenController::class)->only(['index']);
+    Route::post('/children/import', [ChildrenController::class, 'import']);
 });
 
 // Family Endpoint
