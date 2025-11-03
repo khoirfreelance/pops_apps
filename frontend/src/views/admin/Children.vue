@@ -618,7 +618,7 @@
                       <span class="text-capitalize">
                         {{ selectedAnak.gender === 'L' ? 'Laki-laki' : 'Perempuan' }}
                       </span>
-                      • Usia: {{ selectedAnak.usia }} bln
+                      Usia: {{ selectedAnak.usia }} bln
                     </p>
                   </div>
 
@@ -827,6 +827,21 @@
                                 </div>
                               </div>
                             </div>
+
+                            <!-- Chart BB/TB -->
+                            <!-- <div class="col-md-4 col-12">
+                              <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+                                  <h6 class="mb-2">BB/TB</h6>
+                                  <div style="height: 200px;">
+                                    <canvas ref="chartBBTB"></canvas>
+                                  </div>
+                                  <div class="small text-muted mt-2">
+                                    Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
+                                  </div>
+                                </div>
+                              </div>
+                            </div> -->
                           </div>
 
                         </div>
@@ -962,8 +977,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon, Welcome },
   data() {
     return {
-      curveBB: [], // akan diisi sesuai gender
-      curveTB: [], // akan diisi sesuai gender
+      chartBBTB: null,
       chartBB: null,
       chartTB: null,
       ageMonths: 24,
@@ -1468,7 +1482,6 @@ export default {
     selectAll_intervensi() {
       this.filters.intervensi = [...this.intervensiOptions]
     },
-
     clearAll_bbu() {
       this.filters.bbu = []
     },
@@ -1680,9 +1693,9 @@ export default {
 
       }
 
+      this.renderKMSChart();
       //console.log('selectedAnak detail:', this.selectedAnak)
     },
-
     setFile(file) {
       this.fileError = ''
       // validasi
@@ -1704,7 +1717,6 @@ export default {
       // baca beberapa byte pertama untuk preview (opsional)
       this.previewFileContent(file)
     },
-
     validateFile(file) {
       // ext
       const nameParts = (file.name || '').split('.')
@@ -1725,7 +1737,6 @@ export default {
 
       return { valid: true }
     },
-
     previewFileContent(file) {
       const reader = new FileReader()
       reader.onload = (ev) => {
@@ -1737,7 +1748,6 @@ export default {
       // baca sebagian saja untuk efisiensi (readAsText membaca seluruh file — acceptable untuk CSV kecil)
       reader.readAsText(file.slice(0, 2000))
     },
-
     async uploadCSV() {
       if (!this.file) {
         this.fileError = 'Tidak ada file untuk di-upload.'
@@ -1790,7 +1800,6 @@ export default {
         this.uploadProgress = 0
       }
     },
-
     triggerFileDialog() {
       this.$refs.fileInput.click()
     },
@@ -1844,184 +1853,226 @@ export default {
       // misal arahkan ke route detail anak
       this.$router.push({ name: 'AnakDetail', params: { id } })
     },
+    // KMS Chart (BB/U & TB/U)
+    renderKMSChart() {
+      if (!this.selectedAnak?.riwayat_penimbangan?.length) return;
 
-    //KMS
-    onHitung() {
-      //console.log(selectedAnak.riwayat_penimbangan);
-
-      if (!this.birthDate || !this.gender || !this.currentWeight || !this.currentHeight) return
-
-      this.ageMonths = this.calcAgeMonths(this.birthDate, new Date())
-
-      // set kurva dulu
-      this.curveBB = this.gender === 'female' ? this.wfaGirls : this.wfaBoys
-      this.curveTB = this.gender === 'female' ? this.hfaGirls : this.hfaBoys
-
-      this.idealWeight = this.interpolateMedian(this.curveBB, this.ageMonths)
-      const sdW = this.interpolateSD(this.curveBB, this.ageMonths)
-      const zW = (this.currentWeight - this.idealWeight) / sdW
-      this.statusWfa = this.classifyWFA(zW)
-
-      const medianH = this.interpolateMedian(this.curveTB, this.ageMonths)
-      const sdH = this.interpolateSD(this.curveTB, this.ageMonths)
-      const zH = (this.currentHeight - medianH) / sdH
-      this.statusHfa = this.classifyHFA(zH)
-
-      this.calculated = true
       this.$nextTick(() => {
-        this.renderBB()
-        this.renderTB()
-      })
-    },
-    // Convert hex ke rgba
-    hexA(hex, alpha = 0.3) {
-      hex = hex.replace('#','')
-      const r = parseInt(hex.substring(0,2),16)
-      const g = parseInt(hex.substring(2,4),16)
-      const b = parseInt(hex.substring(4,6),16)
-      return `rgba(${r},${g},${b},${alpha})`
-    },
+        const riwayat = this.selectedAnak.riwayat_penimbangan.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+        if (!riwayat.length) return;
 
-    // Hitung umur dalam bulan
-    calcAgeMonths(birth, date) {
-      const b = new Date(birth)
-      const d = new Date(date)
-      return (d.getFullYear() - b.getFullYear()) * 12 + (d.getMonth() - b.getMonth())
-    },
+        const gender = this.selectedAnak.gender;
+        const lastRecord = riwayat[riwayat.length - 1];
+        const usiaAnak = Number(this.selectedAnak.usia);
+        const bbAnak = Number(lastRecord.bb);
+        const tbAnak = Number(lastRecord.tb);
 
-    // Interpolasi linear median
-    interpolateMedian(curve, month) {
-      if (!curve) return 0
-      for (let i = 0; i < curve.length - 1; i++) {
-        if (month >= curve[i].m && month <= curve[i+1].m) {
-          const t = (month - curve[i].m) / (curve[i+1].m - curve[i].m)
-          return curve[i].median + t * (curve[i+1].median - curve[i].median)
+        const wfa = gender === 'L' ? this.wfaBoys : this.wfaGirls;
+        const hfa = gender === 'L' ? this.hfaBoys : this.hfaGirls;
+        const C = this.kmsColors;
+
+        // === Utility warna → RGBA ===
+        this.hexA = (hex, alpha) => {
+          const bigint = parseInt(hex.replace('#', ''), 16);
+          const r = (bigint >> 16) & 255;
+          const g = (bigint >> 8) & 255;
+          const b = bigint & 255;
+          return `rgba(${r},${g},${b},${alpha})`;
+        };
+
+        // === Ekspansi WHO dataset ===
+        const expandWHO = (arr) => ({
+          usia: arr.map(d => d.m),
+          median: arr.map(d => d.median),
+          sd1: arr.map(d => d.median + 1 * d.sd),
+          sd2: arr.map(d => d.median + 2 * d.sd),
+          sd3: arr.map(d => d.median + 3 * d.sd),
+          sd_1: arr.map(d => d.median - 1 * d.sd),
+          sd_2: arr.map(d => d.median - 2 * d.sd),
+          sd_3: arr.map(d => d.median - 3 * d.sd),
+        });
+
+        const bbData = expandWHO(wfa);
+        const tbData = expandWHO(hfa);
+
+        // === Kurva area (dengan warna) ===
+        const makeDatasets = (D, C) => [
+          {
+            label: '-3SD',
+            data: D.sd_3,
+            borderColor: C.bottom,
+            backgroundColor: this.hexA(C.bottom, 0.2),
+            fill: '+1',
+            tension: 0.2,
+            pointRadius: 0,
+            order: 1,
+          },
+          {
+            label: '-2SD',
+            data: D.sd_2,
+            borderColor: C.midBottom,
+            backgroundColor: this.hexA(C.midBottom, 0.2),
+            fill: '+1',
+            tension: 0.2,
+            pointRadius: 0,
+            order: 2,
+          },
+          {
+            label: '-1SD',
+            data: D.sd_1,
+            borderColor: C.mid,
+            backgroundColor: this.hexA(C.mid, 0.2),
+            fill: '+1',
+            tension: 0.2,
+            pointRadius: 0,
+            order: 3,
+          },
+          {
+            label: 'Median',
+            data: D.median,
+            borderColor: C.midMed,
+            backgroundColor: this.hexA(C.midMed, 0.15),
+            fill: '+1',
+            tension: 0.2,
+            pointRadius: 0,
+            order: 4,
+          },
+          {
+            label: '+1SD',
+            data: D.sd1,
+            borderColor: C.midTop,
+            backgroundColor: this.hexA(C.midTop, 0.15),
+            fill: '+1',
+            tension: 0.2,
+            pointRadius: 0,
+            order: 5,
+          },
+          {
+            label: '+2SD',
+            data: D.sd2,
+            borderColor: C.top,
+            backgroundColor: this.hexA(C.top, 0.15),
+            fill: '+1',
+            tension: 0.2,
+            pointRadius: 0,
+            order: 6,
+          },
+          {
+            label: '+3SD',
+            data: D.sd3,
+            borderColor: C.top,
+            backgroundColor: this.hexA(C.top, 0.1),
+            fill: false,
+            tension: 0.2,
+            pointRadius: 0,
+            order: 7,
+          },
+        ];
+
+        // === Titik anak ===
+        // eslint-disable-next-line no-unused-vars
+        const makePoint = (D, usiaAnak, nilai, labelY) => {
+          // Cari usia terdekat
+          let nearestIndex = 0;
+          let minDiff = Infinity;
+          D.usia.forEach((u, i) => {
+            const diff = Math.abs(u - usiaAnak);
+            if (diff < minDiff) {
+              minDiff = diff;
+              nearestIndex = i;
+            }
+          });
+
+          // Data titik tunggal
+          const pointData = Array(D.usia.length).fill(null);
+          pointData[nearestIndex] = nilai;
+
+          return {
+            label: 'Anak',
+            data: pointData,
+            borderColor: '#fff',
+            backgroundColor: gender === 'L' ? '#007bff' : '#ff4b5c',
+            pointRadius: 8,
+            borderWidth: 2,
+            pointStyle: 'circle',
+            showLine: false,
+            clip: false, // penting biar tidak terpotong oleh area
+            order: 9999, // paling depan
+            z: 9999,
+          };
+        };
+
+        // === Chart Builder ===
+        const buildChart = (ctx, dataObj, labelY, nilaiAnak, usiaAnak, minY, maxY) => {
+          return new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: dataObj.usia,
+              datasets: [
+                ...makeDatasets(dataObj, C),
+                makePoint(dataObj, usiaAnak, nilaiAnak, labelY),
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                datalabels: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(0,0,0,0.8)',
+                  titleFont: { weight: 'bold', size: 13 },
+                  bodyFont: { size: 12 },
+                  padding: 8,
+                  displayColors: false,
+                  callbacks: {
+                    label: () => `Umur: ${usiaAnak} bln, ${labelY}: ${nilaiAnak}`,
+                  },
+                },
+              },
+              interaction: {
+                mode: 'nearest',
+                intersect: false,
+              },
+              elements: {
+                line: {
+                  borderWidth: 2,
+                },
+                point: {
+                  radius: 0,
+                },
+              },
+              scales: {
+                x: {
+                  title: { display: true, text: 'Umur (bulan)' },
+                  min: 0,
+                  max: 60,
+                },
+                y: {
+                  title: { display: true, text: labelY },
+                  min: minY,
+                  max: maxY,
+                },
+              },
+            },
+          });
+        };
+
+        // === BB/U Chart ===
+        const ctxBB = this.$refs.chartBB?.getContext('2d');
+        if (ctxBB) {
+          if (this.chartBB) this.chartBB.destroy();
+          this.chartBB = buildChart(ctxBB, bbData, 'Berat Badan (kg)', bbAnak, usiaAnak, 0, 25);
         }
-      }
-      return curve[curve.length-1].median
-    },
 
-    // Interpolasi linear SD
-    interpolateSD(curve, month) {
-      if (!curve) return 1
-      for (let i = 0; i < curve.length - 1; i++) {
-        if (month >= curve[i].m && month <= curve[i+1].m) {
-          const t = (month - curve[i].m) / (curve[i+1].m - curve[i].m)
-          return curve[i].sd + t * (curve[i+1].sd - curve[i].sd)
+        // === TB/U Chart ===
+        const ctxTB = this.$refs.chartTB?.getContext('2d');
+        if (ctxTB) {
+          if (this.chartTB) this.chartTB.destroy();
+          this.chartTB = buildChart(ctxTB, tbData, 'Tinggi Badan (cm)', tbAnak, usiaAnak, 45, 120);
         }
-      }
-      return curve[curve.length-1].sd
+      });
     },
-
-    // Render BB/U
-    renderBB() {
-      const labels = Array.from({length:61}, (_, i) => i)
-      const median = labels.map(m => this.interpolateMedian(this.curveBB, m))
-      const sdAt = m => this.interpolateSD(this.curveBB, m)
-
-      const plus1 = labels.map((m,i) => median[i] + sdAt(m))
-      const minus1 = labels.map((m,i) => median[i] - sdAt(m))
-      const plus2 = labels.map((m,i) => median[i] + 2*sdAt(m))
-      const minus2 = labels.map((m,i) => median[i] - 2*sdAt(m))
-      const plus3 = labels.map((m,i) => median[i] + 3*sdAt(m))
-      const minus3 = labels.map((m,i) => median[i] - 3*sdAt(m))
-
-      const datasets = [
-        { label: '+3 SD', data: plus3, borderColor: this.kmsColors.top, backgroundColor: this.hexA(this.kmsColors.top), fill: '-1', pointRadius: 0 },
-        { label: '+2 SD', data: plus2, borderColor: this.kmsColors.midTop, backgroundColor: this.hexA(this.kmsColors.midTop), fill: '-1', pointRadius: 0 },
-        { label: '+1 SD', data: plus1, borderColor: this.kmsColors.mid, backgroundColor: this.hexA(this.kmsColors.mid), fill: '-1', pointRadius: 0 },
-        { label: 'Median', data: median, borderColor: '#000', borderWidth: 2, fill: false, pointRadius: 0 },
-        { label: '-1 SD', data: minus1, borderColor: this.kmsColors.midMed, backgroundColor: this.hexA(this.kmsColors.midMed), fill: '-1', pointRadius: 0 },
-        { label: '-2 SD', data: minus2, borderColor: this.kmsColors.midBottom, backgroundColor: this.hexA(this.kmsColors.midBottom), fill: '-1', pointRadius: 0 },
-        { label: '-3 SD', data: minus3, borderColor: this.kmsColors.bottom, backgroundColor: this.hexA(this.kmsColors.bottom), fill: '-1', pointRadius: 0 },
-      ]
-
-      // Titik riwayat anak
-      const anakData = this.selectedAnak?.riwayat_penimbangan?.map(r => ({
-        x: this.calcAgeMonths(this.selectedAnak.tanggal_lahir, r.tanggal),
-        y: parseFloat(r.bb)
-      })) || []
-
-      datasets.push({
-        label: 'Anak',
-        data: anakData,
-        borderColor: 'red',
-        backgroundColor: 'red',
-        pointRadius: 6,
-        showLine: false,
-        parsing: false
-      })
-
-      if (this.chartBB) this.chartBB.destroy()
-      const ctx = this.$refs.chartBB.getContext('2d')
-      this.chartBB = new Chart(ctx, {
-        type: 'line',
-        data: { datasets },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { type: 'linear', min:0, max:60, title: { display:true, text:'Umur (bulan)' } },
-            y: { title: { display:true, text:'Berat Badan (kg)' } }
-          }
-        }
-      })
-    },
-
-    // Render TB/U
-    renderTB() {
-      const labels = Array.from({length:61}, (_, i) => i)
-      const median = labels.map(m => this.interpolateMedian(this.curveTB, m))
-      const sdAt = m => this.interpolateSD(this.curveTB, m)
-
-      const plus1 = labels.map((m,i) => median[i] + sdAt(m))
-      const minus1 = labels.map((m,i) => median[i] - sdAt(m))
-      const plus2 = labels.map((m,i) => median[i] + 2*sdAt(m))
-      const minus2 = labels.map((m,i) => median[i] - 2*sdAt(m))
-      const plus3 = labels.map((m,i) => median[i] + 3*sdAt(m))
-      const minus3 = labels.map((m,i) => median[i] - 3*sdAt(m))
-
-      const datasets = [
-        { label: '+3 SD', data: plus3, borderColor: this.kmsColors.top, backgroundColor: this.hexA(this.kmsColors.top), fill: '-1', pointRadius: 0 },
-        { label: '+2 SD', data: plus2, borderColor: this.kmsColors.midTop, backgroundColor: this.hexA(this.kmsColors.midTop), fill: '-1', pointRadius: 0 },
-        { label: '+1 SD', data: plus1, borderColor: this.kmsColors.mid, backgroundColor: this.hexA(this.kmsColors.mid), fill: '-1', pointRadius: 0 },
-        { label: 'Median', data: median, borderColor: '#000', borderWidth: 2, fill: false, pointRadius: 0 },
-        { label: '-1 SD', data: minus1, borderColor: this.kmsColors.midMed, backgroundColor: this.hexA(this.kmsColors.midMed), fill: '-1', pointRadius: 0 },
-        { label: '-2 SD', data: minus2, borderColor: this.kmsColors.midBottom, backgroundColor: this.hexA(this.kmsColors.midBottom), fill: '-1', pointRadius: 0 },
-        { label: '-3 SD', data: minus3, borderColor: this.kmsColors.bottom, backgroundColor: this.hexA(this.kmsColors.bottom), fill: '-1', pointRadius: 0 },
-      ]
-
-      // Titik riwayat anak
-      const anakData = this.selectedAnak?.riwayat_penimbangan?.map(r => ({
-        x: this.calcAgeMonths(this.selectedAnak.tanggal_lahir, r.tanggal),
-        y: parseFloat(r.tb)
-      })) || []
-
-      datasets.push({
-        label: 'Anak',
-        data: anakData,
-        borderColor: 'red',
-        backgroundColor: 'red',
-        pointRadius: 6,
-        showLine: false,
-        parsing: false
-      })
-
-      if (this.chartTB) this.chartTB.destroy()
-      const ctx = this.$refs.chartTB.getContext('2d')
-      this.chartTB = new Chart(ctx, {
-        type: 'line',
-        data: { datasets },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { type: 'linear', min:0, max:60, title: { display:true, text:'Umur (bulan)' } },
-            y: { title: { display:true, text:'Tinggi Badan (cm)' } }
-          }
-        }
-      })
-    }
 
   },
   created() {
@@ -2091,20 +2142,6 @@ export default {
     'filters.posyandu'(val) {
       this.handlePosyanduChange(val)
     },
-    selectedAnak: {
-      immediate: true,
-      handler(newVal) {
-        if (!newVal || !newVal.riwayat_penimbangan?.length) return
-
-        const last = newVal.riwayat_penimbangan.at(-1)
-        this.birthDate = newVal.tanggal_lahir || ''
-        this.gender = newVal.jenis_kelamin?.toLowerCase() === 'perempuan' ? 'female' : 'male'
-        this.currentWeight = parseFloat(last.bb)
-        this.currentHeight = parseFloat(last.tb)
-
-        this.onHitung()
-      },
-    }
   },
 }
 </script>
