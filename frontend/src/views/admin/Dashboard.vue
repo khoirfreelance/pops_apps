@@ -306,7 +306,7 @@
                           </tbody>
                           <tfoot>
                             <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail">Lihat Grafik Selengkapnya</a></td>
+                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail?tipe=bbu">Lihat Grafik Selengkapnya</a></td>
                             </tr>
                           </tfoot>
                         </table>
@@ -346,7 +346,7 @@
                           </tbody>
                           <tfoot>
                             <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail">Lihat Grafik Selengkapnya</a></td>
+                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail?tipe=tbu">Lihat Grafik Selengkapnya</a></td>
                             </tr>
                           </tfoot>
                         </table>
@@ -392,7 +392,7 @@
                           style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"
                         ></canvas>
                         <div class="d-flex flex-wrap justify-content-between mt-3">
-                          <a href="/admin/dashboard/detail">Lihat Grafik Selengkapnya</a>
+                          <a href="/admin/dashboard/detail?tipe=bbtb">Lihat Grafik Selengkapnya</a>
                         </div>
                       </div>
                     </div>
