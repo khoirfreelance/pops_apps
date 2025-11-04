@@ -1413,67 +1413,109 @@ export default {
       }
     },
     applyFilter() {
+
       this.filteredData = this.children.filter(item => {
         const f = this.filters
 
-        // === 1. Filter Underweight (BBU)
+        // === 1. BBU
         const bbuMatch = f.bbu.length === 0 || f.bbu.includes(item.bbu)
 
-        // === 2. Filter Stunting (TBU)
+        // === 2. TBU
         const tbuMatch = f.tbu.length === 0 || f.tbu.includes(item.tbu)
 
-        // === 3. Filter Wasting (BBTB)
+        // === 3. BBTB
         const bbtbMatch = f.bbtb.length === 0 || f.bbtb.includes(item.bbtb)
 
-        // === 4. Filter BB Stagnan
+        // === 4. Stagnan
         const stagnanMatch =
-        f.stagnan.length === 0 ||
-        f.stagnan.some(opt => {
-          if (opt === 'Ya') return this.isStagnan(item)
-          if (opt === 'Tidak') return !this.isStagnan(item)
-          return true
-        })
+          f.stagnan.length === 0 ||
+          f.stagnan.some(opt => {
+            if (opt === 'Ya') return this.isStagnan(item)
+            if (opt === 'Tidak') return !this.isStagnan(item)
+            return true
+          })
 
-
-        // === 5. Filter Posyandu
+        // === 5. Posyandu
         const posyanduMatch =
           !f.posyandu || item.posyandu === f.posyandu || item.nama_posyandu === f.posyandu
 
-        // === 6. Filter RW & RT
+        // === 6. RW & RT
         const rwMatch = !f.rw || item.rw === f.rw
         const rtMatch = !f.rt || item.rt === f.rt
 
-        // === 7. Filter Intervensi (multi)
+        // === 7. Intervensi (multi)
         const intervensiMatch =
           f.intervensi.length === 0 ||
           f.intervensi.some(i => (item.intervensi || '').includes(i))
 
-        // === 8. Filter Periode (antara dua periode)
+        // === 8. Periode (DEBUGGED)
         const periodeMatch = (() => {
-          if (!f.periodeAwal && !f.periodeAkhir) return true
 
-          const tgl = new Date(item.tgl_ukur)
-          const periodeNum = tgl.getFullYear() * 100 + (tgl.getMonth() + 1)
+          // parse tgl_ukur into YYYYMM number safely
+          let periodeNum = null
+          try {
+            if (!item.tgl_ukur) {
+              console.warn('item.tgl_ukur is empty/null for', item)
+              return false // atau return true kalau mau inklusif
+            }
+            const t = new Date(item.tgl_ukur)
+            if (isNaN(t.getTime())) {
+              console.warn('item.tgl_ukur is invalid date:', item.tgl_ukur)
+              return false
+            }
+            periodeNum = t.getFullYear() * 100 + (t.getMonth() + 1) // e.g. 202503
+          } catch (err) {
+            console.error('Error parsing item.tgl_ukur:', err, item.tgl_ukur)
+            return false
+          }
 
-          const awal = f.periodeAwal
-            ? (() => {
-                const [y, m] = f.periodeAwal.split('-')
-                return parseInt(y) * 100 + parseInt(m)
-              })()
-            : -Infinity
+          // helper parse periode string (supports "YYYY-MM" and "NamaBulan YYYY")
+          const bulanMap = {
+            Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
+            Juli: 7, Agustus: 8, September: 9, Oktober: 10, November: 11, Desember: 12
+          }
 
-          const akhir = f.periodeAkhir
-            ? (() => {
-                const [y, m] = f.periodeAkhir.split('-')
-                return parseInt(y) * 100 + parseInt(m)
-              })()
-            : Infinity
+          const parsePeriode = (val) => {
+            if (!val) return null
 
-          return periodeNum >= awal && periodeNum <= akhir
+            // 1) accept YYYY-MM (e.g. "2024-07")
+            if (/^\d{4}-\d{1,2}$/.test(val)) {
+              const [y, m] = val.split('-').map(Number)
+              return y * 100 + m
+            }
+
+            // 2) accept "NamaBulan YYYY" (e.g. "Juli 2024")
+            if (/^[A-Za-z]+ \d{4}$/.test(val)) {
+              const [bulanNama, tahunStr] = val.split(' ')
+              const m = bulanMap[bulanNama]
+              if (!m) {
+                console.warn('Unknown month name in periode:', val)
+                return null
+              }
+              const y = parseInt(tahunStr, 10)
+              return y * 100 + m
+            }
+
+            // 3) try Date parse fallback (last resort)
+            const d = new Date(val)
+            if (!isNaN(d.getTime())) {
+              return d.getFullYear() * 100 + (d.getMonth() + 1)
+            }
+
+            console.warn('Unable to parse periode value:', val)
+            return null
+          }
+
+          const awal = parsePeriode(f.periodeAwal) ?? -Infinity
+          const akhir = parsePeriode(f.periodeAkhir) ?? Infinity
+
+
+          const ok = periodeNum >= awal && periodeNum <= akhir
+          console.log('periodeMatch result:', ok)
+          return ok
         })()
 
-
-        return (
+        const result =
           bbuMatch &&
           tbuMatch &&
           bbtbMatch &&
@@ -1483,9 +1525,17 @@ export default {
           rtMatch &&
           intervensiMatch &&
           periodeMatch
-        )
+
+        // final debug per item (optional, comment out if too verbose)
+        console.log('item:', item.nama || item.nik, 'matches?', result)
+
+        return result
       })
+
+      // akhir filter
+      console.timeEnd('applyFilter')
     },
+
     resetFilter() {
       this.filters = {
         bbu: [],

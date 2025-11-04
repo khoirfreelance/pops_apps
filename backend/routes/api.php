@@ -87,6 +87,8 @@ Route::middleware('auth:sanctum')->group(function () {
 // Pregnancy Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/pregnancy/import', [PregnancyController::class, 'import']);
+    Route::get('/pregnancy', [PregnancyController::class, 'index']);
+    Route::get('/pregnancy/status', [PregnancyController::class, 'status']);
 });
 
 // Region Endpoint

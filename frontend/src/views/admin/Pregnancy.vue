@@ -202,13 +202,15 @@
                             </a>
                           </td>
                           <td>{{ bumil.anemia }}</td>
+                          <td>{{ bumil.berisiko }}</td>
                           <td>{{ bumil.kek }}</td>
-                          <td>{{ bumil.intervensi || '-' }}</td>
+                          <td>{{ bumil.intervensi }}</td>
                           <td>{{ bumil.rw }}</td>
                           <td>{{ bumil.rt }}</td>
                           <td>{{ bumil.usia }}</td>
                         </tr>
                       </tbody>
+
                     </table>
                   </div>
 
@@ -544,6 +546,9 @@ export default {
     }
   },
   computed: {
+    paginatedData() {
+      return this.filteredBumil;
+    },
     filterOptions() {
       return {
         anemia: { label: 'Anemia', placeholder: 'Pilih Anemia', options: ['Ya', 'Tidak'] },
@@ -586,6 +591,50 @@ export default {
       }
     },
 
+    /** 🔹 Ambil data bumil dari backend dengan semua filter aktif */
+    async loadPregnancy() {
+      try {
+        const res = await axios.get(`${baseURL}/api/pregnancy`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params: this.filters,
+        });
+
+        const data = res.data?.data || [];
+
+        // Debugging data dari API
+        console.log('Data Bumil:', data);
+
+        // Format data ke struktur tabel
+        this.bumil = data.map(item => ({
+          id: item.id || item.nik_ibu,
+          nama: item.nama_ibu || '-',
+          anemia: item.status_gizi_hb?.toLowerCase().includes('anemia') ? 'Ya' : 'Tidak',
+          kek: item.status_gizi_lila?.toLowerCase().includes('kek') ? 'Ya' : 'Tidak',
+          berisiko: item.status_kehamilan || '-',
+          intervensi: item.intervensi || '-',
+          rw: item.rw || '-',
+          rt: item.rt || '-',
+          usia: item.usia_kehamilan_minggu || '-',
+          tanggal_pemeriksaan_terakhir: item.tanggal_pemeriksaan_terakhir || '-',
+          berat_badan: item.berat_badan || '-',
+          tinggi_badan: item.tinggi_badan || '-',
+          imt: item.imt || '-',
+          kadar_hb: item.kadar_hb || '-',
+          lila: item.lila || '-',
+        }));
+
+        // Set ke filtered juga
+        this.filteredBumil = [...this.bumil];
+        this.totalBumil = this.bumil.length;
+
+      } catch (e) {
+        console.error('Gagal ambil data pregnancy:', e);
+        this.bumil = [];
+        this.filteredBumil = [];
+      }
+    },
+
+    /** 🔹 Ambil wilayah user login */
     async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
@@ -612,17 +661,18 @@ export default {
       this.filters[key] = []
     },
 
-    applyFilter() {
-      // TODO: Tambahkan logika filter data
-      this.filteredBumil = this.bumil
+    /** 🔹 Terapkan filter ke backend */
+    async applyFilter() {
+      await this.loadPregnancy()
     },
 
-    resetFilter() {
+    /** 🔹 Reset semua filter dan muat ulang data */
+    async resetFilter() {
       Object.keys(this.filters).forEach(k => {
         if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
       })
-      this.filteredBumil = this.bumil
+      await this.loadPregnancy()
     },
 
     toggleSidebar() {
@@ -631,65 +681,42 @@ export default {
 
     getTodayDate() {
       const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-      ]
+      const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
 
     getThisMonth() {
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-      ]
+      const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
       const now = new Date()
       return `${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
 
-    hitungStatusKesehatan() {
-      //const dataBumil = this.filteredData.length ? this.filteredData : this.bumil;
-      const total = 0; //dataBumil.length;
+    /** 🔹 Ambil summary status kesehatan */
+    async hitungStatusKesehatan() {
+      try {
+        const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
 
-      const count = {
-        KEK: 0,
-        Anemia: 0,
-        Berisiko: 0,
-        Normal: 0,
-      };
+        const data = res.data
+        const total = data.total || 0
+        this.totalBumil = total
 
-      /* dataBumil.forEach((ibu_hamil) => {
-        const { bbu, tbu, bbtb } = ibu_hamil;
+        this.kesehatan = data.counts.map(item => ({
+          title: item.title,
+          value: item.value,
+          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
+          color: item.color,
+        }))
 
-        if (tbu?.includes('Stunted')) count.Stunting++;
-        if (bbtb?.includes('Wasted')) count.Wasting++;
-        if (bbu?.includes('Underweight')) count.Underweight++;
-        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++;
-        if (bbtb?.includes('Overweight')) count.Overweight++;
-
-        // === cek stagnan (3 kali BB sama)
-        const riwayat = ibu_hamil.raw?.posyandu || [];
-        if (riwayat.length >= 3) {
-          const last3 = riwayat.slice(-3);
-          const allEqual = last3.every((r) => r.bb === last3[0].bb);
-          if (allEqual) count['BB Stagnan']++;
-        }
-      }); */
-
-      this.kesehatan = Object.entries(count).map(([title, value]) => {
-        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
-        const colorMap = {
-          KEK: 'danger',
-          Anemia: 'warning',
-          Beresiko: 'violet',
-          Normal: 'success',
-        };
-        return { title, value, percent, color: colorMap[title] };
-      });
+        this.kelurahan = data.kelurahan || '-'
+      } catch (e) {
+        console.error('Gagal ambil status kesehatan:', e)
+        this.kelurahan = '-'
+      }
     },
   },
-
   created() {
     const storedEmail = localStorage.getItem('userEmail')
     this.username = storedEmail
@@ -702,12 +729,12 @@ export default {
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
-
   async mounted() {
     this.isLoading = true
     try {
       await this.getWilayahUser()
       await this.loadConfigWithCache()
+      this.loadPregnancy()
       this.hitungStatusKesehatan()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
@@ -718,10 +745,18 @@ export default {
       setTimeout(() => { this.isLoading = false }, 300)
     }
   },
-
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
+  watch: {
+    filters: {
+      deep: true,
+      handler() {
+        this.loadPregnancy()
+      }
+    }
+  }
+
 }
 </script>
 
