@@ -304,8 +304,8 @@
               </div>
 
               <!-- === Tombol Aksi === -->
-              <div class="col-md-12 d-flex justify-content-between mt-3">
-                <button type="submit" class="btn btn-gradient fw-semibold">
+              <div class="col-md-12 d-flex justify-content-end mt-3">
+                <button type="submit" class="btn btn-gradient fw-semibold me-2">
                   <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
                 <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
