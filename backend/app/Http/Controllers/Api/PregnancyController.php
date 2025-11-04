@@ -121,6 +121,7 @@ class PregnancyController extends Controller
                             'lila' => $g->lila,
                             'status_gizi_lila' => $g->status_gizi_lila,
                             'usia_kehamilan_minggu' => $g->usia_kehamilan_minggu,
+                            'posyandu' => $g->posyandu,
                         ];
                     })
                     ->values();
@@ -395,14 +396,16 @@ class PregnancyController extends Controller
             }
 
             $latest = $records->first();
+            $alamat =
 
             // ✅ Format profil utama ibu hamil
             $ibu = [
                 'nik' => $latest->nik_ibu,
                 'nama' => $latest->nama_ibu ?? '-',
                 'nama_suami' => $latest->nama_suami ?? '-',
-                'usia' => $latest->usia ?? '-',
-                'alamat' => $latest->alamat ?? '-',
+                'nik_suami' => $latest->nik_suami ?? '-',
+                'usia_suami' => $latest->usia_suami ?? '-',
+                'usia' => $latest->usia_ibu ?? '-',
                 'kelurahan' => $latest->kelurahan ?? '-',
                 'rw' => $latest->rw ?? '-',
                 'rt' => $latest->rt ?? '-',
@@ -415,9 +418,9 @@ class PregnancyController extends Controller
             // ✅ Riwayat Pemeriksaan (3 terakhir)
             $riwayatPemeriksaan = $records->take(5)->map(function ($item) {
                 return [
-                    'tanggal' => $item->tanggal_pemeriksaan_terakhir,
-                    'anemia' => str_contains(strtolower($item->status_gizi_hb), 'anemia') ? 'Ya' : 'Tidak',
-                    'kek' => str_contains(strtolower($item->status_gizi_lila), 'kek') ? 'Ya' : 'Tidak',
+                    'tanggal' => optional($item->tanggal_pemeriksaan_terakhir)->format('Y-m-d'),
+                    'anemia' => $item->status_gizi_hb ?? '-',
+                    'kek' => $item->status_gizi_lila ?? '-',
                     'risiko' => $item->status_kehamilan ?? '-',
                     'berat_badan' => $item->berat_badan ?? '-',
                     'tinggi_badan' => $item->tinggi_badan ?? '-',
@@ -445,7 +448,7 @@ class PregnancyController extends Controller
             // ✅ Data Kehamilan (semua record)
             $dataKehamilan = $records->map(function ($item) {
                 return [
-                    'tgl_pendampingan' => $item->tanggal_pemeriksaan_terakhir ?? '-',
+                    'tgl_pendampingan' => optional($item->tanggal_pendampingan)->format('Y-m-d'),
                     'kehamilan_ke' => $item->kehamilan_ke ?? '-',
                     'risiko' => $item->status_kehamilan ?? '-',
                     'tb' => $item->tinggi_badan ?? '-',
@@ -454,10 +457,10 @@ class PregnancyController extends Controller
                     'kek' => $item->status_gizi_lila ?? '-',
                     'hb' => $item->kadar_hb ?? '-',
                     'anemia' => $item->status_gizi_hb ?? '-',
-                    'asap_rokok' => $item->asap_rokok ?? '-',
-                    'bantuan_sosial' => $item->bantuan_sosial ?? '-',
-                    'jamban_sehat' => $item->jamban_sehat ?? '-',
-                    'sumber_air_bersih' => $item->sumber_air_bersih ?? '-',
+                    'asap_rokok' => $item->terpapar_asap_rokok ?? '-',
+                    'bantuan_sosial' => $item->mendapat_bantuan_sosial ?? '-',
+                    'jamban_sehat' => $item->menggunakan_jamban ?? '-',
+                    'sumber_air_bersih' => $item->menggunakan_sab ?? '-',
                     'keluhan' => $item->keluhan ?? '-',
                     'intervensi' => $item->intervensi ?? '-',
                 ];

@@ -626,58 +626,48 @@
                 <!-- RINGKASAN STATUS Kesehatan Ibu Hamil -->
                   <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Kesehatan Ibu Hamil</h5>
 
-                  <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1 align-items-center justify-content-center">
-                    <!-- GIZI CARDS -->
-                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
-                      <div class="row justify-content-center">
-                        <div
-                          v-for="(item, index) in kesehatan_bumil"
-                          :key="index"
-                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
-                        >
-                          <div
-                            class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                            :class="`border-start border-4 border-${item.color}`"
-                          >
-                            <div class="card-body py-3 d-flex justify-content-between">
-                              <div>
-                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                                <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
-                              </div>
-                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                            </div>
-
-                            <!-- SVG LINE CHART -->
-                            <div class="card-footer bg-transparent border-0 pt-0">
-                              <svg
-                                viewBox="0 0 100 30"
-                                class="svg-line"
-                                preserveAspectRatio="none"
-                                :class="`stroke-${item.color}`"
+                      <!-- row isi gizi & total anak -->
+                      <div class="row flex-grow-1 align-items-center justify-content-center">
+                        <!-- GIZI CARDS -->
+                        <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
+                          <div class="row justify-content-center">
+                            <div
+                              v-for="(item, index) in kesehatan_bumil"
+                              :key="index"
+                              class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-12 mb-3"
+                            >
+                              <div
+                                class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                                :class="`border-start border-4 border-${item.color}`"
                               >
-                                <polyline
-                                  fill="none"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                                />
-                              </svg>
+                                <div class="card-header">
+                                  <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                                </div>
+                                <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                                  <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                                  <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
+                                </div>
+
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <!-- TOTAL ANAK -->
-                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
-                      <div class="card text-center shadow-sm border p-2 w-100">
-                        <h6 class="text-muted my-4 fw-bold">Total Ibu Hamil</h6>
-                        <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                          <h2 class="fw-bold text-success mb-0">{{totalBumil}}</h2>
+                        <!-- TOTAL ANAK -->
+                        <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
+                          <div class="card text-center shadow-sm border p-2 w-100">
+                            <h6 class="text-muted my-4 fw-bold">Total Ibu Hamil</h6>
+                            <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                              <h2 class="fw-bold text-success mb-0">{{totalBumil}}</h2>
+                            </div>
+                            <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
+                          </div>
                         </div>
-                        <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
                       </div>
+
+                      <div class="container-fluid row">
+                        <div class="col-md-12">
+                      <h5 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h5>
                     </div>
                   </div>
               </div>
@@ -1229,6 +1219,26 @@ export default {
     },
     toggleSudah(val) {
       this.isSudah = val;
+    },
+    async hitungStatusKesehatan() {
+      try {
+        const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const data = res.data
+        //console.log('📊 hitungStatusKesehatan ->', data)
+        const total = data.total || 0
+
+        this.kesehatan_bumil = data.counts.map(item => ({
+          title: item.title,
+          value: item.value,
+          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
+          color: item.color,
+        }))
+
+      } catch (e) {
+        console.error('❌ hitungStatusKesehatan error:', e)
+      }
     },
     hitungIntervensi() {
       const data = this.filteredData || []
@@ -2229,26 +2239,44 @@ export default {
       }
     },
     handlePosyanduChange() {
-      const pos = this.filters.posyandu;
-      if (!pos) {
-        this.rwList = [];
-        this.rtList = [];
-        this.rwReadonly = true;
-        this.rtReadonly = true;
-        return;
-      }
+  const pos = this.filters.posyandu;
+  if (!pos) {
+    this.rwList = [];
+    this.rtList = [];
+    this.rwReadonly = true;
+    this.rtReadonly = true;
+    return;
+  }
 
-      // 🔹 Ambil data RW & RT dari anak-anak di posyandu ini
-      const filteredChildren = this.children.filter(c => c.posyandu === pos);
-      const rwSet = new Set(filteredChildren.map(c => c.rw).filter(Boolean));
-      const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean));
+  const filteredChildren = this.children.filter(c => c.posyandu === pos);
 
-      this.rwList = Array.from(rwSet);
-      this.rtList = Array.from(rtSet);
+  // Ambil nama_rw & nama_rt dari object
+  const rwSet = new Set(
+    filteredChildren
+      .map(c => {
+        if (typeof c.rw === 'object') return c.rw.nama_rw;
+        if (typeof c.nama_rw !== 'undefined') return c.nama_rw;
+        return c.rw;
+      })
+      .filter(Boolean)
+  );
 
-      this.rwReadonly = false;
-      this.rtReadonly = false;
+  const rtSet = new Set(
+    filteredChildren
+      .map(c => {
+        if (typeof c.rt === 'object') return c.rt.nama_rt;
+        if (typeof c.nama_rt !== 'undefined') return c.nama_rt;
+        return c.rt;
+      })
+      .filter(Boolean)
+  );
+
+  this.rwList = Array.from(rwSet);
+  this.rtList = Array.from(rtSet);
+  this.rwReadonly = false;
+  this.rtReadonly = false;
     },
+
     handleRwChange() {
       const pos = this.filters.posyandu;
       const rw = this.filters.rw;
@@ -2259,11 +2287,23 @@ export default {
         return;
       }
 
-      const filteredChildren = this.children.filter(
-        c => c.posyandu === pos && c.rw === rw
+      const filteredChildren = this.children.filter(c => {
+        const rwVal =
+          typeof c.rw === 'object' ? c.rw.nama_rw :
+          c.nama_rw ?? c.rw;
+        return c.posyandu === pos && rwVal === rw;
+      });
+
+      const rtSet = new Set(
+        filteredChildren
+          .map(c => {
+            if (typeof c.rt === 'object') return c.rt.nama_rt;
+            if (typeof c.nama_rt !== 'undefined') return c.nama_rt;
+            return c.rt;
+          })
+          .filter(Boolean)
       );
 
-      const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean));
       this.rtList = Array.from(rtSet);
       this.rtReadonly = false;
     },
@@ -2290,7 +2330,8 @@ export default {
     },
     applyFilter() {
       const f = this.filters;
-
+      this.rtReadonly = true
+      this.rwReadonly = true
       // 🔹 Tentukan dataset sesuai tipe menu
       let sourceData = [];
       if (this.tipeMenu === 'anak') sourceData = this.children;
@@ -2558,6 +2599,7 @@ export default {
       this.generateDataTableBB();
       this.generateDataTableTB();
       this.generateDataTableStatus();
+      this.hitungStatusKesehatan();
 
       await this.fetchStats();
       this.generatePeriodeOptions();

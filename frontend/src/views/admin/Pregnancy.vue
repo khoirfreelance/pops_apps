@@ -49,17 +49,15 @@
               <div
                 v-for="(filter, key) in filterOptions"
                 :key="key"
-                class="col-md-3 position-relative"
+                class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 position-relative"
               >
-                <label class="form-label text-primary">{{ filter.label }}</label>
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
                     type="button"
                     data-bs-toggle="dropdown"
                   >
-                    <span v-if="!filters[key].length" class="text-muted">{{ filter.placeholder }}</span>
-                    <span v-else>{{ filters[key].join(', ') }}</span>
+                    <span class="text-muted" >{{ getFilterDisplayText(key) }}</span>
                   </button>
 
                   <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
@@ -90,9 +88,54 @@
                 </div>
               </div>
 
+              <!-- Kelurahan/Desa -->
+              <div class="col-xl-6 col-lg-3 col-md-4 col-sm-4 col-6">
+                <select v-model="kelurahan" class="form-select text-muted" disabled>
+                  <option :value="kelurahan">{{ kelurahan }}</option>
+                </select>
+              </div>
+
+              <!-- Posyandu -->
+              <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-12">
+                <select
+                  v-model="filters.posyandu"
+                  class="form-select text-muted"
+                  @change="handlePosyanduChange"
+                >
+                  <option class="text-muted" value="">Pilih Posyandu</option>
+                  <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
+                    {{ item.nama_posyandu }}
+                  </option>
+                </select>
+
+              </div>
+
+              <!-- RW -->
+              <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6">
+                <select
+                  v-model="filters.rw"
+                  class="form-select text-muted"
+                  :disabled="rwReadonly"
+                >
+                  <option class="text-muted" value="">Pilih RW</option>
+                  <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                </select>
+              </div>
+
+              <!-- RT -->
+              <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-6">
+                <select
+                  v-model="filters.rt"
+                  class="form-select text-muted"
+                  :disabled="rtReadonly"
+                >
+                  <option class="text-muted" value="">Pilih RT</option>
+                  <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
+                </select>
+              </div>
+
               <!-- Periode -->
               <div class="col-md-6 text-center">
-                <label class="form-label text-primary">Pilih Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
                   <select v-model="filters.periodeAwal" class="form-select text-muted">
                     <option value="">Awal</option>
@@ -106,8 +149,8 @@
               </div>
 
               <!-- Tombol Aksi -->
-              <div class="col-md-3 d-flex justify-content-between">
-                <button type="submit" class="btn btn-gradient fw-semibold">
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-gradient fw-semibold me-2">
                   <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
                 <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
@@ -202,9 +245,18 @@
                             </a>
                           </td>
                           <td>{{ bumil.anemia }}</td>
-                          <td>{{ bumil.berisiko }}</td>
-                          <td>{{ bumil.kek }}</td>
-                          <td>{{ bumil.intervensi }}</td>
+                          <td>
+                            <span v-if="bumil.risiko === 'Ya'" class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ bumil.risiko }}</span>
+                          </td>
+                          <td>
+                            <span v-if="bumil.kek === 'Ya' || bumil.kek === 'KEK'" class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ bumil.kek }}</span>
+                          </td>
+                          <td>
+                            <span v-if="bumil.intervensi === 'Ya'" class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ bumil.intervensi }}</span>
+                          </td>
                           <td>{{ bumil.rw }}</td>
                           <td>{{ bumil.rt }}</td>
                           <td>{{ bumil.usia }}</td>
@@ -252,8 +304,8 @@
 
                   <!-- Nama dan Identitas -->
                   <h5 class="fw-bold text-dark mb-1">{{ selectedBumil.nama }}</h5>
-                  <p class="text-muted mb-0 text-capitalize">{{ selectedBumil.kelurahan || 'Desa Wonosari, Kec. Bojong Gede' }}</p>
-                  <p class="text-muted">{{ selectedBumil.kecamatan || 'Posyandu Mawar' }}</p>
+                  <p class="text-muted mb-0 text-capitalize">{{ selectedBumil.kelurahan || '-' }}</p>
+                  <p class="text-muted">{{ selectedBumil.kecamatan || '-' }}</p>
 
                   <!-- Badge Status Gizi -->
                   <div class="mb-3">
@@ -294,7 +346,7 @@
                             <span
                               class="badge"
                               :class="{
-                                'bg-danger': r.anemia === 'Ya',
+                                'bg-danger': r.anemia === 'Ya'
                               }"
                             >
                               {{ r.anemia }}
@@ -304,7 +356,7 @@
                             <span
                               class="badge"
                               :class="{
-                                'bg-danger': r.kek === 'Ya',
+                                'bg-danger': r.kek === 'Ya'
                               }"
                             >
                               {{ r.kek }}
@@ -371,7 +423,7 @@
                   <div class="bg-primary text-white p-4 text-center rounded-top">
                     <h5 class="fw-bold mb-0">{{ selectedBumil.nama }}</h5>
                     <p class="text-white mb-0 small">
-                      {{ selectedBumil.usia }} Tahun - {{ selectedBumil.risiko }} Tahun
+                      {{ selectedBumil.usia }} Tahun
                     </p>
                   </div>
 
@@ -424,13 +476,17 @@
                               <p class="mb-1"><strong>NIK:</strong> {{ selectedBumil.nik }}</p>
                               <p class="mb-1"><strong>Usia:</strong> {{ selectedBumil.usia }} Tahun</p>
                               <p class="mb-1"><strong>Nama Suami:</strong> {{ selectedBumil.nama_suami }}</p>
+                              <p class="mb-1"><strong>NIK Suami:</strong> {{ selectedBumil.nik_suami }}</p>
+                              <p class="mb-1"><strong>Usia Suami:</strong> {{ selectedBumil.usia_suami }}</p>
 
                             </div>
                           </div>
                           <div class="col-md-6">
                             <div class="card bg-light border-0 shadow-sm p-3 h-100">
                               <h6 class="fw-bold mb-3 text-danger">Alamat</h6>
-                              <p class="mb-1"><strong>Alamat:</strong> {{ selectedBumil.alamat }}</p>
+                              <p class="mb-1"><strong>Provinsi:</strong> {{ selectedBumil.provinsi }}</p>
+                              <p class="mb-1"><strong>Kota:</strong> {{ selectedBumil.kota }}</p>
+                              <p class="mb-1"><strong>Kecamatan:</strong> {{ selectedBumil.kecamatan }}</p>
                               <p class="mb-1"><strong>Desa:</strong> {{ selectedBumil.kelurahan }}</p>
                               <p class="mb-1"><strong>RW:</strong> {{ selectedBumil.rw }}</p>
                               <p class="mb-1"><strong>RT:</strong> {{ selectedBumil.rt }}</p>
@@ -532,16 +588,25 @@ export default {
       bumil: [],
       filteredBumil: [],
       totalBumil: 0,
+      selectedBumil: null,
+      posyanduList: [],
+      rwList: [],
+      rtList: [],
+      rwReadonly: true,
+      rtReadonly: true,
       filters: {
+        kelurahan: '',
+        posyandu:'',
+        rt:'',
+        rw:'',
         kek: [],
         anemia: [],
-        beresiko: [],
+        berisiko: [],
         usia: [],
         intervensi: [],
         periodeAwal: '',
         periodeAkhir: '',
       },
-
       periodeOptions: [],
     }
   },
@@ -551,11 +616,9 @@ export default {
     },
     filterOptions() {
       return {
-        anemia: { label: 'Anemia', placeholder: 'Pilih Anemia', options: ['Ya', 'Tidak'] },
-        kek: { label: 'KEK', placeholder: 'Pilih KEK', options: ['Ya', 'Tidak'] },
-        beresiko: { label: 'Beresiko', placeholder: 'Pilih Risiko', options: ['Tinggi', 'Rendah', 'Normal'] },
-        usia: { label: 'Usia', placeholder: 'Pilih Usia', options: ['<20', '20-35', '>35'] },
+        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Risiko Tinggi'] },
         intervensi: { label: 'Intervensi', placeholder: 'Pilih Intervensi', options: ["MBG","KIE","Bansos", "PMT", "Bantuan Lainnya", "Belum mendapatkan intervensi"] },
+        usia: { label: 'Usia (Tahun)', placeholder: 'Pilih Usia', options: ['<20', '20-30', '30-40', '>40'] },
       }
     },
     intervesiDisplayText() {
@@ -568,30 +631,6 @@ export default {
     },
   },
   methods: {
-    async loadConfigWithCache() {
-      try {
-        const cached = localStorage.getItem(this.configCacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || this.logoSrc
-          return
-        }
-
-        const res = await axios.get(`${baseURL}/api/config`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-
-        const data = res.data?.data
-        if (data) {
-          this.logoSrc = data.logo || this.logoSrc
-          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
-        }
-      } catch (e) {
-        console.warn('Gagal load config:', e)
-      }
-    },
-
-    /** 🔹 Ambil data bumil dari backend dengan semua filter aktif */
     async loadPregnancy() {
       try {
         const res = await axios.get(`${baseURL}/api/pregnancy`, {
@@ -601,60 +640,68 @@ export default {
 
         const data = res.data?.data || [];
 
-        // Debugging data dari API
-        console.log('Data Bumil:', data);
+        // ✅ Ambil semua nama posyandu dari seluruh riwayat_pemeriksaan
+        const allPosyandu = data.flatMap(ibu =>
+          (ibu.riwayat_pemeriksaan || [])
+            .map(r => r.posyandu)
+            .filter(Boolean)
+        );
 
-        // Format data ke struktur tabel
-        this.bumil = data.map(item => ({
-          id: item.id || item.nik_ibu,
-          nama: item.nama_ibu || '-',
-          anemia: item.status_gizi_hb?.toLowerCase().includes('anemia') ? 'Ya' : 'Tidak',
-          kek: item.status_gizi_lila?.toLowerCase().includes('kek') ? 'Ya' : 'Tidak',
-          berisiko: item.status_kehamilan || '-',
-          intervensi: item.intervensi || '-',
-          rw: item.rw || '-',
-          rt: item.rt || '-',
-          usia: item.usia_kehamilan_minggu || '-',
-          tanggal_pemeriksaan_terakhir: item.tanggal_pemeriksaan_terakhir || '-',
-          berat_badan: item.berat_badan || '-',
-          tinggi_badan: item.tinggi_badan || '-',
-          imt: item.imt || '-',
-          kadar_hb: item.kadar_hb || '-',
-          lila: item.lila || '-',
+        // ✅ Buat list unik
+        const uniquePosyandu = [...new Set(allPosyandu)];
+        this.posyanduList = uniquePosyandu.map((nama, idx) => ({
+          id: idx + 1,
+          nama_posyandu: nama,
         }));
 
-        // Set ke filtered juga
+        // ✅ Format data bumil
+        this.bumil = data.map(item => {
+          const lastCheck = item.riwayat_pemeriksaan?.at(-1); // pemeriksaan terakhir
+          return {
+            id: item.nik_ibu,
+            nama: item.nama_ibu || '-',
+            usia: item.usia_ibu || '-',
+            nama_suami: item.nama_suami || '-',
+            risiko: item.status_kehamilan || '-',
+            rw: item.rw || '-',
+            rt: item.rt || '-',
+            // ambil nilai terakhir dari pemeriksaan
+            tanggal_pemeriksaan_terakhir: lastCheck?.tanggal_pemeriksaan_terakhir || '-',
+            berat_badan: lastCheck?.berat_badan || '-',
+            tinggi_badan: lastCheck?.tinggi_badan || '-',
+            imt: lastCheck?.imt || '-',
+            kadar_hb: lastCheck?.kadar_hb || '-',
+            lila: lastCheck?.lila || '-',
+            anemia: lastCheck?.status_gizi_hb || '-',
+            kek: lastCheck?.status_gizi_lila || '-',
+            nama_posyandu: lastCheck?.posyandu || '-',
+          };
+        });
+
+        // ✅ Set filtered dan total
         this.filteredBumil = [...this.bumil];
         this.totalBumil = this.bumil.length;
+        console.log('isi bumil:', this.filteredBumil);
+
 
       } catch (e) {
         console.error('Gagal ambil data pregnancy:', e);
         this.bumil = [];
         this.filteredBumil = [];
+        this.posyanduList = [];
       }
     },
-
-    /** 🔹 Ambil wilayah user login */
-    async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || '-'
-      } catch (e) {
-        console.error('Gagal ambil wilayah user:', e)
-        this.kelurahan = '-'
-      }
-    },
-
     async showDetail(bumil) {
       try {
         this.isLoading = true;
-        const nik = bumil.nik || bumil.nik_ibu;
+        //console.log('detail:', bumil);
 
-        const response = await axios.get(`/api/pregnancy/${nik}`);
-        const data = response.data;
+        const nik = bumil.id;
+
+        const res = await axios.get(`${baseURL}/api/pregnancy/${nik}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const data = res.data;
 
         this.selectedBumil = {
           ...data.ibu,
@@ -664,7 +711,7 @@ export default {
         };
 
         // optional console debug
-        // console.log('selectedBumil:', this.selectedBumil);
+        //console.log('selectedBumil:', this.selectedBumil);
       } catch (error) {
         console.error('Gagal load detail bumil:', error);
         this.selectedBumil = null;
@@ -672,25 +719,29 @@ export default {
         this.isLoading = false;
       }
     },
+    getFilterDisplayText(key) {
+      const selected = this.filters[key] || []
+      const options = this.filterOptions[key]?.options || []
+      const total = selected.length
+
+      if (total === 0) return this.filterOptions[key].placeholder
+      if (total === options.length) return 'Semua'
+      if (total === 1) return selected[0]
+      return `${total} Dipilih`
+    },
     handleResize() {
       this.windowWidth = window.innerWidth
       this.isCollapsed = this.windowWidth < 992
     },
-
     selectAll(key) {
       this.filters[key] = [...this.filterOptions[key].options]
     },
-
     clearAll(key) {
       this.filters[key] = []
     },
-
-    /** 🔹 Terapkan filter ke backend */
     async applyFilter() {
       await this.loadPregnancy()
     },
-
-    /** 🔹 Reset semua filter dan muat ulang data */
     async resetFilter() {
       Object.keys(this.filters).forEach(k => {
         if (Array.isArray(this.filters[k])) this.filters[k] = []
@@ -698,34 +749,88 @@ export default {
       })
       await this.loadPregnancy()
     },
-
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-
     getTodayDate() {
       const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
       const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
-
     getThisMonth() {
       const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
       const now = new Date()
       return `${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
+    async getWilayahUser() {
+      try {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const wilayah = res.data
+        //console.log('✅ getWilayahUser ->', wilayah)
+        this.kelurahan = wilayah.kelurahan || '-'
+      } catch (e) {
+        console.error('❌ getWilayahUser error:', e)
+        this.kelurahan = '-'
+      }
+    },
+    handlePosyanduChange() {
+      const pos = this.filters.posyandu;
 
-    /** 🔹 Ambil summary status kesehatan */
+      if (!pos) {
+        this.rwList = [];
+        this.rtList = [];
+        this.rwReadonly = true;
+        this.rtReadonly = true;
+        this.filteredBumil = [...this.bumil]; // tampilkan semua lagi
+        return;
+      }
+
+      // 🔹 Ambil data ibu di posyandu terpilih
+      const filteredBumil = this.bumil.filter(b => b.nama_posyandu === pos);
+
+      // 🔹 Ambil daftar RW & RT unik dari mereka
+      const rwSet = new Set(filteredBumil.map(b => b.rw).filter(Boolean));
+      const rtSet = new Set(filteredBumil.map(b => b.rt).filter(Boolean));
+
+      this.rwList = Array.from(rwSet);
+      this.rtList = Array.from(rtSet);
+
+      // 🔹 Aktifkan dropdown RW & RT
+      this.rwReadonly = false;
+      this.rtReadonly = false;
+
+      // 🔹 Update data yang tampil di tabel
+      this.filteredBumil = filteredBumil;
+    },
+    handleRwChange() {
+      const pos = this.filters.posyandu;
+      const rw = this.filters.rw;
+
+      if (!rw) {
+        this.rtList = [];
+        this.rtReadonly = true;
+        return;
+      }
+
+      const filteredPregnancy = this.bumil.filter(
+        c => c.posyandu === pos && c.rw === rw
+      );
+
+      const rtSet = new Set(filteredPregnancy.map(c => c.rt).filter(Boolean));
+      this.rtList = Array.from(rtSet);
+      this.rtReadonly = false;
+    },
     async hitungStatusKesehatan() {
       try {
         const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
-
         const data = res.data
+        //console.log('📊 hitungStatusKesehatan ->', data)
         const total = data.total || 0
-        this.totalBumil = total
 
         this.kesehatan = data.counts.map(item => ({
           title: item.title,
@@ -734,11 +839,27 @@ export default {
           color: item.color,
         }))
 
-        this.kelurahan = data.kelurahan || '-'
       } catch (e) {
-        console.error('Gagal ambil status kesehatan:', e)
-        this.kelurahan = '-'
+        console.error('❌ hitungStatusKesehatan error:', e)
       }
+    },
+    generatePeriodeOptions() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      const result = []
+
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const label = `${bulan[d.getMonth()]} ${d.getFullYear()}`
+        result.push(label)
+      }
+
+      this.periodeOptions = result
     },
   },
   created() {
@@ -757,9 +878,9 @@ export default {
     this.isLoading = true
     try {
       await this.getWilayahUser()
-      await this.loadConfigWithCache()
-      this.loadPregnancy()
-      this.hitungStatusKesehatan()
+      await this.loadPregnancy() // kasih await juga kalau ini async
+      await this.hitungStatusKesehatan()
+      this.generatePeriodeOptions()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
       this.filteredBumil = this.bumil
@@ -772,15 +893,6 @@ export default {
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
-  watch: {
-    filters: {
-      deep: true,
-      handler() {
-        this.loadPregnancy()
-      }
-    }
-  }
-
 }
 </script>
 
