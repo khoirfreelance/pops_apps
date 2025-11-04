@@ -380,6 +380,102 @@ class PregnancyController extends Controller
         }
     }
 
+    public function show($nik_ibu)
+    {
+        try {
+            // ✅ Ambil semua data ibu berdasarkan NIK
+            $records = Pregnancy::where('nik_ibu', $nik_ibu)->orderByDesc('tanggal_pemeriksaan_terakhir')->get();
 
+            if ($records->isEmpty()) {
+                return response()->json([
+                    'message' => 'Data ibu hamil tidak ditemukan',
+                    'nik_ibu' => $nik_ibu,
+                    'data' => null
+                ], 404);
+            }
+
+            $latest = $records->first();
+
+            // ✅ Format profil utama ibu hamil
+            $ibu = [
+                'nik' => $latest->nik_ibu,
+                'nama' => $latest->nama_ibu ?? '-',
+                'nama_suami' => $latest->nama_suami ?? '-',
+                'usia' => $latest->usia ?? '-',
+                'alamat' => $latest->alamat ?? '-',
+                'kelurahan' => $latest->kelurahan ?? '-',
+                'rw' => $latest->rw ?? '-',
+                'rt' => $latest->rt ?? '-',
+                'kecamatan' => $latest->kecamatan ?? '-',
+                'provinsi' => $latest->provinsi ?? '-',
+                'kota' => $latest->kota ?? '-',
+                'status_gizi' => $latest->status_kehamilan ?? '-',
+            ];
+
+            // ✅ Riwayat Pemeriksaan (3 terakhir)
+            $riwayatPemeriksaan = $records->take(5)->map(function ($item) {
+                return [
+                    'tanggal' => $item->tanggal_pemeriksaan_terakhir,
+                    'anemia' => str_contains(strtolower($item->status_gizi_hb), 'anemia') ? 'Ya' : 'Tidak',
+                    'kek' => str_contains(strtolower($item->status_gizi_lila), 'kek') ? 'Ya' : 'Tidak',
+                    'risiko' => $item->status_kehamilan ?? '-',
+                    'berat_badan' => $item->berat_badan ?? '-',
+                    'tinggi_badan' => $item->tinggi_badan ?? '-',
+                    'imt' => $item->imt ?? '-',
+                    'lila' => $item->lila ?? '-',
+                    'kadar_hb' => $item->kadar_hb ?? '-',
+                    'usia_kehamilan_minggu' => $item->usia_kehamilan_minggu ?? '-',
+                ];
+            });
+
+            // ✅ Riwayat Intervensi dummy (bisa dihubungkan tabel lain jika sudah ada)
+            $riwayatIntervensi = collect([
+                [
+                    'tanggal' => '2025-01-10',
+                    'kader' => 'Kader A',
+                    'intervensi' => 'Pemberian Tablet Tambah Darah',
+                ],
+                [
+                    'tanggal' => '2025-02-15',
+                    'kader' => 'Kader B',
+                    'intervensi' => 'Pemeriksaan LILA & Konseling Gizi',
+                ],
+            ]);
+
+            // ✅ Data Kehamilan (semua record)
+            $dataKehamilan = $records->map(function ($item) {
+                return [
+                    'tgl_pendampingan' => $item->tanggal_pemeriksaan_terakhir ?? '-',
+                    'kehamilan_ke' => $item->kehamilan_ke ?? '-',
+                    'risiko' => $item->status_kehamilan ?? '-',
+                    'tb' => $item->tinggi_badan ?? '-',
+                    'bb' => $item->berat_badan ?? '-',
+                    'lila' => $item->lila ?? '-',
+                    'kek' => $item->status_gizi_lila ?? '-',
+                    'hb' => $item->kadar_hb ?? '-',
+                    'anemia' => $item->status_gizi_hb ?? '-',
+                    'asap_rokok' => $item->asap_rokok ?? '-',
+                    'bantuan_sosial' => $item->bantuan_sosial ?? '-',
+                    'jamban_sehat' => $item->jamban_sehat ?? '-',
+                    'sumber_air_bersih' => $item->sumber_air_bersih ?? '-',
+                    'keluhan' => $item->keluhan ?? '-',
+                    'intervensi' => $item->intervensi ?? '-',
+                ];
+            });
+
+            return response()->json([
+                'ibu' => $ibu,
+                'riwayat_pemeriksaan' => $riwayatPemeriksaan,
+                'riwayat_intervensi' => $riwayatIntervensi,
+                'kehamilan' => $dataKehamilan,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil detail ibu hamil',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }

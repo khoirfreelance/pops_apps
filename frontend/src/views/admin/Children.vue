@@ -1305,9 +1305,100 @@ export default {
         this.showError('Error Ambil Data Anak', e)
       }
     },
+    applyFilter() {
+      console.time('applyFilter')
+
+      const f = this.filters
+
+      this.filteredData = this.children.filter(item => {
+
+        // === 1. BBU
+        const bbuMatch = f.bbu.length === 0 || f.bbu.includes(item.bbu)
+
+        // === 2. TBU
+        const tbuMatch = f.tbu.length === 0 || f.tbu.includes(item.tbu)
+
+        // === 3. BBTB
+        const bbtbMatch = f.bbtb.length === 0 || f.bbtb.includes(item.bbtb)
+
+        // === 4. Stagnan
+        const stagnanMatch =
+          f.stagnan.length === 0 ||
+          f.stagnan.some(opt => {
+            if (opt === 'Ya') return this.isStagnan(item)
+            if (opt === 'Tidak') return !this.isStagnan(item)
+            return true
+          })
+
+        // === 5. Posyandu
+        const posyanduMatch =
+          !f.posyandu || item.posyandu === f.posyandu || item.nama_posyandu === f.posyandu
+
+        // === 6. RW & RT
+        const rwMatch = !f.rw || item.rw === f.rw
+        const rtMatch = !f.rt || item.rt === f.rt
+
+        // === 7. Intervensi (multi)
+        const intervensiMatch =
+          f.intervensi.length === 0 ||
+          f.intervensi.some(i => (item.intervensi || '').includes(i))
+
+        // === 8. Periode
+        const periodeMatch = (() => {
+          const bulanMap = {
+            Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
+            Juli: 7, Agustus: 8, September: 9, Oktober: 10, November: 11, Desember: 12
+          }
+
+          const parsePeriode = (val) => {
+            if (!val) return null
+            if (/^\d{4}-\d{1,2}$/.test(val)) {
+              const [y, m] = val.split('-').map(Number)
+              return y * 100 + m
+            }
+            if (/^[A-Za-z]+ \d{4}$/.test(val)) {
+              const [bulanNama, tahunStr] = val.split(' ')
+              const m = bulanMap[bulanNama]
+              if (!m) return null
+              const y = parseInt(tahunStr, 10)
+              return y * 100 + m
+            }
+            const d = new Date(val)
+            return isNaN(d) ? null : d.getFullYear() * 100 + (d.getMonth() + 1)
+          }
+
+          if (!item.tgl_ukur) return false
+          const t = new Date(item.tgl_ukur)
+          if (isNaN(t.getTime())) return false
+          const periodeNum = t.getFullYear() * 100 + (t.getMonth() + 1)
+
+          const awal = parsePeriode(f.periodeAwal) ?? -Infinity
+          const akhir = parsePeriode(f.periodeAkhir) ?? Infinity
+
+          return periodeNum >= awal && periodeNum <= akhir
+        })()
+
+        return (
+          bbuMatch &&
+          tbuMatch &&
+          bbtbMatch &&
+          stagnanMatch &&
+          posyanduMatch &&
+          rwMatch &&
+          rtMatch &&
+          intervensiMatch &&
+          periodeMatch
+        )
+      })
+
+      console.timeEnd('applyFilter')
+
+      // 🔄 langsung hitung ulang status gizi setelah filter diterapkan
+      this.hitungStatusGizi()
+    },
     hitungStatusGizi() {
-      const dataAnak = this.filteredData.length ? this.filteredData : this.children;
-      const total = dataAnak.length;
+      const dataAnak = this.filteredData.length ? this.filteredData : this.children
+      const total = dataAnak.length
 
       const count = {
         Stunting: 0,
@@ -1316,28 +1407,28 @@ export default {
         Normal: 0,
         'BB Stagnan': 0,
         Overweight: 0,
-      };
+      }
 
       dataAnak.forEach((anak) => {
-        const { bbu, tbu, bbtb } = anak;
+        const { bbu, tbu, bbtb } = anak
 
-        if (tbu?.includes('Stunted')) count.Stunting++;
-        if (bbtb?.includes('Wasted')) count.Wasting++;
-        if (bbu?.includes('Underweight')) count.Underweight++;
-        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++;
-        if (bbtb?.includes('Overweight')) count.Overweight++;
+        if (tbu?.includes('Stunted')) count.Stunting++
+        if (bbtb?.includes('Wasted')) count.Wasting++
+        if (bbu?.includes('Underweight')) count.Underweight++
+        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++
+        if (bbtb?.includes('Overweight')) count.Overweight++
 
         // === cek stagnan (3 kali BB sama)
-        const riwayat = anak.raw?.posyandu || [];
+        const riwayat = anak.raw?.posyandu || []
         if (riwayat.length >= 3) {
-          const last3 = riwayat.slice(-3);
-          const allEqual = last3.every((r) => r.bb === last3[0].bb);
-          if (allEqual) count['BB Stagnan']++;
+          const last3 = riwayat.slice(-3)
+          const allEqual = last3.every((r) => r.bb === last3[0].bb)
+          if (allEqual) count['BB Stagnan']++
         }
-      });
+      })
 
       this.gizi = Object.entries(count).map(([title, value]) => {
-        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%'
         const colorMap = {
           Stunting: 'danger',
           Wasting: 'warning',
@@ -1345,9 +1436,11 @@ export default {
           Normal: 'success',
           'BB Stagnan': 'info',
           Overweight: 'dark',
-        };
-        return { title, value, percent, color: colorMap[title] };
-      });
+        }
+        return { title, value, percent, color: colorMap[title] }
+      })
+
+      console.log('✅ Gizi dihitung dari', total, 'anak (filtered:', this.filteredData.length, ')')
     },
     isStagnan(item) {
       const STATUS_DIBAWAH_NORMAL = [
@@ -1412,130 +1505,6 @@ export default {
         this.filters.rt = ''
       }
     },
-    applyFilter() {
-
-      this.filteredData = this.children.filter(item => {
-        const f = this.filters
-
-        // === 1. BBU
-        const bbuMatch = f.bbu.length === 0 || f.bbu.includes(item.bbu)
-
-        // === 2. TBU
-        const tbuMatch = f.tbu.length === 0 || f.tbu.includes(item.tbu)
-
-        // === 3. BBTB
-        const bbtbMatch = f.bbtb.length === 0 || f.bbtb.includes(item.bbtb)
-
-        // === 4. Stagnan
-        const stagnanMatch =
-          f.stagnan.length === 0 ||
-          f.stagnan.some(opt => {
-            if (opt === 'Ya') return this.isStagnan(item)
-            if (opt === 'Tidak') return !this.isStagnan(item)
-            return true
-          })
-
-        // === 5. Posyandu
-        const posyanduMatch =
-          !f.posyandu || item.posyandu === f.posyandu || item.nama_posyandu === f.posyandu
-
-        // === 6. RW & RT
-        const rwMatch = !f.rw || item.rw === f.rw
-        const rtMatch = !f.rt || item.rt === f.rt
-
-        // === 7. Intervensi (multi)
-        const intervensiMatch =
-          f.intervensi.length === 0 ||
-          f.intervensi.some(i => (item.intervensi || '').includes(i))
-
-        // === 8. Periode (DEBUGGED)
-        const periodeMatch = (() => {
-
-          // parse tgl_ukur into YYYYMM number safely
-          let periodeNum = null
-          try {
-            if (!item.tgl_ukur) {
-              console.warn('item.tgl_ukur is empty/null for', item)
-              return false // atau return true kalau mau inklusif
-            }
-            const t = new Date(item.tgl_ukur)
-            if (isNaN(t.getTime())) {
-              console.warn('item.tgl_ukur is invalid date:', item.tgl_ukur)
-              return false
-            }
-            periodeNum = t.getFullYear() * 100 + (t.getMonth() + 1) // e.g. 202503
-          } catch (err) {
-            console.error('Error parsing item.tgl_ukur:', err, item.tgl_ukur)
-            return false
-          }
-
-          // helper parse periode string (supports "YYYY-MM" and "NamaBulan YYYY")
-          const bulanMap = {
-            Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
-            Juli: 7, Agustus: 8, September: 9, Oktober: 10, November: 11, Desember: 12
-          }
-
-          const parsePeriode = (val) => {
-            if (!val) return null
-
-            // 1) accept YYYY-MM (e.g. "2024-07")
-            if (/^\d{4}-\d{1,2}$/.test(val)) {
-              const [y, m] = val.split('-').map(Number)
-              return y * 100 + m
-            }
-
-            // 2) accept "NamaBulan YYYY" (e.g. "Juli 2024")
-            if (/^[A-Za-z]+ \d{4}$/.test(val)) {
-              const [bulanNama, tahunStr] = val.split(' ')
-              const m = bulanMap[bulanNama]
-              if (!m) {
-                console.warn('Unknown month name in periode:', val)
-                return null
-              }
-              const y = parseInt(tahunStr, 10)
-              return y * 100 + m
-            }
-
-            // 3) try Date parse fallback (last resort)
-            const d = new Date(val)
-            if (!isNaN(d.getTime())) {
-              return d.getFullYear() * 100 + (d.getMonth() + 1)
-            }
-
-            console.warn('Unable to parse periode value:', val)
-            return null
-          }
-
-          const awal = parsePeriode(f.periodeAwal) ?? -Infinity
-          const akhir = parsePeriode(f.periodeAkhir) ?? Infinity
-
-
-          const ok = periodeNum >= awal && periodeNum <= akhir
-          console.log('periodeMatch result:', ok)
-          return ok
-        })()
-
-        const result =
-          bbuMatch &&
-          tbuMatch &&
-          bbtbMatch &&
-          stagnanMatch &&
-          posyanduMatch &&
-          rwMatch &&
-          rtMatch &&
-          intervensiMatch &&
-          periodeMatch
-
-        // final debug per item (optional, comment out if too verbose)
-        console.log('item:', item.nama || item.nik, 'matches?', result)
-
-        return result
-      })
-
-      // akhir filter
-      console.timeEnd('applyFilter')
-    },
-
     resetFilter() {
       this.filters = {
         bbu: [],

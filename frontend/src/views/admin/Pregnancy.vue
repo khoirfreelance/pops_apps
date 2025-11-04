@@ -648,6 +648,30 @@ export default {
       }
     },
 
+    async showDetail(bumil) {
+      try {
+        this.isLoading = true;
+        const nik = bumil.nik || bumil.nik_ibu;
+
+        const response = await axios.get(`/api/pregnancy/${nik}`);
+        const data = response.data;
+
+        this.selectedBumil = {
+          ...data.ibu,
+          riwayat_pemeriksaan: data.riwayat_pemeriksaan || [],
+          riwayat_intervensi: data.riwayat_intervensi || [],
+          kehamilan: data.kehamilan || [],
+        };
+
+        // optional console debug
+        // console.log('selectedBumil:', this.selectedBumil);
+      } catch (error) {
+        console.error('Gagal load detail bumil:', error);
+        this.selectedBumil = null;
+      } finally {
+        this.isLoading = false;
+      }
+    },
     handleResize() {
       this.windowWidth = window.innerWidth
       this.isCollapsed = this.windowWidth < 992
