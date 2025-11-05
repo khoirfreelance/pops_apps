@@ -623,53 +623,135 @@
             <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
               <!-- Issue and Stat Card -->
               <div class="container-fluid my-2 row">
-                <!-- RINGKASAN STATUS Kesehatan Ibu Hamil -->
-                  <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Kesehatan Ibu Hamil</h5>
+                <div class="d-flex flex-column">
+                  <!-- judul tetap di atas -->
+                  <h5 class="fw-bold text-primary mb-3">Ringkasan Status Gizi Bulan Ini</h5>
 
-                      <!-- row isi gizi & total anak -->
-                      <div class="row flex-grow-1 align-items-center justify-content-center">
-                        <!-- GIZI CARDS -->
-                        <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
-                          <div class="row justify-content-center">
-                            <div
-                              v-for="(item, index) in kesehatan_bumil"
-                              :key="index"
-                              class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-12 mb-3"
-                            >
-                              <div
-                                class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                                :class="`border-start border-4 border-${item.color}`"
-                              >
-                                <div class="card-header">
-                                  <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                                </div>
-                                <div class="card-body py-3 d-flex justify-content-between align-items-center">
-                                  <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                                  <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
-                                </div>
-
-                              </div>
+                  <!-- row isi gizi & total anak -->
+                  <div class="row flex-grow-1 align-items-center">
+                    <!-- GIZI CARDS -->
+                    <div class="row justify-content-center">
+                      <div
+                        v-for="(item, index) in kesehatan_bumil"
+                        :key="index"
+                        class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12 mb-3"
+                      >
+                        <div
+                          class="card shadow-sm border-0 rounded-3 overflow-hidden h-100"
+                          :class="`border-start border-4 border-${item.color}`"
+                        >
+                          <div class="card-body d-flex justify-content-between">
+                            <div>
+                              <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                              <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
                             </div>
+                            <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
                           </div>
-                        </div>
 
-                        <!-- TOTAL ANAK -->
-                        <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
-                          <div class="card text-center shadow-sm border p-2 w-100">
-                            <h6 class="text-muted my-4 fw-bold">Total Ibu Hamil</h6>
-                            <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                              <h2 class="fw-bold text-success mb-0">{{totalBumil}}</h2>
-                            </div>
-                            <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
+                          <!-- SVG LINE CHART -->
+                          <div class="card-footer bg-transparent border-0 pt-0">
+                            <svg
+                              viewBox="0 0 100 30"
+                              class="svg-line"
+                              preserveAspectRatio="none"
+                              :class="`stroke-${item.color}`"
+                            >
+                              <polyline
+                                fill="none"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
+                              />
+                            </svg>
                           </div>
                         </div>
                       </div>
 
-                      <div class="container-fluid row">
-                        <div class="col-md-12">
-                      <h5 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h5>
+                      <!-- TOTAL IBU HAMIL -->
+                      <div class="col-xl-4 col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
+                        <div class="card text-center shadow-sm border rounded-3 h-100">
+                          <div class="card-body d-flex flex-column justify-content-center">
+                            <h6 class="text-muted fw-bold mb-2">Total Ibu Hamil</h6>
+                            <h2 class="fw-bold text-success mb-2">{{ totalBumil }}</h2>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="container-fluid">
+                  <h5 class="fw-bold text-primary mb-3">Status Kesehatan Ibu Hamil</h5>
+
+                  <!-- Row utama: tabel & chart berdampingan -->
+                  <div class="row g-3">
+                    <!-- Table -->
+                    <div class="col-12 col-xl-8">
+                      <div class="card border border-primary shadow p-3 h-100">
+                        <div class="table-responsive">
+                          <table class="table table-borderless align-middle">
+                            <thead>
+                              <tr class="fw-semibold text-additional">
+                                <th class="text-additional">Status</th>
+                                <th class="text-additional">Jumlah</th>
+                                <th class="text-additional">Persen</th>
+                                <th class="text-additional">Tren</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(row, index) in dataTable_bumil" :key="index">
+                                <td class="text-additional small">{{ row.status }}</td>
+                                <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                                <td class="text-additional small">
+                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
+                                </td>
+                                <td class="small" :class="row.trenClass">
+                                  <span v-if="row.tren && row.tren !== '-'">
+                                    <i :class="row.trenIcon"></i> {{ row.tren }}
+                                  </span>
+                                  <span v-else>-</span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Canvas Chart -->
+                    <div class="col-12 col-xl-4">
+                      <div class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
+                        <canvas ref="bumilChart" style="width: 100%; height: 280px !important;"></canvas>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Tabel tambahan bawah -->
+                  <div class="row mt-4">
+                    <div class="col-12">
+                      <div class="card border border-primary shadow p-3">
+                        <div class="table-responsive">
+                          <table class="table table-bordered table-sm align-middle text-center mb-0">
+                            <thead class="table-light">
+                              <tr>
+                                <th>Indikator</th>
+                                <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(values, indikator) in indikatorData" :key="indikator">
+                                <td class="fw-bold">{{ indikator }}</td>
+                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -951,8 +1033,12 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      indikatorData:[],
+      intervensiData: [],
+      bumilChart: null,
       tab:'anak',
       isSudah: false,
+      bulanLabels: [], // diisi daftar bulan
       rawData: [], // data asli anak
       filteredData: [], // data hasil filter
       tipeMenu: 'anak', // default tab
@@ -978,8 +1064,6 @@ export default {
       today: '',
       thisMonth:'',
       kelurahan: '',
-      logoSrc: null,
-      logoLoaded: true,
       windowWidth: window.innerWidth,
       stats: [],
       children:[],
@@ -1010,6 +1094,267 @@ export default {
       else if (tipe === 'bumil') this.hitungStatusBumil();
       else if (tipe === 'catin') this.hitungStatusCatin();
     },
+    //Data Bumil
+    async generateDataTableBumil() {
+      try {
+        const res = await axios.get(`${baseURL}/api/pregnancy/tren`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        //console.log('debug datatable bumil:', res.data);
+
+        this.dataTable_bumil = res.data.dataTable_bumil || [];
+      } catch (e) {
+        this.showError('Error Ambil Data', e);
+      }
+    },
+    async hitungStatusBumil() {
+      try {
+        const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const data = res.data
+        //console.log('📊 hitungStatusKesehatan ->', data)
+        const total = data.total || 0
+
+        this.kesehatan_bumil = data.counts.map(item => ({
+          title: item.title,
+          value: item.value,
+          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
+          color: item.color,
+        }))
+        this.totalBumil = total
+
+      } catch (e) {
+        console.error('❌ hitungStatusKesehatan error:', e)
+      }
+    },
+    async loadIntervensiBumil() {
+      try {
+        const now = new Date()
+        const akhir = now.toISOString().split('T')[0]
+
+        const awalDate = new Date(now)
+        awalDate.setFullYear(now.getFullYear() - 1)
+        const awal = awalDate.toISOString().split('T')[0]
+
+        const params = {
+          kelurahan: this.filters.kelurahan || '',
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periodeAwal: awal,
+          periodeAkhir: akhir,
+        }
+
+        const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data
+        const list = data.dataTable_bumil || []
+
+        // 🔹 Hitung ringkasan intervensi
+        const summary = {
+          KEK: { sudah: 0, belum: 0 },
+          ANEMIA: { sudah: 0, belum: 0 },
+          BERISIKO: { sudah: 0, belum: 0 },
+        }
+
+        list.forEach((ibu) => {
+          // KEK
+          if (ibu.kek === 'Ya') {
+            if (ibu.kek_intervensi === 'Ya') summary.KEK.sudah++
+            else summary.KEK.belum++
+          }
+          // ANEMIA
+          if (ibu.anemia === 'Ya') {
+            if (ibu.anemia_intervensi === 'Ya') summary.ANEMIA.sudah++
+            else summary.ANEMIA.belum++
+          }
+          // RISTI / BERISIKO
+          if (ibu.risti === 'Ya') {
+            if (ibu.risti_intervensi === 'Ya') summary.BERISIKO.sudah++
+            else summary.BERISIKO.belum++
+          }
+        })
+
+        // 🔹 Buat tabel
+        this.dataTable_bumil = Object.keys(summary).map((key) => {
+          const s = summary[key]
+          const total = s.sudah + s.belum
+          const persen = total > 0 ? ((s.sudah / total) * 100).toFixed(1) : 0
+
+          return {
+            status: key,
+            jumlah: total,
+            persen,
+            tren: '-',
+            trenClass: '',
+            trenIcon: '',
+          }
+        })
+
+        // 🔹 Render Chart
+        this.renderBumilChart(summary)
+
+      } catch (e) {
+        console.error('❌ loadIntervensiBumil error:', e)
+      }
+    },
+    renderBumilChart(summary) {
+      const ctx = this.$refs.bumilChart?.getContext('2d')
+      if (!ctx) return
+      if (this.bumilChart) this.bumilChart.destroy()
+
+      const labels = Object.keys(summary)
+      const sudah = labels.map((key) => summary[key].sudah)
+      const belum = labels.map((key) => summary[key].belum)
+
+      this.bumilChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Sudah Dapat Intervensi',
+              data: sudah,
+              backgroundColor: '#1B5E20',
+              borderRadius: 8,
+              borderSkipped: false,
+            },
+            {
+              label: 'Belum Dapat Intervensi',
+              data: belum,
+              backgroundColor: '#C62828',
+              borderRadius: 8,
+              borderSkipped: false,
+            },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          scales: {
+            x: {
+              stacked: true,
+              beginAtZero: true,
+              ticks: { precision: 0 },
+            },
+            y: { stacked: true },
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 14, padding: 16 },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.x}`,
+              },
+            },
+          },
+        },
+      })
+    },
+    async generateIndikatorBumilBulanan() {
+      try {
+        this.isLoading = true;
+        const res = await axios.get(`${this.apiBase}/pregnancy/indikator-bulanan`, {
+          params: {
+            kelurahan: this.filters.kelurahan || '',
+            posyandu: this.filters.posyandu || '',
+            rw: this.filters.rw || '',
+            rt: this.filters.rt || ''
+          }
+        });
+
+        const { labels, indikator } = res.data;
+
+        if (!labels?.length) {
+          this.bulanLabels = this.getLast12Months();
+          this.indikatorData = {};
+          return;
+        }
+
+        this.bulanLabels = labels;
+        this.indikatorData = indikator;
+
+        console.log('✅ indikatorData:', this.indikatorData);
+      } catch (err) {
+        console.error('❌ Gagal memuat indikator bumil bulanan:', err);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    //Data Catin
+    async loadBride() {
+      try {
+        const res = await axios.get(`${baseURL}/api/bride`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        this.bride = res.data.map(item => {
+        const pendamping = item.catin?.pendampingan?.[0] || {} // ambil pendampingan pertama
+
+        return {
+          id: item.id,
+          tgl_daftar: item.tgl_daftar,
+          tgl_rencana_menikah: item.tgl_rencana_menikah,
+          rencana_tinggal: item.rencana_tinggal,
+
+          // --- Data Catin Perempuan ---
+          nama_perempuan: item.catin?.nama || '',
+          nik_perempuan: item.catin?.nik || '',
+          pekerjaan_perempuan: item.catin?.pekerjaan || '',
+          tgl_lahir_perempuan: item.catin?.tgl_lahir || '',
+          usia_perempuan: item.catin?.usia || '',
+          hp_perempuan: item.catin?.no_hp || '',
+
+          // --- Data Catin Pria ---
+          nama_pria: item.catin?.pasangan?.nama || '',
+          nik_pria: item.catin?.pasangan?.nik || '',
+          pekerjaan_pria: item.catin?.pasangan?.pekerjaan || '',
+          tgl_lahir_pria: item.catin?.pasangan?.tgl_lahir || '',
+          usia_pria: item.catin?.pasangan?.usia || '',
+          hp_pria: item.catin?.pasangan?.no_hp || '',
+
+          // --- Data Pendampingan ---
+          tgl_pemeriksaan: pendamping.tgl_pemeriksaan || '',
+          tgl_pendampingan: pendamping.tgl_pendampingan || '',
+          dampingan_ke: pendamping.dampingan_ke || '',
+          bb: pendamping.bb || '',
+          tb: pendamping.tb || '',
+          lila: pendamping.lila || '',
+          hb: pendamping.hb || '',
+          imt: pendamping.imt || '',
+          status_hb: pendamping.anemia || '',
+          status_gizi: pendamping.kek || '',
+          catin_terpapar_rokok: pendamping.catin_terpapar_rokok || '',
+          catin_ttd: pendamping.catin_ttd || '',
+          punya_riwayat_penyakit: pendamping.punya_riwayat_penyakit || '',
+          riwayat_penyakit: pendamping.riwayat_penyakit || '',
+          fasilitas_rujukan: pendamping.fasilitas_rujukan || '',
+          edukasi: pendamping.edukasi || '',
+          pmt: pendamping.pmt || '',
+          catatan: pendamping.catatan ?? ''
+        }})
+
+      } catch (e) {
+        //console.error('Gagal ambil data:', e)
+        this.showError('Error Ambil Data', e)
+      }
+    },
+
+    //Data Anak
     async loadChildren() {
       try {
         const res = await axios.get(`${baseURL}/api/children`, {
@@ -1109,157 +1454,6 @@ export default {
 
         //this.showError('Error Ambil Data Anak', e)
       }
-    },
-    async loadBride() {
-      try {
-        const res = await axios.get(`${baseURL}/api/bride`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-
-        this.bride = res.data.map(item => {
-        const pendamping = item.catin?.pendampingan?.[0] || {} // ambil pendampingan pertama
-
-        return {
-          id: item.id,
-          tgl_daftar: item.tgl_daftar,
-          tgl_rencana_menikah: item.tgl_rencana_menikah,
-          rencana_tinggal: item.rencana_tinggal,
-
-          // --- Data Catin Perempuan ---
-          nama_perempuan: item.catin?.nama || '',
-          nik_perempuan: item.catin?.nik || '',
-          pekerjaan_perempuan: item.catin?.pekerjaan || '',
-          tgl_lahir_perempuan: item.catin?.tgl_lahir || '',
-          usia_perempuan: item.catin?.usia || '',
-          hp_perempuan: item.catin?.no_hp || '',
-
-          // --- Data Catin Pria ---
-          nama_pria: item.catin?.pasangan?.nama || '',
-          nik_pria: item.catin?.pasangan?.nik || '',
-          pekerjaan_pria: item.catin?.pasangan?.pekerjaan || '',
-          tgl_lahir_pria: item.catin?.pasangan?.tgl_lahir || '',
-          usia_pria: item.catin?.pasangan?.usia || '',
-          hp_pria: item.catin?.pasangan?.no_hp || '',
-
-          // --- Data Pendampingan ---
-          tgl_pemeriksaan: pendamping.tgl_pemeriksaan || '',
-          tgl_pendampingan: pendamping.tgl_pendampingan || '',
-          dampingan_ke: pendamping.dampingan_ke || '',
-          bb: pendamping.bb || '',
-          tb: pendamping.tb || '',
-          lila: pendamping.lila || '',
-          hb: pendamping.hb || '',
-          imt: pendamping.imt || '',
-          status_hb: pendamping.anemia || '',
-          status_gizi: pendamping.kek || '',
-          catin_terpapar_rokok: pendamping.catin_terpapar_rokok || '',
-          catin_ttd: pendamping.catin_ttd || '',
-          punya_riwayat_penyakit: pendamping.punya_riwayat_penyakit || '',
-          riwayat_penyakit: pendamping.riwayat_penyakit || '',
-          fasilitas_rujukan: pendamping.fasilitas_rujukan || '',
-          edukasi: pendamping.edukasi || '',
-          pmt: pendamping.pmt || '',
-          catatan: pendamping.catatan ?? ''
-        }})
-
-      } catch (e) {
-        //console.error('Gagal ambil data:', e)
-        this.showError('Error Ambil Data', e)
-      }
-    },
-    exportToCSV(val) {
-      this.isSudah = val;
-      const data = this.isSudah ? this.processedChildren : this.processedChildren_belum;
-
-      if (!data.length) {
-        alert('Tidak ada data untuk diexport!');
-        return;
-      }
-
-      // 🔹 Header CSV
-      const headers = [
-        'No',
-        'Nama',
-        'Jenis Intervensi',
-        'Stunting',
-        'Wasting',
-        'Underweight',
-        'BB Sangat',
-        'Overweight',
-      ];
-
-      // 🔹 Isi CSV sesuai tabel
-      const rows = data.map((anak, index) => [
-        (this.currentPage - 1) * this.perPage + index + 1, // Nomor urut tabel
-        anak.nama,
-        anak.rumusan,
-        anak.stunting ? '✔' : '',
-        anak.wasting ? '✔' : '',
-        anak.underweight ? '✔' : '',
-        anak.bb_sangat ? '✔' : '',
-        anak.overweight ? '✔' : '',
-      ]);
-
-      // 🔹 Gabung jadi string CSV
-      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-
-      // 🔹 Download otomatis
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const filename = this.isSudah ? 'anak_sudah_intervensi.csv' : 'anak_belum_intervensi.csv';
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-    toggleSudah(val) {
-      this.isSudah = val;
-    },
-    async hitungStatusKesehatan() {
-      try {
-        const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        const data = res.data
-        //console.log('📊 hitungStatusKesehatan ->', data)
-        const total = data.total || 0
-
-        this.kesehatan_bumil = data.counts.map(item => ({
-          title: item.title,
-          value: item.value,
-          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
-          color: item.color,
-        }))
-
-      } catch (e) {
-        console.error('❌ hitungStatusKesehatan error:', e)
-      }
-    },
-    hitungIntervensi() {
-      const data = this.filteredData || []
-      if (!data.length) return { belum: 0, dapat: 0 }
-
-      let belum = 0
-      let sudah = 0
-
-      data.forEach((anak) => {
-        const intervensi = anak.raw?.intervensi || []
-        // cek apakah punya intervensi valid
-        const punyaIntervensi = intervensi.some((i) => i?.jenis && i.jenis !== 'Belum Mendapatkan Bantuan')
-
-        if (punyaIntervensi) {
-          sudah++
-        } else {
-          belum++
-        }
-      })
-
-      return { belum, sudah }
     },
     generateInfoBoxes() {
       let intervensiKurang = 0
@@ -1410,6 +1604,81 @@ export default {
         },
       ]
     },
+
+    exportToCSV(val) {
+      this.isSudah = val;
+      const data = this.isSudah ? this.processedChildren : this.processedChildren_belum;
+
+      if (!data.length) {
+        alert('Tidak ada data untuk diexport!');
+        return;
+      }
+
+      // 🔹 Header CSV
+      const headers = [
+        'No',
+        'Nama',
+        'Jenis Intervensi',
+        'Stunting',
+        'Wasting',
+        'Underweight',
+        'BB Sangat',
+        'Overweight',
+      ];
+
+      // 🔹 Isi CSV sesuai tabel
+      const rows = data.map((anak, index) => [
+        (this.currentPage - 1) * this.perPage + index + 1, // Nomor urut tabel
+        anak.nama,
+        anak.rumusan,
+        anak.stunting ? '✔' : '',
+        anak.wasting ? '✔' : '',
+        anak.underweight ? '✔' : '',
+        anak.bb_sangat ? '✔' : '',
+        anak.overweight ? '✔' : '',
+      ]);
+
+      // 🔹 Gabung jadi string CSV
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+      // 🔹 Download otomatis
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = this.isSudah ? 'anak_sudah_intervensi.csv' : 'anak_belum_intervensi.csv';
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    toggleSudah(val) {
+      this.isSudah = val;
+    },
+
+    hitungIntervensi() {
+      const data = this.filteredData || []
+      if (!data.length) return { belum: 0, dapat: 0 }
+
+      let belum = 0
+      let sudah = 0
+
+      data.forEach((anak) => {
+        const intervensi = anak.raw?.intervensi || []
+        // cek apakah punya intervensi valid
+        const punyaIntervensi = intervensi.some((i) => i?.jenis && i.jenis !== 'Belum Mendapatkan Bantuan')
+
+        if (punyaIntervensi) {
+          sudah++
+        } else {
+          belum++
+        }
+      })
+
+      return { belum, sudah }
+    },
+
+
     generateDataTableBB() {
       const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
       if (!data.length) return;
@@ -1724,54 +1993,9 @@ export default {
 
       this.totalAnak = total;
     },
-    hitungStatusBumil() {
-      const dataBumil = this.filteredData.length ? this.filteredData : this.bumil;
-      const f = this.filters;
-
-      const [y, m] = f.periode ? f.periode.split('-') : [];
-      const periodeNum = f.periode ? parseInt(y) * 100 + parseInt(m) : null;
-
-      const count = {
-        KEK: 0,
-        Anemia: 0,
-        'Risiko Tinggi': 0,
-        Normal: 0,
-      };
-      let total = 0;
-
-      dataBumil.forEach((ibu) => {
-        const riwayat = ibu.raw?.pemeriksaan || [];
-        if (!riwayat.length) return;
-
-        const filtered = periodeNum
-          ? riwayat.filter((r) => {
-              if (!r.tgl_periksa) return false;
-              const tgl = new Date(r.tgl_periksa);
-              const periode = tgl.getFullYear() * 100 + (tgl.getMonth() + 1);
-              return periode === periodeNum;
-            })
-          : riwayat;
-
-        const latest = filtered[filtered.length - 1];
-        if (!latest) return;
-
-        total++;
-
-        if (latest.kek) count.KEK++;
-        if (latest.anemia) count.Anemia++;
-        if (latest.risti) count['Risiko Tinggi']++;
-        if (!latest.kek && !latest.anemia && !latest.risti) count.Normal++;
-      });
-
-      this.gizi = Object.entries(count).map(([title, value]) => {
-        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
-        return { title, value, percent };
-      });
-      this.totalBumil = total;
-    },
     hitungStatusCatin() {
       const dataCatin = this.filteredData.length ? this.filteredData : this.bride;
-      console.log('Data Flatten:', dataCatin)
+      //console.log('Data Flatten:', dataCatin)
       const f = this.filters;
 
       const [y, m] = f.periode ? f.periode.split('-') : [];
@@ -2239,44 +2463,43 @@ export default {
       }
     },
     handlePosyanduChange() {
-  const pos = this.filters.posyandu;
-  if (!pos) {
-    this.rwList = [];
-    this.rtList = [];
-    this.rwReadonly = true;
-    this.rtReadonly = true;
-    return;
-  }
+      const pos = this.filters.posyandu;
+      if (!pos) {
+        this.rwList = [];
+        this.rtList = [];
+        this.rwReadonly = true;
+        this.rtReadonly = true;
+        return;
+      }
 
-  const filteredChildren = this.children.filter(c => c.posyandu === pos);
+      const filteredChildren = this.children.filter(c => c.posyandu === pos);
 
-  // Ambil nama_rw & nama_rt dari object
-  const rwSet = new Set(
-    filteredChildren
-      .map(c => {
-        if (typeof c.rw === 'object') return c.rw.nama_rw;
-        if (typeof c.nama_rw !== 'undefined') return c.nama_rw;
-        return c.rw;
-      })
-      .filter(Boolean)
-  );
+      // Ambil nama_rw & nama_rt dari object
+      const rwSet = new Set(
+        filteredChildren
+          .map(c => {
+            if (typeof c.rw === 'object') return c.rw.nama_rw;
+            if (typeof c.nama_rw !== 'undefined') return c.nama_rw;
+            return c.rw;
+          })
+          .filter(Boolean)
+      );
 
-  const rtSet = new Set(
-    filteredChildren
-      .map(c => {
-        if (typeof c.rt === 'object') return c.rt.nama_rt;
-        if (typeof c.nama_rt !== 'undefined') return c.nama_rt;
-        return c.rt;
-      })
-      .filter(Boolean)
-  );
+      const rtSet = new Set(
+        filteredChildren
+          .map(c => {
+            if (typeof c.rt === 'object') return c.rt.nama_rt;
+            if (typeof c.nama_rt !== 'undefined') return c.nama_rt;
+            return c.rt;
+          })
+          .filter(Boolean)
+      );
 
-  this.rwList = Array.from(rwSet);
-  this.rtList = Array.from(rtSet);
-  this.rwReadonly = false;
-  this.rtReadonly = false;
+      this.rwList = Array.from(rwSet);
+      this.rtList = Array.from(rtSet);
+      this.rwReadonly = false;
+      this.rtReadonly = false;
     },
-
     handleRwChange() {
       const pos = this.filters.posyandu;
       const rw = this.filters.rw;
@@ -2328,44 +2551,64 @@ export default {
       //console.log('Periode options:', this.periodeOptions)
 
     },
-    applyFilter() {
+
+    async applyFilter() {
       const f = this.filters;
+
+      // 🔹 Atur readonly untuk RT/RW sesuai filter aktif
       this.rtReadonly = true
       this.rwReadonly = true
-      // 🔹 Tentukan dataset sesuai tipe menu
+
+      // 🔹 Pilih dataset sumber sesuai tipe menu
       let sourceData = [];
-      if (this.tipeMenu === 'anak') sourceData = this.children;
-      else if (this.tipeMenu === 'bumil') sourceData = this.bumil;
-      else if (this.tipeMenu === 'catin') sourceData = this.bride;
+      switch (this.tipeMenu) {
+        case 'anak':
+          sourceData = this.children;
+          break;
+        case 'bumil':
+          sourceData = this.bumil;
+          break;
+        case 'catin':
+          sourceData = this.bride;
+          break;
+      }
+
+      // 🔹 Pastikan dataset ada
+      if (!Array.isArray(sourceData) || !sourceData.length) {
+        this.filteredData = [];
+        return;
+      }
 
       // 🔹 Filter utama (Posyandu, RW, RT, Periode)
       this.filteredData = sourceData.filter(item => {
-        // Posyandu
-        const posyanduMatch = !f.posyandu || item.posyandu === f.posyandu || item.nama_posyandu === f.posyandu;
-        // RW & RT
+        const posyanduMatch =
+          !f.posyandu ||
+          item.posyandu === f.posyandu ||
+          item.nama_posyandu === f.posyandu;
+
         const rwMatch = !f.rw || item.rw === f.rw;
         const rtMatch = !f.rt || item.rt === f.rt;
 
-        // Periode
         const periodeMatch = (() => {
           if (!f.periode) return true;
+          const [y, m] = f.periode.split('-').map(Number);
+          const periodeNum = y * 100 + m;
 
-          const [y, m] = f.periode.split('-');
-          const periodeNum = parseInt(y) * 100 + parseInt(m);
-
-          // tanggal acuannya tergantung tipe data
-          const tanggalKey =
-            this.tipeMenu === 'anak' ? 'tgl_ukur' : 'tgl_pendampingan';
+          const tanggalKey = this.tipeMenu === 'anak' ? 'tgl_ukur' : 'tgl_pendampingan';
           if (!item[tanggalKey]) return false;
 
-          const [year, month, day] = item[tanggalKey].split('-').map(Number);
-          const tgl = new Date(year, month - 1, day);
-          const itemPeriode = tgl.getFullYear() * 100 + (tgl.getMonth() + 1);
+          const [iy, im] = item[tanggalKey].split('-').map(Number);
+          const itemPeriode = iy * 100 + im;
           return itemPeriode === periodeNum;
         })();
 
         return posyanduMatch && rwMatch && rtMatch && periodeMatch;
       });
+
+      // 🔹 Jika tidak ada data hasil filter, reset agar tidak error di render
+      if (!this.filteredData.length) {
+        console.warn('⚠️ Tidak ada data setelah filter diterapkan');
+      }
 
       // 🔹 Jalankan logika sesuai tipe menu
       if (this.tipeMenu === 'anak') {
@@ -2376,7 +2619,8 @@ export default {
         this.generateDataTableStatus();
         this.generateInfoBoxes();
         this.generateListsFromChildren();
-        // render grafik khusus anak
+
+        // Render grafik anak
         this.renderChart('pieChart_bb', this.dataTable_bb, [
           '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
         ]);
@@ -2386,15 +2630,16 @@ export default {
         this.renderChart('pieChart_status', this.dataTable_status, [
           '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
         ]);
-      } else if (this.tipeMenu === 'bumil') {
+      }
+
+      else if (this.tipeMenu === 'bumil') {
         this.hitungStatusBumil();
-        this.generateListsFromBumil?.(); // optional kalau ada
-        this.renderChart('pieChart_status', this.gizi, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4',
-        ]);
-      } else if (this.tipeMenu === 'catin') {
+        await this.loadIntervensiBumil();
+      }
+
+      else if (this.tipeMenu === 'catin') {
         this.hitungStatusCatin();
-        this.generateListsFromCatin?.(); // optional
+        this.generateListsFromCatin?.();
         this.renderChart('pieChart_status', this.gizi, [
           '#f5ebb9', '#f7db7f', '#7dae9b',
         ]);
@@ -2555,7 +2800,30 @@ export default {
         },
         plugins: [ChartDataLabels],
       });
-    }
+    },
+    getLast12Months() {
+      const monthNames = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ]
+      const labels = []
+      const now = new Date()
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        labels.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`)
+      }
+      return labels
+    },
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -2579,17 +2847,18 @@ export default {
       await this.$nextTick();
       await this.getWilayahUser();
       await this.loadConfigWithCache();
-
+      this.bulanLabels = this.getLast12Months() // <- generate bulan realtime
       // ⏳ Ambil semua data (anak, bumil, catin)
       await this.loadChildren(); // sudah generateListsFromChildren()
       await this.loadBride(); // untuk catin
       await this.loadBumil?.(); // kalau ada load ibu hamil, opsional
-
+      await this.generateIndikatorBumilBulanan();
       // 🔹 Set menu default
       this.menu('anak'); // otomatis set this.tipeMenu = 'anak' & hitungStatusGizi()
 
       // 🔹 Jalankan logika tambahan setelah data dasar siap
       const { belum, sudah } = this.hitungIntervensi();
+      this.generateIndikatorBumilBulanan()
       this.belum = belum;
       this.sudah = sudah;
 
@@ -2599,8 +2868,9 @@ export default {
       this.generateDataTableBB();
       this.generateDataTableTB();
       this.generateDataTableStatus();
-      this.hitungStatusKesehatan();
-
+      this.generateDataTableBumil();
+      await this.loadIntervensiBumil();
+      await this.generateIndikatorBumilBulanan();
       await this.fetchStats();
       this.generatePeriodeOptions();
       this.filters.kelurahan = this.kelurahan;
@@ -2643,7 +2913,6 @@ export default {
       setTimeout(() => { this.isLoading = false; }, 300);
     }
   },
-
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },

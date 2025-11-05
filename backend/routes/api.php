@@ -89,6 +89,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/pregnancy/import', [PregnancyController::class, 'import']);
     Route::get('/pregnancy', [PregnancyController::class, 'index']);
     Route::get('/pregnancy/status', [PregnancyController::class, 'status']);
+    Route::get('/pregnancy/tren', [PregnancyController::class, 'tren']);
+    Route::get('/pregnancy/intervensi-summary', [PregnancyController::class, 'intervensiSummary']);
+    Route::get('/pregnancy/indikator-bulanan', [PregnancyController::class, 'indikatorBulanan']);
     Route::get('/pregnancy/{nik_ibu}', [PregnancyController::class, 'show']);
 });
 
