@@ -240,6 +240,7 @@ class PregnancyController extends Controller
                 'rencana_asi_eksklusif' => $data[43] ?? null,
                 'rencana_tinggal_setelah' => $data[44] ?? null,
                 'rencana_kontrasepsi' => $data[44] ?? null,
+                'posyandu' => $data[45] ?? null,
             ];
         }
 
@@ -256,6 +257,13 @@ class PregnancyController extends Controller
                     'kota' => $row['kota'],
                     'kecamatan' => $row['kecamatan'],
                     'kelurahan' => $row['kelurahan'],
+                ]);
+
+                $posyandu = \App\Models\Posyandu::firstOrCreate([
+                    'nama_posyandu' => $row['posyandu']?? '-',
+                    'id_wilayah' => $wilayah->id,
+                    'rt' => $row['rt'] ?? null,
+                    'rw' => $row['rw'] ?? null,
                 ]);
 
                 // ✅ Log tiap baris (optional, bisa dihapus kalau terlalu banyak)

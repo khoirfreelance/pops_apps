@@ -56,6 +56,7 @@ class Pregnancy extends Model
         'rencana_asi_eksklusif',
         'rencana_tinggal_setelah',
         'rencana_kontrasepsi',
+        'posyandu'
     ];
 
     protected $casts = [

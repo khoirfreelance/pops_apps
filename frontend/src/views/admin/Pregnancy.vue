@@ -246,7 +246,7 @@
                           </td>
                           <td>{{ bumil.anemia }}</td>
                           <td>
-                            <span v-if="bumil.risiko === 'Ya'" class="badge bg-danger text-white">Ya</span>
+                            <span v-if="bumil.risiko === 'Ya' || bumil.risiko === 'Beresiko Tinggi' " class="badge bg-danger text-white">Ya</span>
                             <span v-else>{{ bumil.risiko }}</span>
                           </td>
                           <td>
