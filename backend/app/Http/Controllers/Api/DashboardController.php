@@ -10,6 +10,7 @@ use App\Models\TPK;
 use App\Models\User;
 use App\Models\Catin;
 use App\Models\Pendampingan;
+use App\Models\Pregnancy;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -36,7 +37,7 @@ class DashboardController extends Controller
             'rt' => $uniqueRt,
             'keluarga' => Keluarga::count(),
             'tpk' => TPK::count(),
-            'ibu_hamil' => 30, // contoh statis
+            'ibu_hamil' => Pregnancy::count(),
             'posyandu' => Posyandu::count(),
             'bidan' => User::where('role', '=', 'Bidan')->count(),
             'catin' => Catin::count(),

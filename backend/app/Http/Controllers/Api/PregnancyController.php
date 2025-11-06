@@ -239,8 +239,8 @@ class PregnancyController extends Controller
                 'rencana_tempat_melahirkan' => $data[42] ?? null,
                 'rencana_asi_eksklusif' => $data[43] ?? null,
                 'rencana_tinggal_setelah' => $data[44] ?? null,
-                'rencana_kontrasepsi' => $data[44] ?? null,
-                'posyandu' => $data[45] ?? null,
+                'rencana_kontrasepsi' => $data[45] ?? null,
+                'posyandu' => $data[46] ?? null,
             ];
         }
 
