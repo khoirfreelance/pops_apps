@@ -816,8 +816,8 @@
                             <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                               <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
                               <div class="chart-placeholder text-muted text-center py-4">
-                                <canvas v-if="isSudahBumil" ref="sudahBumilChart"></canvas>
-                                <canvas v-else ref="belumBumilChart"></canvas>
+                                <canvas v-if="isSudahBumil" ref="sudahBumilChart" style="max-height: 280px; min-height: 200px !important;height: 100% !important;width: 100% !important;"></canvas>
+                                <canvas v-else ref="belumBumilChart" style="max-height: 280px; min-height: 200px !important;height: 100% !important;width: 100% !important;"></canvas>
                               </div>
                             </div>
                           </div>
@@ -888,23 +888,25 @@
                                     <th class="text-center p-2">No</th>
                                     <th class="text-center p-2" width="300">Nama</th>
                                     <th class="text-center p-2">Jenis Intervensi</th>
-                                    <th class="text-center p-2">Stunting</th>
-                                    <th class="text-center p-2">Wasting</th>
-                                    <th class="text-center p-2">Underweight</th>
-                                    <th class="text-center p-2">BB Sangat</th>
-                                    <th class="text-center p-2">Overweight</th>
+                                    <th class="text-center p-2">Anemia</th>
+                                    <th class="text-center p-2">Kehamilan Berisiko</th>
+                                    <th class="text-center p-2">KEK</th>
+                                    <th class="text-center p-2">RT</th>
+                                    <th class="text-center p-2">RW</th>
+                                    <th class="text-center p-2">Usia <span class="fw-normal">(Tahun)</span></th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  <tr v-for="(anak, i) in paginatedChildren_belum" :key="i">
+                                  <tr v-for="(bumil, i) in paginatedBumil" :key="i">
                                     <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                    <td>{{ anak.nama }}</td>
-                                    <td class="text-center">{{ anak.rumusan }}</td>
-                                    <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                    <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                    <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                    <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                    <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                    <td>{{ bumil.nama }}</td>
+                                    <td class="text-center">{{ bumil.intervensi }}</td>
+                                    <td class="text-center"><i v-if="bumil.anemia" class="bi bi-check2"></i><span v-else>-</span></td>
+                                    <td class="text-center"><i v-if="bumil.risiko" class="bi bi-check2"></i><span v-else>-</span></td>
+                                    <td class="text-center"><i v-if="bumil.kek" class="bi bi-check2"></i><span v-else>-</span></td>
+                                    <td class="text-center">{{bumil.rt}}</td>
+                                    <td class="text-center">{{bumil.rw}}</td>
+                                    <td class="text-center">{{bumil.usia}}</td>
                                   </tr>
                                 </tbody>
                                 <tfoot>
@@ -923,7 +925,7 @@
                               </table>
                               <!-- Pagination -->
                               <nav>
-                                <ul class="pagination justify-content-center">
+                                <!-- <ul class="pagination justify-content-center">
                                   <li class="page-item" :class="{ disabled: currentPage === 1 }">
                                     <button class="page-link" @click="currentPage--">Previous</button>
                                   </li>
@@ -933,7 +935,7 @@
                                   <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
                                     <button class="page-link" @click="currentPage++">Next</button>
                                   </li>
-                                </ul>
+                                </ul> -->
                               </nav>
                             </div>
                           </div>
@@ -1223,6 +1225,18 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      paginatedBumil: [
+      {
+        nama: 'Sakura Haruno',
+        anemia: false,
+        risiko: false,
+        kek: true,
+        intervensi: '-',
+        rt: '9',
+        rw: '2',
+        usia: 22
+      },
+    ],
       indikatorBumil:[],
       indikatorData:[],
       intervensiData: [],
@@ -1427,6 +1441,7 @@ export default {
 
         //console.log('📊 Ringkasan intervensi:', summary)
         this.renderBumilChart(summary)
+        this.renderIntervensiBumilChart()
         const { belumBumil, sudahBumil } = this.hitungIntervensiBumil(interv)
         this.belumBumil = belumBumil
         this.sudahBumil = sudahBumil
@@ -1601,6 +1616,86 @@ export default {
             },
           },
         },
+      });
+    },
+    renderIntervensiBumilChart() {
+      const ctx = this.isSudahBumil
+        ? this.$refs.sudahBumilChart
+        : this.$refs.belumBumilChart;
+
+      if (!ctx) return;
+
+      // 🔹 Hapus chart lama biar gak double render
+      if (this.intervensiChart) {
+        this.intervensiChart.destroy();
+      }
+
+      // 🔹 Contoh struktur data
+      const labels = [
+        'MBG',
+        'KIE',
+        'Bansos',
+        'PMT',
+        'Bantuan Lainnya',
+        'Belum Mendapatkan Bantuan',
+      ];
+
+      // Data kamu bisa ganti dari hasil API loadIntervensiBumil()
+      const data = [0, 0, 0, 0, 0, 1];
+
+      const backgroundColors = [
+        '#007f5f', // hijau tua
+        '#009e73', // hijau sedang
+        '#74c69d', // hijau muda
+        '#95d5b2', // hijau pastel
+        '#b7e4c7', // hijau muda sekali
+        '#e57373', // merah muda untuk belum dapat
+      ];
+
+      this.intervensiChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              backgroundColor: backgroundColors,
+              borderRadius: 8,
+              barThickness: 18,
+            },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: ctx => `${ctx.parsed.x} orang`,
+              },
+            },
+            datalabels: {
+              anchor: 'center',
+              align: 'center',
+              color: '#fff',
+              font: { weight: 'bold', size: 10 },
+              formatter: val => (val > 0 ? val : ''),
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: { precision: 0 },
+            },
+            y: {
+              grid: { display: false },
+            },
+          },
+        },
+        plugins: [ChartDataLabels],
       });
     },
 
@@ -2844,11 +2939,11 @@ export default {
     async applyFilter() {
       const f = this.filters;
 
-      // 🔹 Atur readonly untuk RT/RW sesuai filter aktif
-      this.rtReadonly = true
-      this.rwReadonly = true
+      // 🔹 RT/RW readonly bila sudah dipilih dari hierarki
+      this.rtReadonly = true;
+      this.rwReadonly = true;
 
-      // 🔹 Pilih dataset sumber sesuai tipe menu
+      // 🔹 Tentukan sumber data sesuai tipe menu
       let sourceData = [];
       switch (this.tipeMenu) {
         case 'anak':
@@ -2862,13 +2957,13 @@ export default {
           break;
       }
 
-      // 🔹 Pastikan dataset ada
+      // 🔹 Pastikan data ada
       if (!Array.isArray(sourceData) || !sourceData.length) {
         this.filteredData = [];
         return;
       }
 
-      // 🔹 Filter utama (Posyandu, RW, RT, Periode)
+      // 🔹 Filter berdasarkan Posyandu, RW, RT, Periode
       this.filteredData = sourceData.filter(item => {
         const posyanduMatch =
           !f.posyandu ||
@@ -2883,7 +2978,14 @@ export default {
           const [y, m] = f.periode.split('-').map(Number);
           const periodeNum = y * 100 + m;
 
-          const tanggalKey = this.tipeMenu === 'anak' ? 'tgl_ukur' : 'tgl_pendampingan';
+          // Field tanggal berbeda tergantung tipe menu
+          const tanggalKey =
+            this.tipeMenu === 'anak'
+              ? 'tgl_ukur'
+              : this.tipeMenu === 'bumil'
+              ? 'tgl_pendampingan'
+              : 'tgl_pemeriksaan';
+
           if (!item[tanggalKey]) return false;
 
           const [iy, im] = item[tanggalKey].split('-').map(Number);
@@ -2894,44 +2996,45 @@ export default {
         return posyanduMatch && rwMatch && rtMatch && periodeMatch;
       });
 
-      // 🔹 Jika tidak ada data hasil filter, reset agar tidak error di render
       if (!this.filteredData.length) {
         console.warn('⚠️ Tidak ada data setelah filter diterapkan');
       }
 
-      // 🔹 Jalankan logika sesuai tipe menu
-      if (this.tipeMenu === 'anak') {
-        this.totalAnak = this.filteredData.filter(a => a.usia < 60).length;
-        this.hitungStatusGizi();
-        this.generateDataTableBB();
-        this.generateDataTableTB();
-        this.generateDataTableStatus();
-        this.generateInfoBoxes();
-        this.generateListsFromChildren();
+      // 🔹 Logika lanjutan per tipe menu
+      switch (this.tipeMenu) {
+        case 'anak':
+          this.totalAnak = this.filteredData.filter(a => a.usia < 60).length;
+          this.hitungStatusGizi();
+          this.generateDataTableBB();
+          this.generateDataTableTB();
+          this.generateDataTableStatus();
+          this.generateInfoBoxes();
+          this.generateListsFromChildren();
 
-        // Render grafik anak
-        this.renderChart('pieChart_bb', this.dataTable_bb, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
-        ]);
-        this.renderChart('pieChart_tb', this.dataTable_tb, [
-          '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
-        ]);
-        this.renderChart('pieChart_status', this.dataTable_status, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-        ]);
-      }
+          // Render chart anak
+          this.renderChart('pieChart_bb', this.dataTable_bb, [
+            '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
+          ]);
+          this.renderChart('pieChart_tb', this.dataTable_tb, [
+            '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
+          ]);
+          this.renderChart('pieChart_status', this.dataTable_status, [
+            '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
+          ]);
+          break;
 
-      else if (this.tipeMenu === 'bumil') {
-        this.hitungStatusBumil();
-        await this.loadIntervensiBumil();
-      }
+        case 'bumil':
+          await this.hitungStatusBumil();
+          await this.loadIntervensiBumil();
+          break;
 
-      else if (this.tipeMenu === 'catin') {
-        this.hitungStatusCatin();
-        this.generateListsFromCatin?.();
-        this.renderChart('pieChart_status', this.gizi, [
-          '#f5ebb9', '#f7db7f', '#7dae9b',
-        ]);
+        case 'catin':
+          this.hitungStatusCatin();
+          this.generateListsFromCatin?.();
+          this.renderChart('pieChart_status', this.gizi, [
+            '#f5ebb9', '#f7db7f', '#7dae9b',
+          ]);
+          break;
       }
     },
     async fetchStats() {
@@ -3169,8 +3272,8 @@ export default {
 
       // Pastikan filter kelurahan & periode sudah siap
       this.filters.kelurahan = this.kelurahan;
-      if (!this.filters.periode && this.bulanLabels.length)
-        this.filters.periode = this.bulanLabels[this.bulanLabels.length - 1]; // ambil bulan terakhir
+      /* if (!this.filters.periode && this.bulanLabels.length)
+        this.filters.periode = this.bulanLabels[this.bulanLabels.length - 1]; // ambil bulan terakhir */
 
       await this.loadIntervensiBumil();
 
