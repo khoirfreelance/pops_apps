@@ -51,6 +51,12 @@
                 :key="key"
                 class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 position-relative"
               >
+              <label
+                v-if="filter.filter"
+                class="text-primary"
+              >
+                {{ filter.filter }}
+              </label>
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
@@ -90,6 +96,7 @@
 
               <!-- Kelurahan/Desa -->
               <div class="col-xl-6 col-lg-3 col-md-4 col-sm-4 col-6">
+                <label for="filter" class="text-primary">Desa:</label>
                 <select v-model="kelurahan" class="form-select text-muted" disabled>
                   <option :value="kelurahan">{{ kelurahan }}</option>
                 </select>
@@ -97,6 +104,7 @@
 
               <!-- Posyandu -->
               <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-12">
+                <label for="filter" class="text-primary">Filter Lokasi:</label>
                 <select
                   v-model="filters.posyandu"
                   class="form-select text-muted"
@@ -136,6 +144,7 @@
 
               <!-- Periode -->
               <div class="col-md-6 text-center">
+                <label for="filter" class="text-primary"> Filter Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
                   <select v-model="filters.periodeAwal" class="form-select text-muted">
                     <option value="">Awal</option>
@@ -682,7 +691,6 @@ export default {
         periodeAkhir: '',
       },
       periodeOptions: [],
-
     }
   },
   setup() {
@@ -750,9 +758,9 @@ export default {
   computed: {
     filterOptions() {
       return {
-        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Risiko Tinggi'] },
-        intervensi: { label: 'Intervensi', placeholder: 'Pilih Intervensi', options: ["MBG","KIE","Bansos", "PMT", "Bantuan Lainnya", "Belum mendapatkan intervensi"] },
-        usia: { label: 'Usia (Tahun)', placeholder: 'Pilih Usia', options: ['<20', '20-30', '30-40', '>40'] },
+        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Beresiko Tinggi'], filter:'Filter status ibu hamil:' },
+        intervensi: { label: 'Intervensi', placeholder: 'Pilih Intervensi', options: ["MBG","KIE","Bansos", "PMT", "Bantuan Lainnya", "Belum mendapatkan intervensi"],filter:'' },
+        usia: { label: 'Usia (Tahun)', placeholder: 'Pilih Usia', options: ['<20', '20-30', '30-40', '>40'],filter:'' },
       }
     },
     intervesiDisplayText() {
@@ -815,7 +823,7 @@ export default {
         // ✅ Set filtered dan total
         this.filteredBumil = [...this.bumil];
         this.totalBumil = this.bumil.length;
-        console.log('isi bumil:', this.filteredBumil);
+        //console.log('isi bumil:', this.filteredBumil);
 
 
       } catch (e) {
@@ -992,7 +1000,7 @@ export default {
         const data = res.data;
         const total = data.total || 0;
 
-        this.totalBumil = total;
+        //this.totalBumil = total;
         this.kesehatan = data.counts.map(item => ({
           title: item.title,
           value: item.value,

@@ -1344,7 +1344,7 @@ export default {
     },
     async generateIndikatorBumilBulanan() {
       try {
-        this.isLoading = true;
+        //this.isLoading = true;
 
         const params = {
           kelurahan: this.filters.kelurahan || '',
@@ -1392,12 +1392,12 @@ export default {
           Normal: Array(12).fill(0),
         };
       } finally {
-        this.isLoading = false;
+        //this.isLoading = false;
       }
     },
     async loadIntervensiBumil() {
       try {
-        this.isLoading = true
+        //this.isLoading = true
 
         const params = {
           kelurahan: this.filters.kelurahan || '',
@@ -1448,7 +1448,7 @@ export default {
       } catch (e) {
         console.error('❌ loadIntervensiBumil error:', e)
       } finally {
-        this.isLoading = false
+        //this.isLoading = false
       }
     },
     renderBumilChart(summary) {

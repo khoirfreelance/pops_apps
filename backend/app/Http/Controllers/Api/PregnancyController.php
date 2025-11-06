@@ -13,12 +13,12 @@ use Illuminate\Support\Str;
 
 class PregnancyController extends Controller
 {
+
     public function index(Request $request)
     {
         try {
             $user = Auth::user();
 
-            // ✅ Wilayah user
             $wilayah = [
                 'kelurahan' => $user->kelurahan ?? null,
                 'kecamatan' => $user->kecamatan ?? null,
@@ -26,23 +26,50 @@ class PregnancyController extends Controller
                 'provinsi' => $user->provinsi ?? null,
             ];
 
-            // ✅ Base query
             $query = Pregnancy::query();
 
-            // Filter otomatis berdasarkan wilayah user
+            // ✅ Filter wilayah otomatis
             if (!empty($wilayah['kelurahan'])) {
                 $query->where('kelurahan', $wilayah['kelurahan']);
             }
 
-            // ✅ Filter berdasarkan periode tanggal pemeriksaan
+            // ✅ Filter berdasarkan periode (format: "Juni 2025" dalam Bahasa Indonesia)
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
-                    $request->periodeAwal,
-                    $request->periodeAkhir,
-                ]);
+                // Daftar bulan dalam Bahasa Indonesia
+                $bulanMap = [
+                    'januari' => 1,
+                    'februari' => 2,
+                    'maret' => 3,
+                    'april' => 4,
+                    'mei' => 5,
+                    'juni' => 6,
+                    'juli' => 7,
+                    'agustus' => 8,
+                    'september' => 9,
+                    'oktober' => 10,
+                    'november' => 11,
+                    'desember' => 12,
+                ];
+
+                // Fungsi bantu untuk konversi teks ke tanggal
+                $parsePeriode = function ($periode) use ($bulanMap) {
+                    $parts = explode(' ', trim(strtolower($periode))); // ex: ["maret", "2025"]
+                    if (count($parts) === 2 && isset($bulanMap[$parts[0]])) {
+                        $bulan = $bulanMap[$parts[0]];
+                        $tahun = (int) $parts[1];
+                        return Carbon::createFromDate($tahun, $bulan, 1);
+                    }
+                    // fallback: coba parse langsung
+                    return Carbon::createFromDate($tahun, $bulan, 1);
+                };
+
+                $start = $parsePeriode($request->periodeAwal)->startOfMonth()->format('Y-m-d');
+                $end = $parsePeriode($request->periodeAkhir)->endOfMonth()->format('Y-m-d');
+
+                $query->whereBetween('tanggal_pemeriksaan_terakhir', [$start, $end]);
             }
 
-            // Filter status (gabungan KEK, Anemia, Risiko)
+            // ✅ Filter status (KEK, Anemia, Risiko ≠ Normal)
             if ($request->filled('status') && is_array($request->status)) {
                 $query->where(function ($q) use ($request) {
                     foreach ($request->status as $status) {
@@ -52,7 +79,10 @@ class PregnancyController extends Controller
                         } elseif (str_contains($statusLower, 'anemia')) {
                             $q->orWhere('status_gizi_hb', 'like', '%anemia%');
                         } elseif (str_contains($statusLower, 'risiko')) {
-                            $q->orWhere('status_kehamilan', 'like', '%risiko%');
+                            $q->orWhere(function ($sub) {
+                                $sub->where('status_kehamilan', 'not like', '%normal%')
+                                    ->orWhereNull('status_kehamilan');
+                            });
                         }
                     }
                 });
@@ -63,7 +93,6 @@ class PregnancyController extends Controller
                 $query->where(function ($q) use ($request) {
                     foreach ($request->usia as $range) {
                         $range = trim($range);
-
                         if ($range === '<20') {
                             $q->orWhere('usia_ibu', '<', 20);
                         } elseif ($range === '>40') {
@@ -76,8 +105,7 @@ class PregnancyController extends Controller
                 });
             }
 
-
-            // ✅ Filter intervensi (misal ada kolom intervensi)
+            // ✅ Filter intervensi
             if ($request->filled('intervensi') && is_array($request->intervensi)) {
                 $query->where(function ($q) use ($request) {
                     foreach ($request->intervensi as $val) {
@@ -86,10 +114,8 @@ class PregnancyController extends Controller
                 });
             }
 
-            // ✅ Ambil data dari DB
-            $data = $query
-                ->orderByDesc('tanggal_pemeriksaan_terakhir')
-                ->get();
+            // ✅ Ambil data
+            $data = $query->orderByDesc('tanggal_pemeriksaan_terakhir')->get();
 
             if ($data->isEmpty()) {
                 return response()->json([
@@ -98,28 +124,23 @@ class PregnancyController extends Controller
                 ], 200);
             }
 
-            // ✅ Group berdasarkan nik_ibu
+            // ✅ Group data per ibu
             $grouped = $data->groupBy('nik_ibu')->map(function ($group) {
                 $latest = $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
-
-                // kumpulkan riwayat pemeriksaan (ascending by tanggal)
-                $riwayat = $group
-                    ->sortBy('tanggal_pemeriksaan_terakhir')
-                    ->map(function ($g) {
-                        return [
-                            'tanggal_pemeriksaan_terakhir' => $g->tanggal_pemeriksaan_terakhir,
-                            'berat_badan' => $g->berat_badan,
-                            'tinggi_badan' => $g->tinggi_badan,
-                            'imt' => $g->imt,
-                            'kadar_hb' => $g->kadar_hb,
-                            'status_gizi_hb' => $g->status_gizi_hb,
-                            'lila' => $g->lila,
-                            'status_gizi_lila' => $g->status_gizi_lila,
-                            'usia_kehamilan_minggu' => $g->usia_kehamilan_minggu,
-                            'posyandu' => $g->posyandu,
-                        ];
-                    })
-                    ->values();
+                $riwayat = $group->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
+                    return [
+                        'tanggal_pemeriksaan_terakhir' => $g->tanggal_pemeriksaan_terakhir,
+                        'berat_badan' => $g->berat_badan,
+                        'tinggi_badan' => $g->tinggi_badan,
+                        'imt' => $g->imt,
+                        'kadar_hb' => $g->kadar_hb,
+                        'status_gizi_hb' => $g->status_gizi_hb,
+                        'lila' => $g->lila,
+                        'status_gizi_lila' => $g->status_gizi_lila,
+                        'usia_kehamilan_minggu' => $g->usia_kehamilan_minggu,
+                        'posyandu' => $g->posyandu,
+                    ];
+                })->values();
 
                 return [
                     'nama_ibu' => $latest->nama_ibu,
@@ -140,7 +161,6 @@ class PregnancyController extends Controller
                 ];
             });
 
-            // ✅ Response akhir
             return response()->json([
                 'total' => $grouped->count(),
                 'data' => $grouped->values(),
@@ -314,14 +334,19 @@ class PregnancyController extends Controller
             }
 
             // ✅ Filter tambahan dari frontend
-            if ($request->filled('posyandu')) {
-                $query->where('posyandu', $request->posyandu);
-            }
-            if ($request->filled('rw')) {
-                $query->where('rw', $request->rw);
-            }
-            if ($request->filled('rt')) {
-                $query->where('rt', $request->rt);
+            if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
+            if ($request->filled('rw')) $query->where('rw', $request->rw);
+            if ($request->filled('rt')) $query->where('rt', $request->rt);
+
+            // ✅ Filter berdasarkan periode (contoh input: "Juni 2025")
+            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+                $periodeAwal = $this->parseBulanTahun($request->periodeAwal);
+                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+
+                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
+                    $periodeAwal->format('Y-m-d'),
+                    $periodeAkhir->format('Y-m-d'),
+                ]);
             }
 
             // ✅ Ambil data
@@ -345,7 +370,7 @@ class PregnancyController extends Controller
 
             // ✅ Filter usia ibu
             if ($request->filled('usia') && is_array($request->usia)) {
-                $groupedData = $groupedData->filter(function($item) use ($request) {
+                $groupedData = $groupedData->filter(function ($item) use ($request) {
                     foreach ($request->usia as $range) {
                         $range = trim($range);
                         if ($range === '<20' && $item->usia_ibu < 20) return true;
@@ -361,7 +386,7 @@ class PregnancyController extends Controller
 
             // ✅ Filter intervensi
             if ($request->filled('intervensi') && is_array($request->intervensi)) {
-                $groupedData = $groupedData->filter(function($item) use ($request) {
+                $groupedData = $groupedData->filter(function ($item) use ($request) {
                     foreach ($request->intervensi as $val) {
                         if (str_contains(strtolower($item->intervensi ?? ''), strtolower($val))) {
                             return true;
@@ -371,41 +396,36 @@ class PregnancyController extends Controller
                 });
             }
 
-            // ✅ Filter periode (contoh: "2025-01" s.d. "2025-06")
-            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $query->whereBetween('periode', [
-                    $request->periodeAwal,
-                    $request->periodeAkhir,
-                ]);
-            }
-
-            // ✅ Filter by status (jika dikirim dari frontend)
+            // ✅ Filter by status
             if ($request->filled('status')) {
-                $statuses = (array) $request->status;
+                $statuses = (array)$request->status;
                 $groupedData = $groupedData->filter(function ($item) use ($statuses) {
-                    $match = false;
                     foreach ($statuses as $status) {
                         $s = strtolower($status);
+                        // ambil semua data selain "normal" kalau status = risiko
+                        if ($s === 'risiko') {
+                            return !str_contains(strtolower($item->status_kehamilan ?? ''), 'normal');
+                        }
+
                         if (
-                            str_contains(strtolower($item->status_gizi_lila), $s) ||
-                            str_contains(strtolower($item->status_gizi_hb), $s) ||
-                            str_contains(strtolower($item->status_kehamilan), $s)
+                            str_contains(strtolower($item->status_gizi_lila ?? ''), $s) ||
+                            str_contains(strtolower($item->status_gizi_hb ?? ''), $s) ||
+                            str_contains(strtolower($item->status_kehamilan ?? ''), $s)
                         ) {
-                            $match = true;
-                            break;
+                            return true;
                         }
                     }
-                    return $match;
+                    return false;
                 });
                 $total = $groupedData->count();
             }
 
             // ✅ Hitung status kesehatan
             $count = [
-                'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_lila), 'kek'))->count(),
-                'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_hb), 'anemia'))->count(),
-                'Berisiko' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kehamilan), 'berisiko'))->count(),
-                'Normal' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kehamilan), 'normal'))->count(),
+                'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek'))->count(),
+                'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia'))->count(),
+                'Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_kehamilan ?? ''), 'normal'))->count(),
+                'Normal' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kehamilan ?? ''), 'normal'))->count(),
             ];
 
             // ✅ Format hasil
@@ -439,6 +459,30 @@ class PregnancyController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * 🔹 Helper untuk parsing "Juni 2025" → Carbon date
+     */
+    private function parseBulanTahun(string $periode, bool $isAkhir = false): Carbon
+    {
+        $bulanMap = [
+            'januari' => 1, 'februari' => 2, 'maret' => 3, 'april' => 4,
+            'mei' => 5, 'juni' => 6, 'juli' => 7, 'agustus' => 8,
+            'september' => 9, 'oktober' => 10, 'november' => 11, 'desember' => 12,
+        ];
+
+        $parts = explode(' ', strtolower(trim($periode)));
+        if (count($parts) === 2 && isset($bulanMap[$parts[0]])) {
+            [$namaBulan, $tahun] = $parts;
+            $bulan = $bulanMap[$namaBulan];
+            $date = Carbon::createFromDate($tahun, $bulan, 1);
+            return $isAkhir ? $date->endOfMonth() : $date->startOfMonth();
+        }
+
+        // fallback: coba parse langsung format "YYYY-MM" atau "YYYY-MM-DD"
+        return Carbon::parse($periode);
+    }
+
 
     public function show($nik_ibu)
     {
