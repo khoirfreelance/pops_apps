@@ -573,6 +573,79 @@ export default {
         return
       }
 
+      // 🧾 Validasi format file
+      const allowedExtensions = ['xlsx', 'xls', 'csv']
+      const ext = this.file.name.split('.').pop().toLowerCase()
+      if (!allowedExtensions.includes(ext)) {
+        this.fileError = 'Format file tidak didukung. Gunakan Excel (.xlsx / .xls) atau CSV.'
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('file', this.file)
+
+      try {
+        this.uploading = true
+        this.uploadProgress = 0
+        this.fileError = ''
+
+        const res = await axios.post(UPLOAD_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.lengthComputable) {
+              this.uploadProgress = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              )
+            }
+          }
+        })
+
+        // ✅ Tampilkan notifikasi sukses
+        console.log('Upload berhasil:', res.data)
+        if (this.$bvToast) {
+          this.$bvToast.toast(
+            `Upload ${ext.toUpperCase()} berhasil: ${res.data.message || 'Data berhasil diimport.'}`,
+            {
+              variant: 'success',
+              solid: true
+            }
+          )
+        }
+
+        // 🔄 Reset input file setelah upload
+        this.removeFile()
+      } catch (err) {
+        console.error('Upload error:', err)
+        this.fileError =
+          (err.response && err.response.data && err.response.data.message) ||
+          'Gagal upload file. Pastikan format Excel/CSV benar dan koneksi stabil.'
+      } finally {
+        this.uploading = false
+        this.uploadProgress = 0
+      }
+    },
+    /* async uploadCSV() {
+      if (!this.file) {
+        this.fileError = 'Tidak ada file untuk di-upload.'
+        return
+      }
+
+      // 🧭 Tentukan endpoint sesuai menu aktif
+      let UPLOAD_URL = ''
+      if (this.activeMenu === 'anak') {
+        UPLOAD_URL = `${baseURL}/api/children/import`
+      } else if (this.activeMenu === 'bumil') {
+        UPLOAD_URL = `${baseURL}/api/pregnancy/import`
+      } else if (this.activeMenu === 'catin') {
+        UPLOAD_URL = `${baseURL}/api/bride/import`
+      } else {
+        this.fileError = 'Menu tidak dikenal. Pastikan kamu memilih menu yang benar.'
+        return
+      }
+
       const formData = new FormData()
       formData.append('file', this.file)
 
@@ -615,25 +688,32 @@ export default {
         this.uploading = false
         this.uploadProgress = 0
       }
-    },
+    }, */
     triggerFileDialog() {
-      this.$refs.fileInput.click()
+  this.$refs.fileInput.click()
     },
+
     handleFileChange(e) {
       const file = e.target.files[0]
+      if (!file) return
       this.loadFilePreview(file)
     },
+
     handleDrop(e) {
       const file = e.dataTransfer.files[0]
+      if (!file) return
       this.loadFilePreview(file)
       this.isDataDrag = false
     },
+
     onDragOver() {
       this.isDataDrag = true
     },
+
     onDragLeave() {
       this.isDataDrag = false
     },
+
     removeFile() {
       this.file = null
       this.fileName = ''
@@ -641,29 +721,53 @@ export default {
       this.filePreviewLines = ''
       this.$refs.fileInput.value = ''
     },
+
     humanFileSize(size) {
       const i = Math.floor(Math.log(size) / Math.log(1024))
-      return (
-        (size / Math.pow(1024, i)).toFixed(2) * 1 +
-        ' ' +
-        ['B', 'kB', 'MB', 'GB', 'TB'][i]
-      )
+      return (size / Math.pow(1024, i)).toFixed(2) + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i]
     },
+
     async loadFilePreview(file) {
-      if (!file) return
-      if (!file.name.endsWith('.csv')) {
-        this.fileError = 'Hanya file CSV yang diperbolehkan.'
+      // 🧾 Validasi format file
+      const allowedExtensions = ['csv', 'xlsx', 'xls']
+      const ext = file.name.split('.').pop().toLowerCase()
+
+      if (!allowedExtensions.includes(ext)) {
+        this.fileError = 'Format file tidak didukung. Gunakan Excel (.xlsx/.xls) atau CSV.'
         return
       }
 
+      // 🧩 Simpan data file
       this.file = file
       this.fileName = file.name
-      this.fileSize = file.size
+      this.fileSize = this.humanFileSize(file.size)
       this.fileError = ''
 
-      const text = await file.text()
-      const lines = text.split('\n').slice(0, 2).join(' | ')
-      this.filePreviewLines = lines
+      // 🧠 Tampilkan preview isi file (baris pertama)
+      if (ext === 'csv') {
+        // ✅ Preview untuk CSV
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const text = e.target.result
+          const lines = text.split('\n').slice(0, 5).join('\n')
+          this.filePreviewLines = lines
+        }
+        reader.readAsText(file)
+      } else {
+        // ✅ Preview untuk Excel pakai XLSX.js (kalau dipasang di project)
+        try {
+          const XLSX = await import('xlsx')
+          const data = await file.arrayBuffer()
+          const workbook = XLSX.read(data, { type: 'array' })
+          const sheetName = workbook.SheetNames[0]
+          const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 })
+          const preview = sheet.slice(0, 5).map(row => row.join(', ')).join('\n')
+          this.filePreviewLines = preview
+        } catch (error) {
+          console.warn('Gagal memuat preview Excel:', error)
+          this.filePreviewLines = '(Tidak bisa menampilkan preview Excel)'
+        }
+      }
     },
   },
   async mounted() {

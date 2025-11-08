@@ -33,7 +33,7 @@
           class="nav-link"
           :class="{ active: isActive('/admin/catin') }"
         >
-          <i class="bi bi-arrow-through-heart"></i>
+          <i class="bi bi-people-fill"></i>
           <span v-if="!isCollapsed">Calon Pengantin</span>
         </router-link>
       </li>

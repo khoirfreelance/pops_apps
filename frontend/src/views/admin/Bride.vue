@@ -32,23 +32,39 @@
           <!-- Welcome Card -->
           <Welcome />
 
+          <!-- Judul Laporan -->
+          <div class="text-center mt-4">
+            <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
+              <h5 class="mb-0">
+                Laporan Status Kesehatan Calon Pengantin Desa
+                <span class="text-capitalize fw-bold">{{ kelurahan }}</span>
+                Periode
+                <span class="fw-bold">{{ thisMonth }}</span>
+              </h5>
+            </div>
+          </div>
+
           <!-- Filter Form -->
           <div class="bg-light border rounded-bottom shadow-sm px-4 py-3">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <div
                 v-for="(filter, key) in filterOptions"
                 :key="key"
-                class="col-md-3 position-relative"
+                class="col-xl-3 col-lg-3 col-md-3 col-sm-4 col-6 position-relative"
               >
-                <label class="form-label text-primary">{{ filter.label }}</label>
+              <label
+                v-if="filter.filter"
+                class="text-primary"
+              >
+                {{ filter.filter }}
+              </label>
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
                     type="button"
                     data-bs-toggle="dropdown"
                   >
-                    <span v-if="!filters[key].length" class="text-muted">{{ filter.placeholder }}</span>
-                    <span v-else>{{ filters[key].join(', ') }}</span>
+                    <span class="text-muted" >{{ getFilterDisplayText(key) }}</span>
                   </button>
 
                   <ul class="dropdown-menu w-100 p-2" style="max-height: 260px; overflow-y: auto;">
@@ -68,7 +84,7 @@
                     </li>
                     <li><hr class="dropdown-divider" /></li>
                     <li class="d-flex justify-content-between px-2">
-                      <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" @click="selectAll(key)">
+                      <button type="button" class="btn btn-sm btn-outline-primary fw-semibold small" @click="selectAll(key)">
                         Pilih Semua
                       </button>
                       <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold" @click="clearAll(key)">
@@ -79,9 +95,63 @@
                 </div>
               </div>
 
+              <!-- Kelurahan/Desa -->
+              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-6">
+                <label for="filter" class="text-primary">Filter Lokasi:</label>
+                <select v-model="kelurahan" class="form-select text-muted" disabled>
+                  <option :value="kelurahan">{{ kelurahan }}</option>
+                </select>
+              </div>
+
+              <!-- Posyandu -->
+              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-12">
+                <select
+                  v-model="filters.posyandu"
+                  class="form-select text-muted"
+                  @change="handlePosyanduChange"
+                >
+                  <option class="text-muted" value="">Pilih Posyandu</option>
+                  <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
+                    {{ item.nama_posyandu }}
+                  </option>
+                </select>
+
+              </div>
+
+              <!-- Terapkan -->
+              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-12 text-end">
+                <button type="submit" class="btn btn-gradient w-75 fw-semibold">
+                  <i class="bi bi-filter me-1"></i> Terapkan
+                </button>
+              </div>
+
+              <!-- RW -->
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6">
+                <select
+                  v-model="filters.rw"
+                  class="form-select text-muted"
+                  :disabled="rwReadonly"
+                >
+                  <option class="text-muted" value="">Pilih RW</option>
+                  <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                </select>
+              </div>
+
+              <!-- RT -->
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6">
+                <select
+                  v-model="filters.rt"
+                  class="form-select text-muted"
+                  :disabled="rtReadonly"
+                >
+                  <option class="text-muted" value="">Pilih RT</option>
+                  <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
+                </select>
+              </div>
+
               <!-- Periode -->
-              <div class="col-md-6 text-center">
-                <label class="form-label text-primary">Pilih Periode:</label>
+              <div class="col-md-4 text-center">
+                <label for="filter" class="text-primary"> Filter Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
                   <select v-model="filters.periodeAwal" class="form-select text-muted">
                     <option value="">Awal</option>
@@ -94,60 +164,497 @@
                 </div>
               </div>
 
-              <!-- Tombol Aksi -->
-              <div class="col-md-3 d-flex justify-content-between">
-                <button type="submit" class="btn btn-gradient fw-semibold">
-                  <i class="bi bi-filter me-1"></i> Terapkan
-                </button>
-                <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
+              <!-- Reset -->
+              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-12 text-end">
+                <button type="button" class="btn btn-secondary w-75 fw-semibold" @click="resetFilter">
                   <i class="bi bi-arrow-clockwise me-1"></i> Reset
                 </button>
               </div>
             </form>
           </div>
 
+          <div class="text-center mt-3">
+            <h5 class="mb-0 text-primary">
+              Ringkasan Statistik
+            </h5>
+          </div>
+
           <!-- Ringkasan Statistik-->
           <div class="container-fluid my-4">
 
             <div class="row">
-              <div class="col-xl-10 col-sm-12">
-                <div class="row justify-content-center">
+              <div class="row justify-content-center">
+                <div
+                  v-for="(item, index) in kesehatan"
+                  :key="index"
+                  class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
+                >
                   <div
-                    v-for="(item, index) in kesehatan"
-                    :key="index"
-                    class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-12 mb-3"
+                    class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                    :class="`border-start border-4 border-${item.color}`"
                   >
-                    <div
-                      class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                      :class="`border-start border-4 border-${item.color}`"
-                    >
-                      <div class="card-header">
-                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                      </div>
-                      <div class="card-body py-3 d-flex justify-content-between align-items-center">
-                        <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                        <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
-                      </div>
-
+                    <div class="card-header">
+                      <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                     </div>
-                  </div>
-                </div>
-              </div>
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                      <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                      <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
+                    </div>
 
-              <!-- TOTAL BUMIL -->
-              <div class="col-xl-2 col-sm-12">
-                <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
-                  <h6 class="text-muted fw-bold">Total Calon Pengantin</h6>
-                  <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h1 class="fw-bold text-success mb-0">{{totalCatin}}</h1>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Table -->
+          <!-- Table and detail Section -->
+          <div class="container-fluid mt-4">
+            <h5 class="fw-bold text-success mb-3">Data Calon Pengantin</h5>
+            <div class="row mt-4">
+              <div :class="selectedCatin ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
+                <div class="card bg-light px-2 py-5">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                      <thead class="table-primary small">
+                        <tr>
+                          <th colspan="2">Nama Pasangan</th>
+                          <th colspan="3">Catatan Berisiko</th>
+                          <th colspan="2">Usia</th>
+                          <th colspan="2">Pekerjaan</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Posyandu</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">RW</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">RT</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Tanggal Kunjungan</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Tanggal Menikah</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">BB <span class="fw-normal small">(Perempuan)</span></th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">TB <span class="fw-normal small">(Perempuan)</span></th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Lila <span class="fw-normal small">(Perempuan)</span></th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Hb <span class="fw-normal small">(Perempuan)</span></th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Riwayat Penyakit</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Jamban Sehat</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Sumber Air Bersih</th>
+                        </tr>
+                        <tr>
+                          <th style="width:100px" @click="sortBy('nama_perempuan')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Perempuan <SortIcon :field="'nama_perempuan'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('nama_laki')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Laki-laki <SortIcon :field="'nama_laki'" />
+                          </th>
+                          <th @click="sortBy('anemia')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Anemia <SortIcon :field="'anemia'" />
+                          </th>
+                          <th style="width:60px" @click="sortBy('kek')" class="cursor-pointer align-middle text-center fw-normal small">
+                            KEK <SortIcon :field="'kek'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('berisiko')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Risiko Usia <SortIcon :field="'berisiko'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia_perempuan')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Perempuan <SortIcon :field="'usia_perempuan'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia_laki')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Laki-laki <SortIcon :field="'usia_laki'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('pekerjaan_perempuan')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Perempuan <SortIcon :field="'pekerjaan_perempuan'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('pekerjaan_laki')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Laki-laki <SortIcon :field="'pekerjaan_laki'" />
+                          </th>
+                        </tr>
+                      </thead>
 
+                      <tbody>
+                        <tr v-for="catin in paginatedData" :key="catin.id" class="small">
+                          <td class="text-start">
+                            <a href="#" @click.prevent="showDetail(catin)" class="fw-semibold text-decoration-none text-primary">
+                              {{ catin.nama }}
+                            </a>
+                          </td>
+                          <td>{{ catin.anemia }}</td>
+                          <td>
+                            <span v-if="catin.risiko === 'Ya' || catin.risiko === 'Beresiko Tinggi' " class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ catin.risiko }}</span>
+                          </td>
+                          <td>
+                            <span v-if="catin.kek === 'Ya' || catin.kek === 'KEK'" class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ catin.kek }}</span>
+                          </td>
+                          <td>
+                            <span v-if="catin.intervensi === 'Ya'" class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ catin.intervensi }}</span>
+                          </td>
+                          <td>{{ catin.rw }}</td>
+                          <td>{{ catin.rt }}</td>
+                          <td>{{ catin.usia }}</td>
+                        </tr>
+                      </tbody>
+
+                    </table>
+                  </div>
+
+                  <!-- Pagination -->
+                  <nav>
+                    <ul class="pagination justify-content-center">
+                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
+                      </li>
+
+                      <li
+                        class="page-item"
+                        v-for="page in totalPages"
+                        :key="page"
+                        :class="{ active: currentPage === page }"
+                      >
+                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                      </li>
+
+                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+
+              <!-- DETAIL DATA -->
+              <div class="col-md-4" v-if="selectedCatin">
+                <div v-if="selectedCatin" class="card shadow-sm p-4 text-center small position-relative">
+
+                  <!-- Tombol Close -->
+                  <button
+                    type="button"
+                    class="btn-close position-absolute top-0 end-0 m-3"
+                    aria-label="Close"
+                    @click="selectedCatin = null"
+                  ></button>
+
+                  <!-- Nama dan Identitas -->
+                  <h5 class="fw-bold text-dark mb-1">{{ selectedCatin.nama }}</h5>
+                  <p class="text-muted mb-0 text-capitalize">{{ selectedCatin.kelurahan || '-' }}</p>
+                  <p class="text-muted">{{ selectedCatin.kecamatan || '-' }}</p>
+
+                  <!-- Badge Status Gizi -->
+                  <div class="mb-3">
+                    <span
+                      class="badge px-3 py-2 small"
+                      :class="{
+                        'bg-danger text-dark': ['Kehamilan Berisiko'].includes(selectedCatin.status_gizi),
+                        'bg-warning text-dark': ['KEK'].includes(selectedCatin.status_gizi),
+                        'bg-success': selectedCatin.status_gizi === 'Normal'
+                      }"
+                    >
+                      {{ selectedCatin.status_gizi }}
+                    </span>
+                  </div>
+
+                  <!-- Riwayat Penimbangan -->
+                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Pemeriksaan</h6>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle text-center">
+                      <thead class="table-light">
+                        <tr>
+                          <th rowspan="2">Tanggal</th>
+                          <th colspan="3">Status</th>
+                        </tr>
+                        <tr>
+                          <th>Anemia</th>
+                          <th>KEK</th>
+                          <th>Risiko</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(r, i) in (selectedCatin.riwayat_pendampingan || []).slice(-3)"
+                          :key="i"
+                        >
+                          <td>{{ r.tanggal }}</td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="r.anemia === 'Ya' ? 'bg-danger' : 'text-dark'"
+                            >
+                              {{ r.anemia }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="r.kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+                            >
+                              {{ r.kek }}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              class="badge"
+                              :class="r.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
+                            >
+                              {{ r.risiko }}
+                            </span>
+                          </td>
+                        </tr>
+
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Riwayat Intervensi -->
+                  <h6 class="fw-bold text-start text-secondary mt-3">Riwayat Intervensi / Bantuan</h6>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle text-center">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Kader</th>
+                          <th>Intervensi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(i, idx) in selectedCatin.riwayat_intervensi || []" :key="idx">
+                          <td>{{ i.tanggal }}</td>
+                          <td>{{ i.kader }}</td>
+                          <td>{{ i.intervensi }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Tombol Download -->
+                  <button
+                    class="btn btn-gradient rounded-pill px-4 mt-2 fw-semibold"
+                    @click="downloadRiwayat"
+                  >
+                    Download Riwayat
+                  </button>
+                </div>
+              </div>
+
+              <!-- Detail Riwayat Anak -->
+              <div class="col-md-12 mt-4" v-if="selectedCatin">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
+                  <!-- Tombol Close -->
+                  <button
+                    class="btn-close position-absolute top-0 end-0 m-3"
+                    aria-label="Close"
+                    @click="selectedCatin = null"
+                  ></button>
+
+                  <!-- Header -->
+                  <div class="bg-primary text-white p-4 text-center rounded-top">
+                    <h5 class="fw-bold mb-0">{{ selectedCatin.nama }}</h5>
+                    <p class="text-white mb-0 small">
+                      {{ selectedCatin.usia }} Tahun - {{ selectedCatin.risiko }}
+                    </p>
+                  </div>
+
+                  <!-- Tabs -->
+                  <div class="p-3">
+                    <ul
+                      class="nav nav-pills justify-content-center mb-4 flex-wrap gap-2"
+                      id="catinDetailTab"
+                      role="tablist"
+                    >
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link active"
+                          id="tab-profile-catin"
+                          data-bs-toggle="tab"
+                          data-bs-target="#tab-pane-profile-catin"
+                          type="button"
+                          role="tab"
+                        >
+                          <i class="bi bi-person-badge me-1"></i> Profil Ibu Hamil
+                        </button>
+                      </li>
+                      <li class="nav-item" role="presentation">
+                        <button
+                          class="nav-link"
+                          id="tab-kehamilan"
+                          data-bs-toggle="tab"
+                          data-bs-target="#tab-pane-kehamilan"
+                          type="button"
+                          role="tab"
+                        >
+                          <i class="bi bi-clipboard-heart me-1"></i> Data Kehamilan
+                        </button>
+                      </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="catinDetailTabContent">
+                      <!-- Profile Anak -->
+                      <div
+                        class="tab-pane fade show active"
+                        id="tab-pane-profile-catin"
+                        role="tabpanel"
+                      >
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <div class="card border-0 shadow-sm p-3 h-100">
+                              <h6 class="fw-bold mb-3 text-danger">Identitas Ibu Hamil</h6>
+                              <table class="table table-borderless mb-0">
+                                <tbody>
+                                  <tr>
+                                    <td class="fw-semibold" style="width: 120px;">Nama</td>
+                                    <td>:</td>
+                                    <td>{{ selectedCatin.nama }}</td>
+                                  </tr>
+                                  <tr>
+                                    <td class="fw-semibold">Usia</td>
+                                    <td>:</td>
+                                    <td>{{ selectedCatin.usia }} Tahun</td>
+                                  </tr>
+                                  <tr>
+                                    <td class="fw-semibold">Nama Suami</td>
+                                    <td>:</td>
+                                    <td>{{ selectedCatin.nama_suami }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+
+                          </div>
+                          <div class="col-md-6">
+                            <div class="card border-0 shadow-sm p-3 h-100">
+                              <h6 class="fw-bold mb-3 text-danger">Alamat</h6>
+                              <table class="table table-borderless mb-0">
+                                <tbody>
+                                  <tr>
+                                    <td class="fw-semibold" style="width: 120px;">Alamat</td>
+                                    <td>:</td>
+                                    <td>{{ selectedCatin.provinsi }}, {{ selectedCatin.kota }}, {{ selectedCatin.kecamatan }}</td>
+                                  </tr>
+                                  <tr>
+                                    <td class="fw-semibold">Desa</td>
+                                    <td>:</td>
+                                    <td>{{ selectedCatin.kelurahan }}</td>
+                                  </tr>
+                                  <tr>
+                                    <td class="fw-semibold">RW</td>
+                                    <td>:</td>
+                                    <td>0{{ selectedCatin.rw }}</td>
+                                  </tr>
+                                  <tr>
+                                    <td class="fw-semibold">RT</td>
+                                    <td>:</td>
+                                    <td>0{{ selectedCatin.rt }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Data Kelahiran -->
+                      <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
+                        <div class="card bg-light border-0 shadow-sm p-3">
+                          <h6 class="fw-bold mb-3 text-danger">Data Kehamilan</h6>
+                          <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle">
+                              <thead>
+                                <tr class="small text-center align-middle">
+                                  <th style="width: 150px;">Tanggal</th>
+                                  <th>Kehamilan ke</th>
+                                  <th>Risiko</th>
+                                  <th>TB <span class="fw-normal">(cm)</span></th>
+                                  <th>BB <span class="fw-normal">(kg)</span></th>
+                                  <th>Lila <span class="fw-normal">(cm)</span></th>
+                                  <th>KEK</th>
+                                  <th>Hb</th>
+                                  <th>Anemia</th>
+                                  <th>Terpapar Asap Rokok</th>
+                                  <th>Mendapat Bantuan Sosial</th>
+                                  <th>Jamban Sehat</th>
+                                  <th>Sumber Air Bersih</th>
+                                  <th>Keluhan</th>
+                                  <th>Intervensi</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  v-for="(item, i) in selectedCatin.kehamilan"
+                                  :key="'kehamilan-' + i"
+                                  class="small text-center"
+                                >
+                                  <td>{{ item.tgl_pendampingan }}</td>
+                                  <td>{{ item.kehamilan_ke }}</td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.risiko || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>{{ item.tb }}</td>
+                                  <td>{{ item.bb }}</td>
+                                  <td>{{ item.lila}}</td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.kek || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>{{ item.hb }}</td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.anemia === 'Ya' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.anemia || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.asap_rokok === 'Ya' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.asap_rokok || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.bantuan_sosial === 'Tidak' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.bantuan_sosial || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.jamban_sehat === 'Tidak' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.jamban_sehat || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      class="badge"
+                                      :class="item.sumber_air_bersih === 'Tidak' ? 'bg-danger' : 'text-dark'"
+                                    >
+                                      {{ item.sumber_air_bersih || '-' }}
+                                    </span>
+                                  </td>
+                                  <td>{{ item.keluhan}}</td>
+                                  <td>{{ item.intervensi}}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -160,6 +667,7 @@ import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
+import { ref, computed } from 'vue'
 import Welcome from '@/components/Welcome.vue'
 
 // PORT backend kamu
@@ -189,103 +697,95 @@ export default {
       bridePending: [], // data pending catin
       filteredCatin: [],
       totalCatin: 0,
-      filterOptions: {
-        kek: {
-          label: 'Status Gizi',
-          placeholder: 'Pilih Status Gizi',
-          options: ['Normal', 'KEK'],
-        },
-        anemia: {
-          label: 'Status HB',
-          placeholder: 'Pilih Status HB',
-          options: ['Normal', 'Anemia Ringan', 'Anemia Sedang', 'Anemia Berat'],
-        },
-        beresiko: {
-          label: 'Faktor Risiko',
-          placeholder: 'Pilih Risiko',
-          options: ['Tidak', 'Ya'],
-        },
-        intervensi: {
-          label: 'Intervensi',
-          placeholder: 'Pilih Intervensi',
-          options: ['TTD', 'Edukasi', 'Rujuk', 'PMT'],
-        },
-      },
-
-      headers: [
-        // --- Data Perempuan ---
-        { text: 'Nama Perempuan', value: 'nama_perempuan' },
-        { text: 'NIK Perempuan', value: 'nik_perempuan' },
-        { text: 'Pekerjaan Perempuan', value: 'pekerjaan_perempuan' },
-        { text: 'Tanggal Lahir Perempuan', value: 'tgl_lahir_perempuan' },
-        { text: 'Usia Perempuan', value: 'usia_perempuan' },
-        { text: 'HP Perempuan', value: 'hp_perempuan' },
-
-        // --- Data Pria ---
-        { text: 'Nama Pria', value: 'nama_pria' },
-        { text: 'NIK Pria', value: 'nik_pria' },
-        { text: 'Pekerjaan Pria', value: 'pekerjaan_pria' },
-        { text: 'Tanggal Lahir Pria', value: 'tgl_lahir_pria' },
-        { text: 'Usia Pria', value: 'usia_pria' },
-        { text: 'HP Pria', value: 'hp_pria' },
-
-        // --- Data Pernikahan ---
-        { text: 'Tanggal Daftar', value: 'tgl_daftar' },
-        { text: 'Tanggal Rencana Nikah', value: 'tgl_rencana_menikah' },
-        { text: 'Rencana Tempat Tinggal', value: 'rencana_tinggal' },
-
-        // --- Data Pendampingan ---
-        { text: 'Tanggal Pemeriksaan', value: 'tgl_pemeriksaan' },
-        { text: 'Tanggal Pendampingan', value: 'tgl_pendampingan' },
-        { text: 'Dampingan Ke', value: 'dampingan_ke' },
-        { text: 'Berat Badan (kg)', value: 'bb' },
-        { text: 'Tinggi Badan (cm)', value: 'tb' },
-        { text: 'Lingkar Lengan Atas (cm)', value: 'lila' },
-        { text: 'Hemoglobin (g/dL)', value: 'hb' },
-        { text: 'Status HB', value: 'status_hb' },
-        { text: 'Status Gizi', value: 'status_gizi' },
-        { text: 'Terpapar Rokok', value: 'catin_terpapar_rokok' },
-        { text: 'TTD', value: 'catin_ttd' },
-        { text: 'Punya Riwayat Penyakit', value: 'punya_riwayat_penyakit' },
-        { text: 'Riwayat Penyakit', value: 'riwayat_penyakit' },
-        { text: 'Fasilitas Rujukan', value: 'fasilitas_rujukan' },
-        { text: 'Edukasi', value: 'edukasi' },
-        { text: 'PMT', value: 'pmt' },
-      ],
-
+      periodeOptions: [],
+      selectedCatin: null,
+      posyanduList: [],
+      rwList: [],
+      rtList: [],
+      rwReadonly: true,
+      rtReadonly: true,
       filters: {
-        kek: [],
-        anemia: [],
-        beresiko: [],
+        kelurahan: '',
+        posyandu:'',
+        rt:'',
+        rw:'',
+        status: [],
         usia: [],
         intervensi: [],
         periodeAwal: '',
         periodeAkhir: '',
       },
+    }
+  },
+  setup() {
+    const searchQuery = ref('')
+    const currentPage = ref(1)
+    const perPage = ref(10)
+    const sortKey = ref('')
+    const sortDir = ref('asc')
+    const filteredCatin = ref([])
 
-      periodeOptions: [],
+    const applySearch = () => {
+      const query = searchQuery.value.toLowerCase()
+      filteredCatin.value = window.catin.filter((c) =>
+        Object.values(c).some((v) =>
+          String(v).toLowerCase().includes(query)
+        )
+      )
+      currentPage.value = 1
+    }
+
+    const sortBy = (key) => {
+      if (sortKey.value === key) {
+        sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+      } else {
+        sortKey.value = key
+        sortDir.value = 'asc'
+      }
+      filteredCatin.value.sort((a, b) => {
+        if (a[key] < b[key]) return sortDir.value === 'asc' ? -1 : 1
+        if (a[key] > b[key]) return sortDir.value === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
+    const totalPages = computed(() =>
+      Math.ceil(filteredCatin.value.length / perPage.value)
+    )
+
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * perPage.value
+      const end = start + perPage.value
+      return filteredCatin.value.slice(start, end)
+    })
+
+    const changePage = (page) => {
+      if (page < 1 || page > totalPages.value) return
+      currentPage.value = page
+    }
+
+    return {
+      searchQuery,
+      // eslint-disable-next-line vue/no-dupe-keys
+      filteredCatin,
+      currentPage,
+      perPage,
+      sortKey,
+      sortDir,
+      totalPages,
+      paginatedData,
+      applySearch,
+      sortBy,
+      changePage
     }
   },
   computed: {
-    background() {
-      try {
-        const config = JSON.parse(localStorage.getItem('siteConfig'))
-        return config?.background || null
-      } catch {
-        return null
+    filterOptions() {
+      return {
+        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Beresiko Tinggi'], filter:'Filter status catin hamil:' },
+        usia: { label: 'Usia (Tahun)', placeholder: 'Pilih Usia', options: ['<20', '20-30', '30-40', '>40'],filter:'' },
       }
-    },
-    // eslint-disable-next-line vue/no-dupe-keys
-    filteredCatin() {
-      return this.bride.filter(item => {
-        const matchHB = !this.filters.anemia.length || this.filters.anemia.includes(item.status_hb);
-        const matchGizi = !this.filters.kek.length || this.filters.kek.includes(item.status_gizi);
-        return matchHB && matchGizi;
-      });
-    },
-    visibleHeaders() {
-      return this.headers.filter((h) => this.visibleColumns.includes(h.value))
-    },
+    }
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -303,68 +803,113 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   methods: {
-    async loadConfigWithCache() {
-      try {
-        // cek di localStorage
-        const cached = localStorage.getItem(this.configCacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
-          return
-        }
-         // kalau belum ada cache, fetch dari API
-        const res = await axios.get(`${baseURL}/api/config`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
+    getFilterDisplayText(key) {
+      const selected = this.filters[key] || []
+      const options = this.filterOptions[key]?.options || []
+      const total = selected.length
 
-        const data = res.data?.data
-        if (data) {
-          this.logoSrc = data.logo || null
-          // simpan di localStorage untuk load cepat di page berikutnya
-          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
-        }
-      }catch (error) {
-        console.warn('Gagal load config:', error)
-        this.logoLoaded = false
-      }
+      if (total === 0) return this.filterOptions[key].placeholder
+      if (total === options.length) return 'Semua'
+      if (total === 1) return selected[0]
+      return `${total} Dipilih`
     },
-    async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
-
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
-        this.kelurahan = '-'
-      }
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      this.isCollapsed = this.windowWidth < 992
+    },
+    selectAll(key) {
+      this.filters[key] = [...this.filterOptions[key].options]
+    },
+    clearAll(key) {
+      this.filters[key] = []
+    },
+    async applyFilter() {
+      await this.loadBride(),
+      await this.hitungStatusKesehatan()
+    },
+    async resetFilter() {
+      Object.keys(this.filters).forEach(k => {
+        if (Array.isArray(this.filters[k])) this.filters[k] = []
+        else this.filters[k] = ''
+      })
+      await this.loadBride(),
+      await this.hitungStatusKesehatan()
+    },
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
     },
     getTodayDate() {
-      const hari = [
-        'Minggu', 'Senin', 'Selasa', 'Rabu',
-        'Kamis', 'Jumat', 'Sabtu'
-      ]
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
-      ]
+      const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+      const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
     getThisMonth() {
+      const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+      const now = new Date()
+      return `${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+    async getWilayahUser() {
+      try {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const wilayah = res.data
+        //console.log('✅ getWilayahUser ->', wilayah)
+        this.kelurahan = wilayah.kelurahan || '-'
+      } catch (e) {
+        console.error('❌ getWilayahUser error:', e)
+        this.kelurahan = '-'
+      }
+    },
+    handlePosyanduChange() {
+      const pos = this.filters.posyandu;
+
+      if (!pos) {
+        this.rwList = [];
+        this.rtList = [];
+        this.rwReadonly = true;
+        this.rtReadonly = true;
+        this.filteredBumil = [...this.catin]; // tampilkan semua lagi
+        return;
+      }
+
+      // 🔹 Ambil data catin di posyandu terpilih
+      const filteredBumil = this.catin.filter(b => b.nama_posyandu === pos);
+
+      // 🔹 Ambil daftar RW & RT unik dari mereka
+      const rwSet = new Set(filteredBumil.map(b => b.rw).filter(Boolean));
+      const rtSet = new Set(filteredBumil.map(b => b.rt).filter(Boolean));
+
+      this.rwList = Array.from(rwSet);
+      this.rtList = Array.from(rtSet);
+
+      // 🔹 Aktifkan dropdown RW & RT
+      this.rwReadonly = false;
+      this.rtReadonly = false;
+
+      // 🔹 Update data yang tampil di tabel
+      this.filteredBumil = filteredBumil;
+    },
+    handleRwChange() {
+      const pos = this.filters.posyandu;
+      const rw = this.filters.rw;
+
+      if (!rw) {
+        this.rtList = [];
+        this.rtReadonly = true;
+        return;
+      }
+
+      const filteredPregnancy = this.catin.filter(
+        c => c.posyandu === pos && c.rw === rw
+      );
+
+      const rtSet = new Set(filteredPregnancy.map(c => c.rt).filter(Boolean));
+      this.rtList = Array.from(rtSet);
+      this.rtReadonly = false;
+    },
+    generatePeriodeOptions() {
       const bulan = [
         'Januari', 'Februari', 'Maret', 'April',
         'Mei', 'Juni', 'Juli', 'Agustus',
@@ -372,76 +917,108 @@ export default {
       ]
 
       const now = new Date()
-      let monthIndex = now.getMonth() - 1
-      let year = now.getFullYear()
+      const result = []
 
-      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
-      if (monthIndex < 0) {
-        monthIndex = 11
-        year -= 1
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const label = `${bulan[d.getMonth()]} ${d.getFullYear()}`
+        result.push(label)
       }
 
-      return `${bulan[monthIndex]} ${year}`
+      this.periodeOptions = result
     },
-    handleResize() {
-      this.windowWidth = window.innerWidth
-      if (this.windowWidth < 992) {
-        this.isCollapsed = true // auto collapse di tablet/mobile
-      } else {
-        this.isCollapsed = false // normal lagi di desktop
+    async hitungStatusKesehatan() {
+      try {
+        const params = {
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          usia: this.filters.usia || [],            // tambahan
+          intervensi: this.filters.intervensi || [],// tambahan
+          periodeAwal: this.filters.periodeAwal || '',
+          periodeAkhir: this.filters.periodeAkhir || '',
+        };
+
+        // Status bisa multiple (checkbox)
+        if (this.filters.status && this.filters.status.length > 0) {
+          params.status = this.filters.status;
+        }
+
+        const res = await axios.get(`${baseURL}/api/bride/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params,
+        });
+
+        const data = res.data;
+        const total = data.total || 0;
+
+        //this.totalBumil = total;
+        this.kesehatan = data.counts.map(item => ({
+          title: item.title,
+          value: item.value,
+          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
+          color: item.color,
+        }));
+      } catch (e) {
+        console.error('❌ hitungStatusKesehatan error:', e);
       }
     },
     async loadBride() {
       try {
-        const res = await axios.get(`${baseURL}/api/catin`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+        const res = await axios.get(`${baseURL}/api/bride`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params: this.filters,
         });
 
-        this.bride = res.data.data || [];
-        this.totalCatin = this.bride.length;
+        const data = res.data?.data || [];
 
-        // 🔹 Hitung statistik kesehatan
-        const normalGizi = 0; //this.bride.filter(c => c?.status_gizi === 'Normal').length;
-        const kek = 0;//this.bride.filter(c => c?.status_gizi === 'KEK').length;
-        const normalHB = 0;//this.bride.filter(c => c?.status_hb === 'Normal').length;
-        const anemia = 0;//this.bride.filter(c =>
-          //c?.status_hb && ['Anemia Ringan', 'Anemia Sedang', 'Anemia Berat'].includes(c.status_hb)
-        //).length;
+        // ✅ Ambil semua nama posyandu dari seluruh riwayat_pendampingan
+        const allPosyandu = data.flatMap(catin =>
+          (catin.riwayat_pendampingan || [])
+            .map(r => r.posyandu)
+            .filter(Boolean)
+        );
+
+        // ✅ Buat list unik
+        const uniquePosyandu = [...new Set(allPosyandu)];
+        this.posyanduList = uniquePosyandu.map((nama, idx) => ({
+          id: idx + 1,
+          nama_posyandu: nama,
+        }));
+
+        // ✅ Format data catin
+        this.catin = data.map(item => {
+          const lastCheck = item.riwayat_pendampingan?.at(-1); // pemeriksaan terakhir
+          return {
+            nama_perempuan: item.nama_perempuan,
+            nama_laki: item.nama_laki,
+            usia_perempuan: item.usia_perempuan,
+            usia_laki: item.usia_laki,
+            pekerjaan_perempuan: item.pekerjaan_perempuan,
+            pekerjaan_laki: item.pekerjaan_laki,
+            tanggal_pendampingan: lastCheck?.tanggal_pendampingan || '-',
+            berat_badan: lastCheck?.berat_perempuan || '-',
+            tinggi_badan: lastCheck?.tinggi_perempuan || '-',
+            risiko: lastCheck?.status_risiko || '-',
+            anemia: lastCheck?.status_hb || '-',
+            kek: lastCheck?.status_kek || '-',
+            nama_posyandu: lastCheck?.posyandu || '-',
+            rw: item.rw || '-',
+            rt: item.rt || '-',
+          };
+        });
+
+        // ✅ Set filtered dan total
+        this.filteredCatin = [...this.catin];
+        this.totalCarin = this.catin.length;
+        //console.log('isi catin:', this.filteredBumil);
 
 
-        const total = this.totalCatin || 1; // biar gak bagi 0
-
-        this.kesehatan = [
-          {
-            title: 'Status Gizi Normal',
-            value: normalGizi,
-            percent: `${((normalGizi / total) * 100).toFixed(1)}%`,
-            color: 'success',
-          },
-          {
-            title: 'KEK',
-            value: kek,
-            percent: `${((kek / total) * 100).toFixed(1)}%`,
-            color: 'warning',
-          },
-          {
-            title: 'HB Normal',
-            value: normalHB,
-            percent: `${((normalHB / total) * 100).toFixed(1)}%`,
-            color: 'primary',
-          },
-          {
-            title: 'Anemia',
-            value: anemia,
-            percent: `${((anemia / total) * 100).toFixed(1)}%`,
-            color: 'danger',
-          },
-        ];
-      } catch (error) {
-        console.error('Gagal memuat data calon pengantin:', error);
+      } catch (e) {
+        console.error('Gagal ambil data pernikahan:', e);
+        this.catin = [];
+        this.filteredBumil = [];
+        this.posyanduList = [];
       }
     },
 
@@ -450,9 +1027,10 @@ export default {
     this.isLoading = true
     try {
       await Promise.all([
-        this.loadConfigWithCache(),
+        this.hitungStatusKesehatan(),
+        //this.loadConfigWithCache(),
         this.loadBride(),
-        this.getPendingData(),
+        //this.getPendingData(),
         this.getWilayahUser(),
         this.handleResize(),
 

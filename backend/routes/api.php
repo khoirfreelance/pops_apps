@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\BrideController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ChildrenController;
 use App\Http\Controllers\Api\PregnancyController;
+use App\Http\Controllers\Api\CatinController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -74,14 +75,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Bride Endpoint
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/bride/pending', [BrideController::class, 'pendingData']);
+    Route::post('/bride/import', [CatinController::class, 'import']);
+    Route::get('/bride/status', [CatinController::class, 'status']);
+    Route::get('/bride/tren', [CatinController::class, 'tren']);
+    Route::get('/bride/indikator-bulanan', [CatinController::class, 'indikatorBulanan']);
+    Route::apiResource('bride', CatinController::class)
+        ->only(['index']);
+    /* Route::get('/bride/pending', [BrideController::class, 'pendingData']);
     Route::apiResource('bride', BrideController::class)
         ->only(['index', 'store', 'show']);
     Route::get('/bride/check', [BrideController::class, 'checkDampinganKe']);
     Route::get('/bride/search/{nik}', [BrideController::class, 'search']);
     Route::get('/bride/{id}/pending', [BrideController::class, 'pending']);
-    Route::put('/bride/{id}', [BrideController::class, 'update']);
-    Route::post('/bride/import', [BrideController::class, 'import']);
+    Route::put('/bride/{id}', [BrideController::class, 'update']); */
+
+    //Route::post('/bride/import', [BrideController::class, 'import']);
 });
 
 // Pregnancy Endpoint

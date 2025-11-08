@@ -637,7 +637,7 @@
                         class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12 mb-3"
                       >
                         <div
-                          class="card shadow-sm border-0 rounded-3 overflow-hidden h-100"
+                          class="card shadow-sm border-0 rounded-3 overflow-hidden h-50"
                           :class="`border-start border-4 border-${item.color}`"
                         >
                           <div class="card-body d-flex justify-content-between">
@@ -952,62 +952,113 @@
               <!-- Issue and Stat Card -->
               <div class="container-fluid my-2 row">
                 <!-- judul tetap di atas -->
-                  <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Status Kesehatan Calon Pengantin</h5>
+                <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Status Kesehatan Calon Pengantin</h5>
 
-                  <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1 align-items-center">
-                    <!-- GIZI CARDS -->
-                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
-                      <div class="row justify-content-center">
-                        <div
-                          v-for="(item, index) in kesehatan_catin"
-                          :key="index"
-                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
-                        >
-                          <div
-                            class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                            :class="`border-start border-4 border-${item.color}`"
-                          >
-                            <div class="card-body py-3 d-flex justify-content-between">
-                              <div>
-                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                                <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
-                              </div>
-                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                            </div>
-
-                            <!-- SVG LINE CHART -->
-                            <div class="card-footer bg-transparent border-0 pt-0">
-                              <svg
-                                viewBox="0 0 100 30"
-                                class="svg-line"
-                                preserveAspectRatio="none"
-                                :class="`stroke-${item.color}`"
-                              >
-                                <polyline
-                                  fill="none"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                                />
-                              </svg>
-                            </div>
+                <!-- row isi gizi & total anak -->
+                <div class="row flex-grow-1 align-items-center">
+                  <!-- GIZI CARDS -->
+                  <div class="row justify-content-center">
+                    <div
+                      v-for="(item, index) in kesehatan_catin"
+                      :key="index"
+                      class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12 mb-3"
+                    >
+                      <div
+                        class="card shadow-sm border-0 rounded-3 overflow-hidden h-100"
+                        :class="`border-start border-4 border-${item.color}`"
+                      >
+                        <div class="card-body d-flex justify-content-between">
+                          <div>
+                            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                            <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
                           </div>
+                          <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
                         </div>
-                      </div>
-                    </div>
 
-                    <!-- TOTAL ANAK -->
-                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
-                      <div class="card text-center shadow-sm border p-2 w-100">
-                        <h6 class="text-muted my-4 fw-bold">Total Calon Pengantin</h6>
-                        <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                          <h2 class="fw-bold text-success mb-0">{{totalCatin}}</h2>
+                        <!-- SVG LINE CHART -->
+                        <div class="card-footer bg-transparent border-0 pt-0">
+                          <svg
+                            viewBox="0 0 100 30"
+                            class="svg-line"
+                            preserveAspectRatio="none"
+                            :class="`stroke-${item.color}`"
+                          >
+                            <polyline
+                              fill="none"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
+                            />
+                          </svg>
                         </div>
-                        <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <div class="container-fluid">
+                  <h5 class="fw-bold text-primary mb-3">Status Kesehatan Calon Pengantin</h5>
+
+                  <!-- Row utama: tabel & chart berdampingan -->
+                  <div class="row g-3">
+                    <!-- Table -->
+                    <div class="col-12">
+                      <div class="card border border-primary shadow p-3 h-100">
+                        <div class="table-responsive">
+                          <table class="table table-borderless align-middle">
+                            <thead>
+                              <tr class="fw-semibold text-additional">
+                                <th class="text-additional">Status</th>
+                                <th class="text-additional">Jumlah</th>
+                                <th class="text-additional">Persen</th>
+                                <th class="text-additional">Tren</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(row, index) in dataTable_catin" :key="index">
+                                <td class="text-additional small">{{ row.status }}</td>
+                                <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                                <td class="text-additional small">
+                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
+                                </td>
+                                <td class="small" :class="row.trenClass">
+                                  <span v-if="row.tren && row.tren !== '-'">
+                                    <i :class="row.trenIcon"></i> {{ row.tren }}
+                                  </span>
+                                  <span v-else>-</span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tabel tambahan bawah -->
+                  <div class="row mt-4">
+                    <div class="col-12">
+                      <div class="card border border-primary shadow p-3">
+                        <div class="table-responsive">
+                          <table class="table table-bordered table-sm align-middle text-center mb-0">
+                            <thead class="table-light">
+                              <tr>
+                                <th>Indikator</th>
+                                <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(values, indikator) in indikatorCatin" :key="indikator">
+                                <td class="fw-bold">{{ indikator }}</td>
+                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1226,18 +1277,18 @@ export default {
   data() {
     return {
       paginatedBumil: [
-      {
-        nama: 'Sakura Haruno',
-        anemia: false,
-        risiko: false,
-        kek: true,
-        intervensi: '-',
-        rt: '9',
-        rw: '2',
-        usia: 22
-      },
-    ],
-      indikatorBumil:[],
+        {
+          nama: 'Sakura Haruno',
+          anemia: false,
+          risiko: false,
+          kek: true,
+          intervensi: '-',
+          rt: '9',
+          rw: '2',
+          usia: 22
+        },
+      ],
+      indikatorCatin:[],
       indikatorData:[],
       intervensiData: [],
       sudahBumilChart:null,
@@ -1700,66 +1751,87 @@ export default {
     },
 
     //Data Catin
-    async loadBride() {
+    async hitungStatusCatin() {
       try {
-        const res = await axios.get(`${baseURL}/api/bride`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
+        const res = await axios.get(`${baseURL}/api/bride/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
+        const data = res.data
+        //console.log('📊 hitungStatusKesehatan ->', data)
+        const total = data.total || 0
 
-        this.bride = res.data.map(item => {
-        const pendamping = item.catin?.pendampingan?.[0] || {} // ambil pendampingan pertama
-
-        return {
-          id: item.id,
-          tgl_daftar: item.tgl_daftar,
-          tgl_rencana_menikah: item.tgl_rencana_menikah,
-          rencana_tinggal: item.rencana_tinggal,
-
-          // --- Data Catin Perempuan ---
-          nama_perempuan: item.catin?.nama || '',
-          nik_perempuan: item.catin?.nik || '',
-          pekerjaan_perempuan: item.catin?.pekerjaan || '',
-          tgl_lahir_perempuan: item.catin?.tgl_lahir || '',
-          usia_perempuan: item.catin?.usia || '',
-          hp_perempuan: item.catin?.no_hp || '',
-
-          // --- Data Catin Pria ---
-          nama_pria: item.catin?.pasangan?.nama || '',
-          nik_pria: item.catin?.pasangan?.nik || '',
-          pekerjaan_pria: item.catin?.pasangan?.pekerjaan || '',
-          tgl_lahir_pria: item.catin?.pasangan?.tgl_lahir || '',
-          usia_pria: item.catin?.pasangan?.usia || '',
-          hp_pria: item.catin?.pasangan?.no_hp || '',
-
-          // --- Data Pendampingan ---
-          tgl_pemeriksaan: pendamping.tgl_pemeriksaan || '',
-          tgl_pendampingan: pendamping.tgl_pendampingan || '',
-          dampingan_ke: pendamping.dampingan_ke || '',
-          bb: pendamping.bb || '',
-          tb: pendamping.tb || '',
-          lila: pendamping.lila || '',
-          hb: pendamping.hb || '',
-          imt: pendamping.imt || '',
-          status_hb: pendamping.anemia || '',
-          status_gizi: pendamping.kek || '',
-          catin_terpapar_rokok: pendamping.catin_terpapar_rokok || '',
-          catin_ttd: pendamping.catin_ttd || '',
-          punya_riwayat_penyakit: pendamping.punya_riwayat_penyakit || '',
-          riwayat_penyakit: pendamping.riwayat_penyakit || '',
-          fasilitas_rujukan: pendamping.fasilitas_rujukan || '',
-          edukasi: pendamping.edukasi || '',
-          pmt: pendamping.pmt || '',
-          catatan: pendamping.catatan ?? ''
-        }})
+        this.kesehatan_catin = data.counts.map(item => ({
+          title: item.title,
+          value: item.value,
+          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
+          color: item.color,
+        }))
+        this.totalCatin = total
 
       } catch (e) {
-        //console.error('Gagal ambil data:', e)
-        this.showError('Error Ambil Data', e)
+        console.error('❌ hitungStatusKesehatan error:', e)
       }
     },
+    async generateDataTableCatin() {
+      try {
+        const res = await axios.get(`${baseURL}/api/bride/tren`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        this.dataTable_catin = res.data.dataTable_catin || [];
+      } catch (e) {
+        this.showError('Error Ambil Data', e);
+      }
+    },
+    async generateIndikatorCatinBulanan() {
+      try {
+        //this.isLoading = true;
+
+        const params = {
+          kelurahan: this.filters.kelurahan || '',
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || '', // contoh: 'Agu 2025'
+        };
+
+        const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        const { labels, indikator } = res.data || {};
+
+        // kalau backend kirim kosong, tetap buat struktur default
+        if (!labels?.length || !indikator) {
+          this.bulanLabels = this.getLast12Months();
+          this.indikatorCatin = {
+            KEK: Array(12).fill(0),
+            Anemia: Array(12).fill(0),
+            Berisiko: Array(12).fill(0),
+          };
+          return;
+        }
+
+        this.bulanLabels = labels;
+        this.indikatorCatin = indikator;
+
+        //console.log('✅ indikatorData:', this.indikatorData);
+      } catch (err) {
+        console.error('❌ Gagal memuat indikator bumil bulanan:', err);
+        this.bulanLabels = this.getLast12Months();
+        this.indikatorCatin = {
+          KEK: Array(12).fill(0),
+          Anemia: Array(12).fill(0),
+          Berisiko: Array(12).fill(0),
+        };
+      }
+    },
+
     //Data Anak
     async loadChildren() {
       try {
@@ -2377,47 +2449,6 @@ export default {
       });
 
       this.totalAnak = total;
-    },
-    hitungStatusCatin() {
-      const dataCatin = this.filteredData.length ? this.filteredData : this.bride;
-      //console.log('Data Flatten:', dataCatin)
-      const f = this.filters;
-
-      const [y, m] = f.periode ? f.periode.split('-') : [];
-      const periodeNum = f.periode ? parseInt(y) * 100 + parseInt(m) : null;
-
-      const count = {
-        KEK: 0,
-        Anemia: 0,
-      };
-      let total = 0;
-
-      dataCatin.forEach((ctn) => {
-        const riwayat = ctn.raw?.pemeriksaan || [];
-        if (!riwayat.length) return;
-
-        const filtered = periodeNum
-          ? riwayat.filter((r) => {
-              if (!r.tgl_periksa) return false;
-              const tgl = new Date(r.tgl_periksa);
-              const periode = tgl.getFullYear() * 100 + (tgl.getMonth() + 1);
-              return periode === periodeNum;
-            })
-          : riwayat;
-
-        const latest = filtered[filtered.length - 1];
-        if (!latest) return;
-
-        total++;
-        if (latest.kek) count.KEK++;
-        if (latest.anemia) count.Anemia++;
-      });
-
-      this.gizi = Object.entries(count).map(([title, value]) => {
-        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
-        return { title, value, percent };
-      });
-      this.totalCatin = total;
     },
     async loadConfigWithCache() {
       try {
@@ -3243,9 +3274,10 @@ export default {
 
       // ⏳ Ambil semua data (anak, bumil, catin)
       await this.loadChildren(); // sudah generateListsFromChildren()
-      await this.loadBride(); // untuk catin
+      //await this.loadBride(); // untuk catin
       await this.loadBumil?.(); // kalau ada load ibu hamil, opsional
       await this.generateIndikatorBumilBulanan();
+      await this.generateIndikatorCatinBulanan();
 
       // 🔹 Set menu default
       this.menu('anak'); // otomatis set this.tipeMenu = 'anak' & hitungStatusGizi()
@@ -3265,6 +3297,7 @@ export default {
       this.generateDataTableTB();
       this.generateDataTableStatus();
       this.generateDataTableBumil();
+      this.generateDataTableCatin();
 
       //await this.generateIndikatorBumilBulanan();
       await this.fetchStats();
