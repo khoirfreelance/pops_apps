@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+//use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class CatinController extends Controller
 {
@@ -172,7 +172,7 @@ class CatinController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    public function import(Request $request)
+    /* public function import(Request $request)
     {
         // ✅ Validasi file Excel
         $validator = Validator::make($request->all(), [
@@ -312,9 +312,9 @@ class CatinController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
+    } */
 
-    /* public function import(Request $request)
+    public function import(Request $request)
     {
         // ✅ Validasi file CSV
         $validator = Validator::make($request->all(), [
@@ -458,7 +458,7 @@ class CatinController extends Controller
         }
 
         return response()->json(['message' => 'Tidak ada data untuk diimport'], 400);
-    } */
+    }
 
     private function convertDate($date)
     {
