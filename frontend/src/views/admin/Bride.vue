@@ -50,7 +50,7 @@
               <div
                 v-for="(filter, key) in filterOptions"
                 :key="key"
-                class="col-xl-3 col-lg-3 col-md-3 col-sm-4 col-6 position-relative"
+                class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 position-relative"
               >
               <label
                 v-if="filter.filter"
@@ -96,7 +96,7 @@
               </div>
 
               <!-- Kelurahan/Desa -->
-              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-6">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
                 <label for="filter" class="text-primary">Filter Lokasi:</label>
                 <select v-model="kelurahan" class="form-select text-muted" disabled>
                   <option :value="kelurahan">{{ kelurahan }}</option>
@@ -104,7 +104,7 @@
               </div>
 
               <!-- Posyandu -->
-              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-12">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
                 <select
                   v-model="filters.posyandu"
                   class="form-select text-muted"
@@ -118,15 +118,8 @@
 
               </div>
 
-              <!-- Terapkan -->
-              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-12 text-end">
-                <button type="submit" class="btn btn-gradient w-75 fw-semibold">
-                  <i class="bi bi-filter me-1"></i> Terapkan
-                </button>
-              </div>
-
               <!-- RW -->
-              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-6">
                 <select
                   v-model="filters.rw"
                   class="form-select text-muted"
@@ -138,7 +131,7 @@
               </div>
 
               <!-- RT -->
-              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-4 col-6">
+              <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-6">
                 <select
                   v-model="filters.rt"
                   class="form-select text-muted"
@@ -150,7 +143,7 @@
               </div>
 
               <!-- Periode -->
-              <div class="col-md-4 text-center">
+              <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 text-center">
                 <label for="filter" class="text-primary"> Filter Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
                   <select v-model="filters.periodeAwal" class="form-select text-muted">
@@ -164,9 +157,13 @@
                 </div>
               </div>
 
-              <!-- Reset -->
-              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-4 col-12 text-end">
-                <button type="button" class="btn btn-secondary w-75 fw-semibold" @click="resetFilter">
+              <!-- Terapkan -->
+              <div class="d-flex justify-content-end gap-3">
+                <button type="submit" class="btn btn-gradient fw-semibold">
+                  <i class="bi bi-filter me-1"></i> Terapkan
+                </button>
+
+                <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
                   <i class="bi bi-arrow-clockwise me-1"></i> Reset
                 </button>
               </div>
@@ -174,14 +171,11 @@
           </div>
 
           <div class="text-center mt-3">
-            <h5 class="mb-0 text-primary">
-              Ringkasan Statistik
-            </h5>
+            <h5 class="fw-bold text-success mb-3">Ringkasan Statistik</h5>
           </div>
 
-          <!-- Ringkasan Statistik-->
+          <!-- Ringkasan Statistik -->
           <div class="container-fluid my-4">
-
             <div class="row">
               <div class="row justify-content-center">
                 <div
@@ -190,17 +184,28 @@
                   class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
                 >
                   <div
-                    class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                    class="card shadow-sm border-0 rounded-2 overflow-hidden"
                     :class="`border-start border-4 border-${item.color}`"
                   >
                     <div class="card-header">
                       <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                     </div>
                     <div class="card-body d-flex justify-content-between align-items-center">
-                      <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                      <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
+                      <p
+                        v-if="index !== kesehatan.length - 1"
+                        class="mb-0"
+                        :class="`text-${item.color}`"
+                      >
+                        {{ item.percent }}
+                      </p>
+                      <p v-else class="my-auto">
+                        <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
+                      </p>
+                      <!-- Hanya tampilkan persentase kalau bukan card terakhir -->
+                      <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
+                        {{ item.value }}
+                      </h3>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -209,10 +214,10 @@
 
           <!-- Table and detail Section -->
           <div class="container-fluid mt-4">
-            <h5 class="fw-bold text-success mb-3">Data Calon Pengantin</h5>
-            <div class="row mt-4">
-              <div :class="selectedCatin ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
-                <div class="card bg-light px-2 py-5">
+            <h5 class="fw-bold text-success">Data Calon Pengantin</h5>
+            <div class="row mt-1">
+              <div :class="selectedCatin ? 'col-md-8' : 'col-md-12'">
+                <div class="card bg-light p-2">
                   <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle text-center">
                       <thead class="table-primary small">
@@ -264,43 +269,64 @@
                           </th>
                         </tr>
                       </thead>
-
                       <tbody>
                         <tr v-for="catin in paginatedData" :key="catin.id" class="small">
                           <td class="text-start">
                             <a href="#" @click.prevent="showDetail(catin)" class="fw-semibold text-decoration-none text-primary">
-                              {{ catin.nama }}
+                              {{ catin.nama_perempuan }}
                             </a>
                           </td>
-                          <td>{{ catin.anemia }}</td>
+                          <td>{{ catin.nama_laki }}</td>
                           <td>
-                            <span v-if="catin.risiko === 'Ya' || catin.risiko === 'Beresiko Tinggi' " class="badge bg-danger text-white">Ya</span>
-                            <span v-else>{{ catin.risiko }}</span>
+                            <span v-if="catin.pemeriksaan_terakhir.status_hb === 'Anemia'" class="badge bg-danger text-white">{{catin.pemeriksaan_terakhir.status_hb}}</span>
+                            <span v-else>{{ catin.pemeriksaan_terakhir.status_hb }}</span>
                           </td>
+
                           <td>
-                            <span v-if="catin.kek === 'Ya' || catin.kek === 'KEK'" class="badge bg-danger text-white">Ya</span>
-                            <span v-else>{{ catin.kek }}</span>
+                            <span v-if="catin.pemeriksaan_terakhir.status_kek === 'KEK'" class="badge bg-danger text-white">{{catin.pemeriksaan_terakhir.status_kek}}</span>
+                            <span v-else>{{ catin.pemeriksaan_terakhir.status_kek }}</span>
                           </td>
+
                           <td>
-                            <span v-if="catin.intervensi === 'Ya'" class="badge bg-danger text-white">Ya</span>
-                            <span v-else>{{ catin.intervensi }}</span>
+                            <span v-if="catin.pemeriksaan_terakhir.status_risiko === 'Berisiko'" class="badge bg-danger text-white">{{catin.pemeriksaan_terakhir.status_risiko}}</span>
+                            <span v-else>{{ catin.pemeriksaan_terakhir.status_risiko }}</span>
                           </td>
+
+                          <td>{{ catin.usia_perempuan }}</td>
+                          <td>{{ catin.usia_laki }}</td>
+
+                          <td>{{ catin.pekerjaan_perempuan }}</td>
+                          <td>{{ catin.pekerjaan_laki }}</td>
+
+                          <td>{{ catin.posyandu }}</td>
                           <td>{{ catin.rw }}</td>
                           <td>{{ catin.rt }}</td>
-                          <td>{{ catin.usia }}</td>
+                          <td>{{ this.formatDate(catin.pemeriksaan_terakhir.tanggal_pendampingan) }}</td>
+                          <td>{{ this.formatDate(catin.tgl_menikah) }}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.berat_perempuan }}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.tinggi_perempuan }}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.lila_perempuan }}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.hb_perempuan }}</td>
+                          <td>{{ catin.riwayat_penyakit != ''? catin.riwayat_penyakit:'-'}}</td>
+                          <td>{{ catin.jamban_sehat }}</td>
+                          <td>{{ catin.sumber_air_bersih }}</td>
+                        </tr>
+                        <!-- ✅ Jika tidak ada data -->
+                        <tr v-if="!paginatedData || paginatedData.length === 0">
+                          <td colspan="21" class="text-center text-muted py-3">
+                            Tidak ada data yang tersedia
+                          </td>
                         </tr>
                       </tbody>
-
                     </table>
                   </div>
 
                   <!-- Pagination -->
                   <nav>
-                    <ul class="pagination justify-content-center">
+                    <ul class="pagination justify-content-center mt-1 mb-0">
                       <li class="page-item" :class="{ disabled: currentPage === 1 }">
                         <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
                       </li>
-
                       <li
                         class="page-item"
                         v-for="page in totalPages"
@@ -331,7 +357,7 @@
                   ></button>
 
                   <!-- Nama dan Identitas -->
-                  <h5 class="fw-bold text-dark mb-1">{{ selectedCatin.nama }}</h5>
+                  <h5 class="fw-bold text-dark mb-1">{{ selectedCatin.nama_perempuan }} / {{ selectedCatin.nama_laki }}</h5>
                   <p class="text-muted mb-0 text-capitalize">{{ selectedCatin.kelurahan || '-' }}</p>
                   <p class="text-muted">{{ selectedCatin.kecamatan || '-' }}</p>
 
@@ -340,12 +366,11 @@
                     <span
                       class="badge px-3 py-2 small"
                       :class="{
-                        'bg-danger text-dark': ['Kehamilan Berisiko'].includes(selectedCatin.status_gizi),
-                        'bg-warning text-dark': ['KEK'].includes(selectedCatin.status_gizi),
-                        'bg-success': selectedCatin.status_gizi === 'Normal'
+                        'bg-danger text-white': ['Berisiko'].includes(selectedCatin.pemeriksaan_terakhir.status_risiko),
+                        'bg-success': selectedCatin.pemeriksaan_terakhir.status_risiko === 'Normal'
                       }"
                     >
-                      {{ selectedCatin.status_gizi }}
+                      {{ selectedCatin.pemeriksaan_terakhir.status_risiko }}
                     </span>
                   </div>
 
@@ -366,57 +391,36 @@
                       </thead>
                       <tbody>
                         <tr
-                          v-for="(r, i) in (selectedCatin.riwayat_pendampingan || []).slice(-3)"
+                          v-for="(r, i) in (selectedCatin.riwayat || []).slice(-3)"
                           :key="i"
                         >
-                          <td>{{ r.tanggal }}</td>
+                          <td>{{ this.formatDate(r.tanggal_pendampingan) }}</td>
                           <td>
                             <span
                               class="badge"
-                              :class="r.anemia === 'Ya' ? 'bg-danger' : 'text-dark'"
+                              :class="r.status_hb === 'Anemia' ? 'bg-danger' : 'text-dark'"
                             >
-                              {{ r.anemia }}
+                              {{ r.status_hb }}
                             </span>
                           </td>
                           <td>
                             <span
                               class="badge"
-                              :class="r.kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+                              :class="r.status_kek === 'KEK' ? 'bg-danger' : 'text-dark'"
                             >
-                              {{ r.kek }}
+                              {{ r.status_kek }}
                             </span>
                           </td>
                           <td>
                             <span
                               class="badge"
-                              :class="r.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
+                              :class="r.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
                             >
-                              {{ r.risiko }}
+                              {{ r.status_risiko }}
                             </span>
                           </td>
                         </tr>
 
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <!-- Riwayat Intervensi -->
-                  <h6 class="fw-bold text-start text-secondary mt-3">Riwayat Intervensi / Bantuan</h6>
-                  <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle text-center">
-                      <thead class="table-light">
-                        <tr>
-                          <th>Tanggal</th>
-                          <th>Kader</th>
-                          <th>Intervensi</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(i, idx) in selectedCatin.riwayat_intervensi || []" :key="idx">
-                          <td>{{ i.tanggal }}</td>
-                          <td>{{ i.kader }}</td>
-                          <td>{{ i.intervensi }}</td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -443,9 +447,9 @@
 
                   <!-- Header -->
                   <div class="bg-primary text-white p-4 text-center rounded-top">
-                    <h5 class="fw-bold mb-0">{{ selectedCatin.nama }}</h5>
+                    <h5 class="fw-bold mb-0">{{ selectedCatin.nama_perempuan }} / {{ selectedCatin.nama_laki }}</h5>
                     <p class="text-white mb-0 small">
-                      {{ selectedCatin.usia }} Tahun - {{ selectedCatin.risiko }}
+                      {{ selectedCatin.usia_perempuan }} Tahun - {{ selectedCatin.pemeriksaan_terakhir.status_risiko }}
                     </p>
                   </div>
 
@@ -465,7 +469,7 @@
                           type="button"
                           role="tab"
                         >
-                          <i class="bi bi-person-badge me-1"></i> Profil Ibu Hamil
+                          <i class="bi bi-person-badge me-1"></i> Profil Calon Pengantin
                         </button>
                       </li>
                       <li class="nav-item" role="presentation">
@@ -477,7 +481,7 @@
                           type="button"
                           role="tab"
                         >
-                          <i class="bi bi-clipboard-heart me-1"></i> Data Kehamilan
+                          <i class="bi bi-clipboard-heart me-1"></i> Data Pemeriksaan
                         </button>
                       </li>
                     </ul>
@@ -493,23 +497,23 @@
                         <div class="row g-3">
                           <div class="col-md-6">
                             <div class="card border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Identitas Ibu Hamil</h6>
+                              <h6 class="fw-bold mb-3 text-danger">Identitas Pasangan</h6>
                               <table class="table table-borderless mb-0">
                                 <tbody>
                                   <tr>
                                     <td class="fw-semibold" style="width: 120px;">Nama</td>
                                     <td>:</td>
-                                    <td>{{ selectedCatin.nama }}</td>
+                                    <td>{{ selectedCatin.nama_perempuan }} / {{ selectedCatin.nama_laki }}</td>
                                   </tr>
                                   <tr>
                                     <td class="fw-semibold">Usia</td>
                                     <td>:</td>
-                                    <td>{{ selectedCatin.usia }} Tahun</td>
+                                    <td>{{ selectedCatin.usia_perempuan }} Tahun / {{ selectedCatin.usia_laki }} Tahun</td>
                                   </tr>
                                   <tr>
-                                    <td class="fw-semibold">Nama Suami</td>
+                                    <td class="fw-semibold">Pekerjaan</td>
                                     <td>:</td>
-                                    <td>{{ selectedCatin.nama_suami }}</td>
+                                    <td>{{selectedCatin.pekerjaan_perempuan}} / {{ selectedCatin.pekerjaan_laki }}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -548,16 +552,16 @@
                         </div>
                       </div>
 
-                      <!-- Data Kelahiran -->
+                      <!-- Data Pemeriksaan -->
                       <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Data Kehamilan</h6>
+                          <h6 class="fw-bold mb-3 text-danger">Riwayat Pemeriksaan</h6>
                           <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle">
-                              <thead>
+                              <thead class="table-success">
                                 <tr class="small text-center align-middle">
                                   <th style="width: 150px;">Tanggal</th>
-                                  <th>Kehamilan ke</th>
+                                  <th>Kader</th>
                                   <th>Risiko</th>
                                   <th>TB <span class="fw-normal">(cm)</span></th>
                                   <th>BB <span class="fw-normal">(kg)</span></th>
@@ -565,84 +569,64 @@
                                   <th>KEK</th>
                                   <th>Hb</th>
                                   <th>Anemia</th>
+                                  <th>Riwayat Penyakit</th>
                                   <th>Terpapar Asap Rokok</th>
-                                  <th>Mendapat Bantuan Sosial</th>
                                   <th>Jamban Sehat</th>
                                   <th>Sumber Air Bersih</th>
-                                  <th>Keluhan</th>
-                                  <th>Intervensi</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 <tr
-                                  v-for="(item, i) in selectedCatin.kehamilan"
+                                  v-for="(item, i) in selectedCatin.riwayat"
                                   :key="'kehamilan-' + i"
                                   class="small text-center"
                                 >
-                                  <td>{{ item.tgl_pendampingan }}</td>
-                                  <td>{{ item.kehamilan_ke }}</td>
+                                  <td>{{ this.formatDate(item.tanggal_pendampingan) }}</td>
+                                  <td>{{ item.nama_petugas }}</td>
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.status_risiko === 'Risiko' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.risiko || '-' }}
+                                      {{ item.status_risiko || '-' }}
                                     </span>
                                   </td>
-                                  <td>{{ item.tb }}</td>
-                                  <td>{{ item.bb }}</td>
-                                  <td>{{ item.lila}}</td>
+                                  <td>{{ item.tinggi_perempuan }}</td>
+                                  <td>{{ item.berat_perempuan }}</td>
+                                  <td>{{ item.lila_perempuan}}</td>
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.status_kek === 'KEK' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.kek || '-' }}
+                                      {{ item.status_kek || '-' }}
                                     </span>
                                   </td>
-                                  <td>{{ item.hb }}</td>
+                                  <td>{{ item.hb_perempuan }}</td>
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.anemia === 'Ya' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.status_hb === 'anemia' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.anemia || '-' }}
+                                      {{ item.status_hb || '-' }}
                                     </span>
                                   </td>
                                   <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.asap_rokok === 'Ya' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.asap_rokok || '-' }}
-                                    </span>
+                                    <i v-if="item.terpapar_rokok==true" class="fa fa-check text-danger"></i>
+                                    <span v-else>-</span>
                                   </td>
                                   <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.bantuan_sosial === 'Tidak' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.bantuan_sosial || '-' }}
-                                    </span>
+                                    <i v-if="item.mendapat_bantuan_pmt==true" class="fa fa-check text-danger"></i>
+                                    <span v-else>-</span>
                                   </td>
                                   <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.jamban_sehat === 'Tidak' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.jamban_sehat || '-' }}
-                                    </span>
+                                    <i v-if="item.menggunakan_jamban==true" class="fa fa-check text-danger"></i>
+                                    <span v-else>-</span>
                                   </td>
                                   <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.sumber_air_bersih === 'Tidak' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.sumber_air_bersih || '-' }}
-                                    </span>
+                                    <i v-if="item.sumber_air_bersih==true" class="fa fa-check text-danger"></i>
+                                    <span v-else>-</span>
                                   </td>
-                                  <td>{{ item.keluhan}}</td>
-                                  <td>{{ item.intervensi}}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -782,7 +766,7 @@ export default {
   computed: {
     filterOptions() {
       return {
-        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Beresiko Tinggi'], filter:'Filter status catin hamil:' },
+        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Berisiko'], filter:'Filter status Calon Pengantin:' },
         usia: { label: 'Usia (Tahun)', placeholder: 'Pilih Usia', options: ['<20', '20-30', '30-40', '>40'],filter:'' },
       }
     }
@@ -803,6 +787,79 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    },
+    showDetail(props) {
+      //console.log(props);
+      this.selectedCatin = props
+      //console.log(this.selectedCatin);
+    },
+    downloadRiwayat() {
+      if (!this.selectedCatin) {
+        alert('Silakan pilih calon pengantin terlebih dahulu.');
+        return;
+      }
+
+      const catin = this.selectedCatin;
+
+      // 🧩 Format CSV Header
+      let csvContent = `DATA CALON PENGANTIN\n`;
+      csvContent += `Nama Perempuan,${catin.nama_perempuan || '-'}\n`;
+      csvContent += `NIK Perempuan,${catin.nik || '-'}\n`;
+      csvContent += `Nama Laki-laki,${catin.nama_laki || '-'}\n`;
+      csvContent += `Usia Perempuan,${catin.usia_perempuan || '-'}\n`;
+      csvContent += `Usia Laki-laki,${catin.usia_laki || '-'}\n`;
+      csvContent += `Posyandu,${catin.posyandu || '-'}\n`;
+      csvContent += `RW,${catin.rw || '-'}\n`;
+      csvContent += `RT,${catin.rt || '-'}\n`;
+      csvContent += `Kelurahan,${catin.kelurahan || '-'}\n`;
+      csvContent += `Kecamatan,${catin.kecamatan || '-'}\n`;
+      csvContent += `Kota,${catin.kota || '-'}\n`;
+      csvContent += `Provinsi,${catin.provinsi || '-'}\n`;
+      csvContent += `Tanggal Menikah,${this.formatDate(catin.tgl_menikah)}\n`;
+      csvContent += `Riwayat Penyakit,${catin.riwayat_penyakit || '-'}\n`;
+      csvContent += `Sumber Air Bersih,${catin.sumber_air_bersih || '-'}\n`;
+      csvContent += `Jamban Sehat,${catin.jamban_sehat || '-'}\n\n`;
+
+      // 🩺 Pemeriksaan Terakhir
+      if (catin.pemeriksaan_terakhir) {
+        const p = catin.pemeriksaan_terakhir;
+        csvContent += `PEMERIKSAAN TERAKHIR\n`;
+        csvContent += `Tanggal,${this.formatDate(p.tanggal_pendampingan)}\n`;
+        csvContent += `Petugas,${p.petugas || '-'}\n`;
+        csvContent += `Status HB,${p.status_hb || '-'}\n`;
+        csvContent += `Status KEK,${p.status_kek || '-'}\n`;
+        csvContent += `Status Risiko,${p.status_risiko || '-'}\n\n`;
+      }
+
+      // 📋 Riwayat Pendampingan (riwayat_catin)
+      if (Array.isArray(catin.riwayat) && catin.riwayat.length > 0) {
+        csvContent += `RIWAYAT PEMERIKSAAN / PENDAMPINGAN\n`;
+        csvContent += `Tanggal,Petugas,Status HB,Status KEK,Status Risiko\n`;
+        catin.riwayat.forEach(r => {
+          csvContent += `${this.formatDate(r.tanggal_pendampingan)},${r.petugas || '-'},${r.status_hb || '-'},${r.status_kek || '-'},${r.status_risiko || '-'}\n`;
+        });
+      } else {
+        csvContent += `Tidak ada riwayat pemeriksaan\n`;
+      }
+
+      // 💾 Buat file CSV dan download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Riwayat_${catin.nama_perempuan?.replace(/\s+/g, '_') || 'Catin'}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    },
     getFilterDisplayText(key) {
       const selected = this.filters[key] || []
       const options = this.filterOptions[key]?.options || []
@@ -870,16 +927,16 @@ export default {
         this.rtList = [];
         this.rwReadonly = true;
         this.rtReadonly = true;
-        this.filteredBumil = [...this.catin]; // tampilkan semua lagi
+        this.filteredCatin = [...this.catin]; // tampilkan semua
         return;
       }
 
-      // 🔹 Ambil data catin di posyandu terpilih
-      const filteredBumil = this.catin.filter(b => b.nama_posyandu === pos);
+      // ✅ Gunakan field yang benar
+      const filteredCatin = this.catin.filter(b => b.posyandu === pos);
 
-      // 🔹 Ambil daftar RW & RT unik dari mereka
-      const rwSet = new Set(filteredBumil.map(b => b.rw).filter(Boolean));
-      const rtSet = new Set(filteredBumil.map(b => b.rt).filter(Boolean));
+      // 🔹 Ambil daftar RW & RT unik
+      const rwSet = new Set(filteredCatin.map(b => b.rw).filter(Boolean));
+      const rtSet = new Set(filteredCatin.map(b => b.rt).filter(Boolean));
 
       this.rwList = Array.from(rwSet);
       this.rtList = Array.from(rtSet);
@@ -888,8 +945,8 @@ export default {
       this.rwReadonly = false;
       this.rtReadonly = false;
 
-      // 🔹 Update data yang tampil di tabel
-      this.filteredBumil = filteredBumil;
+      // 🔹 Update data tabel
+      this.filteredCatin = filteredCatin;
     },
     handleRwChange() {
       const pos = this.filters.posyandu;
@@ -970,54 +1027,50 @@ export default {
           params: this.filters,
         });
 
-        const data = res.data?.data || [];
-
-        // ✅ Ambil semua nama posyandu dari seluruh riwayat_pendampingan
-        const allPosyandu = data.flatMap(catin =>
-          (catin.riwayat_pendampingan || [])
-            .map(r => r.posyandu)
-            .filter(Boolean)
-        );
-
-        // ✅ Buat list unik
-        const uniquePosyandu = [...new Set(allPosyandu)];
-        this.posyanduList = uniquePosyandu.map((nama, idx) => ({
-          id: idx + 1,
-          nama_posyandu: nama,
+        // ✅ Ubah data object jadi array
+        const rawData = res.data?.data || {};
+        const data = Object.keys(rawData).map(nik => ({
+          nik_perempuan: nik,
+          ...rawData[nik],
         }));
-
-        // ✅ Format data catin
-        this.catin = data.map(item => {
-          const lastCheck = item.riwayat_pendampingan?.at(-1); // pemeriksaan terakhir
-          return {
-            nama_perempuan: item.nama_perempuan,
-            nama_laki: item.nama_laki,
-            usia_perempuan: item.usia_perempuan,
-            usia_laki: item.usia_laki,
-            pekerjaan_perempuan: item.pekerjaan_perempuan,
-            pekerjaan_laki: item.pekerjaan_laki,
-            tanggal_pendampingan: lastCheck?.tanggal_pendampingan || '-',
-            berat_badan: lastCheck?.berat_perempuan || '-',
-            tinggi_badan: lastCheck?.tinggi_perempuan || '-',
-            risiko: lastCheck?.status_risiko || '-',
-            anemia: lastCheck?.status_hb || '-',
-            kek: lastCheck?.status_kek || '-',
-            nama_posyandu: lastCheck?.posyandu || '-',
-            rw: item.rw || '-',
-            rt: item.rt || '-',
-          };
-        });
+        this.catin = data.map(item => ({
+          nik: item.nik_perempuan,
+          nama_perempuan: item.nama_perempuan,
+          nama_laki: item.nama_laki,
+          usia_perempuan: item.usia_perempuan,
+          usia_laki: item.usia_laki,
+          pekerjaan_perempuan: item.pekerjaan_perempuan,
+          pekerjaan_laki: item.pekerjaan_laki,
+          posyandu: item.posyandu != ''? item.posyandu : '-',
+          provinsi: item.provinsi,
+          kota: item.kota,
+          kecamatan: item.kecamatan,
+          kelurahan: item.kelurahan,
+          rt: item.rt,
+          rw: item.rw,
+          tgl_menikah: item.tgl_menikah,
+          riwayat_penyakit: item.riwayat_penyakit,
+          sumber_air_bersih: item.sumber_air_bersih == true? 'Ya' : 'Tidak',
+          jamban_sehat: item.jamban_sehat == true? 'Ya' : 'Tidak',
+          // ambil pemeriksaan terakhir
+          pemeriksaan_terakhir: item.riwayat_pemeriksaan?.[0] || null,
+          riwayat:item.riwayat_catin,
+        }));
 
         // ✅ Set filtered dan total
         this.filteredCatin = [...this.catin];
-        this.totalCarin = this.catin.length;
-        //console.log('isi catin:', this.filteredBumil);
+        // 🔹 Ambil semua nama posyandu unik dari data catin
+        const posSet = new Set(this.catin.map(c => c.posyandu).filter(Boolean));
+        this.posyanduList = Array.from(posSet).map((nama, i) => ({
+          id: i + 1,
+          nama_posyandu: nama,
+        }));
 
-
+        // console.log('isi catin:', this.catin);
       } catch (e) {
         console.error('Gagal ambil data pernikahan:', e);
         this.catin = [];
-        this.filteredBumil = [];
+        this.filteredCatin = [];
         this.posyanduList = [];
       }
     },
@@ -1033,6 +1086,7 @@ export default {
         //this.getPendingData(),
         this.getWilayahUser(),
         this.handleResize(),
+        this.generatePeriodeOptions(),
 
         window.addEventListener('resize', this.handleResize)
       ])
@@ -1049,27 +1103,6 @@ export default {
 </script>
 
 <style scoped>
-
-.datatable-responsive {
-  width: 100%;
-  overflow-x: auto; /* aktifkan scroll horizontal */
-}
-
-.datatable-responsive table {
-  min-width: 300px; /* sesuaikan lebar minimal tabel */
-}
-
-.bride-wrapper {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f9f9fb;
-  min-height: 100vh;
-}
-/* Gradient Banner */
-.bride-banner {
-  background: linear-gradient(90deg, var(--bs-primary), var(--bs-secondary));
-  border-radius: 0 0 1rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
 .filter-wrapper {
   position: relative;
   z-index: 1050;
@@ -1080,74 +1113,5 @@ export default {
 .flex-grow-1 {
   border-left: none !important;
   background-color: #f9f9fb;
-}
-.breadcrumb-item + .breadcrumb-item::before {
-  color: rgba(255, 255, 255, 0.7);
-}
-/* Smooth Apple-like Modal */
-.modern-modal {
-  border-radius: 1.5rem;
-  border: 1px solid #eaeaea;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  background: #fff;
-  transition: all 0.3s ease-in-out;
-}
-
-/* Form lebih clean */
-.form-control-modern,
-.form-select.form-control-modern {
-  border-radius: 0.75rem;
-  border: 1px solid #ddd;
-  padding: 0.6rem 1rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-}
-
-.form-control-modern:focus {
-  border-color: var(--bs-primary);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
-}
-
-/* Animasi modal lebih halus */
-.modal.fade .modal-dialog {
-  transform: translateY(20px);
-  transition:
-    transform 0.3s ease-out,
-    opacity 0.3s ease-out;
-}
-
-.modal.fade.show .modal-dialog {
-  transform: translateY(0);
-  opacity: 1;
-}
-.modern-card {
-  border-radius: 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  border: none;
-}
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto; /* ✅ Scroll horizontal */
-  -webkit-overflow-scrolling: touch; /* smooth di mobile */
-}
-
-.table-modern td {
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-form h5 {
-  position: relative;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--bs-secondary); /* default pakai secondary */
-}
-@media (max-width: 768px) {
-  .table-modern {
-    min-width: auto;
-  }
 }
 </style>

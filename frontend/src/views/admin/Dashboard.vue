@@ -1349,6 +1349,7 @@ export default {
     }
   },
   methods: {
+    // Mandatory
     menu(tipe = 'anak') {
       this.tipeMenu = tipe;
 
@@ -1356,14 +1357,170 @@ export default {
       else if (tipe === 'bumil') this.hitungStatusBumil();
       else if (tipe === 'catin') this.hitungStatusCatin();
     },
-    //Data Bumil
-    async generateDataTableBumil() {
+    async getWilayahUser() {
       try {
-        const res = await axios.get(`${baseURL}/api/pregnancy/tren`, {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
+        })
+
+        const wilayah = res.data
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
+
+        // Setelah dapet id_wilayah, langsung fetch posyandu
+        //await this.fetchPosyanduByWilayah(this.id_wilayah)
+      } catch (error) {
+        console.error('Gagal ambil data wilayah user:', error)
+        this.kelurahan = '-'
+      }
+    },
+    async applyFilter() {
+      switch (this.tipeMenu) {
+        case 'anak':
+          //await this.loadChildren(),
+          await this.hitungStatusGizi()
+          break;
+        case 'bumil':
+          //await this.loadPr(),
+          await this.hitungStatusKesehatan()
+          break;
+        case 'catin':
+          await this.hitungStatusCatin()
+          await this.generateDataTableBumil()
+          await this.generateIndikatorCatinBulanan()
+          //sourceData = this.bride;
+          break;
+      }
+
+    },
+    async fetchStats() {
+      try {
+        const res = await axios.get(`${baseURL}/api/dashboard/stats`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+        const data = res.data
+        this.stats = [
+          { title: 'RW', value: data.rw, icon: 'bi bi-houses-fill' },
+          { title: 'RT', value: data.rt, icon: 'bi bi-house-fill' },
+          { title: 'Keluarga Terdaftar', value: data.keluarga, icon: 'fa-solid fa-people-roof' },
+          { title: 'TPK', value: data.tpk, icon: 'bi bi-person-vcard' },
+          { title: 'Ibu Hamil', value: data.ibu_hamil, icon: 'fa-solid fa-person-pregnant' },
+          { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
+          { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
+          { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
+          { title: 'Anak <= 5 Tahun', value: this.totalAnak, icon: 'fa-solid fa-baby' },
+        ]
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
+    },
+    getTodayDate() {
+      const hari = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu',
+        'Kamis', 'Jumat', 'Sabtu'
+      ]
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+      const now = new Date()
+      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+    getThisMonth() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      let monthIndex = now.getMonth() - 1
+      let year = now.getFullYear()
+
+      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
+      if (monthIndex < 0) {
+        monthIndex = 11
+        year -= 1
+      }
+
+      return `${bulan[monthIndex]} ${year}`
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
+    },
+    getLast12Months() {
+      const monthNames = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ]
+      const labels = []
+      const now = new Date()
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        labels.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`)
+      }
+      return labels
+    },
+    handlePosyanduChange() {
+      const pos = this.filters.posyandu
+
+      if (pos) {
+        const filteredChildren = this.children.filter(c => c.posyandu === pos)
+
+        const rwSet = new Set(filteredChildren.map(c => c.rw).filter(Boolean))
+        const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean))
+
+        this.rwList = Array.from(rwSet)
+        this.rtList = Array.from(rtSet)
+        this.rwReadonly = false
+        this.rtReadonly = false
+      } else {
+        // reset kalau posyandu dikosongin
+        const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
+        const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
+        this.rwList = Array.from(rwSet)
+        this.rtList = Array.from(rtSet)
+        this.rwReadonly = true
+        this.rtReadonly = true
+        this.filters.rw = ''
+        this.filters.rt = ''
+      }
+    },
+    //Data Bumil
+    async generateDataTableBumil() {
+      try {
+        const params = {
+          posyandu: this.filters.posyandu|| '',
+          rw: this.filters.rw|| '',
+          rt: this.filters.rt|| '',
+          periode: this.filters.periode || '',
+        };
+
+        const res = await axios.get(`${baseURL}/api/pregnancy/tren`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params,
         });
         //console.log('debug datatable bumil:', res.data);
 
@@ -1374,9 +1531,18 @@ export default {
     },
     async hitungStatusBumil() {
       try {
+        const params = {
+          posyandu: this.filters.posyandu|| '',
+          rw: this.filters.rw|| '',
+          rt: this.filters.rt|| '',
+          periode: this.filters.periode || '',
+        };
+
         const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
+          params,
+        });
+
         const data = res.data
         //console.log('📊 hitungStatusKesehatan ->', data)
         const total = data.total || 0
@@ -1753,9 +1919,18 @@ export default {
     //Data Catin
     async hitungStatusCatin() {
       try {
+        const params = {
+          posyandu: this.filters.posyandu|| '',
+          rw: this.filters.rw|| '',
+          rt: this.filters.rt|| '',
+          periode: this.filters.periode || '',
+        };
+
         const res = await axios.get(`${baseURL}/api/bride/status`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
+          params,
+        });
+
         const data = res.data
         //console.log('📊 hitungStatusKesehatan ->', data)
         const total = data.total || 0
@@ -1774,11 +1949,16 @@ export default {
     },
     async generateDataTableCatin() {
       try {
+        const params = {
+          posyandu: this.filters.posyandu|| '',
+          rw: this.filters.rw|| '',
+          rt: this.filters.rt|| '',
+          periode: this.filters.periode || '',
+        };
+
         const res = await axios.get(`${baseURL}/api/bride/tren`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params,
         });
 
         this.dataTable_catin = res.data.dataTable_catin || [];
@@ -1788,18 +1968,7 @@ export default {
     },
     async generateIndikatorCatinBulanan() {
       try {
-        //this.isLoading = true;
-
-        const params = {
-          kelurahan: this.filters.kelurahan || '',
-          posyandu: this.filters.posyandu || '',
-          rw: this.filters.rw || '',
-          rt: this.filters.rt || '',
-          periode: this.filters.periode || '', // contoh: 'Agu 2025'
-        };
-
         const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
-          params,
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -1833,104 +2002,29 @@ export default {
     },
 
     //Data Anak
-    async loadChildren() {
+    async hitungStatusGizi() {
       try {
-        const res = await axios.get(`${baseURL}/api/children`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
+        const params = {
+          posyandu: this.filters.posyandu|| '',
+          rw: this.filters.rw|| '',
+          rt: this.filters.rt|| '',
+          periode: this.filters.periode || '',
+        };
 
-        // API structure: { status, message, data_anak: [...] }
-        const items = res.data.data_anak || []
-        this.rawData = items
-        //console.log(items);
+        const res = await axios.get(`${baseURL}/api/children/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params,
+        });
 
-         // 🔹 Filter langsung berdasarkan kelurahan user
-        const filteredByKelurahan = items.filter(
-          (item) =>
-            item.kelurahan?.toLowerCase() === this.kelurahan?.toLowerCase()
-        );
+        const { total, counts, kelurahan } = res.data;
 
-        this.children = filteredByKelurahan.map((item) => {
-          const kelahiran = item.kelahiran?.[0] || {}
-          const keluarga = item.keluarga?.[0] || {}
-          const pendamping = item.pendampingan?.[item.pendampingan.length - 1] || {}
-          const posyandu = item.posyandu?.[item.posyandu.length - 1] || {}
-          const intervensi = item.intervensi?.[item.intervensi.length - 1] // ambil intervensi terakhir
+        // ✅ Bind langsung ke data komponen
+        this.gizi = counts || [];
+        this.totalAnak = total || 0;
+        this.kelurahan = kelurahan || '-';
 
-          return {
-            // === Identitas Anak ===
-            id: item.id,
-            nama: item.nama || '-',
-            nik: item.nik || '-',
-            gender: item.jk || '-',
-            provinsi: item.provinsi || '-',
-            kota: item.kota || '-',
-            kecamatan: item.kecamatan || '-',
-            kelurahan: item.kelurahan || '-',
-            rt: item.rt || '-',
-            rw: item.rw || '-',
-
-            // === Data Posyandu terakhir ===
-            posyandu: posyandu.posyandu || '-',
-            usia: posyandu.usia || '-',
-            tgl_ukur: posyandu.tgl_ukur || '-',
-            bbu: posyandu.bbu || '-',
-            tbu: posyandu.tbu || '-',
-            bbtb: posyandu.bbtb || '-',
-            bb: posyandu.bb || '-',
-            tb: posyandu.tb || '-',
-            bb_naik: posyandu.bb_naik || false,
-
-            // === Data Intervensi ===
-            intervensi: intervensi ? intervensi.jenis : 'Belum dapat Intervensi',
-
-            // === Tambahan opsional ===
-            tmpt_dilahirkan: kelahiran.tmpt_dilahirkan || '-',
-            tgl_lahir: kelahiran.tgl_lahir || '-',
-            bb_lahir: kelahiran.bb_lahir || '-',
-            pb_lahir: kelahiran.pb_lahir || '-',
-            persalinan: kelahiran.persalinan || '-',
-            nama_ayah: keluarga.nama_ayah || '-',
-            nama_ibu: keluarga.nama_ibu || '-',
-            pekerjaan_ayah: keluarga.pekerjaan_ayah || '-',
-            pekerjaan_ibu: keluarga.pekerjaan_ibu || '-',
-            usia_ayah: keluarga.usia_ayah || '-',
-            usia_ibu: keluarga.usia_ibu || '-',
-            anak_ke: keluarga.anak_ke || '-',
-            kader_pendamping: pendamping.kader || '-',
-            tgl_pendampingan: pendamping.tanggal || '-',
-
-            // === Simpan data mentah (buat showDetail nanti) ===
-            raw: {
-              kelahiran: item.kelahiran || [],
-              keluarga: item.keluarga || [],
-              pendampingan: item.pendampingan || [],
-              posyandu: item.posyandu || [],
-              intervensi: item.intervensi || []
-            }
-          }
-
-        })
-
-        // Setelah data dimuat, langsung apply filter awal
-        this.applyFilter()
-
-        // 🔹 Inisialisasi filteredData
-        this.filteredData = [...this.children];
-
-        // 🔹 Hitung total anak dengan usia < 60 bulan
-        this.totalAnak = this.children.filter((anak) => anak.usia < 60).length;
-
-        // 🔹 Hitung status gizi awal
-        this.hitungStatusGizi();
-        this.generateListsFromChildren()
-      } catch (e) {
-        console.error(e);
-
-        //this.showError('Error Ambil Data Anak', e)
+      } catch (error) {
+        console.error('❌ hitungStatusGizi error:', error);
       }
     },
     generateInfoBoxes() {
@@ -2082,6 +2176,37 @@ export default {
         },
       ]
     },
+
+    /* async loadChildren() {
+      try {
+        const res = await axios.get(`${baseURL}/api/children`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          params: this.filters, // 🔹 kirim semua filter ke backend
+        });
+
+        const items = res.data.data_anak || [];
+
+        // 🔹 Ambil semua nama posyandu unik
+        const allPosyandu = items
+          .flatMap(item => item.posyandu?.map(p => p.posyandu).filter(Boolean) || [])
+        const uniquePosyandu = [...new Set(allPosyandu)];
+
+        this.posyanduList = uniquePosyandu.map((nama, idx) => ({
+          id: idx + 1,
+          nama_posyandu: nama,
+        }));
+
+        // ✅ simpan hasilnya
+        this.filteredData = [...this.children];
+
+      } catch (e) {
+        this.showError('Error Ambil Data Anak', e);
+      }
+    }, */
+
     exportToCSV(val) {
       this.isSudah = val;
       const data = this.isSudah ? this.processedChildren : this.processedChildren_belum;
@@ -2225,7 +2350,6 @@ export default {
         }
       });
     },
-
     generateDataTableTB() {
       const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
       if (!data.length) return;
@@ -2297,7 +2421,6 @@ export default {
         }
       });
     },
-
     generateDataTableStatus() {
       const data = (this.filteredData?.length ? this.filteredData : this.children) || [];
       if (!data.length) return;
@@ -2377,80 +2500,7 @@ export default {
       });
     },
 
-    hitungStatusGizi() {
-      // 🔹 Ambil data anak yang sudah difilter
-      const dataAnak = this.filteredData.length ? this.filteredData : this.children;
-      const f = this.filters;
-
-      // 🔹 Bikin range periode (jika difilter)
-      const [y, m] = f.periode ? f.periode.split('-') : [];
-      const periodeNum = f.periode ? parseInt(y) * 100 + parseInt(m) : null;
-
-      const count = {
-        Stunting: 0,
-        Wasting: 0,
-        Underweight: 0,
-        Normal: 0,
-        'BB Stagnan': 0,
-        Overweight: 0,
-      };
-
-      let total = 0;
-
-      dataAnak.forEach((anak) => {
-        const riwayat = anak.raw?.posyandu || [];
-        if (!riwayat.length) return;
-
-        // 🔹 Filter riwayat berdasarkan periode (jika difilter)
-        const filteredRiwayat = periodeNum
-          ? riwayat.filter((r) => {
-              if (!r.tgl_ukur) return false;
-              const tgl = new Date(r.tgl_ukur);
-              const itemPeriode = tgl.getFullYear() * 100 + (tgl.getMonth() + 1);
-              return itemPeriode === periodeNum;
-            })
-          : riwayat;
-
-        // 🔹 Ambil data terakhir di periode itu
-        const latest = filteredRiwayat[filteredRiwayat.length - 1];
-        if (!latest) return;
-
-        total++;
-
-        // eslint-disable-next-line no-unused-vars
-        const { bbu, tbu, bbtb, bb } = latest;
-
-        if (tbu?.includes('Stunted')) count.Stunting++;
-        if (bbtb?.includes('Wasted')) count.Wasting++;
-        if (bbu?.includes('Underweight')) count.Underweight++;
-        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++;
-        if (bbtb?.includes('Overweight')) count.Overweight++;
-
-        // 🔹 Cek stagnan (3 kali BB terakhir sama — dari seluruh riwayat anak)
-        if (riwayat.length >= 3) {
-          const last3 = riwayat.slice(-3);
-          const allEqual = last3.every((r) => r.bb === last3[0].bb);
-          if (allEqual) count['BB Stagnan']++;
-        }
-      });
-
-      // 🔹 Buat array untuk ditampilkan di ringkasan
-      this.gizi = Object.entries(count).map(([title, value]) => {
-        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
-        const colorMap = {
-          Stunting: 'danger',
-          Wasting: 'warning',
-          Underweight: 'violet',
-          Normal: 'success',
-          'BB Stagnan': 'info',
-          Overweight: 'dark',
-        };
-        return { title, value, percent, color: colorMap[title] };
-      });
-
-      this.totalAnak = total;
-    },
-    async loadConfigWithCache() {
+    /* async loadConfigWithCache() {
       try {
         // cek di localStorage
         const cached = localStorage.getItem(this.configCacheKey)
@@ -2477,7 +2527,7 @@ export default {
         console.warn('Gagal load config:', error)
         this.logoLoaded = false
       }
-    },
+    }, */
     renderRingkasan(periodeBulan = 3) {
       const n = parseInt(periodeBulan) || 3
 
@@ -2819,26 +2869,7 @@ export default {
         })
       })
     },
-    async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
 
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
-
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
-        this.kelurahan = '-'
-      }
-    },
     generateListsFromChildren() {
       if (!this.children.length) return
 
@@ -2877,44 +2908,6 @@ export default {
         this.rwList = []
         this.rtList = []
       }
-    },
-    handlePosyanduChange() {
-      const pos = this.filters.posyandu;
-      if (!pos) {
-        this.rwList = [];
-        this.rtList = [];
-        this.rwReadonly = true;
-        this.rtReadonly = true;
-        return;
-      }
-
-      const filteredChildren = this.children.filter(c => c.posyandu === pos);
-
-      // Ambil nama_rw & nama_rt dari object
-      const rwSet = new Set(
-        filteredChildren
-          .map(c => {
-            if (typeof c.rw === 'object') return c.rw.nama_rw;
-            if (typeof c.nama_rw !== 'undefined') return c.nama_rw;
-            return c.rw;
-          })
-          .filter(Boolean)
-      );
-
-      const rtSet = new Set(
-        filteredChildren
-          .map(c => {
-            if (typeof c.rt === 'object') return c.rt.nama_rt;
-            if (typeof c.nama_rt !== 'undefined') return c.nama_rt;
-            return c.rt;
-          })
-          .filter(Boolean)
-      );
-
-      this.rwList = Array.from(rwSet);
-      this.rtList = Array.from(rtSet);
-      this.rwReadonly = false;
-      this.rtReadonly = false;
     },
     handleRwChange() {
       const pos = this.filters.posyandu;
@@ -2967,171 +2960,7 @@ export default {
       //console.log('Periode options:', this.periodeOptions)
 
     },
-    async applyFilter() {
-      const f = this.filters;
 
-      // 🔹 RT/RW readonly bila sudah dipilih dari hierarki
-      this.rtReadonly = true;
-      this.rwReadonly = true;
-
-      // 🔹 Tentukan sumber data sesuai tipe menu
-      let sourceData = [];
-      switch (this.tipeMenu) {
-        case 'anak':
-          sourceData = this.children;
-          break;
-        case 'bumil':
-          sourceData = this.bumil;
-          break;
-        case 'catin':
-          sourceData = this.bride;
-          break;
-      }
-
-      // 🔹 Pastikan data ada
-      if (!Array.isArray(sourceData) || !sourceData.length) {
-        this.filteredData = [];
-        return;
-      }
-
-      // 🔹 Filter berdasarkan Posyandu, RW, RT, Periode
-      this.filteredData = sourceData.filter(item => {
-        const posyanduMatch =
-          !f.posyandu ||
-          item.posyandu === f.posyandu ||
-          item.nama_posyandu === f.posyandu;
-
-        const rwMatch = !f.rw || item.rw === f.rw;
-        const rtMatch = !f.rt || item.rt === f.rt;
-
-        const periodeMatch = (() => {
-          if (!f.periode) return true;
-          const [y, m] = f.periode.split('-').map(Number);
-          const periodeNum = y * 100 + m;
-
-          // Field tanggal berbeda tergantung tipe menu
-          const tanggalKey =
-            this.tipeMenu === 'anak'
-              ? 'tgl_ukur'
-              : this.tipeMenu === 'bumil'
-              ? 'tgl_pendampingan'
-              : 'tgl_pemeriksaan';
-
-          if (!item[tanggalKey]) return false;
-
-          const [iy, im] = item[tanggalKey].split('-').map(Number);
-          const itemPeriode = iy * 100 + im;
-          return itemPeriode === periodeNum;
-        })();
-
-        return posyanduMatch && rwMatch && rtMatch && periodeMatch;
-      });
-
-      if (!this.filteredData.length) {
-        console.warn('⚠️ Tidak ada data setelah filter diterapkan');
-      }
-
-      // 🔹 Logika lanjutan per tipe menu
-      switch (this.tipeMenu) {
-        case 'anak':
-          this.totalAnak = this.filteredData.filter(a => a.usia < 60).length;
-          this.hitungStatusGizi();
-          this.generateDataTableBB();
-          this.generateDataTableTB();
-          this.generateDataTableStatus();
-          this.generateInfoBoxes();
-          this.generateListsFromChildren();
-
-          // Render chart anak
-          this.renderChart('pieChart_bb', this.dataTable_bb, [
-            '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
-          ]);
-          this.renderChart('pieChart_tb', this.dataTable_tb, [
-            '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
-          ]);
-          this.renderChart('pieChart_status', this.dataTable_status, [
-            '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-          ]);
-          break;
-
-        case 'bumil':
-          await this.hitungStatusBumil();
-          await this.loadIntervensiBumil();
-          break;
-
-        case 'catin':
-          this.hitungStatusCatin();
-          this.generateListsFromCatin?.();
-          this.renderChart('pieChart_status', this.gizi, [
-            '#f5ebb9', '#f7db7f', '#7dae9b',
-          ]);
-          break;
-      }
-    },
-    async fetchStats() {
-      try {
-        const res = await axios.get(`${baseURL}/api/dashboard/stats`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        })
-        const data = res.data
-        this.stats = [
-          { title: 'RW', value: data.rw, icon: 'bi bi-houses-fill' },
-          { title: 'RT', value: data.rt, icon: 'bi bi-house-fill' },
-          { title: 'Keluarga Terdaftar', value: data.keluarga, icon: 'fa-solid fa-people-roof' },
-          { title: 'TPK', value: data.tpk, icon: 'bi bi-person-vcard' },
-          { title: 'Ibu Hamil', value: data.ibu_hamil, icon: 'fa-solid fa-person-pregnant' },
-          { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
-          { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
-          { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
-          { title: 'Anak <= 5 Tahun', value: this.totalAnak, icon: 'fa-solid fa-baby' },
-        ]
-      } catch (e) {
-        console.error(e)
-      }
-    },
-    toggleSidebar() {
-      this.isCollapsed = !this.isCollapsed
-    },
-    getTodayDate() {
-      const hari = [
-        'Minggu', 'Senin', 'Selasa', 'Rabu',
-        'Kamis', 'Jumat', 'Sabtu'
-      ]
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
-      ]
-      const now = new Date()
-      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
-    },
-    getThisMonth() {
-      const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
-      ]
-
-      const now = new Date()
-      let monthIndex = now.getMonth() - 1
-      let year = now.getFullYear()
-
-      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
-      if (monthIndex < 0) {
-        monthIndex = 11
-        year -= 1
-      }
-
-      return `${bulan[monthIndex]} ${year}`
-    },
-    handleResize() {
-      this.windowWidth = window.innerWidth
-      if (this.windowWidth < 992) {
-        this.isCollapsed = true // auto collapse di tablet/mobile
-      } else {
-        this.isCollapsed = false // normal lagi di desktop
-      }
-    },
     renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
       const ctx = this.$refs[refName]?.getContext('2d');
       if (!ctx) return;
@@ -3224,29 +3053,7 @@ export default {
         plugins: [ChartDataLabels],
       });
     },
-    getLast12Months() {
-      const monthNames = [
-        'Januari',
-        'Februari',
-        'Maret',
-        'April',
-        'Mei',
-        'Juni',
-        'Juli',
-        'Agustus',
-        'September',
-        'Oktober',
-        'November',
-        'Desember',
-      ]
-      const labels = []
-      const now = new Date()
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        labels.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`)
-      }
-      return labels
-    },
+
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -3269,34 +3076,35 @@ export default {
     try {
       await this.$nextTick();
       await this.getWilayahUser();
-      await this.loadConfigWithCache();
+      //await this.loadConfigWithCache();
       this.bulanLabels = this.getLast12Months() // <- generate bulan realtime
 
       // ⏳ Ambil semua data (anak, bumil, catin)
-      await this.loadChildren(); // sudah generateListsFromChildren()
+      //await this.loadChildren(); // sudah generateListsFromChildren()
       //await this.loadBride(); // untuk catin
-      await this.loadBumil?.(); // kalau ada load ibu hamil, opsional
-      await this.generateIndikatorBumilBulanan();
+      //await this.loadBumil?.(); // kalau ada load ibu hamil, opsional
+      //await this.generateIndikatorBumilBulanan();
       await this.generateIndikatorCatinBulanan();
 
       // 🔹 Set menu default
       this.menu('anak'); // otomatis set this.tipeMenu = 'anak' & hitungStatusGizi()
 
       // 🔹 Jalankan logika tambahan setelah data dasar siap
-      const { belum, sudah } = this.hitungIntervensi();
-      const { belumBumil, sudahBumil } = this.hitungIntervensiBumil();
-      this.belum = belum;
-      this.sudah = sudah;
-      this.belumBumil = belumBumil;
-      this.sudahBumil = sudahBumil;
+      //const { belum, sudah } = this.hitungIntervensi();
+      //const { belumBumil, sudahBumil } = this.hitungIntervensiBumil();
+      //this.belum = belum;
+      //this.sudah = sudah;
+      //this.belumBumil = belumBumil;
+      //this.sudahBumil = sudahBumil;
 
       // 🔹 Generate filter & tabel awal sesuai tipe menu aktif
-      this.generateInfoBoxes();
+      /* this.generateInfoBoxes();
       this.generateListsFromChildren();
       this.generateDataTableBB();
       this.generateDataTableTB();
       this.generateDataTableStatus();
       this.generateDataTableBumil();
+       */
       this.generateDataTableCatin();
 
       //await this.generateIndikatorBumilBulanan();
@@ -3305,13 +3113,11 @@ export default {
 
       // Pastikan filter kelurahan & periode sudah siap
       this.filters.kelurahan = this.kelurahan;
-      /* if (!this.filters.periode && this.bulanLabels.length)
-        this.filters.periode = this.bulanLabels[this.bulanLabels.length - 1]; // ambil bulan terakhir */
 
-      await this.loadIntervensiBumil();
+      //await this.loadIntervensiBumil();
 
       // 🔹 Render chart awal (sesuai tipe menu aktif)
-      this.renderChart('pieChart_bb', this.dataTable_bb, [
+      /* this.renderChart('pieChart_bb', this.dataTable_bb, [
           '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
         ]);
         this.renderChart('pieChart_tb', this.dataTable_tb, [
@@ -3319,14 +3125,14 @@ export default {
         ]);
         this.renderChart('pieChart_status', this.dataTable_status, [
           '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-        ]);
+        ]); */
 
       // 🔹 Grafik tambahan
-      this.renderLineChart();
+      /* this.renderLineChart();
       this.renderBarChart();
       this.renderFunnelChart();
       this.renderSudahChart();
-
+ */
       // 🔹 Simpan hasil awal
       if (this.tipeMenu === 'anak') {
         this.filteredData = [...this.children];

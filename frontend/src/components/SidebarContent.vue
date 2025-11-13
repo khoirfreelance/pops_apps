@@ -2,7 +2,12 @@
   <div :class="['sidebar-container', isCollapsed ? 'sidebar-collapsed' : '']">
     <!-- Menu List -->
     <ul class="nav flex-column mt-3 px-2">
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Beranda"
+        ref="tooltipItem"
+      >
         <router-link to="/admin" class="nav-link" :class="{ active: isActive('/admin') }">
           <i class="bi bi-house"></i>
           <span v-if="!isCollapsed">Beranda</span>
@@ -11,13 +16,23 @@
 
       <li class="menu-section mt-4" v-if="!isCollapsed">Menu</li>
       <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Gizi Anak"
+        ref="tooltipItem"
+      >
         <router-link to="/admin/anak" class="nav-link" :class="{ active: isActive('/admin/anak') }">
           <i class="fa-solid fa-baby"></i>
           <span v-if="!isCollapsed">Gizi Anak</span>
         </router-link>
       </li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Ibu Hamil"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/hamil"
           class="nav-link"
@@ -27,7 +42,12 @@
           <span v-if="!isCollapsed">Ibu Hamil</span>
         </router-link>
       </li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Calon Pengantin"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/catin"
           class="nav-link"
@@ -37,19 +57,14 @@
           <span v-if="!isCollapsed">Calon Pengantin</span>
         </router-link>
       </li>
-      <li>
-        <router-link
-          to="/admin/jadwal"
-          class="nav-link"
-          :class="{ active: isActive('/admin/jadwal') }"
-        >
-          <i class="bi bi-calendar-check"></i>
-          <span v-if="!isCollapsed">Jadwal Intervensi</span>
-        </router-link>
-      </li>
       <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li class="menu-section mt-4" v-if="!isCollapsed">Master Data</li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Import"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/import"
           class="nav-link"
@@ -59,7 +74,27 @@
           <span v-if="!isCollapsed"> Import</span>
         </router-link>
       </li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Intervensi"
+        ref="tooltipItem"
+      >
+        <router-link
+          to="/admin/jadwal"
+          class="nav-link"
+          :class="{ active: isActive('/admin/jadwal') }"
+        >
+          <i class="bi bi-calendar-check"></i>
+          <span v-if="!isCollapsed">Intervensi</span>
+        </router-link>
+      </li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Keluarga"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/keluarga"
           class="nav-link"
@@ -69,7 +104,12 @@
           <span v-if="!isCollapsed">Keluarga</span>
         </router-link>
       </li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Admin / Kader"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/kader"
           class="nav-link"
@@ -79,7 +119,12 @@
           <span v-if="!isCollapsed">Admin / Kader</span>
         </router-link>
       </li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Keanggotaan TPK"
+        ref="tooltipItem"
+      >
         <router-link to="/admin/tpk" class="nav-link" :class="{ active: isActive('/admin/tpk') }">
           <i class="bi bi-person-vcard"></i>
           <span v-if="!isCollapsed">Keanggotaan TPK</span>
@@ -87,7 +132,12 @@
       </li>
       <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li class="menu-section mt-4" v-if="!isCollapsed">Administrator</li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Konfigurasi"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/config"
           class="nav-link"
@@ -97,7 +147,12 @@
           <span v-if="!isCollapsed">Konfigurasi</span>
         </router-link>
       </li>
-      <li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Log"
+        ref="tooltipItem"
+      >
         <router-link
           to="/admin/log"
           class="nav-link"

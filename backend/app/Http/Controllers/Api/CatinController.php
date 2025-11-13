@@ -23,112 +23,67 @@ class CatinController extends Controller
     {
         $user = Auth::user();
 
-        $wilayah = [
-            'kelurahan' => $user->kelurahan ?? null,
-            'kecamatan' => $user->kecamatan ?? null,
-            'kota' => $user->kota ?? null,
-            'provinsi' => $user->provinsi ?? null,
-        ];
+        // ✅ 1. Cari data anggota_tpk user
+        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+
+        if (!$anggotaTPK) {
+            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        }
+
+        // ✅ 2. Ambil posyandu dan wilayah
+        $posyandu = $anggotaTPK->posyandu;
+        $wilayah = $posyandu?->wilayah;
 
         $query = Catin::query();
 
-        // ✅ Filter wilayah otomatis
-        if (!empty($wilayah['kelurahan'])) {
-            $query->where('kelurahan', $wilayah['kelurahan']);
+        if (!$wilayah) {
+            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
 
-        // ✅ Filter berdasarkan periode (format: "Juni 2025" dalam Bahasa Indonesia)
-        if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-            // Daftar bulan dalam Bahasa Indonesia
-            $bulanMap = [
-                'januari' => 1,
-                'februari' => 2,
-                'maret' => 3,
-                'april' => 4,
-                'mei' => 5,
-                'juni' => 6,
-                'juli' => 7,
-                'agustus' => 8,
-                'september' => 9,
-                'oktober' => 10,
-                'november' => 11,
-                'desember' => 12,
-            ];
+        // ✅ 3. Dapatkan kelurahan user
+        $filterKelurahan = $wilayah->kelurahan ?? null;
 
-            // Fungsi bantu untuk konversi teks ke tanggal
-            $parsePeriode = function ($periode) use ($bulanMap) {
-                $parts = explode(' ', trim(strtolower($periode))); // ex: ["maret", "2025"]
-                if (count($parts) === 2 && isset($bulanMap[$parts[0]])) {
-                    $bulan = $bulanMap[$parts[0]];
-                    $tahun = (int) $parts[1];
-                    return Carbon::createFromDate($tahun, $bulan, 1);
-                }
-                // fallback: coba parse langsung
-                return Carbon::createFromDate($tahun, $bulan, 1);
-            };
+        // ✅ Selalu filter berdasar wilayah user (default)
+        if ($filterKelurahan) {
+            $query->where('kelurahan', $filterKelurahan);
+        }
+        // ✅ Filter tambahan dari frontend
+        if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw')) $query->where('rw', $request->rw);
+        if ($request->filled('rt')) $query->where('rt', $request->rt);
 
-            $start = $parsePeriode($request->periodeAwal)->startOfMonth()->format('Y-m-d');
-            $end = $parsePeriode($request->periodeAkhir)->endOfMonth()->format('Y-m-d');
+        if (!$request->filled('periode')) {
+            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+                $periodeAwal = $this->parseBulanTahun($request->periodeAwal);
+                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
 
-            $query->whereBetween('tanggal_pendampingan', [$start, $end]);
+                $query->whereBetween('tanggal_pendampingan', [
+                    $periodeAwal->format('Y-m-d'),
+                    $periodeAkhir->format('Y-m-d'),
+                ]);
+            }
+        }else {
+            // filter dari dashboard
+            if ($request->filled('periode')) {
+                $periode = $this->parseBulanTahun($request->periode);
+                $query->whereBetween('tanggal_pendampingan', [
+                    $periode->format('Y-m-d'),
+                ]);
+            }
         }
 
-        // ✅ Filter status (KEK, Anemia, Risiko ≠ Normal)
-        if ($request->filled('status') && is_array($request->status)) {
-            $query->where(function ($q) use ($request) {
-                foreach ($request->status as $status) {
-                    $statusLower = strtolower($status);
-                    if (str_contains($statusLower, 'kek')) {
-                        $q->orWhere('status_kek', 'like', '%kek%');
-                    } elseif (str_contains($statusLower, 'anemia')) {
-                        $q->orWhere('status_hb', 'like', '%anemia%');
-                    } elseif (str_contains($statusLower, 'risiko')) {
-                        $q->orWhere(function ($sub) {
-                            $sub->where('status_risiko', 'not like', '%normal%')
-                                ->orWhereNull('status_risiko');
-                        });
-                    }
-                }
-            });
-        }
-
-        // ✅ Filter usia ibu
-        if ($request->filled('usia') && is_array($request->usia)) {
-            $query->where(function ($q) use ($request) {
-                foreach ($request->usia as $range) {
-                    $range = trim($range);
-                    if ($range === '<20') {
-                        $q->orWhere('usia_perempuan', '<', 20);
-                    } elseif ($range === '>40') {
-                        $q->orWhere('usia_perempuan', '>', 40);
-                    } elseif (str_contains($range, '-')) {
-                        [$min, $max] = explode('-', $range);
-                        $q->orWhereBetween('usia_perempuan', [(int)$min, (int)$max]);
-                    }
-                }
-            });
-        }
-
-        // ✅ Ambil data
-        $data = $query->orderByDesc('tanggal_pendampingan')->get();
-
-        if ($data->isEmpty()) {
-            return response()->json([
-                'message' => 'Tidak ada data catin ditemukan.',
-                'data' => [],
-            ], 200);
-        }
+        $data = $query->get();
 
         // ✅ Group data per ibu
-        $grouped = $data->groupBy('nik_perempuan')->map(function ($group) {
+        $groupedData = $data->groupBy('nik_perempuan')->map(function ($group) {
             $latest = $group->sortByDesc('tanggal_pendampingan')->first();
             $riwayat = $group->sortBy('tanggal_pendampingan')->map(function ($g) {
                 return [
                     'tanggal_pendampingan' => $g->tanggal_pendampingan,
                     'berat_perempuan' => $g->berat_perempuan,
                     'tinggi_perempuan' => $g->tinggi_perempuan,
-                    'imt' => $g->imt,
-                    'hb_perempuan  ' => $g->hb_perempuan,
+                    'imt' => $g->imt_perempuan,
+                    'hb_perempuan' => $g->hb_perempuan,
                     'status_hb' => $g->status_hb,
                     'lila_perempuan' => $g->lila_perempuan,
                     'status_kek' => $g->status_kek,
@@ -136,29 +91,111 @@ class CatinController extends Controller
                     'status_risiko' => $g->status_risiko
                 ];
             })->values();
-
+            $seluruh_riwayat = $group->sortByDesc('tanggal_pendampingan')->values();
             return [
                 'nama_perempuan' => $latest->nama_perempuan,
                 'nama_laki' => $latest->nama_laki,
                 'usia_perempuan' => $latest->usia_perempuan,
-                'usia_laki' => $latest->nik_laki,
+                'usia_laki' => $latest->usia_laki,
                 'pekerjaan_perempuan' => $latest->pekerjaan_perempuan,
                 'pekerjaan_laki' => $latest->pekerjaan_laki,
                 'posyandu' => $latest->posyandu,
+                'provinsi' => $latest->provinsi,
+                'kota' => $latest->kota,
+                'kecamatan' => $latest->kecamatan,
+                'kelurahan' => $latest->kelurahan,
                 'rt' => $latest->rt,
                 'rw' => $latest->rw,
-                'tgl_menikah' => $latest->tgl_menikah,
+                'tgl_menikah' => $latest->tanggal_rencana_menikah,
                 'riwayat_penyakit' => $latest->riwayat_penyakit,
                 'sumber_air_bersih' => $latest->sumber_air_bersih,
-                'jamban_sehat' => $latest->jamban_sehat,
+                'jamban_sehat' => $latest->menggunakan_jamban,
                 'riwayat_pemeriksaan' => $riwayat,
+                'riwayat_catin' => $seluruh_riwayat,
             ];
         });
 
+        // ✅ Filter usia_perempuan
+        if ($request->filled('usia') && is_array($request->usia)) {
+            $groupedData = $groupedData->filter(function ($item) use ($request) {
+                // pastikan bisa akses baik dari object maupun array
+                $usia = is_array($item) ? ($item['usia_perempuan'] ?? null) : ($item->usia_perempuan ?? null);
+
+                foreach ($request->usia as $range) {
+                    $range = trim($range);
+                    if ($usia === null) continue;
+
+                    if ($range === '<20' && $usia < 20) return true;
+                    if ($range === '>40' && $usia > 40) return true;
+
+                    if (str_contains($range, '-')) {
+                        [$min, $max] = explode('-', $range);
+                        if ($usia >= (int)$min && $usia <= (int)$max) return true;
+                    }
+                }
+
+                return false;
+            });
+        }
+
+
+        // ✅ Filter status
+        if ($request->filled('status') && count($request->status)) {
+            $statuses = (array)$request->status;
+            $groupedData = $groupedData->filter(function ($item) use ($statuses) {
+                $latest = $item['riwayat_catin'][0] ?? null;
+                if (!$latest) return false;
+
+                foreach ($statuses as $status) {
+                    $s = strtolower($status);
+                    if ($s === 'risiko') {
+                        return str_contains(strtolower($latest['status_risiko'] ?? ''), 'risiko');
+                    } else {
+                        return str_contains(strtolower($latest['status_risiko'] ?? ''), $s);
+                    }
+                }
+                return false;
+            });
+        }
+
+
         return response()->json([
             'success' => true,
-            'data' => $data,
+            'data' => $groupedData,
+
         ]);
+    }
+
+    private function parseBulanTahun(string $periode, bool $akhirBulan = false): \Carbon\Carbon
+    {
+        // Daftar bulan dalam Bahasa Indonesia
+        $bulanMap = [
+            'januari' => 1,
+            'februari' => 2,
+            'maret' => 3,
+            'april' => 4,
+            'mei' => 5,
+            'juni' => 6,
+            'juli' => 7,
+            'agustus' => 8,
+            'september' => 9,
+            'oktober' => 10,
+            'november' => 11,
+            'desember' => 12,
+        ];
+
+        $parts = explode(' ', trim(strtolower($periode))); // contoh: ["maret", "2025"]
+
+        if (count($parts) === 2 && isset($bulanMap[$parts[0]])) {
+            $bulan = $bulanMap[$parts[0]];
+            $tahun = (int) $parts[1];
+
+            $date = \Carbon\Carbon::createFromDate($tahun, $bulan, 1);
+            return $akhirBulan ? $date->endOfMonth() : $date->startOfMonth();
+        }
+
+        // fallback jika format salah
+        return \Carbon\Carbon::now();
     }
 
     public function show($id)
@@ -171,148 +208,6 @@ class CatinController extends Controller
 
         return response()->json(['success' => true, 'data' => $data]);
     }
-
-    /* public function import(Request $request)
-    {
-        // ✅ Validasi file Excel
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120', // bisa Excel atau CSV
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $file = $request->file('file');
-        if (!$file->isValid()) {
-            return response()->json(['message' => 'File tidak valid.'], 400);
-        }
-
-        try {
-            $spreadsheet = IOFactory::load($file->getRealPath());
-            $sheet = $spreadsheet->getActiveSheet();
-            $rows = [];
-            $count = 0;
-
-            $data = $sheet->toArray(null, true, true, true);
-            $headerSkipped = false;
-
-            foreach ($data as $row) {
-                // Skip header
-                if (!$headerSkipped) {
-                    $headerSkipped = true;
-                    continue;
-                }
-
-                if (empty($row['A'])) continue;
-                $count++;
-
-                $rows[] = [
-                    'nama_petugas' => $row['A'] ?? null,
-                    'tanggal_pendampingan' => $this->convertDate($row['B'] ?? null),
-
-                    'nama_perempuan' => $row['C'] ?? null,
-                    'nik_perempuan' => $row['D'] ?? null,
-                    'pekerjaan_perempuan' => $row['E'] ?? null,
-                    'usia_perempuan' => $row['F'] ?? null,
-                    'hp_perempuan' => $row['G'] ?? null,
-
-                    'nama_laki' => $row['H'] ?? null,
-                    'nik_laki' => $row['I'] ?? null,
-                    'pekerjaan_laki' => $row['J'] ?? null,
-                    'usia_laki' => $row['K'] ?? null,
-                    'hp_laki' => $row['L'] ?? null,
-
-                    'pernikahan_ke' => $row['M'] ?? null,
-
-                    'provinsi' => $row['N'] ?? null,
-                    'kota' => $row['O'] ?? null,
-                    'kecamatan' => $row['P'] ?? null,
-                    'kelurahan' => $row['Q'] ?? null,
-                    'rw' => $row['R'] ?? null,
-                    'rt' => $row['S'] ?? null,
-                    'posyandu' => $row['T'] ?? null,
-
-                    'tanggal_pemeriksaan' => $this->convertDate($row['U'] ?? null),
-                    'berat_perempuan' => $row['V'] ?? null,
-                    'tinggi_perempuan' => $row['W'] ?? null,
-                    'hb_perempuan' => $row['X'] ?? null,
-                    'lila_perempuan' => $row['Y'] ?? null,
-
-                    'terpapar_rokok' => $this->toBool($row['Z'] ?? null),
-                    'mendapat_ttd' => $this->toBool($row['AA'] ?? null),
-                    'menggunakan_jamban' => $this->toBool($row['AB'] ?? null),
-                    'sumber_air_bersih' => $this->toBool($row['AC'] ?? null),
-                    'punya_riwayat_penyakit' => $this->toBool($row['AD'] ?? null),
-                    'riwayat_penyakit' => $row['AE'] ?? null,
-                    'mendapat_fasilitas_rujukan' => $this->toBool($row['AF'] ?? null),
-                    'mendapat_kie' => $this->toBool($row['AG'] ?? null),
-                    'mendapat_bantuan_pmt' => $this->toBool($row['AH'] ?? null),
-
-                    'tanggal_rencana_menikah' => $this->convertDate($row['AI'] ?? null),
-                    'rencana_tinggal' => $row['AJ'] ?? null,
-                ];
-            }
-
-            if (empty($rows)) {
-                return response()->json(['message' => 'Tidak ada data untuk diimport'], 400);
-            }
-
-            // ✅ Simpan ke DB
-            DB::beginTransaction();
-            foreach ($rows as $row) {
-                $imt = $this->hitungIMT($row['berat_perempuan'], $row['tinggi_perempuan']);
-                $status_kek = $this->statusKEK($row['lila_perempuan']);
-                $status_hb = $this->statusHB($row['hb_perempuan']);
-                $status_risiko = $this->statusRisiko($row['usia_perempuan'], $row['usia_laki']);
-
-                $catin = Catin::create(array_merge($row, [
-                    'imt_perempuan' => $imt,
-                    'status_kek' => $status_kek,
-                    'status_hb' => $status_hb,
-                    'status_risiko' => $status_risiko,
-                ]));
-
-                $wilayah = Wilayah::firstOrCreate([
-                    'provinsi' => $row['provinsi'],
-                    'kota' => $row['kota'],
-                    'kecamatan' => $row['kecamatan'],
-                    'kelurahan' => $row['kelurahan'],
-                ]);
-
-                Posyandu::firstOrCreate([
-                    'nama_posyandu' => $row['posyandu'] ?? '-',
-                    'id_wilayah' => $wilayah->id,
-                    'rt' => $row['rt'] ?? null,
-                    'rw' => $row['rw'] ?? null,
-                ]);
-
-                Log::create([
-                    'id_user'   => Auth::id(),
-                    'context'   => 'Catin',
-                    'activity'  => 'Import data calon pengantin ' . ($row['nama_perempuan'] ?? '-'),
-                    'timestamp' => now(),
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'message' => "Berhasil import {$count} data calon pengantin",
-                'count' => $count,
-            ], 200);
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Gagal import data',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    } */
 
     public function import(Request $request)
     {
@@ -516,19 +411,30 @@ class CatinController extends Controller
         try {
             $user = Auth::user();
 
-            // ✅ Wilayah user
-            $wilayah = [
-                'kelurahan' => $user->kelurahan ?? null,
-                'kecamatan' => $user->kecamatan ?? null,
-                'kota' => $user->kota ?? null,
-                'provinsi' => $user->provinsi ?? null,
-            ];
+            // ✅ 1. Cari data anggota_tpk user
+            $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+
+            if (!$anggotaTPK) {
+                return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+            }
+
+            // ✅ 2. Ambil posyandu dan wilayah
+            $posyandu = $anggotaTPK->posyandu;
+            $wilayah = $posyandu?->wilayah;
 
             $query = Catin::query();
 
-            // ✅ Filter berdasar wilayah user (default)
-            if (!empty($wilayah['kelurahan'])) {
-                $query->where('kelurahan', $wilayah['kelurahan']);
+            if (!$wilayah) {
+                return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+            }
+
+            // ✅ 3. Dapatkan kelurahan user
+            $filterKelurahan = $wilayah->kelurahan ?? null;
+
+            $query = Catin::query();
+            // ✅ Selalu filter berdasar wilayah user (default)
+            if ($filterKelurahan) {
+                $query->where('kelurahan', $filterKelurahan);
             }
 
             // ✅ Filter tambahan dari frontend
@@ -536,36 +442,59 @@ class CatinController extends Controller
             if ($request->filled('rw')) $query->where('rw', $request->rw);
             if ($request->filled('rt')) $query->where('rt', $request->rt);
 
-            if (!$request->filled('periode')) {
-                if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                    $periodeAwal = $this->parseBulanTahun($request->periodeAwal);
-                    $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+                $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
+                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
 
-                    $query->whereBetween('tanggal_pendampingan', [
-                        $periodeAwal->format('Y-m-d'),
-                        $periodeAkhir->format('Y-m-d'),
-                    ]);
-                }
-            }else {
-                // filter dari dashboard
-                if ($request->filled('periode')) {
-                    $periode = $this->parseBulanTahun($request->periode);
-                    $query->whereBetween('tanggal_pendampingan', [
-                        $periode->format('Y-m-d'),
-                    ]);
-                }
+                $query->whereBetween('tanggal_pendampingan', [
+                    $periodeAwal->format('Y-m-d'),
+                    $periodeAkhir->format('Y-m-d'),
+                ]);
+            } elseif ($request->filled('periode')) {
+                $periode = $this->parseBulanTahun($request->periode);
+                $query->whereBetween('tanggal_pendampingan', [
+                    $periode->copy()->startOfMonth()->format('Y-m-d'),
+                    $periode->copy()->endOfMonth()->format('Y-m-d'),
+                ]);
             }
 
             // ✅ Ambil data
             $data = $query->get();
 
             if ($data->isEmpty()) {
+                // tetap generate hasil kosong tapi lengkap
+                $count = [
+                    'Anemia' => 0,
+                    'KEK' => 0,
+                    'Berisiko' => 0,
+                    'Total Berisiko' => 0,
+                    'Total Catin' => 0,
+                ];
+
+                $result = [];
+                foreach ($count as $key => $val) {
+                    $percent = 0;
+                    $result[] = [
+                        'title' => $key,
+                        'value' => $val,
+                        'percent' => $percent,
+                        'color' => match ($key) {
+                            'KEK' => 'danger',
+                            'Anemia' => 'warning',
+                            'Berisiko' => 'violet',
+                            'Total Berisiko' => 'dark',
+                            default => 'secondary'
+                        }
+                    ];
+                }
+
                 return response()->json([
                     'total' => 0,
-                    'counts' => [],
+                    'counts' => $result,
                     'kelurahan' => $wilayah['kelurahan'] ?? '-',
                 ]);
             }
+
 
             // ✅ Group by nik_perempuan, ambil record terakhir
             $grouped = $data->groupBy('nik_perempuan')->map(fn($group) =>
@@ -576,7 +505,7 @@ class CatinController extends Controller
             $total = $groupedData->count();
 
             // ✅ Filter usia_perempuan
-            if ($request->filled('usia_perempuan') && is_array($request->usia)) {
+            if ($request->filled('usia') && is_array($request->usia)) {
                 $groupedData = $groupedData->filter(function ($item) use ($request) {
                     foreach ($request->usia as $range) {
                         $range = trim($range);
@@ -585,18 +514,6 @@ class CatinController extends Controller
                         if (str_contains($range, '-')) {
                             [$min, $max] = explode('-', $range);
                             if ($item->usia_perempuan >= (int)$min && $item->usia_perempuan <= (int)$max) return true;
-                        }
-                    }
-                    return false;
-                });
-            }
-
-            // ✅ Filter intervensi
-            if ($request->filled('intervensi') && is_array($request->intervensi)) {
-                $groupedData = $groupedData->filter(function ($item) use ($request) {
-                    foreach ($request->intervensi as $val) {
-                        if (str_contains(strtolower($item->intervensi ?? ''), strtolower($val))) {
-                            return true;
                         }
                     }
                     return false;

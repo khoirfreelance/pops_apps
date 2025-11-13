@@ -52,7 +52,7 @@ body {
   font-size: $font-size-base;
   line-height: $line-height-base;
   color: #212529;
-  background-color: #fff;
+  background-color: #dfede8;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -95,6 +95,11 @@ small {
   /* font-size: 1.75rem; */
   color: #fff;
   letter-spacing: 0.04em; // 🔹 spasi antar huruf seperti gambar kedua
+}
+.btn-img{
+  background-image: url('/assets/btn.png');
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .btn-outline-additional2 {

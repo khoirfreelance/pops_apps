@@ -29,7 +29,11 @@ Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWi
 // Children Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('children', ChildrenController::class)->only(['index']);
-    Route::post('/children/import', [ChildrenController::class, 'import']);
+    Route::get('/children/status', [ChildrenController::class, 'status']);
+    Route::get('/children/index_kunjungan', [ChildrenController::class, 'kunjungan']);
+    Route::post('/children/import_kunjungan', [ChildrenController::class, 'import_kunjungan']);
+    Route::post('/children/import_pendampingan', [ChildrenController::class, 'import_pendampingan']);
+    Route::post('/children/import_intervensi', [ChildrenController::class, 'import_intervensi']);
 });
 
 // Family Endpoint
@@ -95,6 +99,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Pregnancy Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/pregnancy/import', [PregnancyController::class, 'import']);
+    Route::post('/pregnancy/import_intervensi', [PregnancyController::class, 'import_intervensi']);
     Route::get('/pregnancy', [PregnancyController::class, 'index']);
     Route::get('/pregnancy/status', [PregnancyController::class, 'status']);
     Route::get('/pregnancy/tren', [PregnancyController::class, 'tren']);

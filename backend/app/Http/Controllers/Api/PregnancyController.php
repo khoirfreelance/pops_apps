@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Pregnancy;
+use App\Models\Intervensi;
 use Carbon\Carbon;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
@@ -201,10 +202,8 @@ class PregnancyController extends Controller
         $count = 0;
 
         while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            // Lewati baris kosong
             if (empty($data[0])) continue;
 
-            // Baris pertama dianggap header
             if (!$header) {
                 $header = $data;
                 continue;
@@ -212,13 +211,52 @@ class PregnancyController extends Controller
 
             $count++;
 
+            // ✅ Ambil nilai mentah
+            $usia_ibu = floatval($data[4] ?? 0);
+            $tinggi_badan = $this->sanitizeNumeric($data[23] ?? 0);
+            $hb = $this->sanitizeNumeric($data[24] ?? 0);
+            $lila = $this->sanitizeNumeric($data[25] ?? 0);
+            $riwayat_4t = strtolower(trim($data[12] ?? ''));
+
+            // ✅ 1. Status Gizi LILA
+            // Berdasarkan Kemenkes: KEK jika LILA < 23.5 cm
+            $status_lila = null;
+            if ($lila > 0) {
+                $status_lila = ($lila < 23.5) ? 'KEK' : 'Normal';
+            }
+
+            // ✅ 2. Status Gizi Hb
+            // Berdasarkan WHO: anemia jika Hb < 11 g/dL
+            $status_hb = null;
+            if ($hb > 0) {
+                $status_hb = ($hb < 11) ? 'Anemia' : 'Normal';
+            }
+
+            // ✅ 3. Status Risiko Usia (berdasarkan 4T)
+           $status_risiko_final = ($usia_ibu < 20 || $usia_ibu > 35)
+            ? 'Berisiko (usia tidak ideal)'
+            : 'Tidak berisiko (usia ideal)';
+
+            $tinggi_badan = floatval(preg_replace('/[^0-9.]/', '', $data[23] ?? 0));
+
+            // Jika nilainya terlalu besar (misal 15512 cm, harusnya 155)
+            if ($tinggi_badan > 300) {
+                $tinggi_badan = $tinggi_badan / 100; // ubah ke cm realistis
+            }
+
+            // Hindari nilai tidak wajar
+            if ($tinggi_badan < 50 || $tinggi_badan > 250) {
+                $tinggi_badan = null;
+            }
+
+
             // ✅ Mapping kolom CSV ke field sesuai model Pregnancy
             $rows[] = [
                 'nama_petugas' => $data[0] ?? null,
                 'tanggal_pendampingan' => $this->convertDate($data[1] ?? null),
                 'nama_ibu' => $data[2] ?? null,
                 'nik_ibu' => $data[3] ?? null,
-                'usia_ibu' => $data[4] ?? null,
+                'usia_ibu' => $usia_ibu ?: null,
                 'nama_suami' => $data[5] ?? null,
                 'nik_suami' => $data[6] ?? null,
                 'pekerjaan_suami' => $data[7] ?? null,
@@ -237,41 +275,40 @@ class PregnancyController extends Controller
                 'rw' => $data[20] ?? null,
                 'tanggal_pemeriksaan_terakhir' => $this->convertDate($data[21] ?? null),
                 'berat_badan' => $data[22] ?? null,
-                'tinggi_badan' => $data[23] ?? null,
-                'imt' => $data[24] ?? null,
-                'kadar_hb' => $data[25] ?? null,
-                'status_gizi_hb' => $data[26] ?? null,
-                'lila' => $data[27] ?? null,
-                'status_gizi_lila' => $data[28] ?? null,
-                'riwayat_penyakit' => $data[29] ?? null,
-                'usia_kehamilan_minggu' => $data[30] ?? null,
-                'taksiran_berat_janin' => $data[31] ?? null,
-                'tinggi_fundus' => $data[32] ?? null,
-                'hpl' => $this->convertDate($data[33] ?? null),
-                'terpapar_asap_rokok' => $data[34] ?? null,
-                'mendapat_ttd' => $data[35] ?? null,
-                'menggunakan_jamban' => $data[36] ?? null,
-                'menggunakan_sab' => $data[37] ?? null,
-                'fasilitas_rujukan' => $data[38] ?? null,
-                'riwayat_keguguran_iufd' => $data[39] ?? null,
-                'mendapat_kie' => $data[40] ?? null,
-                'mendapat_bantuan_sosial' => $data[41] ?? null,
-                'rencana_tempat_melahirkan' => $data[42] ?? null,
-                'rencana_asi_eksklusif' => $data[43] ?? null,
-                'rencana_tinggal_setelah' => $data[44] ?? null,
-                'rencana_kontrasepsi' => $data[45] ?? null,
-                'posyandu' => $data[46] ?? null,
+                'tinggi_badan' => $data[23] ?? null,'tinggi_badan' => $tinggi_badan,
+                'kadar_hb' => $hb ?: null,
+                'status_gizi_hb' => $status_hb,
+                'lila' => $lila ?: null,
+                'status_gizi_lila' => $status_lila,
+                'status_risiko_usia' => $status_risiko_final,
+                'riwayat_penyakit' => $data[26] ?? null,
+                'usia_kehamilan_minggu' => intval($data[27] ?? 0),
+                'taksiran_berat_janin' => $data[28] ?? null,
+                'tinggi_fundus' => $data[29] ?? null,
+                'hpl' => $this->convertDate($data[30] ?? null),
+                'terpapar_asap_rokok' => $data[31] ?? null,
+                'mendapat_ttd' => $data[32] ?? null,
+                'menggunakan_jamban' => $data[33] ?? null,
+                'menggunakan_sab' => $data[34] ?? null,
+                'fasilitas_rujukan' => $data[35] ?? null,
+                'riwayat_keguguran_iufd' => $data[36] ?? null,
+                'mendapat_kie' => $data[37] ?? null,
+                'mendapat_bantuan_sosial' => $data[38] ?? null,
+                'rencana_tempat_melahirkan' => $data[39] ?? null,
+                'rencana_asi_eksklusif' => $data[40] ?? null,
+                'rencana_tinggal_setelah' => $data[41] ?? null,
+                'rencana_kontrasepsi' => $data[42] ?? null,
+                'posyandu' => $data[44] ?? null,
             ];
         }
 
         fclose($handle);
 
-        // ✅ Simpan ke DB (pakai insert batch)
+        // ✅ Simpan ke DB
         if (!empty($rows)) {
             foreach ($rows as $row) {
                 Pregnancy::create($row);
 
-                // ✅ Simpan atau ambil wilayah
                 $wilayah = \App\Models\Wilayah::firstOrCreate([
                     'provinsi' => $row['provinsi'],
                     'kota' => $row['kota'],
@@ -279,18 +316,17 @@ class PregnancyController extends Controller
                     'kelurahan' => $row['kelurahan'],
                 ]);
 
-                $posyandu = \App\Models\Posyandu::firstOrCreate([
-                    'nama_posyandu' => $row['posyandu']?? '-',
+                \App\Models\Posyandu::firstOrCreate([
+                    'nama_posyandu' => $row['posyandu'] ?? '-',
                     'id_wilayah' => $wilayah->id,
                     'rt' => $row['rt'] ?? null,
                     'rw' => $row['rw'] ?? null,
                 ]);
 
-                // ✅ Log tiap baris (optional, bisa dihapus kalau terlalu banyak)
                 Log::create([
-                    'id_user'   => Auth::id(),
-                    'context'   => 'Ibu Hamil',
-                    'activity'  => 'Import data kehamilan ibu ' . ($row['nama_ibu'] ?? '-'),
+                    'id_user' => Auth::id(),
+                    'context' => 'Ibu Hamil',
+                    'activity' => 'Import data kehamilan ibu ' . ($row['nama_ibu'] ?? '-'),
                     'timestamp' => now(),
                 ]);
             }
@@ -300,7 +336,86 @@ class PregnancyController extends Controller
             'message' => "Berhasil import {$count} data kehamilan",
             'count' => $count,
         ], 200);
+
+
     }
+
+    // Tambahkan fungsi helper di dalam class
+    private function sanitizeNumeric($value)
+    {
+        // Hapus semua karakter kecuali angka, koma, titik
+        $clean = preg_replace('/[^0-9.,]/', '', $value);
+
+        // Ganti koma jadi titik
+        $clean = str_replace(',', '.', $clean);
+
+        // Hapus titik ganda atau salah posisi
+        $clean = preg_replace('/\.{2,}/', '.', $clean);
+
+        return is_numeric($clean) ? floatval($clean) : null;
+    }
+
+    public function import_intervensi(Request $request)
+    {
+        if (!$request->hasFile('file')) {
+            return response()->json(['message' => 'Tidak ada file yang diunggah'], 400);
+        }
+
+        $file = $request->file('file');
+        $path = $file->getRealPath();
+        $handle = fopen($path, 'r');
+
+        $rows = [];
+        $count = 0;
+
+        while (($row = fgetcsv($handle, 1000, ',', '"')) !== false) {
+            // Lewati baris kosong atau header
+            if ($count === 0 && str_contains(strtolower($row[0]), 'petugas')) {
+                $count++;
+                continue;
+            }
+            if (empty($row[0]) && empty($row[3])) continue;
+
+            if (count($row) < 16) {
+                \Log::warning('Baris CSV tidak lengkap:', $row);
+                continue;
+            }
+
+            Intervensi::create([
+                'petugas'           => $row[0] ?? null,
+                'tgl_intervensi'    => isset($row[1]) ? date('Y-m-d', strtotime($row[1])) : null,
+                'desa'              => $row[2] ?? null,
+                'nama_subjek'         => $row[3] ?? null,
+                'nik_subjek'          => $row[4] ?? null,
+                'status_subjek'       => 'bumil',
+                'jk'                => $row[5] ?? null,
+                'tgl_lahir'         => isset($row[6]) ? date('Y-m-d', strtotime($row[6])) : null,
+                'umur_subjek' => !empty($row[7]) ? $row[7] : floor($this->hitungUmurTahun(trim($row[6]), trim($row[1]))) . ' Tahun',
+                'nama_wali'    => $row[8] ?? null,
+                'nik_wali'     => $row[9] ?? null,
+                'status_wali'  => $row[10] ?? null,
+                'rt'                => $row[11] ?? null,
+                'rw'                => $row[12] ?? null,
+                'posyandu'          => $row[13] ?? null,
+                'bantuan'           => $row[14] ?? null,
+                'kategori'          => $row[15] ?? null,
+            ]);
+
+            $count++;
+        }
+
+        fclose($handle);
+
+        return response()->json(['message' => "Berhasil impor {$count} data intervensi.", 'data'=>$rows]);
+    }
+
+    /** Hitung umur (tahun) */
+    private function hitungUmurTahun($tglLahir, $tglUkur)
+    {
+        if (!$tglLahir || !$tglUkur) return null;
+        return Carbon::parse($tglLahir)->diffInYears(Carbon::parse($tglUkur));
+    }
+
 
     private function convertDate($date)
     {

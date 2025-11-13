@@ -51,12 +51,12 @@
                 :key="key"
                 class="col-xl-2 col-lg-3 col-md-4 col-sm-4 col-6 position-relative"
               >
-              <label
-                v-if="filter.filter"
-                class="text-primary"
-              >
-                {{ filter.filter }}
-              </label>
+                <label
+                  v-if="filter.filter"
+                  class="text-primary"
+                >
+                  {{ filter.filter }}
+                </label>
                 <div class="dropdown w-100">
                   <button
                     class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
@@ -143,14 +143,14 @@
               </div>
 
               <!-- Periode -->
-              <div class="col-md-6 text-center">
+              <div class="col-xl-6 col-lg-6 col-md-6 col-sm-8 col-12 text-center">
                 <label for="filter" class="text-primary"> Filter Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
-                  <select v-model="filters.periodeAwal" class="form-select text-muted">
+                  <select v-model="filters.periodeAwal" class="form-select text-muted w-100">
                     <option value="">Awal</option>
                     <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
                   </select>
-                  <select v-model="filters.periodeAkhir" class="form-select text-muted">
+                  <select v-model="filters.periodeAkhir" class="form-select text-muted w-100">
                     <option value="">Akhir</option>
                     <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
                   </select>
@@ -275,7 +275,7 @@
                     </table>
                   </div>
 
-                  <!-- Pagination -->
+                   <!-- Pagination -->
                   <nav>
                     <ul class="pagination justify-content-center">
                       <li class="page-item" :class="{ disabled: currentPage === 1 }">
@@ -284,11 +284,17 @@
 
                       <li
                         class="page-item"
-                        v-for="page in totalPages"
+                        v-for="page in visiblePages"
                         :key="page"
-                        :class="{ active: currentPage === page }"
+                        :class="{ active: currentPage === page, disabled: page === '...' }"
                       >
-                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                        <a
+                          v-if="page !== '...'"
+                          class="page-link"
+                          href="#"
+                          @click.prevent="changePage(page)"
+                        >{{ page }}</a>
+                        <span v-else class="page-link">...</span>
                       </li>
 
                       <li class="page-item" :class="{ disabled: currentPage === totalPages }">
@@ -699,14 +705,12 @@ export default {
     const perPage = ref(10)
     const sortKey = ref('')
     const sortDir = ref('asc')
-    const filteredBumil = ref([])
+    const filteredData = ref([])
 
     const applySearch = () => {
       const query = searchQuery.value.toLowerCase()
-      filteredBumil.value = window.bumil.filter((c) =>
-        Object.values(c).some((v) =>
-          String(v).toLowerCase().includes(query)
-        )
+      filteredData.value = window.bumil.filter((c) =>
+        Object.values(c).some((v) => String(v).toLowerCase().includes(query))
       )
       currentPage.value = 1
     }
@@ -718,7 +722,7 @@ export default {
         sortKey.value = key
         sortDir.value = 'asc'
       }
-      filteredBumil.value.sort((a, b) => {
+      filteredData.value.sort((a, b) => {
         if (a[key] < b[key]) return sortDir.value === 'asc' ? -1 : 1
         if (a[key] > b[key]) return sortDir.value === 'asc' ? 1 : -1
         return 0
@@ -726,24 +730,46 @@ export default {
     }
 
     const totalPages = computed(() =>
-      Math.ceil(filteredBumil.value.length / perPage.value)
+      Math.ceil(filteredData.value.length / perPage.value)
     )
 
     const paginatedData = computed(() => {
       const start = (currentPage.value - 1) * perPage.value
       const end = start + perPage.value
-      return filteredBumil.value.slice(start, end)
+      return filteredData.value.slice(start, end)
     })
 
+    const visiblePages = computed(() => {
+      const pages = []
+      const total = totalPages.value
+      const current = currentPage.value
+
+      if (total <= 4) {
+        for (let i = 1; i <= total; i++) pages.push(i)
+      } else if (current <= 2) {
+        // Halaman awal
+        pages.push(1, 2, 3, '...', total)
+      } else if (current >= total - 1) {
+        // Halaman akhir
+        pages.push(total - 2, total - 1, total)
+      } else {
+        // Tengah
+        pages.push(current - 1, current, current + 1, '...', total)
+      }
+
+      return pages
+    })
+
+
     const changePage = (page) => {
-      if (page < 1 || page > totalPages.value) return
+      if (page < 1 || page > totalPages.value || page === '...') return
       currentPage.value = page
     }
 
     return {
       searchQuery,
       // eslint-disable-next-line vue/no-dupe-keys
-      filteredBumil,
+      filteredData,
       currentPage,
       perPage,
       sortKey,
@@ -752,7 +778,8 @@ export default {
       paginatedData,
       applySearch,
       sortBy,
-      changePage
+      changePage,
+      visiblePages
     }
   },
   computed: {

@@ -1,7 +1,19 @@
 <template>
   <div class="wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
     <!-- Header -->
-    <HeaderAdmin/>
+    <HeaderAdmin />
 
     <div
       class="content flex-grow-1 d-flex flex-column flex-md-row"
@@ -11,304 +23,315 @@
       }"
     >
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"   />
 
-      <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Content -->
         <div class="py-4 container-fluid" >
 
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <h3>
-                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
-                  {{ username }}
-                </h3>
-                <img
-                  v-if="logoLoaded"
-                  :src="logoSrc"
-                  alt="Logo"
-                  height="50"
-                  class="mt-4"
-                  @error="logoLoaded = false"
-                />
-                <!-- jika gagal load logo, tampilkan kelurahan -->
-                <span
-                  v-else
-                  class="text-muted fw-bold fs-5 mt-4"
+          <Welcome />
+
+          <div class="container-fluid my-2 d-flex justify-content-center">
+            <ul
+              class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100"
+              id="myTab"
+              role="tablist"
+              style="max-width: 800px;"
+            >
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button
+                  class="nav-link active w-100 text-truncate"
+                  id="anak-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#anak-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="anak-tab-pane"
+                  aria-selected="true"
+                  @click="menu('anak')"
                 >
-                  {{ kelurahan || 'Wilayah' }}
-                </span>
-                <p class="small d-flex align-items-center mt-1">
-                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
-                </p>
+                  Gizi Anak
+                </button>
+              </li>
+
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button
+                  class="nav-link w-100 text-truncate"
+                  id="bumil-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#bumil-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="bumil-tab-pane"
+                  aria-selected="false"
+                  @click="menu('bumil')"
+                >
+                  Ibu Hamil
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="tab-content" id="myTabContent">
+            <!-- Import Anak -->
+            <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <label class="form-label fw-semibold">Upload Intervensi Anak</label>
+              <div class="alert alert-success">
+                <ul>
+                  <li>Pastikan data yang diimport, berformat csv</li>
+                  <li>Pastikan data sudah lengkap sebelum di import</li>
+                  <li>Silahkan unduh contoh dengan klik <a href="/example_intervensi_anak.csv">Example.csv</a></li>
+                </ul>
+              </div>
+              <div
+                class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                :class="{
+                  'border-primary bg-light': isDataDrag,
+                  'border-danger': fileError
+                }"
+                @click="triggerFileDialog"
+                @dragover.prevent="onDragOver"
+                @dragleave.prevent="onDragLeave"
+                @drop.prevent="handleDrop($event)"
+                role="button"
+                tabindex="0"
+                @keydown.enter.prevent="triggerFileDialog"
+                @keydown.space.prevent="triggerFileDialog"
+              >
+                <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                <small class="text-muted">atau klik untuk pilih file</small>
+
+                <!-- Invisible input (terikat ke parent relatif) -->
+                <input
+                  ref="fileInput"
+                  type="file"
+                  accept=".csv,text/csv"
+                  class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                  @change="handleFileChange($event)"
+                />
               </div>
 
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img
-                  src="/banner.png"
-                  alt="Welcome"
-                  class="img-fluid welcome-img"
-                  style="max-width: 280px"
-                />
+              <!-- Preview / status -->
+              <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div v-if="file">
+                  <div><strong>Nama:</strong> {{ fileName }}</div>
+                  <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                  <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
+                </div>
+
+                <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                <div class="d-flex gap-2">
+                  <button
+                    v-if="file && !uploading"
+                    class="btn btn-outline-danger btn-sm"
+                    @click="removeFile"
+                    type="button"
+                  >
+                    <i class="bi bi-trash me-1"></i> Hapus
+                  </button>
+
+                  <button
+                    v-if="file && !uploading"
+                    class="btn btn-success btn-sm"
+                    @click="uploadCSV"
+                    type="button"
+                  >
+                    <i class="bi bi-upload me-1"></i> Upload
+                  </button>
+
+                  <div v-if="uploading" class="d-flex align-items-center gap-2">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error message -->
+              <div v-if="fileError" class="mt-2 text-danger small">
+                {{ fileError }}
+              </div>
+                </div>
               </div>
             </div>
-          </div>
-
-          <!-- Kalender -->
-          <div class="container-fluid">
-            <div class="card modern-card my-4">
-              <div class="card-body">
-                <div class="moodle-calendar">
+            <!-- Import Bumil -->
+            <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <label class="form-label fw-semibold">Upload Intervensi Ibu Hamil (CSV)</label>
+                  <div class="alert alert-success">
+                    <ul>
+                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data sudah lengkap sebelum di import</li>
+                      <li>Silahkan unduh contoh dengan klik <a href="/example_intervensi_bumil.csv">Example.csv</a></li>
+                    </ul>
+                  </div>
                   <div
-                    class="calendar-header d-flex justify-content-between align-items-center mb-3"
+                    class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                    :class="{
+                      'border-primary bg-light': isDataDrag,
+                      'border-danger': fileError
+                    }"
+                    @click="triggerFileDialog"
+                    @dragover.prevent="onDragOver"
+                    @dragleave.prevent="onDragLeave"
+                    @drop.prevent="handleDrop($event)"
+                    role="button"
+                    tabindex="0"
+                    @keydown.enter.prevent="triggerFileDialog"
+                    @keydown.space.prevent="triggerFileDialog"
                   >
-                    <div class="d-flex gap-2 align-items-center">
-                      <button class="btn btn-sm btn-outline-primary" @click="prevMonth()">‹</button>
-                      <h4 class="mb-0">{{ monthYearLabel }}</h4>
-                      <button class="btn btn-sm btn-outline-primary" @click="nextMonth()">›</button>
+                    <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                    <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                    <small class="text-muted">atau klik untuk pilih file</small>
+
+                    <!-- Invisible input (terikat ke parent relatif) -->
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept=".csv,text/csv"
+                      class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                      @change="handleFileChange($event)"
+                    />
+                  </div>
+
+                  <!-- Preview / status -->
+                  <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div v-if="file">
+                      <div><strong>Nama:</strong> {{ fileName }}</div>
+                      <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                      <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
                     </div>
 
-                    <div>
-                      <button class="btn btn-primary" @click="openAddModal(null)">
-                        <i class="bi bi-plus-square"></i> Tambah Intervensi
+                    <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                    <div class="d-flex gap-2">
+                      <button
+                        v-if="file && !uploading"
+                        class="btn btn-outline-danger btn-sm"
+                        @click="removeFile"
+                        type="button"
+                      >
+                        <i class="bi bi-trash me-1"></i> Hapus
                       </button>
+
+                      <button
+                        v-if="file && !uploading"
+                        class="btn btn-success btn-sm"
+                        @click="uploadCSV"
+                        type="button"
+                      >
+                        <i class="bi bi-upload me-1"></i> Upload
+                      </button>
+
+                      <div v-if="uploading" class="d-flex align-items-center gap-2">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="row g-3">
-                    <div class="col-lg-8">
-                      <div class="calendar-grid">
-                        <div class="weekdays d-flex">
-                          <div v-for="wd in weekdays" :key="wd" class="weekday text-center">
-                            {{ wd }}
-                          </div>
-                        </div>
+                  <!-- Error message -->
+                  <div v-if="fileError" class="mt-2 text-danger small">
+                    {{ fileError }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Import Catin -->
+            <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <label class="form-label fw-semibold">Upload Data Calon Pengantin (CSV)</label>
+                  <div class="alert alert-success">
+                    <ul>
+                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data sudah lengkap sebelum di import</li>
+                      <li>Silahkan unduh contoh dengan klik <a href="/ex_catin.csv">Example.csv</a></li>
+                    </ul>
+                  </div>
+                  <div
+                    class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                    :class="{
+                      'border-primary bg-light': isDataDrag,
+                      'border-danger': fileError
+                    }"
+                    @click="triggerFileDialog"
+                    @dragover.prevent="onDragOver"
+                    @dragleave.prevent="onDragLeave"
+                    @drop.prevent="handleDrop($event)"
+                    role="button"
+                    tabindex="0"
+                    @keydown.enter.prevent="triggerFileDialog"
+                    @keydown.space.prevent="triggerFileDialog"
+                  >
+                    <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                    <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                    <small class="text-muted">atau klik untuk pilih file</small>
 
-                        <div class="days">
-                          <div
-                            v-for="cell in calendarCells"
-                            :key="cell.key"
-                            :class="[
-                              'day-cell',
-                              { muted: !cell.currentMonth, today: isToday(cell.date) },
-                            ]"
-                            :style="getCellStyle(cell.isoDate)"
-                            @click="openAddModal(cell.date)"
-                          >
-                            <div class="date-number">{{ cell.date.getDate() }}</div>
+                    <!-- Invisible input (terikat ke parent relatif) -->
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept=".csv,text/csv"
+                      class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                      @change="handleFileChange($event)"
+                    />
+                  </div>
 
-                            <div class="events-preview">
-                              <div
-                                v-for="ev in eventsByDate[cell.isoDate] || []"
-                                :key="ev.id"
-                                class="event-dot"
-                                :style="{ backgroundColor: categoryColors[ev.category] || '#ccc' }"
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                  <!-- Preview / status -->
+                  <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div v-if="file">
+                      <div><strong>Nama:</strong> {{ fileName }}</div>
+                      <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                      <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
                     </div>
 
-                    <div class="col-lg-4">
-                      <div class="card">
-                        <div class="card-body">
-                          <h5>Event pada bulan ini</h5>
-                          <div v-if="sortedEvents.length === 0">Belum ada event.</div>
-                          <ul class="list-group list-group-flush mt-2">
-                            <li
-                              v-for="ev in sortedEvents"
-                              :key="ev.id"
-                              class="list-group-item d-flex justify-content-between align-items-start"
-                            >
-                              <div>
-                                <div class="fw-semibold">{{ ev.title }}</div>
-                                <small class="text-muted">{{ formatEventDate(ev) }}</small>
-                              </div>
-                              <div class="btn-group">
-                                <button
-                                  class="btn btn-sm btn-outline-secondary"
-                                  @click="editEvent(ev)"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  class="btn btn-sm btn-outline-danger"
-                                  @click="deleteEvent(ev.id)"
-                                >
-                                  Hapus
-                                </button>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
+                    <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                    <div class="d-flex gap-2">
+                      <button
+                        v-if="file && !uploading"
+                        class="btn btn-outline-danger btn-sm"
+                        @click="removeFile"
+                        type="button"
+                      >
+                        <i class="bi bi-trash me-1"></i> Hapus
+                      </button>
+
+                      <button
+                        v-if="file && !uploading"
+                        class="btn btn-success btn-sm"
+                        @click="uploadCSV"
+                        type="button"
+                      >
+                        <i class="bi bi-upload me-1"></i> Upload
+                      </button>
+
+                      <div v-if="uploading" class="d-flex align-items-center gap-2">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
                       </div>
                     </div>
+                  </div>
+
+                  <!-- Error message -->
+                  <div v-if="fileError" class="mt-2 text-danger small">
+                    {{ fileError }}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <!-- Table -->
+
         </div>
         <CopyRight class="mt-auto" />
       </div>
     </div>
-  </div>
-
-  <!-- Add/Edit Modal -->
-  <div class="modal-backdrop" v-if="showModal">
-    <div
-      class="modal-content-box"
-      :style="{
-        backgroundImage: background ? `url(${background})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      }"
-    >
-      <div class="modal-header text-primary rounded-top-4 mb-3">
-        <h5 class="modal-title fw-bold text-primary">
-          {{ editingEvent ? 'Edit Intervensi' : 'Tambah Intervensi' }}
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          @click="closeModal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <form @submit.prevent="saveEvent">
-          <div class="mb-2">
-            <label class="form-label">Judul</label>
-            <input v-model="form.title" class="form-control" required />
-          </div>
-
-          <div class="mb-2 row">
-            <div class="col-6">
-              <label class="form-label">Tanggal</label>
-              <input v-model="form.date" type="date" class="form-control" required />
-            </div>
-            <div class="col-6">
-              <label class="form-label">Waktu (opsional)</label>
-              <input v-model="form.time" type="time" class="form-control" />
-            </div>
-          </div>
-
-          <div class="mb-2 row">
-            <div class="col-6">
-              <label class="form-label">Kategori</label>
-              <select v-model="form.category" class="form-control">
-                <option value="">Pilih Kategori</option>
-                <option value="Gizi Anak">Gizi Anak</option>
-                <option value="Ibu Hamil">Ibu Hamil</option>
-                <option value="Calon Pengantin">Calon Pengantin</option>
-                <option value="Lain-lain">Lain-lain</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label class="form-label fw-semibold">Pilih PJ</label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="form.pj"
-                @input="filterNames"
-                placeholder="Ketik nama..."
-              />
-
-              <!-- Suggestion dropdown -->
-              <ul
-                v-if="filteredNames.length > 0"
-                class="list-group position-absolute"
-                style="z-index: 1000; max-height: 150px; overflow-y: auto"
-              >
-                <li
-                  v-for="(name, index) in filteredNames"
-                  :key="index"
-                  class="list-group-item list-group-item-action"
-                  @click="selectName(name)"
-                >
-                  {{ name }}
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label">Deskripsi</label>
-            <textarea v-model="form.description" class="form-control" rows="3"></textarea>
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer border-0 d-flex justify-content-between mt-4">
-        <button class="btn btn-light border rounded-pill px-4" @click="closeModal">
-          <i class="bi bi-x-circle me-2"></i> Batal
-        </button>
-        <button class="btn btn-success rounded-pill px-4" @click="saveEvent">
-          <i class="bi bi-save me-2"></i> Simpan
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div
-        class="modal-content border-0 shadow-lg rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
-      >
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">✅ Berhasil</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">Data Anak berhasil disimpan ke <strong>localStorage</strong>.</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Loader Overlay with Animated Progress -->
-  <div
-    v-if="isLoadingImport"
-    class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-50"
-    style="z-index: 2000"
-  >
-    <div class="w-50">
-      <div class="progress" style="height: 1.8rem; border-radius: 1rem; overflow: hidden">
-        <div
-          class="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          :style="{ width: importProgress + '%' }"
-          :data-progress="progressLevel"
-        >
-          <span class="fw-bold">{{ animatedProgress }}%</span>
-        </div>
-      </div>
-    </div>
-    <p class="text-white mt-3">Mengimpor data... {{ currentRow }}/{{ totalRows }} baris</p>
   </div>
 </template>
 
@@ -316,36 +339,8 @@
 import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
-import { Modal } from 'bootstrap'
-import { eventBus } from '@/eventBus'
 import axios from 'axios'
-
-function toLocalISODate(date) {
-  const d = new Date(date)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-// eslint-disable-next-line no-unused-vars
-const categoryColors = {
-  'Gizi Anak': 'primary',
-  'Ibu Hamil': 'danger',
-  'Calon Pengantin': 'info',
-  'Lain-lain': 'additional',
-}
-
-const emptyForm = () => ({
-  id: null,
-  title: '',
-  date: toLocalISODate(new Date()), // fix di sini juga
-  time: '',
-  description: '',
-  pj: '',
-  category: '',
-  color: '#006341',
-})
+import Welcome from '@/components/Welcome.vue'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -357,101 +352,24 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
-  name: 'schedule',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin },
-  props: {
-    initialEvents: { type: Array, default: () => [] },
-    storageKey: { type: String, default: 'moodle_calendar_events' },
-  },
+  name: 'Schedule',
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
   data() {
     return {
-      configCacheKey: 'site_config_cache',
-      // required
-      isLoading: true,
+      activeMenu: 'anak', // default tampilan awal
       isCollapsed: false,
-      username: '',
-      today: '',
-      thisMonth:'',
-      kelurahan: '',
-      logoSrc: '/cipayung.png',
-      logoLoaded: true,
-      windowWidth: window.innerWidth,
-      // -------------------
-      isLoadingImport: false,
-      importProgress: 0,
-      animatedProgress: 0,
-      currentRow: 0,
-      totalRows: 1,
-      current: new Date(),
-      weekdays: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-      events: [],
-      showModal: false,
-      editingEvent: null,
-      form: emptyForm(),
-      categoryColors: {
-        'Gizi Anak': '#b3a369',
-        'Ibu Hamil': '#0d6efd',
-        'Calon Pengantin': '#b3a369',
-        'Lain-lain': '#a2aaad',
-      },
-      allNames: ['Andi Saputra', 'Budi Santoso', 'Citra Lestari', 'Dewi Anggraini', 'Eko Prasetyo'],
-      filteredNames: [],
+      file: null,
+      fileName: '',
+      fileSize: 0,
+      filePreviewLines: '',
+      fileError: '',
+      uploading: false,
+      uploadProgress: 0,
+      // config
+      ACCEPTED_EXT: ['csv'],
+      ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
+      MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
     }
-  },
-  computed: {
-    background() {
-      try {
-        return JSON.parse(localStorage.getItem('siteConfig'))?.background || null
-      } catch {
-        return null
-      }
-    },
-    bgStyle() {
-      return this.background
-        ? {
-            backgroundImage: `url(${this.background})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }
-        : {}
-    },
-    monthYearLabel() {
-      return this.current.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
-    },
-    calendarCells() {
-      const first = new Date(this.current.getFullYear(), this.current.getMonth(), 1)
-      const start = new Date(first)
-      start.setDate(first.getDate() - first.getDay())
-
-      return Array.from({ length: 42 }, (_, i) => {
-        const d = new Date(start)
-        d.setDate(start.getDate() + i)
-        return {
-          key: d.toDateString(),
-          date: d,
-          currentMonth: d.getMonth() === this.current.getMonth(),
-          isoDate: toLocalISODate(d), // ✅ pakai fungsi lokal
-        }
-      })
-    },
-
-    eventsByDate() {
-      return this.events.reduce((acc, ev) => {
-        ;(acc[ev.date] ||= []).push(ev)
-        return acc
-      }, {})
-    },
-    sortedEvents() {
-      const month = this.current.getMonth()
-      const year = this.current.getFullYear()
-      return this.events
-        .filter((e) => {
-          const d = new Date(`${e.date}T${e.time || '00:00'}`)
-          return d.getMonth() === month && d.getFullYear() === year
-        })
-        .sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')))
-    },
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -467,61 +385,13 @@ export default {
     }
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
-    this.loadEvents()
-    if (this.initialEvents.length) {
-      this.events.push(...this.initialEvents)
-      this.saveEvents()
-    }
-  },
-  async mounted() {
-    this.isLoading = true
-    try {
-      await Promise.all([
-        eventBus.on('jumpToDate', (date) => {
-          this.focusDate(date) // method kamu buat untuk set tanggal aktif
-        }),
-        this.getWilayahUser(),
-        this.handleResize(),
-        this.loadConfigWithCache(),
-        window.addEventListener('resize', this.handleResize)
-      ])
-    } catch (err) {
-      console.error('Error loading data:', err)
-    } finally {
-      this.isLoading = false
-    }
-  },
-  beforeUnmount() {
-    eventBus.off('jumpToDate')
   },
   methods: {
-    async loadConfigWithCache() {
-      try {
-        // cek di localStorage
-        const cached = localStorage.getItem(this.configCacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
-          return
-        }
-         // kalau belum ada cache, fetch dari API
-        const res = await axios.get(`${baseURL}/api/config`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const data = res.data?.data
-        if (data) {
-          this.logoSrc = data.logo || null
-          // simpan di localStorage untuk load cepat di page berikutnya
-          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
-        }
-      }catch (error) {
-        console.warn('Gagal load config:', error)
-        this.logoLoaded = false
-      }
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
+    },
+    menu(type) {
+      this.activeMenu = type
     },
     async getWilayahUser() {
       try {
@@ -536,8 +406,6 @@ export default {
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
       } catch (error) {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
@@ -575,128 +443,6 @@ export default {
 
       return `${bulan[monthIndex]} ${year}`
     },
-    async runProgressSimulation() {
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
-      this.currentRow = 0
-
-      return new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (this.importProgress >= 100) {
-            clearInterval(interval)
-            this.isLoadingImport = false
-            resolve()
-          } else {
-            this.importProgress += 10
-            this.animatedProgress = this.importProgress
-            this.currentRow = this.importProgress
-          }
-        }, 200) // kecepatan animasi progress
-      })
-    },
-    filterNames() {
-      const q = this.form.pj.toLowerCase()
-      this.filteredNames = this.allNames.filter((n) => n.toLowerCase().includes(q))
-    },
-    selectName(name) {
-      this.form.pj = name
-      this.filteredNames = []
-    },
-    getCellStyle(isoDate) {
-      const events = this.eventsByDate[isoDate] || []
-      if (events.length === 0) return {}
-
-      return {
-        border: '2px solid var(--bs-primary)', // highlight cell
-        borderRadius: '4px',
-      }
-    },
-    toggleSidebar() {
-      this.isCollapsed = !this.isCollapsed
-    },
-    prevMonth() {
-      this.current = new Date(this.current.getFullYear(), this.current.getMonth() - 1, 1)
-    },
-    nextMonth() {
-      this.current = new Date(this.current.getFullYear(), this.current.getMonth() + 1, 1)
-    },
-    isToday(d) {
-      const now = new Date()
-      return d.toDateString() === now.toDateString()
-    },
-    openAddModal(date) {
-      this.editingEvent = null
-      this.form = emptyForm()
-      if (date) {
-        this.form.date = toLocalISODate(date) // fix: pakai local date
-      }
-      this.showModal = true
-    },
-    editEvent(ev) {
-      this.editingEvent = ev
-      this.form = { ...ev }
-      this.showModal = true
-    },
-    closeModal() {
-      this.showModal = false
-      this.editingEvent = null
-    },
-    async saveEvent() {
-      const cat = this.form.category
-      const bootstrapColor = this.categoryColors[cat] || '#ccc'
-
-      const newEvent = {
-        ...this.form,
-        color: bootstrapColor,
-        id: this.form.id || Date.now(),
-      }
-
-      if (this.editingEvent) {
-        const idx = this.events.findIndex((e) => e.id === this.form.id)
-        if (idx !== -1) this.events[idx] = newEvent
-      } else {
-        this.events.push(newEvent)
-      }
-
-      // Simpan ke localStorage
-      this.saveEvents()
-
-      // Tutup modal input
-      this.closeModal()
-
-      // Jalankan progress simulasi
-      await this.runProgressSimulation()
-
-      // ✅ Perbaikan di sini
-      const successModal = new Modal(document.getElementById('successModal'))
-      successModal.show()
-    },
-    deleteEvent(id) {
-      if (confirm('Hapus event ini?')) {
-        this.events = this.events.filter((e) => e.id !== id)
-        this.saveEvents()
-      }
-    },
-    loadEvents() {
-      try {
-        this.events = JSON.parse(localStorage.getItem(this.storageKey)) || []
-      } catch {
-        this.events = []
-      }
-    },
-    saveEvents() {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.events))
-      // 🔥 beritahu semua komponen lain (termasuk HeaderAdmin)
-      eventBus.emit('eventsUpdated', this.events)
-    },
-    formatEventDate(ev) {
-      return `${ev.date}${ev.time ? ` ${ev.time}` : ''} • ${ev.category || '—'}`
-    },
-    focusDate(date) {
-      // contoh: ubah currentDate jadi date event
-      this.currentDate = new Date(date)
-    },
     handleResize() {
       this.windowWidth = window.innerWidth
       if (this.windowWidth < 992) {
@@ -705,141 +451,190 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
+    setFile(file) {
+      this.fileError = ''
+      // validasi
+      const valid = this.validateFile(file)
+      if (!valid.valid) {
+        this.file = null
+        this.fileName = ''
+        this.fileSize = 0
+        this.filePreviewLines = ''
+        this.fileError = valid.message
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      // baca beberapa byte pertama untuk preview (opsional)
+      this.previewFileContent(file)
+    },
+    validateFile(file) {
+      // ext
+      const nameParts = (file.name || '').split('.')
+      const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
+      if (!this.ACCEPTED_EXT.includes(ext)) {
+        return { valid: false, message: 'Format file tidak didukung. Hanya .csv yang diperbolehkan.' }
+      }
+
+      // mime (beberapa browser pakai text/plain)
+      if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
+        // dimungkinkan file.type kosong di beberapa OS, jadi jangan terlalu strict
+        return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
+      }
+
+      if (file.size > this.MAX_FILE_SIZE) {
+        return { valid: false, message: `Ukuran file terlalu besar. Maks ${this.humanFileSize(this.MAX_FILE_SIZE)}.` }
+      }
+
+      return { valid: true }
+    },
+    previewFileContent(file) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const text = (ev.target.result || '').toString()
+        // ambil 1-2 baris pertama untuk preview, sanitasi
+        const lines = text.split(/\r?\n/).filter(Boolean)
+        this.filePreviewLines = lines.length ? lines.slice(0,2).join(' | ') : ''
+      }
+      // baca sebagian saja untuk efisiensi (readAsText membaca seluruh file — acceptable untuk CSV kecil)
+      reader.readAsText(file.slice(0, 2000))
+    },
+    async uploadCSV() {
+      if (!this.file) {
+        this.fileError = 'Tidak ada file untuk di-upload.'
+        return
+      }
+
+      // 🧭 Tentukan endpoint sesuai menu aktif
+      let UPLOAD_URL = ''
+      if (this.activeMenu === 'anak') {
+        UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
+      } else if (this.activeMenu === 'bumil') {
+        UPLOAD_URL = `${baseURL}/api/pregnancy/import_intervensi`
+      } else {
+        this.fileError = 'Menu tidak dikenal. Pastikan kamu memilih menu yang benar.'
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('file', this.file)
+
+      try {
+        this.uploading = true
+        this.uploadProgress = 0
+        this.fileError = ''
+
+        await axios.post(UPLOAD_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.lengthComputable) {
+              this.uploadProgress = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              )
+            }
+          }
+        })
+
+        // ✅ Respons sukses
+        if (this.$bvToast) {
+          this.$bvToast.toast('Upload CSV berhasil diproses.', {
+            variant: 'success',
+            solid: true
+          })
+        }
+
+        // 🔄 Reset input file setelah upload
+        this.removeFile()
+      } catch (err) {
+        console.error('Upload error:', err)
+        this.fileError =
+          (err.response && err.response.data && err.response.data.message) ||
+          'Gagal upload file. Periksa format CSV atau koneksi server.'
+      } finally {
+        this.uploading = false
+        this.uploadProgress = 0
+      }
+    },
+    triggerFileDialog() {
+      this.$refs.fileInput.click()
+    },
+    handleFileChange(e) {
+      const file = e.target.files[0]
+      this.loadFilePreview(file)
+    },
+    handleDrop(e) {
+      const file = e.dataTransfer.files[0]
+      this.loadFilePreview(file)
+      this.isDataDrag = false
+    },
+    onDragOver() {
+      this.isDataDrag = true
+    },
+    onDragLeave() {
+      this.isDataDrag = false
+    },
+    removeFile() {
+      this.file = null
+      this.fileName = ''
+      this.fileSize = 0
+      this.filePreviewLines = ''
+      this.$refs.fileInput.value = ''
+    },
+    humanFileSize(size) {
+      const i = Math.floor(Math.log(size) / Math.log(1024))
+      return (
+        (size / Math.pow(1024, i)).toFixed(2) * 1 +
+        ' ' +
+        ['B', 'kB', 'MB', 'GB', 'TB'][i]
+      )
+    },
+    async loadFilePreview(file) {
+      if (!file) return
+      if (!file.name.endsWith('.csv')) {
+        this.fileError = 'Hanya file CSV yang diperbolehkan.'
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      const text = await file.text()
+      const lines = text.split('\n').slice(0, 2).join(' | ')
+      this.filePreviewLines = lines
+    },
+  },
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        //this.loadConfigWithCache(),
+        //this.loadBride(),
+        this.getWilayahUser(),
+        this.handleResize(),
+
+        window.addEventListener('resize', this.handleResize)
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize)
   },
 }
 </script>
 
 <style scoped>
-.event-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin: 2px;
-}
 
-.schedule-wrapper {
-  /*   tinggi navbar bootstrap default */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f9f9fb;
-  min-height: 100vh;
-}
-/* Gradient Banner */
-.schedule-banner {
-  background: linear-gradient(90deg, var(--bs-primary), var(--bs-secondary));
-  border-radius: 0 0 1rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-.filter-wrapper {
-  position: relative; /* biar ikut alur layout */
-  z-index: 0; /* pastikan di bawah sidebar */
-  margin-top: -30px !important;
-  width: 97%;
-  border-radius: 0.75rem;
-}
-/* Hilangkan garis pemisah antara sidebar dan content */
-.flex-grow-1 {
-  border-left: none !important;
-  background-color: #f9f9fb;
-}
-.breadcrumb-item + .breadcrumb-item::before {
-  color: rgba(255, 255, 255, 0.7);
-}
-.moodle-calendar {
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial;
-}
-.calendar-header {
-  gap: 12px;
-}
-.calendar-grid {
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 6px;
-  overflow: hidden;
-}
-.weekdays {
-  background: #f8f9fa;
-}
-.weekday {
-  flex: 1;
-  padding: 10px 6px;
-  font-weight: 600;
-  text-align: center;
-}
-.days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-.day-cell {
-  min-height: 100px;
-  border-right: 1px solid rgba(0, 0, 0, 0.04);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  padding: 6px;
-  cursor: pointer;
-}
-.day-cell.muted {
-  background: #fbfbfb;
-  color: #999;
-}
-.date-number {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-.events-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.event-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-size: 13px;
-  overflow: hidden;
-}
-.event-chip .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.event-chip .truncate {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-.day-cell.today {
-  outline: 2px solid rgba(43, 140, 244, 0.12);
-}
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-}
-.modal-content-box {
-  background: #fff;
-  padding: 18px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 520px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-}
-@media (max-width: 992px) {
-  .day-cell {
-    min-height: 80px;
-  }
-}
 </style>

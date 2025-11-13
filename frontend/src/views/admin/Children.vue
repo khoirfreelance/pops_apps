@@ -363,7 +363,7 @@
                 <div class="card bg-light px-2 py-5">
                   <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-light small">
+                      <thead class="table-success small">
                         <tr>
                           <th @click="sortBy('nama')" class="cursor-pointer align-middle text-center" rowspan="2">
                             Nama <SortIcon :field="'nama'" />
@@ -459,11 +459,17 @@
 
                       <li
                         class="page-item"
-                        v-for="page in totalPages"
+                        v-for="page in visiblePages"
                         :key="page"
-                        :class="{ active: currentPage === page }"
+                        :class="{ active: currentPage === page, disabled: page === '...' }"
                       >
-                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                        <a
+                          v-if="page !== '...'"
+                          class="page-link"
+                          href="#"
+                          @click.prevent="changePage(page)"
+                        >{{ page }}</a>
+                        <span v-else class="page-link">...</span>
                       </li>
 
                       <li class="page-item" :class="{ disabled: currentPage === totalPages }">
@@ -471,6 +477,7 @@
                       </li>
                     </ul>
                   </nav>
+
                 </div>
               </div>
 
@@ -988,7 +995,6 @@ export default {
         midBottom: '#80B626',
         bottom: '#DCBF1E',
       },
-
       wfaBoys: [
         { m: 0, median: 3.3, sd: 0.3 }, { m: 1, median: 4.5, sd: 0.35 },
         { m: 2, median: 5.6, sd: 0.4 }, { m: 3, median: 6.4, sd: 0.45 },
@@ -1119,9 +1125,7 @@ export default {
     const applySearch = () => {
       const query = searchQuery.value.toLowerCase()
       filteredData.value = window.children.filter((c) =>
-        Object.values(c).some((v) =>
-          String(v).toLowerCase().includes(query)
-        )
+        Object.values(c).some((v) => String(v).toLowerCase().includes(query))
       )
       currentPage.value = 1
     }
@@ -1150,8 +1154,30 @@ export default {
       return filteredData.value.slice(start, end)
     })
 
+    const visiblePages = computed(() => {
+      const pages = []
+      const total = totalPages.value
+      const current = currentPage.value
+
+      if (total <= 4) {
+        for (let i = 1; i <= total; i++) pages.push(i)
+      } else if (current <= 2) {
+        // Halaman awal
+        pages.push(1, 2, 3, '...', total)
+      } else if (current >= total - 1) {
+        // Halaman akhir
+        pages.push(total - 2, total - 1, total)
+      } else {
+        // Tengah
+        pages.push(current - 1, current, current + 1, '...', total)
+      }
+
+      return pages
+    })
+
+
     const changePage = (page) => {
-      if (page < 1 || page > totalPages.value) return
+      if (page < 1 || page > totalPages.value || page === '...') return
       currentPage.value = page
     }
 
@@ -1167,7 +1193,8 @@ export default {
       paginatedData,
       applySearch,
       sortBy,
-      changePage
+      changePage,
+      visiblePages
     }
   },
   methods: {
@@ -1223,20 +1250,30 @@ export default {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        })
+          params: this.filters, // 🔹 kirim semua filter ke backend
+        });
 
-        // API structure: { status, message, data_anak: [...] }
-        const items = res.data.data_anak || []
+        const items = res.data.data_anak || [];
 
+        // 🔹 Ambil semua nama posyandu unik
+        const allPosyandu = items
+          .flatMap(item => item.posyandu?.map(p => p.posyandu).filter(Boolean) || [])
+        const uniquePosyandu = [...new Set(allPosyandu)];
+
+        this.posyanduList = uniquePosyandu.map((nama, idx) => ({
+          id: idx + 1,
+          nama_posyandu: nama,
+        }));
+
+        // 🔹 Format data anak
         this.children = items.map((item) => {
-          const kelahiran = item.kelahiran?.[0] || {}
-          const keluarga = item.keluarga?.[0] || {}
-          const pendamping = item.pendampingan?.[item.pendampingan.length - 1] || {}
-          const posyandu = item.posyandu?.[item.posyandu.length - 1] || {}
-          const intervensi = item.intervensi?.[item.intervensi.length - 1] // ambil intervensi terakhir
+          const kelahiran = item.kelahiran?.[0] || {};
+          const keluarga = item.keluarga?.[0] || {};
+          const pendamping = item.pendampingan?.at(-1) || {};
+          const posyandu = item.posyandu?.at(-1) || {};
+          const intervensi = item.intervensi?.at(-1);
 
           return {
-            // === Identitas Anak ===
             id: item.id,
             nama: item.nama || '-',
             nik: item.nik || '-',
@@ -1247,8 +1284,6 @@ export default {
             kelurahan: item.kelurahan || '-',
             rt: item.rt || '-',
             rw: item.rw || '-',
-
-            // === Data Posyandu terakhir ===
             posyandu: posyandu.posyandu || '-',
             usia: posyandu.usia || '-',
             tgl_ukur: posyandu.tgl_ukur || '-',
@@ -1258,11 +1293,7 @@ export default {
             bb: posyandu.bb || '-',
             tb: posyandu.tb || '-',
             bb_naik: posyandu.bb_naik || false,
-
-            // === Data Intervensi ===
-            intervensi: intervensi ? intervensi.jenis : 'Belum dapat Intervensi',
-
-            // === Tambahan opsional ===
+            intervensi: intervensi ? intervensi.jenis : 'Belum mendapatkan intervensi',
             tmpt_dilahirkan: kelahiran.tmpt_dilahirkan || '-',
             tgl_lahir: kelahiran.tgl_lahir || '-',
             bb_lahir: kelahiran.bb_lahir || '-',
@@ -1277,8 +1308,6 @@ export default {
             anak_ke: keluarga.anak_ke || '-',
             kader_pendamping: pendamping.kader || '-',
             tgl_pendampingan: pendamping.tanggal || '-',
-
-            // === Simpan data mentah (buat showDetail nanti) ===
             raw: {
               kelahiran: item.kelahiran || [],
               keluarga: item.keluarga || [],
@@ -1287,198 +1316,59 @@ export default {
               intervensi: item.intervensi || []
             }
           }
+        });
 
-        })
-
-        // Setelah data dimuat, langsung apply filter awal
-        this.applyFilter()
-        // 🔹 Hitung total anak dengan usia < 60 bulan
-        this.totalAnak = this.children.filter((anak) => anak.usia < 60).length;
-
-        // 🔹 Inisialisasi filteredData
+        // ✅ simpan hasilnya
         this.filteredData = [...this.children];
 
-        // 🔹 Hitung status gizi awal
-        this.hitungStatusGizi();
-        this.generateListsFromChildren()
+        // 🔹 (opsional) sekalian update ringkasan status gizi
+        await this.hitungStatusGizi();
+
       } catch (e) {
-        this.showError('Error Ambil Data Anak', e)
+        this.showError('Error Ambil Data Anak', e);
       }
     },
-    applyFilter() {
-      console.time('applyFilter')
-
-      const f = this.filters
-
-      this.filteredData = this.children.filter(item => {
-
-        // === 1. BBU
-        const bbuMatch = f.bbu.length === 0 || f.bbu.includes(item.bbu)
-
-        // === 2. TBU
-        const tbuMatch = f.tbu.length === 0 || f.tbu.includes(item.tbu)
-
-        // === 3. BBTB
-        const bbtbMatch = f.bbtb.length === 0 || f.bbtb.includes(item.bbtb)
-
-        // === 4. Stagnan
-        const stagnanMatch =
-          f.stagnan.length === 0 ||
-          f.stagnan.some(opt => {
-            if (opt === 'Ya') return this.isStagnan(item)
-            if (opt === 'Tidak') return !this.isStagnan(item)
-            return true
-          })
-
-        // === 5. Posyandu
-        const posyanduMatch =
-          !f.posyandu || item.posyandu === f.posyandu || item.nama_posyandu === f.posyandu
-
-        // === 6. RW & RT
-        const rwMatch = !f.rw || item.rw === f.rw
-        const rtMatch = !f.rt || item.rt === f.rt
-
-        // === 7. Intervensi (multi)
-        const intervensiMatch =
-          f.intervensi.length === 0 ||
-          f.intervensi.some(i => (item.intervensi || '').includes(i))
-
-        // === 8. Periode
-        const periodeMatch = (() => {
-          const bulanMap = {
-            Januari: 1, Februari: 2, Maret: 3, April: 4, Mei: 5, Juni: 6,
-            Juli: 7, Agustus: 8, September: 9, Oktober: 10, November: 11, Desember: 12
-          }
-
-          const parsePeriode = (val) => {
-            if (!val) return null
-            if (/^\d{4}-\d{1,2}$/.test(val)) {
-              const [y, m] = val.split('-').map(Number)
-              return y * 100 + m
-            }
-            if (/^[A-Za-z]+ \d{4}$/.test(val)) {
-              const [bulanNama, tahunStr] = val.split(' ')
-              const m = bulanMap[bulanNama]
-              if (!m) return null
-              const y = parseInt(tahunStr, 10)
-              return y * 100 + m
-            }
-            const d = new Date(val)
-            return isNaN(d) ? null : d.getFullYear() * 100 + (d.getMonth() + 1)
-          }
-
-          if (!item.tgl_ukur) return false
-          const t = new Date(item.tgl_ukur)
-          if (isNaN(t.getTime())) return false
-          const periodeNum = t.getFullYear() * 100 + (t.getMonth() + 1)
-
-          const awal = parsePeriode(f.periodeAwal) ?? -Infinity
-          const akhir = parsePeriode(f.periodeAkhir) ?? Infinity
-
-          return periodeNum >= awal && periodeNum <= akhir
-        })()
-
-        return (
-          bbuMatch &&
-          tbuMatch &&
-          bbtbMatch &&
-          stagnanMatch &&
-          posyanduMatch &&
-          rwMatch &&
-          rtMatch &&
-          intervensiMatch &&
-          periodeMatch
-        )
-      })
-
-      console.timeEnd('applyFilter')
-
-      // 🔄 langsung hitung ulang status gizi setelah filter diterapkan
-      this.hitungStatusGizi()
-    },
-    hitungStatusGizi() {
-      const dataAnak = this.filteredData.length ? this.filteredData : this.children
-      const total = dataAnak.length
-
-      const count = {
-        Stunting: 0,
-        Wasting: 0,
-        Underweight: 0,
-        Normal: 0,
-        'BB Stagnan': 0,
-        Overweight: 0,
+    async applyFilter() {
+      this.isLoading = true
+      try {
+        await this.loadChildren(),
+        await this.hitungStatusGizi()
+      }catch(e){
+        console.error(e);
+      }finally{
+        this.isLoading = false
       }
-
-      dataAnak.forEach((anak) => {
-        const { bbu, tbu, bbtb } = anak
-
-        if (tbu?.includes('Stunted')) count.Stunting++
-        if (bbtb?.includes('Wasted')) count.Wasting++
-        if (bbu?.includes('Underweight')) count.Underweight++
-        if (bbu === 'Normal' && tbu === 'Normal' && bbtb === 'Normal') count.Normal++
-        if (bbtb?.includes('Overweight')) count.Overweight++
-
-        // === cek stagnan (3 kali BB sama)
-        const riwayat = anak.raw?.posyandu || []
-        if (riwayat.length >= 3) {
-          const last3 = riwayat.slice(-3)
-          const allEqual = last3.every((r) => r.bb === last3[0].bb)
-          if (allEqual) count['BB Stagnan']++
-        }
-      })
-
-      this.gizi = Object.entries(count).map(([title, value]) => {
-        const percent = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%'
-        const colorMap = {
-          Stunting: 'danger',
-          Wasting: 'warning',
-          Underweight: 'violet',
-          Normal: 'success',
-          'BB Stagnan': 'info',
-          Overweight: 'dark',
-        }
-        return { title, value, percent, color: colorMap[title] }
-      })
-
-      console.log('✅ Gizi dihitung dari', total, 'anak (filtered:', this.filteredData.length, ')')
     },
-    isStagnan(item) {
-      const STATUS_DIBAWAH_NORMAL = [
-        'Underweight', 'Severely Underweight',
-        'Stunted', 'Severely Stunted',
-        'Wasted', 'Severely Wasted'
-      ]
+    async hitungStatusGizi() {
+      try {
+        const params = {
+          posyandu: this.filters.posyandu|| '',
+          rw: this.filters.rw|| '',
+          rt: this.filters.rt|| '',
+          usia: this.filters.usia|| '',
+          bbu: this.filters.bbu|| '',
+          tbu: this.filters.tbu|| '',
+          bbtb: this.filters.bbtb|| '',
+          intervensi: this.filters.intervensi || [],
+          periodeAwal: this.filters.periodeAwal || '',
+          periodeAkhir: this.filters.periodeAkhir || '',
+        };
 
-      const penimbangan = item.riwayat_penimbangan
-      if (!penimbangan || penimbangan.length < 2) return false
+        const res = await axios.get(`${baseURL}/api/children/status`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params,
+        });
 
-      // Ambil dua penimbangan terakhir
-      const last = penimbangan[penimbangan.length - 1]
-      const prev = penimbangan[penimbangan.length - 2]
+        const { total, counts, kelurahan } = res.data;
 
-      const bbSama = last.bb === prev.bb && STATUS_DIBAWAH_NORMAL.includes(last.bb)
-      const tbSama = last.tb === prev.tb && STATUS_DIBAWAH_NORMAL.includes(last.tb)
-      const bbtbSama = last.bbtb === prev.bbtb && STATUS_DIBAWAH_NORMAL.includes(last.bbtb)
+        // ✅ Bind langsung ke data komponen
+        this.gizi = counts || [];
+        this.totalAnak = total || 0;
+        this.kelurahan = kelurahan || '-';
 
-      return bbSama || tbSama || bbtbSama
-    },
-    generateListsFromChildren() {
-      // === Posyandu unik ===
-      const posyanduSet = new Set(this.children.map(c => c.posyandu).filter(Boolean))
-      this.posyanduList = Array.from(posyanduSet).map((nama, index) => ({
-        id: index + 1,
-        nama_posyandu: nama
-      }))
-
-      // === RW dan RT global (kalau gak pilih posyandu) ===
-      const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
-      const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
-      this.rwList = Array.from(rwSet)
-      this.rtList = Array.from(rtSet)
-
-      // awalnya di-disable
-      this.rwReadonly = true
-      this.rtReadonly = true
+      } catch (error) {
+        console.error('❌ hitungStatusGizi error:', error);
+      }
     },
     handlePosyanduChange() {
       const pos = this.filters.posyandu
@@ -1505,7 +1395,7 @@ export default {
         this.filters.rt = ''
       }
     },
-    resetFilter() {
+    async resetFilter() {
       this.filters = {
         bbu: [],
         tbu: [],
@@ -1525,6 +1415,8 @@ export default {
       this.rtReadonly = true
 
       this.filteredData = [...this.children]
+      await this.loadChildren()
+      await this.hitungStatusGizi()
     },
     selectAll_bbu() {
       this.filters.bbu = [...this.bbuOptions]
@@ -1665,9 +1557,6 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
-    toggleExpandForm() {
-      this.isFormOpen = !this.isFormOpen
-    },
     showDetail(props) {
       ////console.log('Klik props:', props)
 
@@ -1754,163 +1643,6 @@ export default {
 
       this.renderKMSChart();
       //console.log('selectedAnak detail:', this.selectedAnak)
-    },
-    setFile(file) {
-      this.fileError = ''
-      // validasi
-      const valid = this.validateFile(file)
-      if (!valid.valid) {
-        this.file = null
-        this.fileName = ''
-        this.fileSize = 0
-        this.filePreviewLines = ''
-        this.fileError = valid.message
-        return
-      }
-
-      this.file = file
-      this.fileName = file.name
-      this.fileSize = file.size
-      this.fileError = ''
-
-      // baca beberapa byte pertama untuk preview (opsional)
-      this.previewFileContent(file)
-    },
-    validateFile(file) {
-      // ext
-      const nameParts = (file.name || '').split('.')
-      const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
-      if (!this.ACCEPTED_EXT.includes(ext)) {
-        return { valid: false, message: 'Format file tidak didukung. Hanya .csv yang diperbolehkan.' }
-      }
-
-      // mime (beberapa browser pakai text/plain)
-      if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
-        // dimungkinkan file.type kosong di beberapa OS, jadi jangan terlalu strict
-        return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
-      }
-
-      if (file.size > this.MAX_FILE_SIZE) {
-        return { valid: false, message: `Ukuran file terlalu besar. Maks ${this.humanFileSize(this.MAX_FILE_SIZE)}.` }
-      }
-
-      return { valid: true }
-    },
-    previewFileContent(file) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        const text = (ev.target.result || '').toString()
-        // ambil 1-2 baris pertama untuk preview, sanitasi
-        const lines = text.split(/\r?\n/).filter(Boolean)
-        this.filePreviewLines = lines.length ? lines.slice(0,2).join(' | ') : ''
-      }
-      // baca sebagian saja untuk efisiensi (readAsText membaca seluruh file — acceptable untuk CSV kecil)
-      reader.readAsText(file.slice(0, 2000))
-    },
-    async uploadCSV() {
-      if (!this.file) {
-        this.fileError = 'Tidak ada file untuk di-upload.'
-        return
-      }
-
-      const UPLOAD_URL = `${baseURL}/api/children/import`
-
-      const formData = new FormData()
-      formData.append('file', this.file)
-
-      try {
-        this.uploading = true
-        this.uploadProgress = 0
-        this.fileError = ''
-
-        const res = await axios.post(UPLOAD_URL, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            // Jika Laravel pakai Sanctum / JWT:
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.lengthComputable) {
-              this.uploadProgress = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              )
-            }
-          }
-        })
-
-        // ✅ Tangani respons sukses
-        console.log('Upload berhasil:', res.data)
-        if (this.$bvToast) {
-          this.$bvToast.toast('Upload CSV berhasil diproses.', {
-            variant: 'success',
-            solid: true
-          })
-        }
-
-        // Reset file input
-        this.removeFile()
-      } catch (err) {
-        console.error('Upload error:', err)
-        this.fileError =
-          (err.response && err.response.data && err.response.data.message) ||
-          'Gagal upload file. Periksa format CSV atau koneksi server.'
-      } finally {
-        this.uploading = false
-        this.uploadProgress = 0
-      }
-    },
-    triggerFileDialog() {
-      this.$refs.fileInput.click()
-    },
-    handleFileChange(e) {
-      const file = e.target.files[0]
-      this.loadFilePreview(file)
-    },
-    handleDrop(e) {
-      const file = e.dataTransfer.files[0]
-      this.loadFilePreview(file)
-      this.isDataDrag = false
-    },
-    onDragOver() {
-      this.isDataDrag = true
-    },
-    onDragLeave() {
-      this.isDataDrag = false
-    },
-    removeFile() {
-      this.file = null
-      this.fileName = ''
-      this.fileSize = 0
-      this.filePreviewLines = ''
-      this.$refs.fileInput.value = ''
-    },
-    humanFileSize(size) {
-      const i = Math.floor(Math.log(size) / Math.log(1024))
-      return (
-        (size / Math.pow(1024, i)).toFixed(2) * 1 +
-        ' ' +
-        ['B', 'kB', 'MB', 'GB', 'TB'][i]
-      )
-    },
-    async loadFilePreview(file) {
-      if (!file) return
-      if (!file.name.endsWith('.csv')) {
-        this.fileError = 'Hanya file CSV yang diperbolehkan.'
-        return
-      }
-
-      this.file = file
-      this.fileName = file.name
-      this.fileSize = file.size
-      this.fileError = ''
-
-      const text = await file.text()
-      const lines = text.split('\n').slice(0, 2).join(' | ')
-      this.filePreviewLines = lines
-    },
-    goToDetail(id) {
-      // misal arahkan ke route detail anak
-      this.$router.push({ name: 'AnakDetail', params: { id } })
     },
     // KMS Chart (BB/U & TB/U)
     renderKMSChart() {
@@ -2203,14 +1935,14 @@ export default {
       await this.loadChildren()
 
       // Ambil query param
-      const { tipe, status } = this.$route.query
+      //const { tipe, status } = this.$route.query
       //console.log('data dari dashboard:', tipe, status)
 
       // Copy semua children
       this.filteredData = [...this.children]
 
       // Terapkan filter dari chart
-      if (tipe && status) {
+      /* if (tipe && status) {
         this.filters.bbu = []
         this.filters.tbu = []
         this.filters.bbtb = []
@@ -2225,7 +1957,7 @@ export default {
         if (typeof this.applyFilter === 'function') {
           this.applyFilter()
         }
-      }
+      } */
 
 
       this.handleResize()

@@ -11,6 +11,9 @@ use App\Models\User;
 use App\Models\Catin;
 use App\Models\Pendampingan;
 use App\Models\Pregnancy;
+use App\Models\Child;
+use App\Models\Kunjungan;
+use App\Models\Bride;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -32,16 +35,28 @@ class DashboardController extends Controller
         $uniqueRt = $rts->unique()->count();
         $uniqueRw = $rws->unique()->count();
 
+        $anakDariPendampingan = Child::select('nik_anak', DB::raw('MAX(usia) as usia_terbaru'))
+            ->groupBy('nik_anak')
+            ->having('usia_terbaru', '>', 60)
+            ->count();
+
+        $anakDariKunjungan = Kunjungan::select('nik', DB::raw('MAX(usia_saat_ukur) as usia_terbaru'))
+            ->groupBy('nik')
+            ->having('usia_terbaru', '>', 60)
+            ->count();
+
+        $anak = $anakDariPendampingan +1;//$anakDariKunjungan;
+
         return response()->json([
             'rw' => $uniqueRw,
             'rt' => $uniqueRt,
             'keluarga' => Keluarga::count(),
             'tpk' => TPK::count(),
             'ibu_hamil' => Pregnancy::count(),
-            'posyandu' => Posyandu::count(),
+            'posyandu' => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu','id_wilayah')->get()->count(),
             'bidan' => User::where('role', '=', 'Bidan')->count(),
-            'catin' => Catin::count(),
-            'anak' => 45,
+            'catin' => Bride::count(),
+            'anak' => $anak,
         ]);
     }
 
