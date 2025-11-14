@@ -30,6 +30,7 @@ Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWi
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('children', ChildrenController::class)->only(['index']);
     Route::get('/children/status', [ChildrenController::class, 'status']);
+    Route::get('/children/tren', [ChildrenController::class, 'tren']);
     Route::get('/children/index_kunjungan', [ChildrenController::class, 'kunjungan']);
     Route::post('/children/import_kunjungan', [ChildrenController::class, 'import_kunjungan']);
     Route::post('/children/import_pendampingan', [ChildrenController::class, 'import_pendampingan']);

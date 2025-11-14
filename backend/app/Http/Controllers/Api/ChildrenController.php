@@ -998,4 +998,126 @@ class ChildrenController extends Controller
         return null;
     }
 
+    public function tren(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Ambil data anggota TPK
+        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        if (!$anggotaTPK) {
+            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        }
+
+        // 2. Ambil posyandu & wilayah
+        $posyandu = $anggotaTPK->posyandu;
+        $wilayah = $posyandu?->wilayah;
+        if (!$wilayah) {
+            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+        }
+
+        // 3. Default filter kelurahan user
+        $filterKelurahan = $wilayah->kelurahan ?? null;
+
+        $query = Kunjungan::query();
+        if ($filterKelurahan) {
+            $query->where('kelurahan', $filterKelurahan);
+        }
+
+        // 4. Filter manual (opsional) dari UI
+        if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))       $query->where('rw', $request->rw);
+        if ($request->filled('rt'))       $query->where('rt', $request->rt);
+
+        // 5. Tentukan periode current & previous
+        if ($request->filled('periode')) {
+            $bulanIni = $this->parseBulanTahun($request->periode)->format('Y-m');
+            $bulanLalu = $this->parseBulanTahun($request->periode)->subMonth()->format('Y-m');
+        } else {
+            // default: bulan ini - 1
+            $bulanIni = now()->subMonth()->format('Y-m');
+            $bulanLalu = now()->subMonths(2)->format('Y-m');
+        }
+
+        // 6. Ambil seluruh data Kunjungan yg relevan
+        $data = $query->get();
+
+        // 7. Kirim ke buildTrend dgn bulan yang sudah ditentukan
+        $tren = [
+            'bb'   => $this->buildTrend($data, 'bbu', [
+                'Sangat Kurang',
+                'Kurang',
+                'Normal',
+                'Risiko BB Lebih',
+                'Tidak Naik'
+            ], $bulanIni, $bulanLalu),
+
+            'tb'   => $this->buildTrend($data, 'tbu', [
+                'Sangat Pendek',
+                'Pendek',
+                'Normal',
+                'Tinggi'
+            ], $bulanIni, $bulanLalu),
+
+            'bbtb' => $this->buildTrend($data, 'bbtb', [
+                'Gizi Buruk',
+                'Gizi Kurang',
+                'Gizi Baik',
+                'Risiko Kurang Gizi',
+                'Gizi Lebih',
+            ], $bulanIni, $bulanLalu),
+        ];
+
+        return response()->json($tren);
+    }
+
+    private function buildTrend($data, $field, $categories, $currentMonth, $previousMonth)
+    {
+        // Filter per bulan
+        $currentData = $data->filter(fn($i) =>
+            \Carbon\Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $currentMonth
+        );
+
+        $previousData = $data->filter(fn($i) =>
+            \Carbon\Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $previousMonth
+        );
+
+        // Hitung kategori
+        $countCategories = function ($collection) use ($field, $categories) {
+            $result = [];
+            foreach ($categories as $cat) {
+                $result[$cat] = $collection->where($field, $cat)->count();
+            }
+            return $result;
+        };
+
+        $currentCounts  = $countCategories($currentData);
+        $previousCounts = $countCategories($previousData);
+
+        // Hitung total
+        $totalCurrent  = array_sum($currentCounts);
+        $totalPrevious = array_sum($previousCounts);
+
+        $diffPercent = $totalPrevious == 0
+            ? 0
+            : round((($totalCurrent - $totalPrevious) / $totalPrevious) * 100, 2);
+
+        return [
+            "month" => [
+                "current"  => $currentMonth,
+                "previous" => $previousMonth,
+            ],
+            "data" => [
+                "current"  => $currentCounts,
+                "previous" => $previousCounts,
+            ],
+            "total" => [
+                "current"       => $totalCurrent,
+                "previous"      => $totalPrevious,
+                "diff_percent"  => $diffPercent
+            ]
+        ];
+    }
+
+
+
 }

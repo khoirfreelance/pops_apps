@@ -22,14 +22,16 @@ class DashboardController extends Controller
     {
         // ambil semua nilai RT dan RW dari masing-masing tabel
         $rts = collect()
-            ->merge(Keluarga::whereNotNull('rt')->pluck('rt'))
-            ->merge(Pendampingan::whereNotNull('rt')->pluck('rt'))
-            ->merge(Posyandu::whereNotNull('rt')->pluck('rt'));
+            ->merge(Pregnancy::whereNotNull('rt')->pluck('rt'))
+            ->merge(Catin::whereNotNull('rt')->pluck('rt'))
+            ->merge(Kunjungan::whereNotNull('rt')->pluck('rt'))
+            ->merge(Pendampingan::whereNotNull('rt')->pluck('rt'));
 
         $rws = collect()
-            ->merge(Keluarga::whereNotNull('rw')->pluck('rw'))
-            ->merge(Pendampingan::whereNotNull('rw')->pluck('rw'))
-            ->merge(Posyandu::whereNotNull('rw')->pluck('rw'));
+            ->merge(Pregnancy::whereNotNull('rw')->pluck('rw'))
+            ->merge(Catin::whereNotNull('rw')->pluck('rw'))
+            ->merge(Kunjungan::whereNotNull('rw')->pluck('rw'))
+            ->merge(Pendampingan::whereNotNull('rw')->pluck('rw'));
 
         // hitung yang unik
         $uniqueRt = $rts->unique()->count();
@@ -60,41 +62,26 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function filters()
-    {
-        return response()->json([
-            'kelurahan' => ['Bojonggede', 'Cipayung', 'Pabuaran'],
-            'posyandu' => Posyandu::pluck('nama')->unique()->values(),
-            'rw' => Keluarga::whereNotNull('rw')->pluck('rw')->unique()->values(),
-            'rt' => Keluarga::whereNotNull('rt')->pluck('rt')->unique()->values(),
-        ]);
-    }
-
     public function getPosyanduWilayah($id)
     {
-        $data = Posyandu::where('id', $id)
-            ->select('id', 'nama_posyandu', 'rw', 'rt', 'id_wilayah')
-            ->first();
+        $posyandus = Posyandu::where('id_wilayah', $id)
+            ->select('nama_posyandu', 'rw', 'rt')
+            ->get();
 
-        if (!$data) {
+        if ($posyandus->isEmpty()) {
             return response()->json(['message' => 'Posyandu tidak ditemukan'], 404);
         }
 
-        // Ambil semua RW & RT dari posyandu dengan wilayah yang sama
-        $rw = Posyandu::where('id_wilayah', $data->id_wilayah)
-            ->whereNotNull('rw')
-            ->distinct()
-            ->pluck('rw');
+        // Grouping berdasarkan nama_posyandu
+        $grouped = $posyandus->groupBy('nama_posyandu')->map(function ($items, $nama) {
+            return [
+                'nama_posyandu' => $nama,
+                'rw' => $items->pluck('rw')->unique()->filter()->values(),
+                'rt' => $items->pluck('rt')->unique()->filter()->values(),
+            ];
+        })->values();
 
-        $rt = Posyandu::where('id_wilayah', $data->id_wilayah)
-            ->whereNotNull('rt')
-            ->distinct()
-            ->pluck('rt');
-
-        return response()->json([
-            'rw' => $rw,
-            'rt' => $rt,
-        ]);
+        return response()->json($grouped);
     }
 
 }

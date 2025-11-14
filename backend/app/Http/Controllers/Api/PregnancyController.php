@@ -733,7 +733,11 @@ class PregnancyController extends Controller
         try {
             $user = Auth::user();
 
-            // wilayah default dari user
+            if (!$user) {
+                return response()->json(['message' => 'User tidak ditemukan'], 404);
+            }
+
+            // 1️⃣ Wilayah default dari user
             $wilayah = [
                 'kelurahan' => $user->kelurahan ?? null,
                 'kecamatan' => $user->kecamatan ?? null,
@@ -743,75 +747,75 @@ class PregnancyController extends Controller
 
             $query = Pregnancy::query();
 
-            // Filter default dari user (jika ada)
+            // Filter default wilayah user
             if (!empty($wilayah['kelurahan'])) {
                 $query->where('kelurahan', $wilayah['kelurahan']);
             }
 
-            // Filter tambahan dari request
+            // 2️⃣ Filter tambahan request
             foreach (['kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
                 if ($request->filled($f)) {
                     $query->where($f, $request->$f);
                 }
             }
 
-            // Tentukan periode berdasarkan filter
+            // 3️⃣ Tentukan current & previous month
             if ($request->filled('periode')) {
-                // contoh: "November 2025"
+                // contoh request: "November 2025"
                 $periode = Carbon::parse('01 ' . $request->periode);
-                $awal = $periode->copy()->startOfMonth();
-                $akhir = $periode->copy()->endOfMonth();
+
+                $currentMonth = $periode->format('Y-m');
+                $previousMonth = $periode->copy()->subMonth()->format('Y-m');
             } else {
-                // default bulan ini
-                $awal = Carbon::now()->startOfMonth();
-                $akhir = Carbon::now()->endOfMonth();
+                // default mengikuti gizi anak:
+                // current = bulan ini - 1
+                // previous = bulan ini - 2
+                $currentMonth = now()->subMonth()->format('Y-m');
+                $previousMonth = now()->subMonths(2)->format('Y-m');
             }
 
-            // periode pembanding (bulan sebelumnya)
-            $awalPrev = $awal->copy()->subMonth()->startOfMonth();
-            $akhirPrev = $awal->copy()->subMonth()->endOfMonth();
+            // 4️⃣ Ambil data all (tanpa filter bulan)
+            $allData = $query->get();
 
-            // ambil data untuk periode utama dan sebelumnya
-            $current = (clone $query)
-                ->whereBetween('tanggal_pemeriksaan_terakhir', [$awal, $akhir])
-                ->get();
+            // 5️⃣ Filter current & previous berdasarkan bulan
+            $current = $allData->filter(fn($i) =>
+                Carbon::parse($i->tanggal_pemeriksaan_terakhir)->format('Y-m') === $currentMonth
+            );
 
-            $previous = (clone $query)
-                ->whereBetween('tanggal_pemeriksaan_terakhir', [$awalPrev, $akhirPrev])
-                ->get();
+            $previous = $allData->filter(fn($i) =>
+                Carbon::parse($i->tanggal_pemeriksaan_terakhir)->format('Y-m') === $previousMonth
+            );
 
-            // fungsi bantu: hitung status (tanpa intervensi)
+            // 6️⃣ Fungsi hitung status
             $countStatus = function ($rows) {
                 $total = $rows->count();
-                $kek = $rows->filter(fn($r) => $this->detectKek($r))->count();
-                $anemia = $rows->filter(fn($r) => $this->detectAnemia($r))->count();
-                $risti = $rows->filter(fn($r) => $this->detectRisti($r))->count();
 
                 return [
                     'total' => $total,
-                    'KEK' => $kek,
-                    'Anemia' => $anemia,
-                    'Risiko Tinggi' => $risti,
+                    'KEK' => $rows->filter(fn($r) => $this->detectKek($r))->count(),
+                    'Anemia' => $rows->filter(fn($r) => $this->detectAnemia($r))->count(),
+                    'Risiko Tinggi' => $rows->filter(fn($r) => $this->detectRisti($r))->count(),
                 ];
             };
 
             $currCount = $countStatus($current);
             $prevCount = $countStatus($previous);
 
+            // 7️⃣ Susun tabel seperti gizi anak
             $statuses = ['KEK', 'Anemia', 'Risiko Tinggi'];
             $dataTable = [];
 
             foreach ($statuses as $status) {
                 $jumlah = $currCount[$status] ?? 0;
-                $total = $currCount['total'] ?? 0;
+                $total  = $currCount['total'] ?? 0;
                 $persen = $total > 0 ? round(($jumlah / $total) * 100, 1) : 0;
 
                 $prevJumlah = $prevCount[$status] ?? 0;
                 $delta = $jumlah - $prevJumlah;
-                $tren = $delta === 0 ? '-' : ($delta > 0 ? "Naik {$delta}" : "Turun " . abs($delta));
 
+                $tren = $delta === 0 ? '-' : ($delta > 0 ? "Naik {$delta}" : "Turun " . abs($delta));
                 $trenClass = $delta > 0 ? 'text-danger' : ($delta < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $delta > 0 ? 'fa-solid fa-arrow-up' : ($delta < 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-minus');
+                $trenIcon  = $delta > 0 ? 'fa-solid fa-arrow-up' : ($delta < 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-minus');
 
                 $dataTable[] = [
                     'status' => $status,
@@ -823,8 +827,8 @@ class PregnancyController extends Controller
                 ];
             }
 
-            // jika data kosong, kirim default 0
-            if ($currCount['total'] === 0) {
+            // Jika kosong, isi default
+            if (($currCount['total'] ?? 0) === 0) {
                 $dataTable = collect($statuses)->map(fn($s) => [
                     'status' => $s,
                     'jumlah' => 0,
@@ -839,8 +843,8 @@ class PregnancyController extends Controller
                 'total' => $currCount['total'] ?? 0,
                 'dataTable_bumil' => $dataTable,
                 'periode' => [
-                    'current' => [$awal->toDateString(), $akhir->toDateString()],
-                    'previous' => [$awalPrev->toDateString(), $akhirPrev->toDateString()],
+                    'current' => $currentMonth,
+                    'previous' => $previousMonth,
                 ],
             ], 200);
 
@@ -852,6 +856,7 @@ class PregnancyController extends Controller
             ], 500);
         }
     }
+
 
     public function intervensiSummary(Request $request)
     {

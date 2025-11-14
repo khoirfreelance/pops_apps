@@ -423,6 +423,8 @@ class CatinController extends Controller
             $posyandu = $anggotaTPK->posyandu;
             $wilayah = $posyandu?->wilayah;
 
+            $query = Catin::query();
+
             if (!$wilayah) {
                 return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
             }
