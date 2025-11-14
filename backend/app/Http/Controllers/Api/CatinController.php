@@ -93,6 +93,8 @@ class CatinController extends Controller
             })->values();
             $seluruh_riwayat = $group->sortByDesc('tanggal_pendampingan')->values();
             return [
+                'nik_perempuan' => $latest->nik_perempuan,
+                'nik_laki' => $latest->nik_laki,
                 'nama_perempuan' => $latest->nama_perempuan,
                 'nama_laki' => $latest->nama_laki,
                 'usia_perempuan' => $latest->usia_perempuan,
@@ -137,7 +139,6 @@ class CatinController extends Controller
                 return false;
             });
         }
-
 
         // ✅ Filter status
         if ($request->filled('status') && count($request->status)) {
@@ -421,8 +422,6 @@ class CatinController extends Controller
             // ✅ 2. Ambil posyandu dan wilayah
             $posyandu = $anggotaTPK->posyandu;
             $wilayah = $posyandu?->wilayah;
-
-            $query = Catin::query();
 
             if (!$wilayah) {
                 return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);

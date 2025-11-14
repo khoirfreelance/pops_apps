@@ -158,7 +158,9 @@ class PregnancyController extends Controller
                     'kelurahan' => $latest->kelurahan,
                     'rt' => $latest->rt,
                     'rw' => $latest->rw,
+                    'tanggal_pendampinga' => $latest->tanggal_pendampingan,
                     'riwayat_pemeriksaan' => $riwayat,
+                    'hpl' => $latest->hpl
                 ];
             });
 
@@ -416,7 +418,6 @@ class PregnancyController extends Controller
         return Carbon::parse($tglLahir)->diffInYears(Carbon::parse($tglUkur));
     }
 
-
     private function convertDate($date)
     {
         if (!$date) return null;
@@ -433,19 +434,28 @@ class PregnancyController extends Controller
         try {
             $user = Auth::user();
 
-            // ✅ Wilayah user
-            $wilayah = [
-                'kelurahan' => $user->kelurahan ?? null,
-                'kecamatan' => $user->kecamatan ?? null,
-                'kota' => $user->kota ?? null,
-                'provinsi' => $user->provinsi ?? null,
-            ];
+            // ✅ 1. Cari data anggota_tpk user
+            $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+
+            if (!$anggotaTPK) {
+                return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+            }
+
+            // ✅ 2. Ambil posyandu dan wilayah
+            $posyandu = $anggotaTPK->posyandu;
+            $wilayah = $posyandu?->wilayah;
+
+            if (!$wilayah) {
+                return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+            }
+
+            // ✅ 3. Dapatkan kelurahan user
+            $filterKelurahan = $wilayah->kelurahan ?? null;
 
             $query = Pregnancy::query();
-
-            // ✅ Filter berdasar wilayah user (default)
-            if (!empty($wilayah['kelurahan'])) {
-                $query->where('kelurahan', $wilayah['kelurahan']);
+            // ✅ Selalu filter berdasar wilayah user (default)
+            if ($filterKelurahan) {
+                $query->where('kelurahan', $filterKelurahan);
             }
 
             // ✅ Filter tambahan dari frontend
@@ -453,14 +463,19 @@ class PregnancyController extends Controller
             if ($request->filled('rw')) $query->where('rw', $request->rw);
             if ($request->filled('rt')) $query->where('rt', $request->rt);
 
-            // ✅ Filter berdasarkan periode (contoh input: "Juni 2025")
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $periodeAwal = $this->parseBulanTahun($request->periodeAwal);
-                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+                $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
+                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
 
-                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
+                $query->whereBetween('tanggal_pendampingan', [
                     $periodeAwal->format('Y-m-d'),
                     $periodeAkhir->format('Y-m-d'),
+                ]);
+            } elseif ($request->filled('periode')) {
+                $periode = $this->parseBulanTahun($request->periode);
+                $query->whereBetween('tanggal_pendampingan', [
+                    $periode->copy()->startOfMonth()->format('Y-m-d'),
+                    $periode->copy()->endOfMonth()->format('Y-m-d'),
                 ]);
             }
 
@@ -468,22 +483,48 @@ class PregnancyController extends Controller
             $data = $query->get();
 
             if ($data->isEmpty()) {
+                // tetap generate hasil kosong tapi lengkap
+                $count = [
+                    'Anemia' => 0,
+                    'KEK' => 0,
+                    'Berisiko' => 0,
+                    'Normal' => 0,
+                    'Total Bumil' => 0,
+                ];
+
+                $result = [];
+                foreach ($count as $key => $val) {
+                    $percent = 0;
+                    $result[] = [
+                        'title' => $key,
+                        'value' => $val,
+                        'percent' => $percent,
+                        'color' => match ($key) {
+                            'KEK' => 'danger',
+                            'Anemia' => 'warning',
+                            'Berisiko' => 'violet',
+                            'Normal' => 'success',
+                            default => 'secondary'
+                        }
+                    ];
+                }
+
                 return response()->json([
                     'total' => 0,
-                    'counts' => [],
+                    'counts' => $result,
                     'kelurahan' => $wilayah['kelurahan'] ?? '-',
                 ]);
             }
 
             // ✅ Group by nik_ibu, ambil record terakhir
             $grouped = $data->groupBy('nik_ibu')->map(fn($group) =>
-                $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first()
+                $group->sortByDesc('tanggal_pendampingan')->first()
             );
 
             $groupedData = $grouped->values();
             $total = $groupedData->count();
 
-            // ✅ Filter usia ibu
+            // ✅ Filter usia_ibu
             if ($request->filled('usia') && is_array($request->usia)) {
                 $groupedData = $groupedData->filter(function ($item) use ($request) {
                     foreach ($request->usia as $range) {
@@ -499,33 +540,20 @@ class PregnancyController extends Controller
                 });
             }
 
-            // ✅ Filter intervensi
-            if ($request->filled('intervensi') && is_array($request->intervensi)) {
-                $groupedData = $groupedData->filter(function ($item) use ($request) {
-                    foreach ($request->intervensi as $val) {
-                        if (str_contains(strtolower($item->intervensi ?? ''), strtolower($val))) {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-            }
-
             // ✅ Filter by status
             if ($request->filled('status')) {
                 $statuses = (array)$request->status;
                 $groupedData = $groupedData->filter(function ($item) use ($statuses) {
                     foreach ($statuses as $status) {
                         $s = strtolower($status);
-                        // ambil semua data selain "normal" kalau status = risiko
                         if ($s === 'risiko') {
-                            return !str_contains(strtolower($item->status_kehamilan ?? ''), 'normal');
+                            return !str_contains(strtolower($item->status_risiko ?? ''), 'normal');
                         }
 
                         if (
-                            str_contains(strtolower($item->status_gizi_lila ?? ''), $s) ||
+                            str_contains(strtolower($item->status_risiko_usia ?? ''), $s) ||
                             str_contains(strtolower($item->status_gizi_hb ?? ''), $s) ||
-                            str_contains(strtolower($item->status_kehamilan ?? ''), $s)
+                            str_contains(strtolower($item->status_gizi_lila ?? ''), $s)
                         ) {
                             return true;
                         }
@@ -539,8 +567,9 @@ class PregnancyController extends Controller
             $count = [
                 'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek'))->count(),
                 'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia'))->count(),
-                'Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_kehamilan ?? ''), 'normal'))->count(),
-                'Normal' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kehamilan ?? ''), 'normal'))->count(),
+                'Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko_usia ?? ''), 'normal'))->count(),
+                'Normal' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko_usia ?? ''), 'normal'))->count(),
+                'Total Bumil' => $total,
             ];
 
             // ✅ Format hasil
@@ -560,6 +589,12 @@ class PregnancyController extends Controller
                     }
                 ];
             }
+
+            return response()->json([
+                'total' => $total,
+                'counts' => $result,
+                'kelurahan' => $wilayah['kelurahan'] ?? '-',
+            ], 200);
 
             return response()->json([
                 'total' => $total,
@@ -597,7 +632,6 @@ class PregnancyController extends Controller
         // fallback: coba parse langsung format "YYYY-MM" atau "YYYY-MM-DD"
         return Carbon::parse($periode);
     }
-
 
     public function show($nik_ibu)
     {

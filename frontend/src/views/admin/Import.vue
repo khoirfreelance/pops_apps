@@ -32,7 +32,7 @@
           <!-- Welcome Card -->
           <Welcome />
 
-          <!-- Ringkasan Statistik-->
+          <!-- Nav Tab-->
           <div class="container-fluid my-2 d-flex justify-content-center">
             <ul
               class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100"
@@ -89,6 +89,8 @@
               </li>
             </ul>
           </div>
+
+          <!-- Panel tab-->
           <div class="tab-content" id="myTabContent">
             <!-- Import Anak -->
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
@@ -105,172 +107,301 @@
                   </ul>
                   <div class="tab-content" id="myTabContent">
                     <div class="tab-pane fade show active" id="kunjungan" role="tabpanel" aria-labelledby="kunjungan-tab">
-                      <div class="alert alert-success">
-                        <ul>
-                          <li>Pastikan data yang diimport, berformat csv</li>
-                          <li>Pastikan data sudah lengkap sebelum di import</li>
-                          <li>Silahkan unduh contoh dengan klik <a href="/example_kunjungan_posyandu.csv">Example.csv</a></li>
-                        </ul>
-                      </div>
-                      <div
-                        class="dropzone-full position-relative p-4 rounded-3 border text-center"
-                        :class="{
-                          'border-primary bg-light': isDataDrag,
-                          'border-danger': fileError
-                        }"
-                        @click="triggerFileDialog"
-                        @dragover.prevent="onDragOver"
-                        @dragleave.prevent="onDragLeave"
-                        @drop.prevent="handleDrop($event)"
-                        role="button"
-                        tabindex="0"
-                        @keydown.enter.prevent="triggerFileDialog"
-                        @keydown.space.prevent="triggerFileDialog"
-                      >
-                        <i class="bi bi-cloud-upload fs-1 text-primary"></i>
-                        <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
-                        <small class="text-muted">atau klik untuk pilih file</small>
+                      <!-- Label + Button -->
+                      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <!-- Label -->
+                        <label class="form-label fw-semibold mb-0">
 
-                        <!-- Invisible input (terikat ke parent relatif) -->
-                        <input
-                          ref="fileInput"
-                          type="file"
-                          accept=".csv,text/csv"
-                          class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                          @change="handleFileChange($event)"
-                        />
-                      </div>
+                        </label>
 
-                      <!-- Preview / status -->
-                      <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div v-if="file">
-                          <div><strong>Nama:</strong> {{ fileName }}</div>
-                          <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
-                          <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
+                        <!-- Search + Button -->
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="text"
+                            class="form-control"
+                            style="width: 220px;"
+                            placeholder="Ketik NIK atau Nama"
+                            v-model="searchQuery"
+                          >
+
+                          <button
+                            class="btn btn-primary"
+                            type="button"
+                            @click="isUploadOpen = !isUploadOpen"
+                          >
+                            <i class="bi bi-filetype-csv me-1"></i> Unggah Data
+                          </button>
                         </div>
 
-                        <div v-else class="text-muted small">Belum ada file dipilih</div>
-
-                        <div class="d-flex gap-2">
-                          <button
-                            v-if="file && !uploading"
-                            class="btn btn-outline-danger btn-sm"
-                            @click="removeFile"
-                            type="button"
-                          >
-                            <i class="bi bi-trash me-1"></i> Hapus
-                          </button>
-
-                          <button
-                            v-if="file && !uploading"
-                            class="btn btn-success btn-sm"
-                            @click="uploadCSV"
-                            type="button"
-                          >
-                            <i class="bi bi-upload me-1"></i> Upload
-                          </button>
-
-                          <div v-if="uploading" class="d-flex align-items-center gap-2">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                      </div>
+                      <!-- Collapsible Dropzone -->
+                      <transition name="slide">
+                        <div v-show="isUploadOpen">
+                          <div class="alert alert-success">
+                            <ul>
+                              <li>Pastikan data yang diimport, berformat csv</li>
+                              <li>Pastikan data sudah lengkap sebelum di import</li>
+                              <li>
+                                Silahkan unduh contoh dengan klik
+                                <a href="/example_catin.csv">Example.csv</a>
+                              </li>
+                            </ul>
                           </div>
-                        </div>
-                      </div>
 
-                      <!-- Error message -->
-                      <div v-if="fileError" class="mt-2 text-danger small">
-                        {{ fileError }}
-                      </div>
+                          <div
+                            class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                            :class="{
+                              'border-primary bg-light': isDataDrag,
+                              'border-danger': fileError
+                            }"
+                            @click="triggerFileDialog"
+                            @dragover.prevent="onDragOver"
+                            @dragleave.prevent="onDragLeave"
+                            @drop.prevent="handleDrop($event)"
+                            role="button"
+                            tabindex="0"
+                            @keydown.enter.prevent="triggerFileDialog"
+                            @keydown.space.prevent="triggerFileDialog"
+                          >
+                            <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                            <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                            <small class="text-muted">atau klik untuk pilih file</small>
 
-                      <div class="card p-3 d-none">
-                        <div class="table-responsive">
-                            <DataTable
-                              class="display table table-striped"
-                              :data="children"
-                              :columns="columns"
-                              :options="tableOptions"
+                            <input
+                              ref="fileInput"
+                              type="file"
+                              accept=".csv,text/csv"
+                              class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                              @change="handleFileChange($event)"
                             />
                           </div>
-                      </div>
-                    </div>
-                    <div class="tab-pane fade" id="pendampingan" role="tabpanel" aria-labelledby="pendampingan-tab">
-                      <div class="alert alert-success">
-                        <ul>
-                          <li>Pastikan data yang diimport, berformat csv</li>
-                          <li>Pastikan data sudah lengkap sebelum di import</li>
-                          <li>Silahkan unduh contoh dengan klik <a href="/example_pendampingan_anak.csv">Example.csv</a></li>
-                        </ul>
-                      </div>
-                      <div
-                        class="dropzone-full position-relative p-4 rounded-3 border text-center"
-                        :class="{
-                          'border-primary bg-light': isDataDrag,
-                          'border-danger': fileError
-                        }"
-                        @click="triggerFileDialog"
-                        @dragover.prevent="onDragOver"
-                        @dragleave.prevent="onDragLeave"
-                        @drop.prevent="handleDrop($event)"
-                        role="button"
-                        tabindex="0"
-                        @keydown.enter.prevent="triggerFileDialog"
-                        @keydown.space.prevent="triggerFileDialog"
-                      >
-                        <i class="bi bi-cloud-upload fs-1 text-primary"></i>
-                        <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
-                        <small class="text-muted">atau klik untuk pilih file</small>
 
-                        <!-- Invisible input (terikat ke parent relatif) -->
-                        <input
-                          ref="fileInput"
-                          type="file"
-                          accept=".csv,text/csv"
-                          class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                          @change="handleFileChange($event)"
-                        />
-                      </div>
+                          <!-- Preview / status -->
+                          <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div v-if="file">
+                              <div><strong>Nama:</strong> {{ fileName }}</div>
+                              <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                              <div v-if="filePreviewLines" class="text-muted small">
+                                Contoh baris pertama: <code>{{ filePreviewLines }}</code>
+                              </div>
+                            </div>
 
-                      <!-- Preview / status -->
-                      <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div v-if="file">
-                          <div><strong>Nama:</strong> {{ fileName }}</div>
-                          <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
-                          <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
-                        </div>
+                            <div v-else class="text-muted small">Belum ada file dipilih</div>
 
-                        <div v-else class="text-muted small">Belum ada file dipilih</div>
+                            <div class="d-flex gap-2">
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-outline-danger btn-sm"
+                                @click="removeFile"
+                                type="button"
+                              >
+                                <i class="bi bi-trash me-1"></i> Hapus
+                              </button>
 
-                        <div class="d-flex gap-2">
-                          <button
-                            v-if="file && !uploading"
-                            class="btn btn-outline-danger btn-sm"
-                            @click="removeFile"
-                            type="button"
-                          >
-                            <i class="bi bi-trash me-1"></i> Hapus
-                          </button>
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-success btn-sm"
+                                @click="uploadCSV"
+                                type="button"
+                              >
+                                <i class="bi bi-upload me-1"></i> Upload
+                              </button>
 
-                          <button
-                            v-if="file && !uploading"
-                            class="btn btn-success btn-sm"
-                            @click="uploadCSV"
-                            type="button"
-                          >
-                            <i class="bi bi-upload me-1"></i> Upload
-                          </button>
+                              <div v-if="uploading" class="d-flex align-items-center gap-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                              </div>
+                            </div>
+                          </div>
 
-                          <div v-if="uploading" class="d-flex align-items-center gap-2">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                            <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                          <div v-if="fileError" class="mt-2 text-danger small">
+                            {{ fileError }}
                           </div>
                         </div>
-                      </div>
-
-                      <!-- Error message -->
-                      <div v-if="fileError" class="mt-2 text-danger small">
-                        {{ fileError }}
-                      </div>
+                      </transition>
                     </div>
+                    <div class="tab-pane fade" id="pendampingan" role="tabpanel" aria-labelledby="pendampingan-tab">
+                      <!-- Label + Button -->
+                      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <!-- Label -->
+                        <label class="form-label fw-semibold mb-0">
+
+                        </label>
+
+                        <!-- Search + Button -->
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="text"
+                            class="form-control"
+                            style="width: 220px;"
+                            placeholder="Ketik NIK atau Nama"
+                            v-model="searchQuery"
+                          >
+
+                          <button
+                            class="btn btn-primary"
+                            type="button"
+                            @click="isUploadOpen = !isUploadOpen"
+                          >
+                            <i class="bi bi-filetype-csv me-1"></i> Unggah Data
+                          </button>
+                        </div>
+
+                      </div>
+                      <!-- Collapsible Dropzone -->
+                      <transition name="slide">
+                        <div v-show="isUploadOpen">
+                          <div class="alert alert-success">
+                            <ul>
+                              <li>Pastikan data yang diimport, berformat csv</li>
+                              <li>Pastikan data sudah lengkap sebelum di import</li>
+                              <li>
+                                Silahkan unduh contoh dengan klik
+                                <a href="/example_catin.csv">Example.csv</a>
+                              </li>
+                            </ul>
+                          </div>
+
+                          <div
+                            class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                            :class="{
+                              'border-primary bg-light': isDataDrag,
+                              'border-danger': fileError
+                            }"
+                            @click="triggerFileDialog"
+                            @dragover.prevent="onDragOver"
+                            @dragleave.prevent="onDragLeave"
+                            @drop.prevent="handleDrop($event)"
+                            role="button"
+                            tabindex="0"
+                            @keydown.enter.prevent="triggerFileDialog"
+                            @keydown.space.prevent="triggerFileDialog"
+                          >
+                            <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                            <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                            <small class="text-muted">atau klik untuk pilih file</small>
+
+                            <input
+                              ref="fileInput"
+                              type="file"
+                              accept=".csv,text/csv"
+                              class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                              @change="handleFileChange($event)"
+                            />
+                          </div>
+
+                          <!-- Preview / status -->
+                          <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div v-if="file">
+                              <div><strong>Nama:</strong> {{ fileName }}</div>
+                              <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                              <div v-if="filePreviewLines" class="text-muted small">
+                                Contoh baris pertama: <code>{{ filePreviewLines }}</code>
+                              </div>
+                            </div>
+
+                            <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                            <div class="d-flex gap-2">
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-outline-danger btn-sm"
+                                @click="removeFile"
+                                type="button"
+                              >
+                                <i class="bi bi-trash me-1"></i> Hapus
+                              </button>
+
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-success btn-sm"
+                                @click="uploadCSV"
+                                type="button"
+                              >
+                                <i class="bi bi-upload me-1"></i> Upload
+                              </button>
+
+                              <div v-if="uploading" class="d-flex align-items-center gap-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div v-if="fileError" class="mt-2 text-danger small">
+                            {{ fileError }}
+                          </div>
+                        </div>
+                      </transition>
+
+                    </div>
+                  </div>
+
+                  <!-- Table -->
+                  <div class="table-responsive mt-3">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                      <thead class="table-primary small">
+                        <tr>
+                          <th>Nama Anak</th>
+                          <th>L/P</th>
+                          <th>Nama Orang Tua</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Tanggal Lahir</th>
+                          <!-- <th class="cursor-pointer align-middle text-center" rowspan="2">Kelola</th> -->
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(item, i) in paginatedAnak"
+                          :key="'load-' + i"
+                          class="small text-center"
+                        >
+                          <td>{{ item.nama}}</td>
+                          <td>{{ item.jk === 'L'?'Laki-laki':'Perempuan'}}</td>
+                          <td>{{ item.keluarga.nama_ibu? item.keluarga.nama_ibu:item.keluarga.nama_ayah }}</td>
+                          <td>{{ formatDate(item.kelahiran.tgl_lahir) }}</td>
+                          <!-- <td class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Data" @click="Update(dataLoad.nik_perempuan)">
+                              <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" @click="del(dataLoad.nik_perempuan)" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Data">
+                              <i class="bi bi-x-square"></i>
+                            </button>
+                          </td> -->
+                        </tr>
+
+                        <tr v-if="dataLoad.length === 0">
+                          <td colspan="4" class="text-center text-muted py-3">
+                            Tidak ada data yang tersedia
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <nav class="mt-3">
+                      <ul class="pagination justify-content-center">
+
+                        <!-- Prev -->
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                          <a class="page-link" href="#" @click.prevent="currentPage--">&lt;</a>
+                        </li>
+
+                        <!-- Number Pages -->
+                        <li v-for="(p, i) in paginationNumbers" :key="i"
+                            class="page-item"
+                            :class="{ active: p === currentPage, disabled: p === '...' }">
+
+                          <a class="page-link" href="#" @click.prevent="goToPage(p)">
+                            {{ p }}
+                          </a>
+                        </li>
+
+                        <!-- Next -->
+                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                          <a class="page-link" href="#" @click.prevent="currentPage++">&gt;</a>
+                        </li>
+
+                      </ul>
+                    </nav>
+
                   </div>
                 </div>
               </div>
@@ -279,82 +410,180 @@
             <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
               <div class="card shadow-sm">
                 <div class="card-body">
-                  <label class="form-label fw-semibold">Upload Data Ibu Hamil (CSV)</label>
-                  <div class="alert alert-success">
-                    <ul>
-                      <li>Pastikan data yang diimport, berformat csv</li>
-                      <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <li>Silahkan unduh contoh dengan klik <a href="/ex_bumil.csv">Example.csv</a></li>
-                    </ul>
-                  </div>
-                  <div
-                    class="dropzone-full position-relative p-4 rounded-3 border text-center"
-                    :class="{
-                      'border-primary bg-light': isDataDrag,
-                      'border-danger': fileError
-                    }"
-                    @click="triggerFileDialog"
-                    @dragover.prevent="onDragOver"
-                    @dragleave.prevent="onDragLeave"
-                    @drop.prevent="handleDrop($event)"
-                    role="button"
-                    tabindex="0"
-                    @keydown.enter.prevent="triggerFileDialog"
-                    @keydown.space.prevent="triggerFileDialog"
-                  >
-                    <i class="bi bi-cloud-upload fs-1 text-primary"></i>
-                    <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
-                    <small class="text-muted">atau klik untuk pilih file</small>
+                  <!-- Label + Button -->
+                  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <!-- Label -->
+                    <label class="form-label fw-semibold mb-0">
+                      Upload Data Calon Pengantin (CSV)
+                    </label>
 
-                    <!-- Invisible input (terikat ke parent relatif) -->
-                    <input
-                      ref="fileInput"
-                      type="file"
-                      accept=".csv,text/csv"
-                      class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                      @change="handleFileChange($event)"
-                    />
-                  </div>
+                    <!-- Search + Button -->
+                    <div class="d-flex align-items-center gap-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        style="width: 220px;"
+                        placeholder="Ketik NIK atau Nama"
+                        v-model="searchQuery"
+                      >
 
-                  <!-- Preview / status -->
-                  <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div v-if="file">
-                      <div><strong>Nama:</strong> {{ fileName }}</div>
-                      <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
-                      <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
+                      <button
+                        class="btn btn-primary"
+                        type="button"
+                        @click="isUploadOpen = !isUploadOpen"
+                      >
+                        <i class="bi bi-filetype-csv me-1"></i> Unggah Data
+                      </button>
                     </div>
 
-                    <div v-else class="text-muted small">Belum ada file dipilih</div>
+                  </div>
+                  <!-- Collapsible Dropzone -->
+                  <transition name="slide">
+                    <div v-show="isUploadOpen">
+                      <div class="alert alert-success">
+                        <ul>
+                          <li>Pastikan data yang diimport, berformat csv</li>
+                          <li>Pastikan data sudah lengkap sebelum di import</li>
+                          <li>
+                            Silahkan unduh contoh dengan klik
+                            <a href="/example_catin.csv">Example.csv</a>
+                          </li>
+                        </ul>
+                      </div>
 
-                    <div class="d-flex gap-2">
-                      <button
-                        v-if="file && !uploading"
-                        class="btn btn-outline-danger btn-sm"
-                        @click="removeFile"
-                        type="button"
+                      <div
+                        class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                        :class="{
+                          'border-primary bg-light': isDataDrag,
+                          'border-danger': fileError
+                        }"
+                        @click="triggerFileDialog"
+                        @dragover.prevent="onDragOver"
+                        @dragleave.prevent="onDragLeave"
+                        @drop.prevent="handleDrop($event)"
+                        role="button"
+                        tabindex="0"
+                        @keydown.enter.prevent="triggerFileDialog"
+                        @keydown.space.prevent="triggerFileDialog"
                       >
-                        <i class="bi bi-trash me-1"></i> Hapus
-                      </button>
+                        <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                        <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                        <small class="text-muted">atau klik untuk pilih file</small>
 
-                      <button
-                        v-if="file && !uploading"
-                        class="btn btn-success btn-sm"
-                        @click="uploadCSV"
-                        type="button"
-                      >
-                        <i class="bi bi-upload me-1"></i> Upload
-                      </button>
+                        <input
+                          ref="fileInput"
+                          type="file"
+                          accept=".csv,text/csv"
+                          class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                          @change="handleFileChange($event)"
+                        />
+                      </div>
 
-                      <div v-if="uploading" class="d-flex align-items-center gap-2">
-                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                        <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                      <!-- Preview / status -->
+                      <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div v-if="file">
+                          <div><strong>Nama:</strong> {{ fileName }}</div>
+                          <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                          <div v-if="filePreviewLines" class="text-muted small">
+                            Contoh baris pertama: <code>{{ filePreviewLines }}</code>
+                          </div>
+                        </div>
+
+                        <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                        <div class="d-flex gap-2">
+                          <button
+                            v-if="file && !uploading"
+                            class="btn btn-outline-danger btn-sm"
+                            @click="removeFile"
+                            type="button"
+                          >
+                            <i class="bi bi-trash me-1"></i> Hapus
+                          </button>
+
+                          <button
+                            v-if="file && !uploading"
+                            class="btn btn-success btn-sm"
+                            @click="uploadCSV"
+                            type="button"
+                          >
+                            <i class="bi bi-upload me-1"></i> Upload
+                          </button>
+
+                          <div v-if="uploading" class="d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div v-if="fileError" class="mt-2 text-danger small">
+                        {{ fileError }}
                       </div>
                     </div>
-                  </div>
+                  </transition>
 
-                  <!-- Error message -->
-                  <div v-if="fileError" class="mt-2 text-danger small">
-                    {{ fileError }}
+                  <!-- Table -->
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                      <thead class="table-success small">
+                        <tr>
+                          <th @click="sortBy('nama')" class="cursor-pointer align-middle text-center">
+                            Nama <SortIcon :field="'nama'" />
+                          </th>
+                          <th @click="sortBy('ke')" class="cursor-pointer align-middle text-center">
+                            Kehamilan ke <SortIcon :field="'ke'" />
+                          </th>
+                          <th @click="sortBy('jml')" class="cursor-pointer align-middle text-center">
+                            Jumlah Anak <SortIcon :field="'jml'" />
+                          </th>
+                          <th @click="sortBy('hpl')" class="cursor-pointer align-middle text-center">
+                            HPL <SortIcon :field="'hpl'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia')" class="cursor-pointer align-middle text-center">
+                            Usia (Tahun) <SortIcon :field="'usia'" />
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        <tr v-for="(item, i) in paginatedBumil" :key="i" class="small text-center">
+                          <td class="text-start">{{ item.nama_ibu }}</td>
+                          <td>{{ item.usia_ibu }}</td>
+                          <td>{{ item.nama_suami }}</td>
+                          <td>{{ item.nik_ibu }}</td>
+                          <td>{{ item.nik_suami }}</td>
+                        </tr>
+
+                      </tbody>
+
+                    </table>
+                    <nav class="mt-3">
+                      <ul class="pagination justify-content-center">
+
+                        <!-- Prev -->
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                          <a class="page-link" href="#" @click.prevent="currentPage--">&lt;</a>
+                        </li>
+
+                        <!-- Number Pages -->
+                        <li v-for="(p, i) in paginationNumbers" :key="i"
+                            class="page-item"
+                            :class="{ active: p === currentPage, disabled: p === '...' }">
+
+                          <a class="page-link" href="#" @click.prevent="goToPage(p)">
+                            {{ p }}
+                          </a>
+                        </li>
+
+                        <!-- Next -->
+                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                          <a class="page-link" href="#" @click.prevent="currentPage++">&gt;</a>
+                        </li>
+
+                      </ul>
+                    </nav>
+
                   </div>
                 </div>
               </div>
@@ -363,88 +592,216 @@
             <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
               <div class="card shadow-sm">
                 <div class="card-body">
-                  <label class="form-label fw-semibold">Upload Data Calon Pengantin (CSV)</label>
-                  <div class="alert alert-success">
-                    <ul>
-                      <li>Pastikan data yang diimport, berformat csv</li>
-                      <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <li>Silahkan unduh contoh dengan klik <a href="/ex_catin.csv">Example.csv</a></li>
-                    </ul>
-                  </div>
-                  <div
-                    class="dropzone-full position-relative p-4 rounded-3 border text-center"
-                    :class="{
-                      'border-primary bg-light': isDataDrag,
-                      'border-danger': fileError
-                    }"
-                    @click="triggerFileDialog"
-                    @dragover.prevent="onDragOver"
-                    @dragleave.prevent="onDragLeave"
-                    @drop.prevent="handleDrop($event)"
-                    role="button"
-                    tabindex="0"
-                    @keydown.enter.prevent="triggerFileDialog"
-                    @keydown.space.prevent="triggerFileDialog"
-                  >
-                    <i class="bi bi-cloud-upload fs-1 text-primary"></i>
-                    <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
-                    <small class="text-muted">atau klik untuk pilih file</small>
+                  <!-- Label + Button -->
+                  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <!-- Label -->
+                    <label class="form-label fw-semibold mb-0">
+                      Upload Data Calon Pengantin (CSV)
+                    </label>
 
-                    <!-- Invisible input (terikat ke parent relatif) -->
-                    <input
-                      ref="fileInput"
-                      type="file"
-                      accept=".csv,text/csv"
-                      class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
-                      @change="handleFileChange($event)"
-                    />
-                  </div>
+                    <!-- Search + Button -->
+                    <div class="d-flex align-items-center gap-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        style="width: 220px;"
+                        placeholder="Ketik NIK atau Nama"
+                        v-model="searchQuery"
+                      >
 
-                  <!-- Preview / status -->
-                  <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div v-if="file">
-                      <div><strong>Nama:</strong> {{ fileName }}</div>
-                      <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
-                      <div v-if="filePreviewLines" class="text-muted small">Contoh baris pertama: <code>{{ filePreviewLines }}</code></div>
+                      <button
+                        class="btn btn-primary"
+                        type="button"
+                        @click="isUploadOpen = !isUploadOpen"
+                      >
+                        <i class="bi bi-filetype-csv me-1"></i> Unggah Data
+                      </button>
                     </div>
 
-                    <div v-else class="text-muted small">Belum ada file dipilih</div>
+                  </div>
+                  <!-- Collapsible Dropzone -->
+                  <transition name="slide">
+                    <div v-show="isUploadOpen">
+                      <div class="alert alert-success">
+                        <ul>
+                          <li>Pastikan data yang diimport, berformat csv</li>
+                          <li>Pastikan data sudah lengkap sebelum di import</li>
+                          <li>
+                            Silahkan unduh contoh dengan klik
+                            <a href="/example_catin.csv">Example.csv</a>
+                          </li>
+                        </ul>
+                      </div>
 
-                    <div class="d-flex gap-2">
-                      <button
-                        v-if="file && !uploading"
-                        class="btn btn-outline-danger btn-sm"
-                        @click="removeFile"
-                        type="button"
+                      <div
+                        class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                        :class="{
+                          'border-primary bg-light': isDataDrag,
+                          'border-danger': fileError
+                        }"
+                        @click="triggerFileDialog"
+                        @dragover.prevent="onDragOver"
+                        @dragleave.prevent="onDragLeave"
+                        @drop.prevent="handleDrop($event)"
+                        role="button"
+                        tabindex="0"
+                        @keydown.enter.prevent="triggerFileDialog"
+                        @keydown.space.prevent="triggerFileDialog"
                       >
-                        <i class="bi bi-trash me-1"></i> Hapus
-                      </button>
+                        <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                        <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                        <small class="text-muted">atau klik untuk pilih file</small>
 
-                      <button
-                        v-if="file && !uploading"
-                        class="btn btn-success btn-sm"
-                        @click="uploadCSV"
-                        type="button"
-                      >
-                        <i class="bi bi-upload me-1"></i> Upload
-                      </button>
+                        <input
+                          ref="fileInput"
+                          type="file"
+                          accept=".csv,text/csv"
+                          class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                          @change="handleFileChange($event)"
+                        />
+                      </div>
 
-                      <div v-if="uploading" class="d-flex align-items-center gap-2">
-                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                        <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                      <!-- Preview / status -->
+                      <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div v-if="file">
+                          <div><strong>Nama:</strong> {{ fileName }}</div>
+                          <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                          <div v-if="filePreviewLines" class="text-muted small">
+                            Contoh baris pertama: <code>{{ filePreviewLines }}</code>
+                          </div>
+                        </div>
+
+                        <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                        <div class="d-flex gap-2">
+                          <button
+                            v-if="file && !uploading"
+                            class="btn btn-outline-danger btn-sm"
+                            @click="removeFile"
+                            type="button"
+                          >
+                            <i class="bi bi-trash me-1"></i> Hapus
+                          </button>
+
+                          <button
+                            v-if="file && !uploading"
+                            class="btn btn-success btn-sm"
+                            @click="uploadCSV"
+                            type="button"
+                          >
+                            <i class="bi bi-upload me-1"></i> Upload
+                          </button>
+
+                          <div v-if="uploading" class="d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div v-if="fileError" class="mt-2 text-danger small">
+                        {{ fileError }}
                       </div>
                     </div>
-                  </div>
+                  </transition>
 
-                  <!-- Error message -->
-                  <div v-if="fileError" class="mt-2 text-danger small">
-                    {{ fileError }}
+                  <!-- Table -->
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                      <thead class="table-primary small">
+                        <tr>
+                          <th colspan="2">Nama Pasangan</th>
+                          <th colspan="2">Usia</th>
+                          <th colspan="2">Pekerjaan</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">RW</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">RT</th>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Tanggal Menikah</th>
+                          <!-- <th class="cursor-pointer align-middle text-center" rowspan="2">Kelola</th> -->
+                        </tr>
+                        <tr>
+                          <th style="width:100px" @click="sortBy('nama_perempuan')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Perempuan <SortIcon :field="'nama_perempuan'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('nama_laki')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Laki-laki <SortIcon :field="'nama_laki'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia_perempuan')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Perempuan <SortIcon :field="'usia_perempuan'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('usia_laki')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Laki-laki <SortIcon :field="'usia_laki'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('pekerjaan_perempuan')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Perempuan <SortIcon :field="'pekerjaan_perempuan'" />
+                          </th>
+                          <th style="width:100px" @click="sortBy('pekerjaan_laki')" class="cursor-pointer align-middle text-center fw-normal small">
+                            Laki-laki <SortIcon :field="'pekerjaan_laki'" />
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(item, i) in paginatedCatin"
+                          :key="'load-' + i"
+                          class="small text-center"
+                        >
+                          <td>{{ item.nama_perempuan }}</td>
+                          <td>{{ item.nama_laki }}</td>
+                          <td>{{ item.usia_perempuan }}</td>
+                          <td>{{ item.usia_laki }}</td>
+                          <td>{{ item.pekerjaan_perempuan }}</td>
+                          <td>{{ item.pekerjaan_laki }}</td>
+                          <td>{{ item.rw }}</td>
+                          <td>{{ item.rt }}</td>
+                          <td>{{ formatDate(item.tgl_menikah) }}</td>
+                          <!-- <td class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Data" @click="Update(dataLoad.nik_perempuan)">
+                              <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" @click="del(dataLoad.nik_perempuan)" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Data">
+                              <i class="bi bi-x-square"></i>
+                            </button>
+                          </td> -->
+                        </tr>
+
+                        <tr v-if="dataLoad.length === 0">
+                          <td colspan="9" class="text-center text-muted py-3">
+                            Tidak ada data yang tersedia
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <nav class="mt-3">
+                      <ul class="pagination justify-content-center">
+
+                        <!-- Prev -->
+                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                          <a class="page-link" href="#" @click.prevent="currentPage--">&lt;</a>
+                        </li>
+
+                        <!-- Number Pages -->
+                        <li v-for="(p, i) in paginationNumbers" :key="i"
+                            class="page-item"
+                            :class="{ active: p === currentPage, disabled: p === '...' }">
+
+                          <a class="page-link" href="#" @click.prevent="goToPage(p)">
+                            {{ p }}
+                          </a>
+                        </li>
+
+                        <!-- Next -->
+                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                          <a class="page-link" href="#" @click.prevent="currentPage++">&gt;</a>
+                        </li>
+
+                      </ul>
+                    </nav>
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- Table -->
 
         </div>
         <CopyRight class="mt-auto" />
@@ -459,11 +816,7 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
-import DataTable from 'datatables.net-vue3'
-import DataTablesCore from 'datatables.net-bs5'
-// Aktivasi CSS bawaan DataTables
-import 'datatables.net-dt/css/dataTables.dataTables.min.css'
-//import 'datatables.net-dt/css/jquery.dataTables.css';
+//import { ref, computed } from 'vue'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -473,15 +826,17 @@ const { protocol, hostname } = window.location;
 // contoh hasil: "http://192.168.0.5:8000"
 const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 // inisialisasi DataTables agar pakai styling Bootstrap 5
-DataTable.use(DataTablesCore)
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Import',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, DataTable },
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome},
   data() {
     return {
-      children: [],
+      searchQuery: "",
+      currentPage: 1,
+      perPage: 10,
+      isUploadOpen: false,
       columns: [
         { title: 'Nama Anak', data: 'nama_anak' },
         { title: 'Nama Orang Tua', data: 'nama_ortu' },
@@ -514,6 +869,7 @@ export default {
       windowWidth: window.innerWidth,
       configCacheKey: 'site_config_cache',
       activeMenu: 'anak', // default tampilan awal
+      dataLoad:[],
       file: null,
       fileName: '',
       fileSize: 0,
@@ -542,21 +898,181 @@ export default {
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
-  methods: {
-    async loadKunjungan() {
-      try {
-        const res = await axios.get(`${baseURL}/api/children/index_kunjungan`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
+  computed: {
+    filteredData() {
+      //console.log('filter data: ', this.paginatedData[1]);
 
-        // assign ulang data agar reaktif
-        this.children = res.data.data
-        console.log('Data anak:', this.children)
-      } catch (error) {
-        console.error('Gagal ambil data kunjungan:', error)
+      if (!this.paginatedData[1]) {
+        return []
+      }
+
+      if (Array.isArray(this.paginatedData[1])) {
+        console.warn("dataLoad is ARRAY, expected OBJECT mapping NIK → Data!")
+      }
+
+      const arr = Object.values(this.paginatedData[1])
+      const q = this.searchQuery.toLowerCase()
+      const result = arr.filter(item => {
+        const match =
+          item.nama_perempuan?.toLowerCase().includes(q) ||
+          item.nama_laki?.toLowerCase().includes(q) ||
+          item.nik_perempuan?.includes(q) ||
+          item.nik_laki?.includes(q)
+
+        return match
+      })
+      return result
+    },
+    filteredBumil() {
+      if (!this.dataLoad) return [];
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+      const q = this.searchQuery?.toLowerCase() ?? '';
+
+      console.log();
+
+      return arr.filter(item => {
+        return (
+          item.nama_ibu?.toLowerCase().includes(q) ||
+          item.nik_ibu?.includes(q) ||
+          item.kehamilan_ke?.toString().includes(q)
+        );
+      });
+    },
+    filteredAnak() {
+      if (!this.dataLoad) return [];
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+      const q = this.searchQuery?.toLowerCase() ?? '';
+
+      return arr.filter(item => {
+        const keluarga = item.keluarga?.[0] || {};
+        const kelahiran = item.kelahiran?.[0] || {};
+
+        return (
+          keluarga.nama_ibu?.toLowerCase().includes(q) ||
+          keluarga.nik_ibu?.includes(q) ||
+          kelahiran.kehamilan_ke?.toString().includes(q)
+        );
+      });
+
+    },
+    paginatedBumil() {
+      const filtered = this.filteredBumil;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    },
+    paginatedAnak() {
+      const filtered = this.filteredAnak;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    },
+    paginatedCatin() {
+      const filtered = this.filteredData;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    },
+    paginatedData() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return this.dataLoad.slice(start, start + this.perPage);
+    },
+    totalPagesCatin() {
+      return Math.ceil(this.filteredData.length / this.perPage);
+    },
+    totalPagesBumil() {
+      return Math.ceil(this.filteredBumil.length / this.perPage);
+    },
+    totalPagesAnak() {
+      return Math.ceil(this.filteredAnak.length / this.perPage);
+    },
+    paginationNumbers() {
+      const pages = [];
+      const total = this.totalPagesCatin;
+
+      if (total <= 3) {
+        // Jika halaman ≤ 3, tampilkan semua
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      // Jika lebih dari 3 halaman
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (this.currentPage >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      // Di tengah
+      return [1, "...", this.currentPage - 1, this.currentPage, this.currentPage + 1, "...", total];
+    },
+    paginationNumbersBumil() {
+      const pages = [];
+      const total = this.totalPagesBumil;
+
+      if (total <= 3) {
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (this.currentPage >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      return [
+        1,
+        "...",
+        this.currentPage - 1,
+        this.currentPage,
+        this.currentPage + 1,
+        "...",
+        total
+      ];
+    },
+    paginationNumbersAnak() {
+      const pages = [];
+      const total = this.totalPagesAnak;
+
+      if (total <= 3) {
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (this.currentPage >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      return [
+        1,
+        "...",
+        this.currentPage - 1,
+        this.currentPage,
+        this.currentPage + 1,
+        "...",
+        total
+      ];
+    }
+  },
+  methods: {
+    //Mandatory
+    goToPage(p) {
+      if (p !== "...") {
+        this.currentPage = p;
       }
     },
     toggleSidebar() {
@@ -564,6 +1080,7 @@ export default {
     },
     menu(type) {
       this.activeMenu = type
+       this.loadData();
     },
     async loadConfigWithCache() {
       try {
@@ -704,7 +1221,7 @@ export default {
       reader.readAsText(file.slice(0, 2000))
     },
     async uploadCSV() {
-      console.log(this.aktifitas_anak);
+      //console.log(this.aktifitas_anak);
 
       if (!this.file) {
         this.fileError = 'Tidak ada file untuk di-upload.'
@@ -820,13 +1337,57 @@ export default {
       const lines = text.split('\n').slice(0, 2).join(' | ')
       this.filePreviewLines = lines
     },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    },
+    async loadData() {
+      try {
+        let res = null;
+
+        const headers = {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        };
+
+        var payload;
+        switch (this.activeMenu) {
+          case 'anak':
+            res = await axios.get(`${baseURL}/api/children`, { headers });
+            payload = res.data.data_anak ?? {};
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
+            break;
+          case 'bumil':
+            res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
+            payload = res.data?.data || []
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
+            break;
+          case 'catin':
+            res = await axios.get(`${baseURL}/api/bride`, { headers });
+            payload = res.data ?? {};
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
+            break;
+          default:
+            return;
+        }
+        console.log(this.dataLoad);
+
+      } catch (e) {
+        console.error('Gagal ambil data:', e);
+        //this.paginatedData = [];
+      }
+    }
+
   },
   async mounted() {
     this.isLoading = true
     try {
       await Promise.all([
         this.loadConfigWithCache(),
-        this.loadKunjungan(),
+        this.loadData(),
         this.getWilayahUser(),
         this.handleResize(),
 
@@ -845,5 +1406,15 @@ export default {
 </script>
 
 <style scoped>
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.25s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
 
 </style>

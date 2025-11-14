@@ -315,6 +315,10 @@
             </form>
           </div>
 
+          <div class="text-center mt-3">
+            <h5 class="fw-bold text-success mb-3">Ringkasan Statistik</h5>
+          </div>
+
           <!-- Ringkasan Statistik-->
           <div class="container-fluid my-4">
 
@@ -359,8 +363,8 @@
           <div class="container-fluid mt-4">
             <h5 class="fw-bold text-success mb-3">Data Anak</h5>
             <div class="row mt-4">
-              <div :class="selectedAnak ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
-                <div class="card bg-light px-2 py-5">
+              <div :class="selectedAnak ? 'col-md-8' : 'col-md-12'">
+                <div class="card bg-light p-2">
                   <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle text-center">
                       <thead class="table-success small">

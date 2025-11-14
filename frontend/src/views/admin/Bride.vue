@@ -678,7 +678,6 @@ export default {
       configCacheKey: 'site_config_cache',
       kesehatan: [],
       bride: [], // data utama calon pengantin
-      bridePending: [], // data pending catin
       filteredCatin: [],
       totalCatin: 0,
       periodeOptions: [],

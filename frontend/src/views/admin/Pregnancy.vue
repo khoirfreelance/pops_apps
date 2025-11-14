@@ -33,7 +33,7 @@
 
           <!-- Judul Laporan -->
           <div class="text-center mt-4">
-            <div class="bg-primary text-white py-1 px-4 d-inline-block rounded-top">
+            <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <h5 class="mb-0">
                 Laporan Status Kesehatan Ibu Hamil Desa
                 <span class="text-capitalize fw-bold">{{ kelurahan }}</span>
@@ -70,23 +70,23 @@
                     <li
                       v-for="item in filter.options"
                       :key="item"
-                      class="dropdown-item d-flex align-items-center"
+                      class="small dropdown-item d-flex align-items-center"
                     >
                       <input
                         type="checkbox"
-                        class="form-check-input me-2"
+                        class="form-check-input small me-2"
                         :id="`${key}-${item}`"
                         :value="item"
                         v-model="filters[key]"
                       />
-                      <label class="form-check-label w-100" :for="`${key}-${item}`">{{ item }}</label>
+                      <label class="form-check-label small w-100" :for="`${key}-${item}`">{{ item }}</label>
                     </li>
                     <li><hr class="dropdown-divider" /></li>
-                    <li class="d-flex justify-content-between px-2">
-                      <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" @click="selectAll(key)">
+                    <li class="d-flex small justify-content-between px-2">
+                      <button type="button" class="btn btn-sm small btn-outline-primary fw-semibold" @click="selectAll(key)">
                         Pilih Semua
                       </button>
-                      <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold" @click="clearAll(key)">
+                      <button type="button" class="btn btn-sm small btn-outline-secondary fw-semibold" @click="clearAll(key)">
                         Hapus Semua
                       </button>
                     </li>
@@ -169,40 +169,42 @@
             </form>
           </div>
 
-          <!-- Ringkasan Statistik-->
+          <div class="text-center mt-3">
+            <h5 class="fw-bold text-success mb-3">Ringkasan Statistik</h5>
+          </div>
+
+          <!-- Ringkasan Statistik -->
           <div class="container-fluid my-4">
-
             <div class="row">
-              <div class="col-xl-10 col-sm-12">
-                <div class="row justify-content-center">
+              <div class="row justify-content-center">
+                <div
+                  v-for="(item, index) in kesehatan"
+                  :key="index"
+                  class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
+                >
                   <div
-                    v-for="(item, index) in kesehatan"
-                    :key="index"
-                    class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-12 mb-3"
+                    class="card shadow-sm border-0 rounded-2 overflow-hidden"
+                    :class="`border-start border-4 border-${item.color}`"
                   >
-                    <div
-                      class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                      :class="`border-start border-4 border-${item.color}`"
-                    >
-                      <div class="card-header">
-                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                      </div>
-                      <div class="card-body py-3 d-flex justify-content-between align-items-center">
-                        <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                        <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
-                      </div>
-
+                    <div class="card-header">
+                      <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TOTAL BUMIL -->
-              <div class="col-xl-2 col-sm-12">
-                <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
-                  <h6 class="text-muted fw-bold">Total Ibu Hamil</h6>
-                  <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h1 class="fw-bold text-success mb-0">{{totalBumil}}</h1>
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                      <p
+                        v-if="index !== kesehatan.length - 1"
+                        class="mb-0"
+                        :class="`text-${item.color}`"
+                      >
+                        {{ item.percent }}
+                      </p>
+                      <p v-else class="my-auto">
+                        <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
+                      </p>
+                      <!-- Hanya tampilkan persentase kalau bukan card terakhir -->
+                      <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
+                        {{ item.value }}
+                      </h3>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -211,13 +213,13 @@
 
           <!-- Table and detail Section -->
           <div class="container-fluid mt-4">
-            <h5 class="fw-bold text-success mb-3">Data Ibu Hamil</h5>
+            <h5 class="fw-bold text-success">Data Ibu Hamil</h5>
             <div class="row mt-4">
-              <div :class="selectedBumil ? 'col-md-8 mb-3' : 'col-md-12 mb-3'">
-                <div class="card bg-light px-2 py-5">
+              <div :class="selectedBumil ? 'col-md-8' : 'col-md-12'">
+                <div class="card bg-light p-2">
                   <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-light small">
+                      <thead class="table-success small">
                         <tr>
                           <th @click="sortBy('nama')" class="cursor-pointer align-middle text-center">
                             Nama <SortIcon :field="'nama'" />
@@ -245,7 +247,6 @@
                           </th>
                         </tr>
                       </thead>
-
                       <tbody>
                         <tr v-for="bumil in paginatedData" :key="bumil.id" class="small">
                           <td class="text-start">
@@ -274,8 +275,6 @@
 
                     </table>
                   </div>
-
-                   <!-- Pagination -->
                   <nav>
                     <ul class="pagination justify-content-center">
                       <li class="page-item" :class="{ disabled: currentPage === 1 }">
@@ -599,33 +598,33 @@
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.asap_rokok === 'Ya' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.asap_rokok === '1' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.asap_rokok || '-' }}
+                                      {{ item.asap_rokok === '0' ? 'Ya' : 'Tidak' }}
                                     </span>
                                   </td>
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.bantuan_sosial === 'Tidak' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.bantuan_sosial === '1' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.bantuan_sosial || '-' }}
+                                      {{ item.bantuan_sosial === '0' ? 'Ya' : 'Tidak' }}
                                     </span>
                                   </td>
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.jamban_sehat === 'Tidak' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.jamban_sehat === '0' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.jamban_sehat || '-' }}
+                                      {{ item.jamban_sehat === '0' ? 'Tidak' : 'Ya' }}
                                     </span>
                                   </td>
                                   <td>
                                     <span
                                       class="badge"
-                                      :class="item.sumber_air_bersih === 'Tidak' ? 'bg-danger' : 'text-dark'"
+                                      :class="item.sumber_air_bersih === '0' ? 'bg-danger' : 'text-dark'"
                                     >
-                                      {{ item.sumber_air_bersih || '-' }}
+                                      {{ item.sumber_air_bersih === '0' ? 'Tidak' : 'Ya' }}
                                     </span>
                                   </td>
                                   <td>{{ item.keluhan}}</td>
@@ -700,6 +699,7 @@ export default {
     }
   },
   setup() {
+    const bumil = ref([])
     const searchQuery = ref('')
     const currentPage = ref(1)
     const perPage = ref(10)
@@ -709,7 +709,7 @@ export default {
 
     const applySearch = () => {
       const query = searchQuery.value.toLowerCase()
-      filteredData.value = window.bumil.filter((c) =>
+      filteredData.value =bumil.value.filter((c) =>
         Object.values(c).some((v) => String(v).toLowerCase().includes(query))
       )
       currentPage.value = 1
@@ -847,16 +847,16 @@ export default {
           };
         });
 
-        // ✅ Set filtered dan total
-        this.filteredBumil = [...this.bumil];
-        this.totalBumil = this.bumil.length;
-        //console.log('isi bumil:', this.filteredBumil);
+        //console.log(this.bumil);
 
+        // ✅ Set filtered dan total
+        this.filteredData = [...this.bumil];
+        this.totalBumil = this.bumil.length;
 
       } catch (e) {
         console.error('Gagal ambil data pregnancy:', e);
         this.bumil = [];
-        this.filteredBumil = [];
+        this.filteredData = [];
         this.posyanduList = [];
       }
     },
@@ -963,14 +963,14 @@ export default {
         this.rtList = [];
         this.rwReadonly = true;
         this.rtReadonly = true;
-        this.filteredBumil = [...this.bumil]; // tampilkan semua lagi
+        this.filteredBumil = [...this.bumil]; // tampilkan semua
         return;
       }
 
-      // 🔹 Ambil data ibu di posyandu terpilih
-      const filteredBumil = this.bumil.filter(b => b.nama_posyandu === pos);
+      // ✅ Gunakan field yang benar
+      const filteredBumil = this.bumil.filter(b => b.posyandu === pos);
 
-      // 🔹 Ambil daftar RW & RT unik dari mereka
+      // 🔹 Ambil daftar RW & RT unik
       const rwSet = new Set(filteredBumil.map(b => b.rw).filter(Boolean));
       const rtSet = new Set(filteredBumil.map(b => b.rt).filter(Boolean));
 
@@ -981,7 +981,7 @@ export default {
       this.rwReadonly = false;
       this.rtReadonly = false;
 
-      // 🔹 Update data yang tampil di tabel
+      // 🔹 Update data tabel
       this.filteredBumil = filteredBumil;
     },
     handleRwChange() {
@@ -994,11 +994,11 @@ export default {
         return;
       }
 
-      const filteredPregnancy = this.bumil.filter(
+      const filteredBumil = this.bumil.filter(
         c => c.posyandu === pos && c.rw === rw
       );
 
-      const rtSet = new Set(filteredPregnancy.map(c => c.rt).filter(Boolean));
+      const rtSet = new Set(filteredBumil.map(c => c.rt).filter(Boolean));
       this.rtList = Array.from(rtSet);
       this.rtReadonly = false;
     },
