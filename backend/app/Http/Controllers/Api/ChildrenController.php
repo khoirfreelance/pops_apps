@@ -61,8 +61,16 @@ class ChildrenController extends Controller
 
         // ✅ 4. Ambil semua filter dari request
         $filters = $request->only([
-            'periodeAwal', 'periodeAkhir', 'posyandu', 'rw', 'rt',
-            'bbu', 'tbu', 'bbtb', 'stagnan', 'intervensi'
+            'periodeAwal',
+            'periodeAkhir',
+            'posyandu',
+            'rw',
+            'rt',
+            'bbu',
+            'tbu',
+            'bbtb',
+            'stagnan',
+            'intervensi'
         ]);
 
         // ✅ 5. KUNJUNGAN (utama)
@@ -108,7 +116,8 @@ class ChildrenController extends Controller
         // 1️⃣ KUNJUNGAN — sumber utama data anak
         foreach ($kunjungan as $item) {
             $nik = $item->nik ?? $item->nik_ortu ?? '';
-            if (!$nik) continue;
+            if (!$nik)
+                continue;
 
             if (!isset($grouped[$nik])) {
                 $grouped[$nik] = [
@@ -162,7 +171,8 @@ class ChildrenController extends Controller
         // 2️⃣ PENDAMPINGAN
         foreach ($pendampingan as $item) {
             $nik = $item->nik_anak ?? $item->nik_ibu ?? '';
-            if (!$nik) continue;
+            if (!$nik)
+                continue;
 
             $grouped[$nik] ??= [
                 'id' => $item->id,
@@ -211,7 +221,8 @@ class ChildrenController extends Controller
         // 3️⃣ INTERVENSI
         foreach ($intervensi as $item) {
             $nik = $item->nik_subjek ?? $item->nik_wali ?? '';
-            if (!$nik) continue;
+            if (!$nik)
+                continue;
 
             $grouped[$nik] ??= [
                 'id' => $item->id,
@@ -271,92 +282,113 @@ class ChildrenController extends Controller
 
             // ✅ Ambil data anak dari beberapa sumber
             $filters = $request->only([
-            'periodeAwal', 'periodeAkhir', 'posyandu', 'rw', 'rt',
-            'bbu', 'tbu', 'bbtb', 'stagnan', 'intervensi'
-        ]);
+                'periode',
+                'periodeAwal',
+                'periodeAkhir',
+                'posyandu',
+                'rw',
+                'rt',
+                'bbu',
+                'tbu',
+                'bbtb',
+                'stagnan',
+                'intervensi'
+            ]);
 
-        // ✅ 5. KUNJUNGAN (utama)
-        $kunjungan = Kunjungan::query()
-            ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '<=', $val))
-            ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
-            ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
-            ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
-            ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-            ->get();
 
-        // ✅ 6. PENDAMPINGAN
-        $pendampingan = Child::query()
-            ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '<=', $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
-            ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
-            ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
-            ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-            ->get();
+            if ($request->filled('periode')) {
+                $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+                $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
+                logger('Parsed periode: ' . $filters['periodeAwal'] . ' to ' . $filters['periodeAkhir']);
+            }
 
-        // ✅ 7. INTERVENSI
-        $intervensi = Intervensi::query()
-            ->when($filterKelurahan, fn($q) => $q->where('desa', $filterKelurahan))
-            ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '<=', $val))
-            ->when($filters['intervensi'] ?? null, fn($q, $val) => $q->whereIn('kategori', (array) $val))
-            ->get();
+
+            // ✅ 5. KUNJUNGAN (utama)
+            $kunjungan = Kunjungan::query()
+                ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
+                ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '>=', $val))
+                ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '<=', $val))
+                ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
+                ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
+                ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
+                ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
+                ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
+                ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
+                ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
+                ->get();
+
+            // ✅ 6. PENDAMPINGAN
+            $pendampingan = Child::query()
+                ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
+                ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '>=', $val))
+                ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '<=', $val))
+                ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
+                ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
+                ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
+                ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
+                ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
+                ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
+                ->get();
+
+            // ✅ 7. INTERVENSI
+            $intervensi = Intervensi::query()
+                ->when($filterKelurahan, fn($q) => $q->where('desa', $filterKelurahan))
+                ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
+                ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
+                ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
+                ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '>=', $val))
+                ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '<=', $val))
+                ->when($filters['intervensi'] ?? null, fn($q, $val) => $q->whereIn('kategori', (array) $val))
+                ->get();
 
             // Gabungkan (utamakan kunjungan)
             $data = $kunjungan->isNotEmpty() ? $kunjungan : ($pendampingan->isNotEmpty() ? $pendampingan : $intervensi);
 
             if ($data->isEmpty()) {
-            $defaultCounts = [
-                'Stunting' => 0,
-                'Wasting' => 0,
-                'Underweight' => 0,
-                'Normal' => 0,
-                'Overweight' => 0,
-                'BB Stagnan' => 0,
-            ];
-
-            $result = [];
-            foreach ($defaultCounts as $title => $value) {
-                $color = match ($title) {
-                    'Stunting' => 'danger',
-                    'Wasting' => 'warning',
-                    'Underweight' => 'violet',
-                    'Normal' => 'success',
-                    'BB Stagnan' => 'info',
-                    'Overweight' => 'dark',
-                    default => 'secondary'
-                };
-                $result[] = [
-                    'title' => $title,
-                    'value' => 0,
-                    'percent' => '0%',
-                    'color' => $color
+                $defaultCounts = [
+                    'Stunting' => 0,
+                    'Wasting' => 0,
+                    'Underweight' => 0,
+                    'Normal' => 0,
+                    'Overweight' => 0,
+                    'BB Stagnan' => 0,
                 ];
-            }
 
-            return response()->json([
-                'total' => 0,
-                'counts' => $result,
-                'kelurahan' => $filterKelurahan ?? '-',
-            ]);
-        }
+                $result = [];
+                foreach ($defaultCounts as $title => $value) {
+                    $color = match ($title) {
+                        'Stunting' => 'danger',
+                        'Wasting' => 'warning',
+                        'Underweight' => 'violet',
+                        'Normal' => 'success',
+                        'BB Stagnan' => 'info',
+                        'Overweight' => 'dark',
+                        default => 'secondary'
+                    };
+                    $result[] = [
+                        'title' => $title,
+                        'value' => 0,
+                        'percent' => '0%',
+                        'color' => $color
+                    ];
+                }
+
+                return response()->json([
+                    'total' => 0,
+                    'counts' => $result,
+                    'kelurahan' => $filterKelurahan ?? '-',
+                ]);
+            }
 
 
             // ✅ Filter tambahan dari frontend
-            if ($request->filled('posyandu')) $data = $data->where('posyandu', $request->posyandu);
-            if ($request->filled('rw')) $data = $data->where('rw', $request->rw);
-            if ($request->filled('rt')) $data = $data->where('rt', $request->rt);
+            if ($request->filled('posyandu'))
+                $data = $data->where('posyandu', $request->posyandu);
+            if ($request->filled('rw'))
+                $data = $data->where('rw', $request->rw);
+            if ($request->filled('rt'))
+                $data = $data->where('rt', $request->rt);
 
             // ✅ Filter periode (opsional)
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
@@ -365,7 +397,8 @@ class ChildrenController extends Controller
 
                 $data = $data->filter(function ($item) use ($periodeAwal, $periodeAkhir) {
                     $tgl = $item->tgl_pengukuran ?? $item->tgl_pendampingan ?? $item->tgl_intervensi ?? null;
-                    if (!$tgl) return false;
+                    if (!$tgl)
+                        return false;
 
                     return $tgl >= $periodeAwal->format('Y-m-d') && $tgl <= $periodeAkhir->format('Y-m-d');
                 });
@@ -403,12 +436,18 @@ class ChildrenController extends Controller
                 $bbtb = strtolower($anak['bbtb'] ?? '');
                 $naikBB = $anak['naik_berat_badan'];
 
-                if (str_contains($tbu, 'severely stunted') || str_contains($tbu, 'stunted')) $count['Stunting']++;
-                if (str_contains($bbtb, 'severely wasted') || str_contains($bbtb, 'wasted')) $count['Wasting']++;
-                if (str_contains($bbu, 'underweight') || str_contains($bbu, 'severely underweight')) $count['Underweight']++;
-                if ($bbu === 'normal' && $tbu === 'normal' && $bbtb === 'normal') $count['Normal']++;
-                if (str_contains($bbtb, 'possible risk of overweight') || str_contains($bbtb, 'overweight') || str_contains($bbtb, 'obesitas')) $count['Overweight']++;
-                if (is_null($naikBB)) $count['BB Stagnan']++;
+                if (str_contains($tbu, 'severely stunted') || str_contains($tbu, 'stunted'))
+                    $count['Stunting']++;
+                if (str_contains($bbtb, 'severely wasted') || str_contains($bbtb, 'wasted'))
+                    $count['Wasting']++;
+                if (str_contains($bbu, 'underweight') || str_contains($bbu, 'severely underweight'))
+                    $count['Underweight']++;
+                if ($bbu === 'normal' && $tbu === 'normal' && $bbtb === 'normal')
+                    $count['Normal']++;
+                if (str_contains($bbtb, 'possible risk of overweight') || str_contains($bbtb, 'overweight') || str_contains($bbtb, 'obesitas'))
+                    $count['Overweight']++;
+                if (is_null($naikBB))
+                    $count['BB Stagnan']++;
             }
 
             // ✅ Format hasil untuk frontend
@@ -446,7 +485,7 @@ class ChildrenController extends Controller
         }
     }
 
-    private function parseBulanTahun(string $periode, bool $akhirBulan = false): \Carbon\Carbon
+    private function parseBulanTahun(string $periode, bool $akhirBulan = false): Carbon
     {
         // Daftar bulan dalam Bahasa Indonesia
         $bulanMap = [
@@ -470,12 +509,12 @@ class ChildrenController extends Controller
             $bulan = $bulanMap[$parts[0]];
             $tahun = (int) $parts[1];
 
-            $date = \Carbon\Carbon::createFromDate($tahun, $bulan, 1);
+            $date = Carbon::createFromDate($tahun, $bulan, 1);
             return $akhirBulan ? $date->endOfMonth() : $date->startOfMonth();
         }
 
         // fallback jika format salah
-        return \Carbon\Carbon::now();
+        return Carbon::now();
     }
 
     public function kunjungan()
@@ -517,7 +556,8 @@ class ChildrenController extends Controller
         $count = 0;
 
         while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            if (empty($data[0])) continue; // skip baris kosong
+            if (empty($data[0]))
+                continue; // skip baris kosong
 
             if (!$header) {
                 $header = $data;
@@ -534,8 +574,8 @@ class ChildrenController extends Controller
                 'bb_lahir' => $data[4] ?? null,
                 'tb_lahir' => $data[5] ?? null,
                 'nama_ortu' => $data[6] ?? null,
-                'peran'  => $data[7] ?? null,
-                'nik_ortu'  => $data[8] ?? null,
+                'peran' => $data[7] ?? null,
+                'nik_ortu' => $data[8] ?? null,
                 'alamat' => $data[9] ?? null,
                 'provinsi' => $data[10] ?? null,
                 'kota' => $data[11] ?? null,
@@ -592,14 +632,14 @@ class ChildrenController extends Controller
 
                     // Gabungkan hasil perhitungan ke $row
                     $row = array_merge($row, [
-                        'tgl_pengukuran'   => $row['tgl_pengukuran'], // samakan nama
-                        'usia_saat_ukur'   => $usia,
-                        'bb_u'             => $status_bbu,
-                        'zs_bb_u'          => $z_bbu,
-                        'tb_u'             => $status_tbu,
-                        'zs_tb_u'          => $z_tbu,
-                        'bb_tb'            => $status_bbtb,
-                        'zs_bb_tb'         => $z_bbtb,
+                        'tgl_pengukuran' => $row['tgl_pengukuran'], // samakan nama
+                        'usia_saat_ukur' => $usia,
+                        'bb_u' => $status_bbu,
+                        'zs_bb_u' => $z_bbu,
+                        'tb_u' => $status_tbu,
+                        'zs_tb_u' => $z_tbu,
+                        'bb_tb' => $status_bbtb,
+                        'zs_bb_tb' => $z_bbtb,
                         'naik_berat_badan' => $naikBB,
                     ]);
 
@@ -637,9 +677,9 @@ class ChildrenController extends Controller
 
                     // ✅ Simpan log
                     \App\Models\Log::create([
-                        'id_user'   => \Auth::id(),
-                        'context'   => 'Anak',
-                        'activity'  => 'Import data anak ' . ($row['nama_anak'] ?? '-'),
+                        'id_user' => \Auth::id(),
+                        'context' => 'Anak',
+                        'activity' => 'Import data anak ' . ($row['nama_anak'] ?? '-'),
                         'timestamp' => now(),
                     ]);
                 }
@@ -681,7 +721,8 @@ class ChildrenController extends Controller
         $count = 0;
 
         while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            if (empty($data[0])) continue; // skip baris kosong
+            if (empty($data[0]))
+                continue; // skip baris kosong
 
             if (!$header) {
                 $header = $data;
@@ -768,13 +809,13 @@ class ChildrenController extends Controller
 
                     // Gabungkan hasil perhitungan
                     $row = array_merge($row, [
-                        'usia'     => $usia,
-                        'zs_bb_u'  => $z_bbu,
-                        'bb_u'     => $status_bbu,
-                        'zs_tb_u'  => $z_tbu,
-                        'tb_u'     => $status_tbu,
+                        'usia' => $usia,
+                        'zs_bb_u' => $z_bbu,
+                        'bb_u' => $status_bbu,
+                        'zs_tb_u' => $z_tbu,
+                        'tb_u' => $status_tbu,
                         'zs_bb_tb' => $z_bbtb,
-                        'bb_tb'    => $status_bbtb,
+                        'bb_tb' => $status_bbtb,
                     ]);
 
                     // Simpan data pendampingan anak
@@ -793,7 +834,7 @@ class ChildrenController extends Controller
                         $keluarga = \App\Models\Keluarga::firstOrCreate(
                             ['no_kk' => $row['no_kk']],
                             [
-                                'alamat' => 'desa '.$row['kelurahan'].', kec. '.$row['kecamatan'].', kota/kab. '.$row['kota'],
+                                'alamat' => 'desa ' . $row['kelurahan'] . ', kec. ' . $row['kecamatan'] . ', kota/kab. ' . $row['kota'],
                                 'rt' => $row['rt'] ?? null,
                                 'rw' => $row['rw'] ?? null,
                                 'id_wilayah' => $wilayah->id,
@@ -804,9 +845,9 @@ class ChildrenController extends Controller
 
                     // ✅ Log aktivitas
                     \App\Models\Log::create([
-                        'id_user'   => \Auth::id(),
-                        'context'   => 'Pendampingan Anak',
-                        'activity'  => 'Import pendampingan anak ' . ($row['nama_anak'] ?? '-'),
+                        'id_user' => \Auth::id(),
+                        'context' => 'Pendampingan Anak',
+                        'activity' => 'Import pendampingan anak ' . ($row['nama_anak'] ?? '-'),
                         'timestamp' => now(),
                     ]);
                 }
@@ -838,26 +879,27 @@ class ChildrenController extends Controller
                 $count++;
                 continue;
             }
-            if (empty($row[0]) && empty($row[3])) continue;
+            if (empty($row[0]) && empty($row[3]))
+                continue;
 
             Intervensi::create([
-                'petugas'           => $row[0] ?? null,
-                'tgl_intervensi'    => isset($row[1]) ? date('Y-m-d', strtotime($row[1])) : null,
-                'desa'              => $row[2] ?? null,
-                'nama_subjek'         => $row[3] ?? null,
-                'nik_subjek'          => $row[4] ?? null,
-                'status_subjek'       => 'anak',
-                'jk'                => $row[5] ?? null,
-                'tgl_lahir'         => isset($row[6]) ? date('Y-m-d', strtotime($row[6])) : null,
-                'nama_wali'    => $row[7] ?? null,
-                'nik_wali'     => $row[8] ?? null,
-                'status_wali'  => $row[9] ?? null,
-                'rt'                => $row[10] ?? null,
-                'rw'                => $row[11] ?? null,
-                'posyandu'          => $row[12] ?? null,
-                'umur_subjek'   => floor($this->hitungUmurBulan($row[6], $row[1])). 'Bulan',
-                'bantuan'           => $row[13] ?? null,
-                'kategori'          => $row[14] ?? null,
+                'petugas' => $row[0] ?? null,
+                'tgl_intervensi' => isset($row[1]) ? date('Y-m-d', strtotime($row[1])) : null,
+                'desa' => $row[2] ?? null,
+                'nama_subjek' => $row[3] ?? null,
+                'nik_subjek' => $row[4] ?? null,
+                'status_subjek' => 'anak',
+                'jk' => $row[5] ?? null,
+                'tgl_lahir' => isset($row[6]) ? date('Y-m-d', strtotime($row[6])) : null,
+                'nama_wali' => $row[7] ?? null,
+                'nik_wali' => $row[8] ?? null,
+                'status_wali' => $row[9] ?? null,
+                'rt' => $row[10] ?? null,
+                'rw' => $row[11] ?? null,
+                'posyandu' => $row[12] ?? null,
+                'umur_subjek' => floor($this->hitungUmurBulan($row[6], $row[1])) . 'Bulan',
+                'bantuan' => $row[13] ?? null,
+                'kategori' => $row[14] ?? null,
             ]);
 
             $count++;
@@ -871,11 +913,12 @@ class ChildrenController extends Controller
     /** Hitung umur (bulan) */
     private function hitungUmurBulan($tglLahir, $tglUkur)
     {
-        if (!$tglLahir || !$tglUkur) return null;
+        if (!$tglLahir || !$tglUkur)
+            return null;
 
         $lahir = new \DateTime($tglLahir);
-        $ukur  = new \DateTime($tglUkur);
-        $diff  = $lahir->diff($ukur);
+        $ukur = new \DateTime($tglUkur);
+        $diff = $lahir->diff($ukur);
 
         return $diff->y * 12 + $diff->m + ($diff->d / 30);
     }
@@ -914,7 +957,8 @@ class ChildrenController extends Controller
                 return null;
         }
 
-        if (!$row) return null;
+        if (!$row)
+            return null;
 
         return $this->hitungZScoreLMS($bb, $row->L, $row->M, $row->S);
     }
@@ -934,31 +978,46 @@ class ChildrenController extends Controller
     /** Dummy status berdasar z-score */
     private function statusBBU($z)
     {
-        if (is_null($z)) return null;
-        if ($z < -3) return 'Severely Underweight';
-        if ($z < -2) return 'Underweight';
-        if ($z <= 1) return 'Normal';
-        if ($z <= 2) return 'Risiko BB Lebih';
+        if (is_null($z))
+            return null;
+        if ($z < -3)
+            return 'Severely Underweight';
+        if ($z < -2)
+            return 'Underweight';
+        if ($z <= 1)
+            return 'Normal';
+        if ($z <= 2)
+            return 'Risiko BB Lebih';
         return 'Overweight';
     }
 
     private function statusTBU($z)
     {
-        if (is_null($z)) return null;
-        if ($z < -3) return 'Severely Stunted';
-        if ($z < -2) return 'Stunted';
-        if ($z <= 2) return 'Normal';
+        if (is_null($z))
+            return null;
+        if ($z < -3)
+            return 'Severely Stunted';
+        if ($z < -2)
+            return 'Stunted';
+        if ($z <= 2)
+            return 'Normal';
         return 'Tinggi';
     }
 
     private function statusBBTB($z)
     {
-        if (is_null($z)) return null;
-        if ($z < -3) return 'Severely Wasted';
-        if ($z < -2) return 'Wasted';
-        if ($z <= 1) return 'Normal';
-        if ($z <= 2) return 'Possible risk of Overweight';
-        if ($z <= 3) return 'Overweight';
+        if (is_null($z))
+            return null;
+        if ($z < -3)
+            return 'Severely Wasted';
+        if ($z < -2)
+            return 'Wasted';
+        if ($z <= 1)
+            return 'Normal';
+        if ($z <= 2)
+            return 'Possible risk of Overweight';
+        if ($z <= 3)
+            return 'Overweight';
         return 'Obesitas';
     }
 
@@ -978,7 +1037,8 @@ class ChildrenController extends Controller
             ->first();
 
         // Jika tidak ada data sebelumnya → null
-        if (!$last) return null;
+        if (!$last)
+            return null;
 
         // Bandingkan berat badan
         return $bbSekarang > $last->bb;
@@ -988,7 +1048,8 @@ class ChildrenController extends Controller
      * yyy-mm-dd */
     private function convertDate($date)
     {
-        if (!$date) return null;
+        if (!$date)
+            return null;
         $parts = preg_split('/[\/\-]/', $date);
         if (count($parts) === 3) {
             return strlen($parts[2]) === 4
@@ -1024,33 +1085,45 @@ class ChildrenController extends Controller
         }
 
         // 4. Filter manual (opsional) dari UI
-        if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
-        if ($request->filled('rw'))       $query->where('rw', $request->rw);
-        if ($request->filled('rt'))       $query->where('rt', $request->rt);
+        if ($request->filled('posyandu'))
+            $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $query->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $query->where('rt', $request->rt);
 
         // 5. Tentukan periode current & previous
         if ($request->filled('periode')) {
-            $bulanIni = $this->parseBulanTahun($request->periode)->format('Y-m');
-            $bulanLalu = $this->parseBulanTahun($request->periode)->subMonth()->format('Y-m');
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            $bulanIni = $tanggal->format('Y-m');
+            $bulanLalu = $tanggal->subMonth()->format('Y-m');
         } else {
             // default: bulan ini - 1
             $bulanIni = now()->subMonth()->format('Y-m');
             $bulanLalu = now()->subMonths(2)->format('Y-m');
         }
 
+        $query->where(function ($q) use ($bulanIni, $bulanLalu) {
+            $q->whereBetween(\DB::raw("DATE_FORMAT(tgl_pengukuran, '%Y-%m')"), [$bulanLalu, $bulanIni]);
+        });
+
+        logger($query->toSql());
+        logger($query->getBindings());
+
+
         // 6. Ambil seluruh data Kunjungan yg relevan
         $data = $query->get();
 
         // 7. Kirim ke buildTrend dgn bulan yang sudah ditentukan
         $tren = [
-            'bb'   => $this->buildTrend($data, 'bbu', [
+            'bb' => $this->buildTrend($data, 'bbu', [
                 'Berat Badan Sangat Kurang (Severely Underweight)',
                 'Berat Badan Kurang (Underweight)',
                 'Berat Badan Normal',
                 'Risiko Berat Badan Lebih',
             ], $bulanIni, $bulanLalu),
 
-            'tb'   => $this->buildTrend($data, 'tbu', [
+            'tb' => $this->buildTrend($data, 'tbu', [
                 'Sangat Pendek (Severely Stunted)',
                 'Pendek (Stunted)',
                 'Normal',
@@ -1073,11 +1146,13 @@ class ChildrenController extends Controller
     private function buildTrend($data, $field, $categories, $currentMonth, $previousMonth)
     {
         // Filter per bulan
-        $currentData = $data->filter(fn($i) =>
+        $currentData = $data->filter(
+            fn($i) =>
             \Carbon\Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $currentMonth
         );
 
-        $previousData = $data->filter(fn($i) =>
+        $previousData = $data->filter(
+            fn($i) =>
             \Carbon\Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $previousMonth
         );
 
@@ -1090,11 +1165,11 @@ class ChildrenController extends Controller
             return $result;
         };
 
-        $currentCounts  = $countCategories($currentData);
+        $currentCounts = $countCategories($currentData);
         $previousCounts = $countCategories($previousData);
 
         // Hitung total
-        $totalCurrent  = array_sum($currentCounts);
+        $totalCurrent = array_sum($currentCounts);
         $totalPrevious = array_sum($previousCounts);
 
         $diffPercent = $totalPrevious == 0
@@ -1103,17 +1178,17 @@ class ChildrenController extends Controller
 
         return [
             "month" => [
-                "current"  => $currentMonth,
+                "current" => $currentMonth,
                 "previous" => $previousMonth,
             ],
             "data" => [
-                "current"  => $currentCounts,
+                "current" => $currentCounts,
                 "previous" => $previousCounts,
             ],
             "total" => [
-                "current"       => $totalCurrent,
-                "previous"      => $totalPrevious,
-                "diff_percent"  => $diffPercent
+                "current" => $totalCurrent,
+                "previous" => $totalPrevious,
+                "diff_percent" => $diffPercent
             ]
         ];
     }
