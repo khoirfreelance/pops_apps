@@ -374,19 +374,23 @@
                     <div class="row">
                       <div class="col-12 table-responsive">
                         <table class="table table-borderless align-middle">
-                          <tbody>
-                            <tr>
-                              <td class="text-additional fw-bold">Status</td>
-                              <td class="text-additional fw-bold">Jumlah</td>
-                              <td class="text-additional fw-bold">Persen</td>
-                              <td class="text-additional fw-bold">Tren</td>
+                          <thead>
+                            <tr class="fw-semibold text-additional">
+                              <th class="text-additional">Status</th>
+                              <th class="text-additional">Jumlah</th>
+                              <th class="text-additional">Persen</th>
+                              <th class="text-additional">Tren</th>
                             </tr>
-                            <tr v-for="(row, index) in dataTable_status" :key="index">
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, index) in dataTable_bbtb" :key="index">
                               <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah }}</td>
-                              <td class="text-additional small">{{ row.persen }} %</td>
+                              <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                              <td class="text-additional small">
+                                {{ row.persen ? row.persen + ' %' : '0 %' }}
+                              </td>
                               <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren !== '-'">
+                                <span v-if="row.tren && row.tren !== '-'">
                                   <i :class="row.trenIcon"></i> {{ row.tren }}
                                 </span>
                                 <span v-else>-</span>
@@ -1156,44 +1160,70 @@ export default {
           }));
         }
 
-        // =============================
-        //  A N A K   (BB, TB, BB/TB)
-        // =============================
         if (this.activeMenu === 'anak') {
-          // B B U
-          this.dataTable_bb = (res.data.dataTable_bb || []).map(row => ({
-            status: row.status || '-',
-            jumlah: row.jumlah ?? 0,
-            persen: row.persen ?? 0,
 
-            tren: row.tren ?? '-',
-            trenIcon: row.trenIcon ?? '',
-            trenClass: row.trenClass ?? '',
+          // ==================== BB/U ====================
+          const bbCurrent = res.data.bb?.data?.current || {};
+          this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah]) => ({
+            status, jumlah,
+            persen: 0,
+            tren: '-',
+            trenIcon: '',
+            trenClass: ''
           }));
 
-          // T B U
-          this.dataTable_tb = (res.data.dataTable_tb || []).map(row => ({
-            status: row.status || '-',
-            jumlah: row.jumlah ?? 0,
-            persen: row.persen ?? 0,
-
-            tren: row.tren ?? '-',
-            trenIcon: row.trenIcon ?? '',
-            trenClass: row.trenClass ?? '',
+          const totalBB = res.data.bb?.total?.current || 0;
+          this.dataTable_bb = this.dataTable_bb.map(row => ({
+            ...row,
+            persen: totalBB > 0 ? ((row.jumlah / totalBB) * 100).toFixed(1) : 0
           }));
 
-          // B B / T B
-          this.dataTable_bbtb = (res.data.dataTable_bbtb || []).map(row => ({
-            status: row.status || '-',
-            jumlah: row.jumlah ?? 0,
-            persen: row.persen ?? 0,
-
-            tren: row.tren ?? '-',
-            trenIcon: row.trenIcon ?? '',
-            trenClass: row.trenClass ?? '',
+          // ==================== TB/U ====================
+          const tbCurrent = res.data.tb?.data?.current || {};
+          this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah]) => ({
+            status, jumlah,
+            persen: 0,
+            tren: '-',
+            trenIcon: '',
+            trenClass: ''
           }));
+
+          const totalTB = res.data.tb?.total?.current || 0;
+          this.dataTable_tb = this.dataTable_tb.map(row => ({
+            ...row,
+            persen: totalTB > 0 ? ((row.jumlah / totalTB) * 100).toFixed(1) : 0
+          }));
+
+          // ==================== BB/TB ====================
+          const bbtbCurrent = res.data.bbtb?.data?.current || {};
+          this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah]) => ({
+            status, jumlah,
+            persen: 0,
+            tren: '-',
+            trenIcon: '',
+            trenClass: ''
+          }));
+
+          const totalBBTB = res.data.bbtb?.total?.current || 0;
+          this.dataTable_bbtb = this.dataTable_bbtb.map(row => ({
+            ...row,
+            persen: totalBBTB > 0 ? ((row.jumlah / totalBBTB) * 100).toFixed(1) : 0
+          }));
+
+          // ==================== Render Pie Chart ====================
+          this.$nextTick(() => {
+            this.renderChart('pieChart_bb', this.dataTable_bb, [
+              '#49c0f8', '#0086d5', '#005c8f', '#00395a', '#001b2e'
+            ]);
+            this.renderChart('pieChart_tb', this.dataTable_tb, [
+              '#66d37e', '#2bbf60', '#008c3c', '#005a26'
+            ]);
+            this.renderChart('pieChart_status', this.dataTable_bbtb, [
+              '#ffa57a', '#ff7f50', '#ff6242', '#ff3a2f', '#d72614'
+            ]);
+          });
+
         }
-
       } catch (e) {
         this.showError('Error Ambil Data', e);
       }
@@ -1349,6 +1379,120 @@ export default {
         },
       ]
     },
+    renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
+      const ctx = this.$refs[refName]?.getContext('2d');
+      if (!ctx) return;
+
+      // Hancurkan chart lama kalau ada
+      if (this[refName + 'Instance']) {
+        this[refName + 'Instance'].destroy();
+      }
+
+
+      if (!Array.isArray(dataTable) || !dataTable.length) {
+        console.log(`⚠️ Tidak ada data untuk chart ${refName}`);
+        return;
+      }
+
+      const labels = dataTable.map(row => row[labelKey]);
+      const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+
+      // Solid colors langsung dari array colors
+      const solidColors = colors;
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: solidColors,
+              borderWidth: 0, // ✅ tanpa border putih
+              hoverOffset: 12,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          layout: { padding: 25 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  return value > 0 ? [`${label}`, `${value}%`] : [];
+                },
+              },
+            },
+            datalabels: {
+            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+            color: 'rgb(0, 0, 0)',      // solid hitam
+            font: {
+              size: 11,
+              weight: 'bold',
+              opacity: 1,               // pastikan tidak transparan
+            },
+            backgroundColor: 'rgba(255,255,255,0)', // transparan di belakang teks
+            align: 'center',
+            anchor: 'center',
+            clamp: true,
+            offset: 0,
+            formatter: (value, ctx) => {
+              const label = ctx.chart.data.labels[ctx.dataIndex];
+              return [label, `${value}%`];
+            },
+          },
+          },
+          onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+          },
+          onClick: (event, elements) => {
+            if (!elements.length) return;
+            const index = elements[0].index;
+            const item = dataTable[index];
+            const status = item.status;
+
+            let tipe = '';
+            if (refName === 'pieChart_bb') tipe = 'BB/U';
+            else if (refName === 'pieChart_tb') tipe = 'TB/U';
+            else if (refName === 'pieChart_status') tipe = 'BB/TB';
+
+            this.selectedChartStatus = status;
+            this.selectedChartType = tipe;
+
+            this.$router.push({
+              path: '/admin/anak',
+              query: { tipe, status },
+            });
+          },
+        },
+        plugins: [ChartDataLabels],
+      });
+    },
+generatePeriodeOptions() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      const result = []
+
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` // ✅ pakai tanda "-"
+        const label = `${bulan[d.getMonth()]} ${d.getFullYear()}`
+        result.push({ label, value })
+      }
+
+      this.periodeOptions = result
+      //console.log('Periode options:', this.periodeOptions)
+
+    },
 
   },
   created() {
@@ -1395,12 +1539,22 @@ export default {
       await this.fetchStats();
 
       // 8️⃣ Generate pilihan periode
-      //this.generatePeriodeOptions();
+      this.generatePeriodeOptions();
 
       // 9️⃣ Pastikan filter kelurahan sudah terisi
       this.filters.kelurahan = this.kelurahan;
 
       // 🔟 Simpan hasil awal ke filteredData sesuai tipe menu
+      // 🔹 Render chart awal (sesuai tipe menu aktif)
+      this.renderChart('pieChart_bb', this.dataTable_bb, [
+          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
+        ]);
+        this.renderChart('pieChart_tb', this.dataTable_tb, [
+          '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
+        ]);
+        this.renderChart('pieChart_status', this.dataTable_status, [
+          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
+        ]);
       /* if (this.tipeMenu === 'anak') {
         this.filteredData = [...this.children];
       } else if (this.tipeMenu === 'bumil') {
@@ -1514,6 +1668,7 @@ export default {
     },
     activeMenu() {
       this.generateDataTable()
+      this.hitungStatistik()
     }
     /* isSudah(newVal) {
       this.$nextTick(() => {

@@ -1044,26 +1044,26 @@ class ChildrenController extends Controller
         // 7. Kirim ke buildTrend dgn bulan yang sudah ditentukan
         $tren = [
             'bb'   => $this->buildTrend($data, 'bbu', [
-                'Sangat Kurang',
-                'Kurang',
-                'Normal',
-                'Risiko BB Lebih',
-                'Tidak Naik'
+                'Berat Badan Sangat Kurang (Severely Underweight)',
+                'Berat Badan Kurang (Underweight)',
+                'Berat Badan Normal',
+                'Risiko Berat Badan Lebih',
             ], $bulanIni, $bulanLalu),
 
             'tb'   => $this->buildTrend($data, 'tbu', [
-                'Sangat Pendek',
-                'Pendek',
+                'Sangat Pendek (Severely Stunted)',
+                'Pendek (Stunted)',
                 'Normal',
                 'Tinggi'
             ], $bulanIni, $bulanLalu),
 
             'bbtb' => $this->buildTrend($data, 'bbtb', [
-                'Gizi Buruk',
-                'Gizi Kurang',
-                'Gizi Baik',
-                'Risiko Kurang Gizi',
-                'Gizi Lebih',
+                'Gizi Buruk (Severely Wasted)',
+                'Gizi Kurang (Wasted)',
+                'Gizi Baik (Normal)',
+                'Berisiko Gizi Lebih (Possible Risk of Overweight)',
+                'Gizi Lebih (Overweight)',
+                'Obesitas (Obese)',
             ], $bulanIni, $bulanLalu),
         ];
 
