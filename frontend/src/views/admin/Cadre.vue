@@ -25,75 +25,15 @@
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"  />
 
-      <!-- Main Content -->
-      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+       <!-- Main Content -->
+      <div class="flex-grow-1 d-flex flex-column">
+
         <!-- Content -->
         <div class="py-4 container-fluid" >
+
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div
-              class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between"
-            >
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <div class="my-3">
-                  <h2 class="fw-bold mt-3 mb-0 text-primary">Admin / Kader</h2>
-                  <small class="text-muted">
-                    List daftar pengguna yang terdaftar sebagai admin untuk mengelola data
-                  </small>
-                </div>
-                <div class="text-muted my-0">
-                  <ul class="list-unstyled">
-                    <!-- Jadwal intervensi -->
-                    <li v-if="pendingCount > 0" class="d-flex align-items-center mb-2">
-                      <div
-                        class="bg-additional rounded-circle d-flex align-items-center justify-content-center me-2"
-                        style="width: 28px; height: 28px;"
-                      >
-                        <i class="bi bi-calendar2-check text-white fs-6"></i>
-                      </div>
-                      <p class="mb-0 small">
-                        Anda memiliki
-                        <router-link
-                          to="/admin/jadwal"
-                          class="fw-bold text-muted text-decoration-none"
-                        >
-                          1 jadwal intervensi
-                        </router-link>
-                        hari ini.
-                      </p>
-                    </li>
+          <Welcome />
 
-                    <!-- Data pending -->
-                    <li v-if="pendingCount > 0" class="d-flex align-items-center">
-                      <div
-                        class="bg-additional rounded-circle d-flex align-items-center justify-content-center me-2"
-                        style="width: 28px; height: 28px;"
-                      >
-                        <i class="bi bi-upload text-white fs-6"></i>
-                      </div>
-                      <p class="mb-0 small">
-                        Anda memiliki
-                        <a
-                          href="javascript:void(0)"
-                          class="fw-bold text-muted text-decoration-none"
-                          @click="toggleExpandPending"
-                        >
-                          {{ pendingCount }} data pending
-                        </a>
-                        belum terkirim.
-                      </p>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img src="/src/assets/admin.png" alt="Welcome" class="img-fluid welcome-img" />
-              </div>
-            </div>
-          </div>
 
           <!-- Filter -->
           <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
@@ -610,6 +550,7 @@ import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
+import Welcome from '@/components/Welcome.vue'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -622,7 +563,7 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Cadre',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
       configCacheKey: 'site_config_cache',
@@ -1259,17 +1200,9 @@ export default {
   background: #f9f9fb;
   min-height: 100vh;
 }
-/* Gradient Banner */
-.cadre-banner {
-  background: linear-gradient(90deg, var(--bs-primary), var(--bs-secondary));
-  border-radius: 0 0 1rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
 .filter-wrapper {
   position: relative; /* biar ikut alur layout */
   z-index: 0; /* pastikan di bawah sidebar */
-  margin-top: -30px !important;
-  width: 97%;
   border-radius: 0.75rem;
 }
 /* Hilangkan garis pemisah antara sidebar dan content */

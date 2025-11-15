@@ -413,6 +413,215 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Ringkasan -->
+              <div class="container-fluid mt-3">
+                <div class="row">
+                  <div class="col-12 d-flex justify-content-between mb-2">
+                    <h5 class="fw-bold text-primary">Anak Dengan Masalah Gizi Ganda</h5>
+                    <select v-model="filterPeriode" @change="renderRingkasan(filterPeriode)" class="form-select w-auto">
+                      <option :value="3">3 Bulan Terakhir</option>
+                      <option :value="6">6 Bulan Terakhir</option>
+                      <option :value="9">9 Bulan Terakhir</option>
+                      <option :value="12">1 Tahun Terakhir</option>
+                    </select>
+                  </div>
+
+                  <!-- CARD UTAMA -->
+                  <div class="col-12">
+                    <div class="card shadow-sm border-0 rounded-4">
+
+                     <!-- HEADER -->
+                      <div class="text-center position-relative mb-0">
+                        <h6
+                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
+                          style="width: 55% !important;"
+                        >
+                          {{ totalAnak }} dengan Masalah Gizi Ganda
+                        </h6>
+
+                        <!-- TAB NAV -->
+                        <div class="container position-relative" style="margin-top: -2.5rem;">
+                          <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
+                            <button
+                              class="w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                              style="border-bottom-width: 5px !important;"
+                              @click="toggleSudah(false)"
+                            >
+                              Anak belum dapat Intervensi <br> {{ belum }}
+                            </button>
+
+                            <button
+                              class="w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                              style="border-bottom-width: 5px !important;"
+                              @click="toggleSudah(true)"
+                            >
+                              Anak sudah dapat Intervensi <br> {{ sudah }}
+                            </button>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <!-- ISI GRID -->
+                      <div class="row g-3 mt-3">
+                        <!-- KIRI ATAS -->
+                        <div class="col-md-4 col-sm-12">
+                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
+                            <div>
+                              <h6 class="text-center text-success mb-2">
+                                Jumlah anak tidak membaik<br />
+                                <span class="fw-semibold">dalam {{ filterPeriode }} bulan terakhir</span>
+                              </h6>
+                            </div>
+                            <div class="chart-placeholder text-muted text-center mt-auto">
+                              <canvas ref="lineChart" style="max-height: 250px;"></canvas>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- TENGAH ATAS -->
+                        <div class="col-md-4 col-sm-12">
+                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
+                            <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
+                            <div class="chart-placeholder text-muted text-center py-4">
+                              <canvas v-if="isSudah" ref="sudahChart"></canvas>
+                              <canvas v-else ref="funnelChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- KANAN ATAS -->
+                        <div class="col-md-4 col-sm-12">
+                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
+                            <h6 class="text-center text-success mb-2">
+                              Top 5 Posyandu<br />
+                              <span class="fw-semibold">dengan anak tidak membaik dalam {{filterPeriode}} bulan terakhir</span>
+                            </h6>
+                            <div class="chart-placeholder text-muted text-center py-4">
+                              <canvas ref="barChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- BAWAH: TABEL -->
+                        <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
+                          <div v-if="isSudah">
+                            <table class="table table-striped table-sm align-middle p-2">
+                              <thead class="table-success">
+                                <tr>
+                                  <th class="text-center p-2">No</th>
+                                  <th class="text-center p-2" width="300">Nama</th>
+                                  <th class="text-center p-2">Jenis Intervensi</th>
+                                  <th class="text-center p-2">Stunting</th>
+                                  <th class="text-center p-2">Wasting</th>
+                                  <th class="text-center p-2">Underweight</th>
+                                  <th class="text-center p-2">BB Sangat</th>
+                                  <th class="text-center p-2">Overweight</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="(anak, i) in paginatedChildren" :key="i">
+                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
+                                  <td>{{ anak.nama }}</td>
+                                  <td class="text-center">{{ anak.rumusan }}</td>
+                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                </tr>
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="100%" class="text-end">
+                                    <button
+                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                      @click="exportToCSV(true)"
+                                    >
+                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                      Export CSV
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                            <!-- Pagination -->
+                            <nav>
+                              <ul class="pagination justify-content-center">
+                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                  <button class="page-link" @click="currentPage--">Previous</button>
+                                </li>
+                                <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
+                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
+                                </li>
+                                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                                  <button class="page-link" @click="currentPage++">Next</button>
+                                </li>
+                              </ul>
+                            </nav>
+                          </div>
+                          <div v-else>
+                            <table class="table table-striped table-sm align-middle p-2">
+                              <thead class="table-success">
+                                <tr>
+                                  <th class="text-center p-2">No</th>
+                                  <th class="text-center p-2" width="300">Nama</th>
+                                  <th class="text-center p-2">Jenis Intervensi</th>
+                                  <th class="text-center p-2">Stunting</th>
+                                  <th class="text-center p-2">Wasting</th>
+                                  <th class="text-center p-2">Underweight</th>
+                                  <th class="text-center p-2">BB Sangat</th>
+                                  <th class="text-center p-2">Overweight</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="(anak, i) in paginatedChildren_belum" :key="i">
+                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
+                                  <td>{{ anak.nama }}</td>
+                                  <td class="text-center">{{ anak.rumusan }}</td>
+                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                </tr>
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="100%" class="text-end">
+                                    <button
+                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                      @click="exportToCSV(false)"
+                                    >
+                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                      Export CSV
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                            <!-- Pagination -->
+                            <nav>
+                              <ul class="pagination justify-content-center">
+                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                  <button class="page-link" @click="currentPage--">Previous</button>
+                                </li>
+                                <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
+                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
+                                </li>
+                                <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
+                                  <button class="page-link" @click="currentPage++">Next</button>
+                                </li>
+                              </ul>
+                            </nav>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Tab Bumil -->
@@ -473,76 +682,77 @@
                 </div>
               </div>
 
+              <!-- Tren -->
               <div class="container-fluid">
-                  <h5 class="fw-bold text-primary mb-3">Status Kesehatan Ibu Hamil</h5>
+                <h5 class="fw-bold text-primary mb-3">Status Kesehatan Ibu Hamil</h5>
 
-                  <!-- Row utama: tabel & chart berdampingan -->
-                  <div class="row g-3">
-                    <!-- Table -->
-                    <div class="col-12 col-xl-8">
-                      <div class="card border border-primary shadow p-3 h-100">
-                        <div class="table-responsive">
-                          <table class="table table-borderless align-middle">
-                            <thead>
-                              <tr class="fw-semibold text-additional">
-                                <th class="text-additional">Status</th>
-                                <th class="text-additional">Jumlah</th>
-                                <th class="text-additional">Persen</th>
-                                <th class="text-additional">Tren</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(row, index) in dataTable_bumil" :key="index">
-                                <td class="text-additional small">{{ row.status }}</td>
-                                <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
-                                <td class="text-additional small">
-                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
-                                </td>
-                                <td class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'">
-                                    <i :class="row.trenIcon"></i> {{ row.tren }}
-                                  </span>
-                                  <span v-else>-</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Canvas Chart -->
-                    <div class="col-12 col-xl-4">
-                      <div class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
-                        <canvas ref="bumilChart" style="width: 100%; height: 280px !important;"></canvas>
+                <!-- Row utama: tabel & chart berdampingan -->
+                <div class="row g-3">
+                  <!-- Table -->
+                  <div class="col-12 col-xl-8">
+                    <div class="card border border-primary shadow p-3 h-100">
+                      <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                          <thead>
+                            <tr class="fw-semibold text-additional">
+                              <th class="text-additional">Status</th>
+                              <th class="text-additional">Jumlah</th>
+                              <th class="text-additional">Persen</th>
+                              <th class="text-additional">Tren</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, index) in dataTable_bumil" :key="index">
+                              <td class="text-additional small">{{ row.status }}</td>
+                              <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                              <td class="text-additional small">
+                                {{ row.persen ? row.persen + ' %' : '0 %' }}
+                              </td>
+                              <td class="small" :class="row.trenClass">
+                                <span v-if="row.tren && row.tren !== '-'">
+                                  <i :class="row.trenIcon"></i> {{ row.tren }}
+                                </span>
+                                <span v-else>-</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Tabel tambahan bawah -->
-                  <div class="row mt-4">
-                    <div class="col-12">
-                      <div class="card border border-primary shadow p-3">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-sm align-middle text-center mb-0">
-                            <thead class="table-light">
-                              <tr>
-                                <th>Indikator</th>
-                                <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(values, indikator) in indikatorData" :key="indikator">
-                                <td class="fw-bold">{{ indikator }}</td>
-                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                  <!-- Canvas Chart -->
+                  <div class="col-12 col-xl-4">
+                    <div class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
+                      <canvas ref="bumilChart" style="width: 100%; height: 280px !important;"></canvas>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tabel tambahan bawah -->
+                <div class="row mt-4">
+                  <div class="col-12">
+                    <div class="card border border-primary shadow p-3">
+                      <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th>Indikator</th>
+                              <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(values, indikator) in indikatorData" :key="indikator">
+                              <td class="fw-bold">{{ indikator }}</td>
+                              <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
             </div>
 
@@ -602,6 +812,70 @@
                 </div>
               </div>
 
+              <!-- TREN -->
+              <div class="container-fluid">
+                <h5 class="fw-bold text-primary mb-3">Status Kesehatan Calon Pengantin</h5>
+
+                <!-- Row utama: tabel-->
+                <div class="row g-3">
+                  <!-- Table -->
+                  <div class="col-12">
+                    <div class="card border border-primary shadow p-3 h-100">
+                      <div class="table-responsive">
+                        <table class="table table-borderless align-middle">
+                          <thead>
+                            <tr class="fw-semibold text-additional">
+                              <th class="text-additional">Status</th>
+                              <th class="text-additional">Jumlah</th>
+                              <th class="text-additional">Persen</th>
+                              <th class="text-additional">Tren</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, index) in dataTable_catin" :key="index">
+                              <td class="text-additional small">{{ row.status }}</td>
+                              <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                              <td class="text-additional small">
+                                {{ row.persen ? row.persen + ' %' : '0 %' }}
+                              </td>
+                              <td class="small" :class="row.trenClass">
+                                <span v-if="row.tren && row.tren !== '-'">
+                                  <i :class="row.trenIcon"></i> {{ row.tren }}
+                                </span>
+                                <span v-else>-</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tabel tambahan bawah -->
+                <div class="row mt-4">
+                  <div class="col-12">
+                    <div class="card border border-primary shadow p-3">
+                      <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle text-center mb-0">
+                          <thead class="table-light">
+                            <tr>
+                              <th>Indikator</th>
+                              <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(values, indikator) in indikatorCatin" :key="indikator">
+                              <td class="fw-bold">{{ indikator }}</td>
+                              <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1106,6 +1380,7 @@ export default {
 
         const data = res.data;
         const total = data.total || 0;
+        this.totalAnak = total;
 
         this.kesehatanData[this.activeMenu] = data.counts.map(item => ({
           title: item.title,
@@ -1139,6 +1414,9 @@ export default {
           case 'bumil':
             res = await axios.get(`${baseURL}/api/pregnancy/tren`, { headers, params });
             break;
+          case 'catin':
+            res = await axios.get(`${baseURL}/api/bride/tren`, { headers, params });
+            break;
           default:
             return;
         }
@@ -1150,6 +1428,18 @@ export default {
         // =============================
         if (this.activeMenu === 'bumil') {
           this.dataTable_bumil = (res.data.dataTable_bumil || []).map(row => ({
+            status: row.status || '-',
+            jumlah: row.jumlah ?? 0,
+            persen: row.persen ?? 0,
+
+            tren: row.tren ?? '-',
+            trenIcon: row.trenIcon ?? '',
+            trenClass: row.trenClass ?? '',
+          }));
+        }
+
+        if (this.activeMenu === 'catin') {
+          this.dataTable_catin = (res.data.dataTable_catin || []).map(row => ({
             status: row.status || '-',
             jumlah: row.jumlah ?? 0,
             persen: row.persen ?? 0,
@@ -1213,13 +1503,13 @@ export default {
           // ==================== Render Pie Chart ====================
           this.$nextTick(() => {
             this.renderChart('pieChart_bb', this.dataTable_bb, [
-              '#49c0f8', '#0086d5', '#005c8f', '#00395a', '#001b2e'
+              '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
             ]);
             this.renderChart('pieChart_tb', this.dataTable_tb, [
-              '#66d37e', '#2bbf60', '#008c3c', '#005a26'
+              '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
             ]);
             this.renderChart('pieChart_status', this.dataTable_bbtb, [
-              '#ffa57a', '#ff7f50', '#ff6242', '#ff3a2f', '#d72614'
+              '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
             ]);
           });
 
@@ -1472,7 +1762,7 @@ export default {
         plugins: [ChartDataLabels],
       });
     },
-generatePeriodeOptions() {
+    generatePeriodeOptions() {
       const bulan = [
         'Januari', 'Februari', 'Maret', 'April',
         'Mei', 'Juni', 'Juli', 'Agustus',
