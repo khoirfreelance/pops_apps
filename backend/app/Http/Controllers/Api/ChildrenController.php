@@ -300,7 +300,6 @@ class ChildrenController extends Controller
                 $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
                 $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
-                logger('Parsed periode: ' . $filters['periodeAwal'] . ' to ' . $filters['periodeAkhir']);
             }
 
 
@@ -1107,36 +1106,35 @@ class ChildrenController extends Controller
             $q->whereBetween(\DB::raw("DATE_FORMAT(tgl_pengukuran, '%Y-%m')"), [$bulanLalu, $bulanIni]);
         });
 
-        logger($query->toSql());
-        logger($query->getBindings());
 
 
         // 6. Ambil seluruh data Kunjungan yg relevan
         $data = $query->get();
 
+
         // 7. Kirim ke buildTrend dgn bulan yang sudah ditentukan
         $tren = [
-            'bb' => $this->buildTrend($data, 'bbu', [
-                'Berat Badan Sangat Kurang (Severely Underweight)',
-                'Berat Badan Kurang (Underweight)',
-                'Berat Badan Normal',
-                'Risiko Berat Badan Lebih',
+            'bb' => $this->buildTrend($data, 'bb_u', [
+                'Berat Badan Sangat Kurang (Severely Underweight)' => ["Severely Underweight"],
+                'Berat Badan Kurang (Underweight)' => ['Underweight'],
+                'Berat Badan Normal' => ['Normal'],
+                'Risiko Berat Badan Lebih' => ['Risiko BB Lebih'],
             ], $bulanIni, $bulanLalu),
 
-            'tb' => $this->buildTrend($data, 'tbu', [
-                'Sangat Pendek (Severely Stunted)',
-                'Pendek (Stunted)',
-                'Normal',
-                'Tinggi'
+            'tb' => $this->buildTrend($data, 'tb_u', [
+                'Sangat Pendek (Severely Stunted)' => ["Severely Stunted"],
+                'Pendek (Stunted)' => ['Stunted'],
+                'Normal' => ["Normal"],
+                'Tinggi' => ['Tinggi'],
             ], $bulanIni, $bulanLalu),
 
-            'bbtb' => $this->buildTrend($data, 'bbtb', [
-                'Gizi Buruk (Severely Wasted)',
-                'Gizi Kurang (Wasted)',
-                'Gizi Baik (Normal)',
-                'Berisiko Gizi Lebih (Possible Risk of Overweight)',
-                'Gizi Lebih (Overweight)',
-                'Obesitas (Obese)',
+            'bbtb' => $this->buildTrend($data, 'bb_tb', [
+                'Gizi Buruk (Severely Wasted)' => ['Severely Wasted'],
+                'Gizi Kurang (Wasted)' => ['Wasted'],
+                'Gizi Baik (Normal)' => ['Normal'],
+                'Berisiko Gizi Lebih (Possible Risk of Overweight)' => ['Possible risk of Overweight'],
+                'Gizi Lebih (Overweight)' => ['Overweight'],
+                'Obesitas (Obese)' => ['Obese', 'Obesitas'],
             ], $bulanIni, $bulanLalu),
         ];
 
@@ -1148,19 +1146,23 @@ class ChildrenController extends Controller
         // Filter per bulan
         $currentData = $data->filter(
             fn($i) =>
-            \Carbon\Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $currentMonth
+            Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $currentMonth
         );
+
 
         $previousData = $data->filter(
             fn($i) =>
-            \Carbon\Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $previousMonth
+            Carbon::parse($i->tgl_pengukuran)->format('Y-m') === $previousMonth
         );
+
 
         // Hitung kategori
         $countCategories = function ($collection) use ($field, $categories) {
             $result = [];
-            foreach ($categories as $cat) {
-                $result[$cat] = $collection->where($field, $cat)->count();
+            foreach ($categories as $cat => $values) {
+                $result[$cat] = $collection->filter(function ($i) use ($field, $values) {
+                    return in_array($i->$field, $values);
+                })->count();
             }
             return $result;
         };
