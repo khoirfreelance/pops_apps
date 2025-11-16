@@ -1472,14 +1472,14 @@ export default {
               trenClass = "";
             } 
             else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
               trenClass = "text-success";
             } 
             else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
@@ -1531,14 +1531,14 @@ export default {
               trenClass = "";
             } 
             else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
               trenClass = "text-success";
             } 
             else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
@@ -1589,14 +1589,14 @@ export default {
               trenClass = "";
             } 
             else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
               trenClass = "text-success";
             } 
             else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
