@@ -1454,13 +1454,55 @@ export default {
 
           // ==================== BB/U ====================
           const bbCurrent = res.data.bb?.data?.current || {};
-          this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah]) => ({
-            status, jumlah,
-            persen: 0,
-            tren: '-',
-            trenIcon: '',
-            trenClass: ''
-          }));
+          const bbLast = res.data.bb?.data?.previous || {};
+
+          const totalCurrent = res.data.bb?.total?.current || 0;
+          
+          this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah]) => {
+            const prevValue = bbLast[status] ?? 0;
+            const diff = jumlah - prevValue;
+
+            let tren = "-";
+            let trenIcon = "";
+            let trenClass = "";
+
+            if (prevValue === 0 && jumlah === 0) {
+              tren = "-";
+              trenIcon = "";
+              trenClass = "";
+            } 
+            else if (diff > 0) {
+              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              else
+                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
+              trenIcon = "bi bi-caret-up-fill";
+              trenClass = "text-success";
+            } 
+            else if (diff < 0) {
+              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              else
+                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
+              trenIcon = "bi bi-caret-down-fill";
+              trenClass = "text-danger";
+            } 
+            else {
+              tren = "0.00%";
+              trenIcon = "bi bi-caret-right-fill";
+              trenClass = "text-secondary";
+            }
+            
+
+            const persen = totalCurrent === 0 ? 0 : ((jumlah / totalCurrent) * 100).toFixed(2);
+              
+            return {
+              status,
+              jumlah,
+              persen,
+              tren,
+              trenIcon,
+              trenClass,
+            };
+          });
 
           const totalBB = res.data.bb?.total?.current || 0;
           this.dataTable_bb = this.dataTable_bb.map(row => ({
@@ -1470,13 +1512,56 @@ export default {
 
           // ==================== TB/U ====================
           const tbCurrent = res.data.tb?.data?.current || {};
-          this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah]) => ({
-            status, jumlah,
-            persen: 0,
-            tren: '-',
-            trenIcon: '',
-            trenClass: ''
-          }));
+          const tbLast = res.data.tb?.data?.previous || {};
+
+          const totalCurrentTB = res.data.tb?.total?.current || 0;
+
+
+          this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah]) => {
+            const prevValue = tbLast[status] ?? 0;
+            const diff = jumlah - prevValue;
+
+            let tren = "-";
+            let trenIcon = "";
+            let trenClass = "";
+
+            if (prevValue === 0 && jumlah === 0) {
+              tren = "-";
+              trenIcon = "";
+              trenClass = "";
+            } 
+            else if (diff > 0) {
+              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              else
+                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
+              trenIcon = "bi bi-caret-up-fill";
+              trenClass = "text-success";
+            } 
+            else if (diff < 0) {
+              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              else
+                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
+              trenIcon = "bi bi-caret-down-fill";
+              trenClass = "text-danger";
+            } 
+            else {
+              tren = "0.00%";
+              trenIcon = "bi bi-caret-right-fill";
+              trenClass = "text-secondary";
+            }
+            
+
+            const persen = totalCurrentTB === 0 ? 0 : ((jumlah / totalCurrentTB) * 100).toFixed(2);
+              
+            return {
+              status,
+              jumlah,
+              persen,
+              tren,
+              trenIcon,
+              trenClass,
+            };
+          });
 
           const totalTB = res.data.tb?.total?.current || 0;
           this.dataTable_tb = this.dataTable_tb.map(row => ({
@@ -1486,13 +1571,55 @@ export default {
 
           // ==================== BB/TB ====================
           const bbtbCurrent = res.data.bbtb?.data?.current || {};
-          this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah]) => ({
-            status, jumlah,
-            persen: 0,
-            tren: '-',
-            trenIcon: '',
-            trenClass: ''
-          }));
+          const bbtbLast = res.data.bbtb?.data?.previous || {};
+
+          const totalCurrentBBTB = res.data.bbtb?.total?.current || 0;
+
+          this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah]) => {
+            const prevValue = bbtbLast[status] ?? 0;
+            const diff = jumlah - prevValue;
+
+            let tren = "-";
+            let trenIcon = "";
+            let trenClass = "";
+
+            if (prevValue === 0 && jumlah === 0) {
+              tren = "-";
+              trenIcon = "";
+              trenClass = "";
+            } 
+            else if (diff > 0) {
+              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              else
+                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
+              trenIcon = "bi bi-caret-up-fill";
+              trenClass = "text-success";
+            } 
+            else if (diff < 0) {
+              if (prevValue === 0 && jumlah > 0) tren = (100 * diff).toFixed(2) + '%';  
+              else
+                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
+              trenIcon = "bi bi-caret-down-fill";
+              trenClass = "text-danger";
+            } 
+            else {
+              tren = "0.00%";
+              trenIcon = "bi bi-caret-right-fill";
+              trenClass = "text-secondary";
+            }
+            
+
+            const persen = totalCurrentBBTB === 0 ? 0 : ((jumlah / totalCurrentBBTB) * 100).toFixed(2);
+              
+            return {
+              status,
+              jumlah,
+              persen,
+              tren,
+              trenIcon,
+              trenClass,
+            };
+          });
 
           const totalBBTB = res.data.bbtb?.total?.current || 0;
           this.dataTable_bbtb = this.dataTable_bbtb.map(row => ({
