@@ -419,12 +419,6 @@
                 <div class="row">
                   <div class="col-12 d-flex justify-content-between mb-2">
                     <h5 class="fw-bold text-primary">Anak Dengan Masalah Gizi Ganda</h5>
-                    <select v-model="filterPeriode" @change="renderRingkasan(filterPeriode)" class="form-select w-auto">
-                      <option :value="3">3 Bulan Terakhir</option>
-                      <option :value="6">6 Bulan Terakhir</option>
-                      <option :value="9">9 Bulan Terakhir</option>
-                      <option :value="12">1 Tahun Terakhir</option>
-                    </select>
                   </div>
 
                   <!-- CARD UTAMA -->
@@ -437,7 +431,7 @@
                           class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
                           style="width: 55% !important;"
                         >
-                          {{ totalAnak }} dengan Masalah Gizi Ganda
+                          {{ totalKasus }} dengan Masalah Gizi Ganda
                         </h6>
 
                         <!-- TAB NAV -->
@@ -448,7 +442,7 @@
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(false)"
                             >
-                              Anak belum dapat Intervensi <br> {{ belum }}
+                              Anak belum dapat Intervensi <br> {{ totalBelum }}
                             </button>
 
                             <button
@@ -456,7 +450,7 @@
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(true)"
                             >
-                              Anak sudah dapat Intervensi <br> {{ sudah }}
+                              Anak sudah dapat Intervensi <br> {{ totalSudah }}
                             </button>
                           </div>
                         </div>
@@ -1350,6 +1344,7 @@ export default {
     async applyFilter() {
       await this.hitungStatistik()
       await this.generateDataTable()
+      await this.masalahGanda()
     },
     async hitungStatistik() {
       try {
@@ -1457,7 +1452,7 @@ export default {
           const bbLast = res.data.bb?.data?.previous || {};
 
           const totalCurrent = res.data.bb?.total?.current || 0;
-          
+
           this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah]) => {
             const prevValue = bbLast[status] ?? 0;
             const diff = jumlah - prevValue;
@@ -1470,30 +1465,30 @@ export default {
               tren = "-";
               trenIcon = "";
               trenClass = "";
-            } 
+            }
             else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
               trenClass = "text-success";
-            } 
+            }
             else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
               trenClass = "text-danger";
-            } 
+            }
             else {
               tren = "0.00%";
               trenIcon = "bi bi-caret-right-fill";
               trenClass = "text-secondary";
             }
-            
+
 
             const persen = totalCurrent === 0 ? 0 : ((jumlah / totalCurrent) * 100).toFixed(2);
-              
+
             return {
               status,
               jumlah,
@@ -1529,30 +1524,30 @@ export default {
               tren = "-";
               trenIcon = "";
               trenClass = "";
-            } 
+            }
             else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
               trenClass = "text-success";
-            } 
+            }
             else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
               trenClass = "text-danger";
-            } 
+            }
             else {
               tren = "0.00%";
               trenIcon = "bi bi-caret-right-fill";
               trenClass = "text-secondary";
             }
-            
+
 
             const persen = totalCurrentTB === 0 ? 0 : ((jumlah / totalCurrentTB) * 100).toFixed(2);
-              
+
             return {
               status,
               jumlah,
@@ -1587,30 +1582,30 @@ export default {
               tren = "-";
               trenIcon = "";
               trenClass = "";
-            } 
+            }
             else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
               trenClass = "text-success";
-            } 
+            }
             else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';  
+              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
               trenClass = "text-danger";
-            } 
+            }
             else {
               tren = "0.00%";
               trenIcon = "bi bi-caret-right-fill";
               trenClass = "text-secondary";
             }
-            
+
 
             const persen = totalCurrentBBTB === 0 ? 0 : ((jumlah / totalCurrentBBTB) * 100).toFixed(2);
-              
+
             return {
               status,
               jumlah,
@@ -1641,6 +1636,75 @@ export default {
           });
 
         }
+      } catch (e) {
+        this.showError('Error Ambil Data', e);
+      }
+    },
+    toggleSudah(val) {
+      this.isSudah = val;
+      this.isUdahBumil = val;
+    },
+    async masalahGanda() {
+      try {
+        const params = {
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || '',
+        };
+
+        const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+
+        let res = null;
+
+        switch (this.activeMenu) {
+          case 'anak':
+            res = await axios.get(`${baseURL}/api/children/case`, { headers, params });
+            break;
+          case 'bumil':
+            res = await axios.get(`${baseURL}/api/pregnancy/case`, { headers, params });
+            break;
+          default:
+            return;
+        }
+
+        this.totalKasus = res.data.totalCase
+        console.log('debug datatable :', this.totalKasus);
+
+      } catch (e) {
+        this.showError('Error Ambil Data', e);
+      }
+    },
+    async hitungIntervensi() {
+      try {
+        const params = {
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || '',
+        };
+
+        const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+
+        let res = null;
+
+        switch (this.activeMenu) {
+          case 'anak':
+            res = await axios.get(`${baseURL}/api/children/intervensi`, { headers, params });
+            break;
+          case 'bumil':
+            res = await axios.get(`${baseURL}/api/pregnancy/intervensi`, { headers, params });
+            break;
+          default:
+            return;
+        }
+
+        console.log('debug datatable :', res.data);
+        const sudah = res.data.grouping.punya_keduanya;
+        const belum = this.totalKasus - sudah;
+        this.totalSudah = sudah;
+        this.totalBelum = belum;
+
       } catch (e) {
         this.showError('Error Ambil Data', e);
       }
@@ -1949,6 +2013,8 @@ export default {
       await this.hitungStatistik(); // hitung ulang sesuai menu 'anak'
       await this.generateInfoBoxes() ;
       await this.generateDataTable();
+      await this.masalahGanda();
+      await this.hitungIntervensi();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
 
@@ -1993,89 +2059,6 @@ export default {
       }, 300);
     }
   },
-  /* async mounted() {
-    this.isLoading = true;
-
-    try {
-      await this.$nextTick();
-      await this.getWilayahUser();
-      await this.hitungStatistik();
-      //await this.loadConfigWithCache();
-      this.bulanLabels = this.getLast12Months() // <- generate bulan realtime
-
-      // ⏳ Ambil semua data (anak, bumil, catin)
-      //await this.loadChildren(); // sudah generateListsFromChildren()
-      //await this.loadBride(); // untuk catin
-      //await this.loadBumil?.(); // kalau ada load ibu hamil, opsional
-      //await this.generateIndikatorBumilBulanan();
-      await this.generateIndikatorCatinBulanan();
-
-      // 🔹 Set menu default
-      this.menu('anak'); // otomatis set this.tipeMenu = 'anak' & hitungStatusGizi()
-
-      // 🔹 Jalankan logika tambahan setelah data dasar siap
-      //const { belum, sudah } = this.hitungIntervensi();
-      //const { belumBumil, sudahBumil } = this.hitungIntervensiBumil();
-      //this.belum = belum;
-      //this.sudah = sudah;
-      //this.belumBumil = belumBumil;
-      //this.sudahBumil = sudahBumil;
-
-      // 🔹 Generate filter & tabel awal sesuai tipe menu aktif
-      //this.generateInfoBoxes();
-      //this.generateListsFromChildren();
-      //this.generateDataTableBB();
-      //this.generateDataTableTB();
-      //this.generateDataTableStatus();
-      //this.generateDataTableBumil();
-
-      this.generateDataTableCatin();
-
-      //await this.generateIndikatorBumilBulanan();
-      await this.fetchStats();
-      this.generatePeriodeOptions();
-
-      // Pastikan filter kelurahan & periode sudah siap
-      this.filters.kelurahan = this.kelurahan;
-
-      //await this.loadIntervensiBumil();
-
-      // 🔹 Render chart awal (sesuai tipe menu aktif)
-      this.renderChart('pieChart_bb', this.dataTable_bb, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
-        ]);
-        this.renderChart('pieChart_tb', this.dataTable_tb, [
-          '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
-        ]);
-        this.renderChart('pieChart_status', this.dataTable_status, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-        ]);
-
-      // 🔹 Grafik tambahan
-      this.renderLineChart();
-      this.renderBarChart();
-      this.renderFunnelChart();
-      this.renderSudahChart();
-
-
-      // 🔹 Simpan hasil awal
-      if (this.tipeMenu === 'anak') {
-        this.filteredData = [...this.children];
-      } else if (this.tipeMenu === 'bumil') {
-        this.filteredData = [...this.bumil];
-      } else if (this.tipeMenu === 'catin') {
-        this.filteredData = [...this.catin];
-      }
-
-      this.handleResize();
-      window.addEventListener('resize', this.handleResize);
-
-    } catch (err) {
-      console.error('Error loading data:', err);
-    } finally {
-      setTimeout(() => { this.isLoading = false; }, 300);
-    }
-  }, */
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
@@ -2087,117 +2070,6 @@ export default {
       this.generateDataTable()
       this.hitungStatistik()
     }
-    /* isSudah(newVal) {
-      this.$nextTick(() => {
-        if (newVal) {
-          this.renderSudahChart();
-        } else {
-          this.renderFunnelChart();
-        }
-      });
-    } */
-  },
-  computed: {
-    /* processedChildren() {
-      const data = Array.isArray(this.filteredData) && this.filteredData.length
-        ? this.filteredData
-        : Array.isArray(this.children) ? this.children : [];
-
-      const lastItem = arr => Array.isArray(arr) && arr.length ? arr[arr.length - 1] : {};
-
-      // 🔸 Filter hanya anak dengan intervensi yang memiliki jenis valid (tidak null/kosong/"0")
-      const denganIntervensi = data.filter(child => {
-        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
-
-        // Ambil hanya anak yang punya intervensi dengan jenis tidak null, tidak kosong, dan tidak "0"
-        return intervensiList.some(i => i && i.jenis && i.jenis !== "0" && i.jenis.trim() !== "");
-      });
-
-
-      return denganIntervensi.map(child => {
-        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
-
-        // Ambil semua jenis intervensi unik
-        const jenisUnik = [...new Set(
-          intervensiList
-            .map(i => i.jenis)
-            .filter(j => j && j.trim() !== '')
-        )];
-
-        // Jika ada, gabungkan dengan koma
-        const rumusan = jenisUnik.length ? jenisUnik.join(', ') : '-';
-
-        const lastPosyandu = lastItem(child.raw?.posyandu);
-
-        return {
-          nama: child.nama || '-',
-          rumusan, // tampilkan semua intervensi unik
-          stunting: ['Stunted', 'Severely Stunted'].includes(lastPosyandu.tbu),
-          wasting: ['Wasted', 'Severely Wasted'].includes(lastPosyandu.bbtb),
-          underweight: ['Underweight', 'Severely Underweight'].includes(lastPosyandu.bbu),
-          bb_sangat: lastPosyandu.bbu === 'Severely Underweight',
-          overweight: lastPosyandu.bbu === 'Overweight',
-        };
-      });
-    },
-    processedChildren_belum() {
-      // Pastikan data valid
-      const data = Array.isArray(this.filteredData) && this.filteredData.length
-        ? this.filteredData
-        : Array.isArray(this.children)
-          ? this.children
-          : [];
-
-      const lastItem = arr => Array.isArray(arr) && arr.length ? arr[arr.length - 1] : {};
-
-      // 🔸 Filter: hanya anak dengan intervensi kosong/null ATAU semua jenis = "0"
-      const tanpaIntervensi = data.filter(child => {
-        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
-        // Belum pernah intervensi
-        if (intervensiList.length === 0) return true;
-        // Semua intervensinya bernilai jenis = "0"
-        return intervensiList.every(i => !i || i.jenis === "0" || i.jenis == null || i.jenis.trim() === "");
-      });
-
-      // 🔸 Lanjut proses data yang tersaring
-      return tanpaIntervensi.map(child => {
-        const intervensiList = Array.isArray(child.raw?.intervensi) ? child.raw.intervensi : [];
-
-        // Ambil semua jenis intervensi unik
-        const jenisUnik = [...new Set(
-          intervensiList
-            .map(i => i.jenis)
-            .filter(j => j && j.trim() !== '')
-        )];
-
-        const rumusan = jenisUnik.length ? jenisUnik.join(', ') : '-';
-        const lastPosyandu = lastItem(child.raw?.posyandu);
-
-        return {
-          nama: child.nama || '-',
-          rumusan,
-          stunting: ['Stunted', 'Severely Stunted'].includes(lastPosyandu.tbu),
-          wasting: ['Wasted', 'Severely Wasted'].includes(lastPosyandu.bbtb),
-          underweight: ['Underweight', 'Severely Underweight'].includes(lastPosyandu.bbu),
-          bb_sangat: lastPosyandu.bbu === 'Severely Underweight',
-          overweight: lastPosyandu.bbu === 'Overweight',
-        };
-      });
-    },
-    totalPages() {
-      return Math.ceil(this.processedChildren.length / this.perPage)
-    },
-    totalPages_belum() {
-      return Math.ceil(this.processedChildren_belum.length / this.perPage)
-    },
-    paginatedChildren() {
-      const start = (this.currentPage - 1) * this.perPage
-      return this.processedChildren.slice(start, start + this.perPage)
-    },
-    paginatedChildren_belum() {
-      const start = (this.currentPage - 1) * this.perPage
-      return this.processedChildren_belum.slice(start, start + this.perPage)
-    }, */
   }
 }
 </script>
