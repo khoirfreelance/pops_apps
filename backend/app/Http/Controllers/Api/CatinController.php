@@ -140,22 +140,22 @@ class CatinController extends Controller
             });
         }
 
-        // ✅ Filter status
-        if ($request->filled('status') && count($request->status)) {
-            $statuses = (array)$request->status;
-            $groupedData = $groupedData->filter(function ($item) use ($statuses) {
-                $latest = $item['riwayat_catin'][0] ?? null;
-                if (!$latest) return false;
-
-                foreach ($statuses as $status) {
-                    $s = strtolower($status);
-                    if ($s === 'risiko') {
-                        return str_contains(strtolower($latest['status_risiko'] ?? ''), 'risiko');
-                    } else {
-                        return str_contains(strtolower($latest['status_risiko'] ?? ''), $s);
+        // ✅ Filter status (KEK, Anemia, Risiko ≠ Normal)
+        if ($request->filled('status') && is_array($request->status)) {
+            $query->where(function ($q) use ($request) {
+                foreach ($request->status as $status) {
+                    $statusLower = strtolower($status);
+                    if (str_contains($statusLower, 'kek')) {
+                        $q->orWhere('status_kek', 'like', '%kek%');
+                    } elseif (str_contains($statusLower, 'anemia')) {
+                        $q->orWhere('status_hb', 'like', '%anemia%');
+                    } elseif (str_contains($statusLower, 'risiko')) {
+                        $q->orWhere(function ($sub) {
+                            $sub->where('status_risiko', 'not like', '%normal%')
+                                ->orWhereNull('status_risiko');
+                        });
                     }
                 }
-                return false;
             });
         }
 
