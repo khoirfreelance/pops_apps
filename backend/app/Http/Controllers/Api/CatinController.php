@@ -255,13 +255,13 @@ class CatinController extends Controller
                 'nama_perempuan' => $data[2] ?? null,
                 'nik_perempuan' => $data[3] ?? null,
                 'pekerjaan_perempuan' => $data[4] ?? null,
-                'usia_perempuan' => $data[5] ?? null,
+                'usia_perempuan' => $data[5] ?? 0,
                 'hp_perempuan' => $data[6] ?? null,
 
                 'nama_laki' => $data[7] ?? null,
                 'nik_laki' => $data[8] ?? null,
                 'pekerjaan_laki' => $data[9] ?? null,
-                'usia_laki' => $data[10] ?? null,
+                'usia_laki' => $data[10] ?? 0,
                 'hp_laki' => $data[11] ?? null,
 
                 'pernikahan_ke' => $data[12] ?? null,
@@ -284,14 +284,15 @@ class CatinController extends Controller
                 'mendapat_ttd' => $this->toBool($data[26] ?? null),
                 'menggunakan_jamban' => $this->toBool($data[27] ?? null),
                 'sumber_air_bersih' => $this->toBool($data[28] ?? null),
-                'punya_riwayat_penyakit' => $this->toBool($data[28] ?? null),
-                'riwayat_penyakit' => $data[29] ?? null,
-                'mendapat_fasilitas_rujukan' => $this->toBool($data[30] ?? null),
-                'mendapat_kie' => $this->toBool($data[31] ?? null),
-                'mendapat_bantuan_pmt' => $this->toBool($data[32] ?? null),
+                'sumber_air_bersih' => $this->toBool($data[28] ?? null),
+                'punya_riwayat_penyakit' => $this->toBool($data[29] ?? null),
+                'riwayat_penyakit' => $data[30] ?? null,
+                'mendapat_fasilitas_rujukan' => $this->toBool($data[31] ?? null),
+                'mendapat_kie' => $this->toBool($data[33] ?? null),
+                'mendapat_bantuan_pmt' => $this->toBool($data[33] ?? null),
 
-                'tanggal_rencana_menikah' => $this->convertDate($data[33] ?? null),
-                'rencana_tinggal' => $data[34] ?? null,
+                'tanggal_rencana_menikah' => $this->convertDate($data[34] ?? null),
+                'rencana_tinggal' => $data[35] ?? null,
             ];
         }
 
@@ -349,6 +350,7 @@ class CatinController extends Controller
                 return response()->json([
                     'message' => 'Gagal import data',
                     'error' => $e->getMessage(),
+                    'data' => $rows
                 ], 500);
             }
         }
