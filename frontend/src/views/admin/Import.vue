@@ -1380,7 +1380,6 @@ export default {
         //this.paginatedData = [];
       }
     }
-
   },
   async mounted() {
     this.isLoading = true

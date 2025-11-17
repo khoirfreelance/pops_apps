@@ -615,12 +615,22 @@ class CatinController extends Controller
 
             // Tentukan periode berdasarkan filter
             if ($request->filled('periode')) {
-                // contoh: "November 2025"
-                $periode = Carbon::parse('01 ' . $request->periode);
+
+            $periodeRaw = $request->periode;
+
+            // Jika format "2025-03"
+            if (preg_match('/^\d{4}-\d{2}$/', $periodeRaw)) {
+                // parse manual
+                $periode = Carbon::createFromFormat('Y-m-d', $periodeRaw . '-01');
+            } else {
+                // format "November 2025"
+                $periode = Carbon::parse('01 ' . $periodeRaw);
+            }
+
                 $awal = $periode->copy()->startOfMonth();
                 $akhir = $periode->copy()->endOfMonth();
+
             } else {
-                // default bulan ini
                 $awal = Carbon::now()->startOfMonth();
                 $akhir = Carbon::now()->endOfMonth();
             }

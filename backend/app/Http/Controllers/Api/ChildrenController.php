@@ -1255,137 +1255,153 @@ class ChildrenController extends Controller
             return $item->bb_u !== 'Normal' && $item->bb_tb !== 'Normal';
         })->count();
 
+       $nik_case = $data->filter(function ($item) {
+            return $item->bb_u !== 'Normal'
+                || $item->tb_u !== 'Normal'
+                || $item->bb_tb !== 'Normal';
+        })->pluck('nik')->unique()->count();
+
         return response()->json([
             'status' => 'success',
             'message' => 'Data anak berhasil dimuat',
             'grouping' => [
-                'bb_u_tb_u' => $bb_u_tb_u,
-                'tb_u_bb_tb' => $tb_u_bb_tb,
-                'bb_u_bb_tb' => $bb_u_bb_tb,
+                'bb_u_tb_u'   => $bb_u_tb_u,
+                'tb_u_bb_tb'  => $tb_u_bb_tb,
+                'bb_u_bb_tb'  => $bb_u_bb_tb,
             ],
-            'totalCase' => $bb_u_tb_u + $tb_u_bb_tb + $bb_u_bb_tb
+            'totalCase' => $nik_case
         ]);
+
     }
 
     public function intervensi(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // 1. Ambil data anggota TPK
-    $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
-    if (!$anggotaTPK) {
-        return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        // 1. Ambil data anggota TPK
+        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        if (!$anggotaTPK) {
+            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        }
+
+        // 2. Ambil posyandu & wilayah
+        $posyandu = $anggotaTPK->posyandu;
+        $wilayah  = $posyandu?->wilayah;
+        if (!$wilayah) {
+            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+        }
+
+        // Filter default
+        $filterKelurahan = $wilayah->kelurahan ?? null;
+
+        // ==========================
+        // A. Query KUNJUNGAN
+        // ==========================
+        $qKunjungan = Kunjungan::query();
+
+        if ($filterKelurahan)
+            $qKunjungan->where('kelurahan', $filterKelurahan);
+        if ($request->filled('posyandu'))
+            $qKunjungan->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $qKunjungan->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $qKunjungan->where('rt', $request->rt);
+
+        // AMBIL DATA TERLEBIH DAHULU
+        $kunjungan = $qKunjungan->get();
+
+        // Cari semua anak kasus (≠ Normal)
+        $nik_case = $kunjungan->filter(function ($item) {
+            return $item->bb_u !== 'Normal'
+                || $item->tb_u !== 'Normal'
+                || $item->bb_tb !== 'Normal';
+        })->pluck('nik')->unique();
+
+        // ==========================
+        // B. Query INTERVENSI
+        // ==========================
+        $qIntervensi = Intervensi::query();
+
+        if ($request->filled('posyandu'))
+            $qIntervensi->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $qIntervensi->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $qIntervensi->where('rt', $request->rt);
+
+        $intervensi = $qIntervensi->get();
+
+
+        // ==========================
+        // C. GROUPING NIK
+        // ==========================
+        $nikKunjungan   = $nik_case;//$kunjungan->pluck('nik')->unique();
+        $nikIntervensi  = $intervensi->pluck('nik_subjek')->unique();
+
+        $punya_keduanya   = $nikKunjungan->intersect($nikIntervensi);
+        $hanya_kunjungan  = $nikKunjungan->diff($nikIntervensi);
+        $hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
+
+
+        // ==========================
+        // D. Build DETAIL
+        // ==========================
+        $mapKunjungan   = $kunjungan->keyBy('nik');
+        $mapIntervensi  = $intervensi->groupBy('nik_subjek');
+
+        $detail_keduanya = $punya_keduanya->map(function ($nik) use ($mapKunjungan, $mapIntervensi) {
+            return [
+                'nik'             => $nik,
+                'nama'            => $mapKunjungan[$nik]->nama_anak ?? null,
+                'kelurahan'       => $mapKunjungan[$nik]->kelurahan ?? null,
+                'posyandu'        => $mapKunjungan[$nik]->posyandu ?? null,
+                'data_kunjungan'  => $mapKunjungan[$nik] ?? null,
+                'data_intervensi' => $mapIntervensi[$nik] ?? [],
+            ];
+        });
+
+        $detail_hanya_kunjungan = $hanya_kunjungan->map(function ($nik) use ($mapKunjungan) {
+            $row = $mapKunjungan[$nik];
+            return [
+                'nik'            => $nik,
+                'nama'           => $row->nama_anak ?? null,
+                'kelurahan'      => $row->kelurahan ?? null,
+                'posyandu'       => $row->posyandu ?? null,
+                'data_kunjungan' => $row,
+            ];
+        });
+
+        $detail_hanya_intervensi = $hanya_intervensi->map(function ($nik) use ($mapIntervensi) {
+            $first = $mapIntervensi[$nik]->first();
+            return [
+                'nik'             => $nik,
+                'nama'            => $first->nama_anak ?? null,
+                'kelurahan'       => $first->kelurahan ?? null,
+                'posyandu'        => $first->posyandu ?? null,
+                'data_intervensi' => $mapIntervensi[$nik] ?? [],
+            ];
+        });
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data intervensi & kunjungan berhasil dimuat',
+
+            'grouping' => [
+                'punya_keduanya'    => $punya_keduanya->count(),
+                'hanya_kunjungan'   => $hanya_kunjungan->count(),
+                'hanya_intervensi'  => $hanya_intervensi->count(),
+            ],
+
+            'detail' => [
+                'punya_keduanya'    => $detail_keduanya->values(),
+                'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
+                'hanya_intervensi'  => $detail_hanya_intervensi->values(),
+            ]
+        ]);
     }
 
-    // 2. Ambil posyandu & wilayah
-    $posyandu = $anggotaTPK->posyandu;
-    $wilayah = $posyandu?->wilayah;
-    if (!$wilayah) {
-        return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-    }
 
-    // Filter default
-    $filterKelurahan = $wilayah->kelurahan ?? null;
-
-    // ==========================
-    // A. Query KUNJUNGAN
-    // ==========================
-    $qKunjungan = Kunjungan::query();
-
-    if ($filterKelurahan) {
-        $qKunjungan->where('kelurahan', $filterKelurahan);
-    }
-
-    if ($request->filled('posyandu'))
-        $qKunjungan->where('posyandu', $request->posyandu);
-    if ($request->filled('rw'))
-        $qKunjungan->where('rw', $request->rw);
-    if ($request->filled('rt'))
-        $qKunjungan->where('rt', $request->rt);
-
-    $kunjungan = $qKunjungan->get();
-
-
-    // ==========================
-    // B. Query INTERVENSI
-    // ==========================
-    $qIntervensi = Intervensi::query();
-
-    if ($request->filled('posyandu'))
-        $qIntervensi->where('posyandu', $request->posyandu);
-    if ($request->filled('rw'))
-        $qIntervensi->where('rw', $request->rw);
-    if ($request->filled('rt'))
-        $qIntervensi->where('rt', $request->rt);
-
-    $intervensi = $qIntervensi->get();
-
-
-    // ==========================
-    // C. GROUPING NIK
-    // ==========================
-    $nikKunjungan   = $kunjungan->pluck('nik')->unique();
-    $nikIntervensi  = $intervensi->pluck('nik_subjek')->unique();
-
-    $punya_keduanya = $nikKunjungan->intersect($nikIntervensi);
-    $hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
-
-
-    // ==========================
-    // D. Build DETAIL LENGKAP
-    // ==========================
-
-    // index kunjungan berdasarkan nik
-    $mapKunjungan = $kunjungan->keyBy('nik');
-
-    // index intervensi berdasarkan nik_subjek (1 nik bisa punya banyak intervensi)
-    $mapIntervensi = $intervensi->groupBy('nik_subjek');
-
-    // Detail anak punya keduanya
-    $detail_keduanya = $punya_keduanya->map(function ($nik) use ($mapKunjungan, $mapIntervensi) {
-        return [
-            'nik'             => $nik,
-            'nama'            => $mapKunjungan[$nik]->nama_anak ?? null,
-            'kelurahan'       => $mapKunjungan[$nik]->kelurahan ?? null,
-            'posyandu'        => $mapKunjungan[$nik]->posyandu ?? null,
-            'data_kunjungan'  => $mapKunjungan[$nik],
-            'data_intervensi' => $mapIntervensi[$nik] ?? [],
-        ];
-    });
-
-    // Detail anak hanya intervensi
-    $detail_hanya_intervensi = $hanya_intervensi->map(function ($nik) use ($mapIntervensi) {
-
-        // Intervensi tidak punya detail nama, jadi ambil dari field intervensi
-        $first = $mapIntervensi[$nik]->first();
-
-        return [
-            'nik'             => $nik,
-            'nama'            => $first->nama_anak ?? null,   // jika ada
-            'kelurahan'       => $first->kelurahan ?? null,
-            'posyandu'        => $first->posyandu ?? null,
-            'data_intervensi' => $mapIntervensi[$nik],
-        ];
-    });
-
-
-    // ==========================
-    // RESPON API
-    // ==========================
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Data intervensi & kunjungan berhasil dimuat',
-
-        'grouping' => [
-            'punya_keduanya'    => $punya_keduanya->count(),
-            'hanya_intervensi'  => $hanya_intervensi->count(),
-        ],
-
-        'detail' => [
-            'punya_keduanya'    => $detail_keduanya,
-            'hanya_intervensi'  => $detail_hanya_intervensi,
-        ]
-    ]);
-}
 
 }

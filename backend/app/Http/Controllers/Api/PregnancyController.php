@@ -761,15 +761,11 @@ class PregnancyController extends Controller
 
             // 3️⃣ Tentukan current & previous month
             if ($request->filled('periode')) {
-                // contoh request: "November 2025"
-                $periode = Carbon::parse('01 ' . $request->periode);
+                $periode = Carbon::createFromFormat('Y-m', $request->periode)->startOfMonth();
 
                 $currentMonth = $periode->format('Y-m');
                 $previousMonth = $periode->copy()->subMonth()->format('Y-m');
-            } else {
-                // default mengikuti gizi anak:
-                // current = bulan ini - 1
-                // previous = bulan ini - 2
+            }else {
                 $currentMonth = now()->subMonth()->format('Y-m');
                 $previousMonth = now()->subMonths(2)->format('Y-m');
             }
@@ -857,6 +853,82 @@ class PregnancyController extends Controller
         }
     }
 
+    public function case(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Ambil data anggota TPK
+        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        if (!$anggotaTPK) {
+            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        }
+
+        // 2. Ambil posyandu & wilayah
+        $posyandu = $anggotaTPK->posyandu;
+        $wilayah = $posyandu?->wilayah;
+        if (!$wilayah) {
+            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+        }
+
+        // 3. Default filter kelurahan user
+        $filterKelurahan = $wilayah->kelurahan ?? null;
+
+        $query = Pregnancy::query();
+        if ($filterKelurahan) {
+            $query->where('kelurahan', $filterKelurahan);
+        }
+
+        // 4. Filter manual (opsional) dari UI
+        if ($request->filled('posyandu'))
+            $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $query->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $query->where('rt', $request->rt);
+
+        // 5. Tentukan periode current & previous
+        if ($request->filled('periode') && strlen($request->periode) >= 7) {
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            $bulanIni = $tanggal->format('Y-m');
+            $bulanLalu = $tanggal->subMonth()->format('Y-m');
+        } else {
+            $bulanIni = now()->subMonth()->format('Y-m');
+            $bulanLalu = now()->subMonths(2)->format('Y-m');
+        }
+
+
+        // 6. Ambil seluruh data Kunjungan yg relevan
+        $data = $query->get();
+
+        // ========== 7. Hitung grouping status ≠ Normal ==========
+        $ane_kek = $data->filter(function ($item) {
+            return $item->status_gizi_hb !== 'Normal'
+                || $item->status_gizi_lila !== 'Normal';
+        })->count();
+
+        $ris_ane = $data->filter(function ($item) {
+            return $item->status_risiko_usia !== 'Normal'
+                && $item->status_gizi_hb !== 'Normal';
+        })->count();
+
+        $ris_kek = $data->filter(function ($item) {
+            return $item->status_risiko_usia !== 'Normal'
+                && $item->status_gizi_lila !== 'Normal';
+        })->count();
+
+        $totalCase = $ane_kek + $ris_ane + $ris_kek;
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data anak berhasil dimuat',
+            'grouping' => [
+                'ane_kek'   => $ane_kek,
+                'ris_kek'  => $ris_kek,
+                'ris_ane'  => $ris_ane,
+            ],
+            'totalCase' => $totalCase
+        ]);
+
+    }
 
     public function intervensiSummary(Request $request)
     {
