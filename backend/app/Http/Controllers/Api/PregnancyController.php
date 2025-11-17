@@ -81,8 +81,8 @@ class PregnancyController extends Controller
                             $q->orWhere('status_gizi_hb', 'like', '%anemia%');
                         } elseif (str_contains($statusLower, 'risiko')) {
                             $q->orWhere(function ($sub) {
-                                $sub->where('status_kehamilan', 'not like', '%normal%')
-                                    ->orWhereNull('status_kehamilan');
+                                $sub->where('status_risiko_usia', 'not like', '%normal%')
+                                    ->orWhereNull('status_risiko_usia');
                             });
                         }
                     }
@@ -216,8 +216,8 @@ class PregnancyController extends Controller
             // ✅ Ambil nilai mentah
             $usia_ibu = floatval($data[4] ?? 0);
             $tinggi_badan = $this->sanitizeNumeric($data[23] ?? 0);
-            $hb = $this->sanitizeNumeric($data[24] ?? 0);
-            $lila = $this->sanitizeNumeric($data[25] ?? 0);
+            $hb = $this->sanitizeNumeric($data[25] ?? 0);
+            $lila = $this->sanitizeNumeric($data[27] ?? 0);
             $riwayat_4t = strtolower(trim($data[12] ?? ''));
 
             // ✅ 1. Status Gizi LILA
@@ -236,8 +236,8 @@ class PregnancyController extends Controller
 
             // ✅ 3. Status Risiko Usia (berdasarkan 4T)
            $status_risiko_final = ($usia_ibu < 20 || $usia_ibu > 35)
-            ? 'Berisiko (usia tidak ideal)'
-            : 'Tidak berisiko (usia ideal)';
+            ? 'Berisiko'
+            : 'Normal';
 
             $tinggi_badan = floatval(preg_replace('/[^0-9.]/', '', $data[23] ?? 0));
 
@@ -251,6 +251,7 @@ class PregnancyController extends Controller
                 $tinggi_badan = null;
             }
 
+            $imt = $this->hitungIMT($data[22], $tinggi_badan);
 
             // ✅ Mapping kolom CSV ke field sesuai model Pregnancy
             $rows[] = [
@@ -277,30 +278,31 @@ class PregnancyController extends Controller
                 'rw' => $data[20] ?? null,
                 'tanggal_pemeriksaan_terakhir' => $this->convertDate($data[21] ?? null),
                 'berat_badan' => $data[22] ?? null,
-                'tinggi_badan' => $data[23] ?? null,'tinggi_badan' => $tinggi_badan,
-                'kadar_hb' => $hb ?: null,
+                'tinggi_badan' => $tinggi_badan,
+                'kadar_hb' => $hb,
                 'status_gizi_hb' => $status_hb,
-                'lila' => $lila ?: null,
+                'lila' => $lila,
                 'status_gizi_lila' => $status_lila,
-                'status_risiko_usia' => $status_risiko_final,
-                'riwayat_penyakit' => $data[26] ?? null,
-                'usia_kehamilan_minggu' => intval($data[27] ?? 0),
-                'taksiran_berat_janin' => $data[28] ?? null,
-                'tinggi_fundus' => $data[29] ?? null,
-                'hpl' => $this->convertDate($data[30] ?? null),
-                'terpapar_asap_rokok' => $data[31] ?? null,
-                'mendapat_ttd' => $data[32] ?? null,
-                'menggunakan_jamban' => $data[33] ?? null,
-                'menggunakan_sab' => $data[34] ?? null,
-                'fasilitas_rujukan' => $data[35] ?? null,
-                'riwayat_keguguran_iufd' => $data[36] ?? null,
-                'mendapat_kie' => $data[37] ?? null,
-                'mendapat_bantuan_sosial' => $data[38] ?? null,
-                'rencana_tempat_melahirkan' => $data[39] ?? null,
-                'rencana_asi_eksklusif' => $data[40] ?? null,
-                'rencana_tinggal_setelah' => $data[41] ?? null,
-                'rencana_kontrasepsi' => $data[42] ?? null,
-                'posyandu' => $data[44] ?? null,
+                'status_risiko_usia' => $usia_ibu < 20 || $usia_ibu > 35 ? 'Berisiko':'Normal',
+                'riwayat_penyakit' => $data[29] ?? null,
+                'usia_kehamilan_minggu' => intval($data[30] ?? 0),
+                'taksiran_berat_janin' => $data[31] ?? null,
+                'tinggi_fundus' => $data[32] ?? null,
+                'hpl' => $this->convertDate($data[33] ?? null),
+                'terpapar_asap_rokok' => $data[34] ?? null,
+                'mendapat_ttd' => $data[35] ?? null,
+                'menggunakan_jamban' => $data[36] ?? null,
+                'menggunakan_sab' => $data[37] ?? null,
+                'fasilitas_rujukan' => $data[38] ?? null,
+                'riwayat_keguguran_iufd' => $data[39] ?? null,
+                'mendapat_kie' => $data[40] ?? null,
+                'mendapat_bantuan_sosial' => $data[41] ?? null,
+                'rencana_tempat_melahirkan' => $data[32] ?? null,
+                'rencana_asi_eksklusif' => $data[43] ?? null,
+                'rencana_tinggal_setelah' => $data[44] ?? null,
+                'rencana_kontrasepsi' => $data[45] ?? null,
+                'posyandu' => $data[46] ?? null,
+                'imt' => $imt
             ];
         }
 
@@ -337,6 +339,7 @@ class PregnancyController extends Controller
         return response()->json([
             'message' => "Berhasil import {$count} data kehamilan",
             'count' => $count,
+            'row' => $rows
         ], 200);
 
 
@@ -1367,6 +1370,23 @@ class PregnancyController extends Controller
                 'message' => $th->getMessage(),
             ], 500);
         }
+    }
+
+    private function hitungIMT($berat, $tinggi)
+    {
+        if (empty($berat) || empty($tinggi)) return null;
+
+        // kalau tinggi kemungkinan cm, valid range antara 100-200
+        if ($tinggi < 50) {
+            // kemungkinan user salah input (meter bukan cm)
+            $tinggi = $tinggi * 100;
+        }
+
+        $tinggi_m = $tinggi / 100;
+        $imt = round($berat / ($tinggi_m * $tinggi_m), 1);
+
+        // batas aman IMT manusia biasanya 10-60
+        return ($imt > 5 && $imt < 80) ? $imt : null;
     }
 
 }
