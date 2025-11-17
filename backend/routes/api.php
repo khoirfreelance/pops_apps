@@ -105,7 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/pregnancy/import_intervensi', [PregnancyController::class, 'import_intervensi']);
     Route::get('/pregnancy', [PregnancyController::class, 'index']);
     Route::get('/pregnancy/case', [PregnancyController::class, 'case']);
-    //Route::get('/pregnancy/intervensi', [PregnancyController::class, 'intervensi']);
+    Route::get('/pregnancy/intervensi', [PregnancyController::class, 'intervensi']);
     Route::get('/pregnancy/status', [PregnancyController::class, 'status']);
     Route::get('/pregnancy/tren', [PregnancyController::class, 'tren']);
     Route::get('/pregnancy/intervensi-summary', [PregnancyController::class, 'intervensiSummary']);

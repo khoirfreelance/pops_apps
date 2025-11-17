@@ -900,21 +900,33 @@ class PregnancyController extends Controller
         // 6. Ambil seluruh data Kunjungan yg relevan
         $data = $query->get();
 
-        // ========== 7. Hitung grouping status ≠ Normal ==========
+        // ========== 7. Hitung CASUS berdasarkan NIK IBU (unique) ==========
+        $nik_case = $data->filter(function ($item) {
+            return
+                ($item->status_gizi_hb && $item->status_gizi_hb !== 'Normal') ||
+                ($item->status_gizi_lila && $item->status_gizi_lila !== 'Normal') ||
+                ($item->status_risiko_usia  && $item->status_risiko_usia !== null && $item->status_risiko_usia !== 'Normal');
+        })->pluck('nik_ibu')->unique();
+
+        // total kasus = jumlah ibu bermasalah
+        $totalCase = $nik_case->count();
+
+        // Jika kamu masih butuh grouping kategori, sesuaikan ke unique nik:
         $ane_kek = $data->filter(function ($item) {
             return $item->status_gizi_hb !== 'Normal'
                 || $item->status_gizi_lila !== 'Normal';
-        })->count();
+        })->pluck('nik_ibu')->unique()->count();
 
         $ris_ane = $data->filter(function ($item) {
-            return $item->status_risiko_usia !== 'Normal'
+            return $item->status_risiko_usia !== null && $item->status_risiko_usia !== 'Normal'
                 && $item->status_gizi_hb !== 'Normal';
-        })->count();
+        })->pluck('nik_ibu')->unique()->count();
 
         $ris_kek = $data->filter(function ($item) {
-            return $item->status_risiko_usia !== 'Normal'
+            return $item->status_risiko_usia !== null && $item->status_risiko_usia !== 'Normal'
                 && $item->status_gizi_lila !== 'Normal';
-        })->count();
+        })->pluck('nik_ibu')->unique()->count();
+
 
         $totalCase = $ane_kek + $ris_ane + $ris_kek;
         return response()->json([
@@ -1150,6 +1162,138 @@ class PregnancyController extends Controller
             }
         }
         return false;
+    }
+
+    public function intervensi(Request $request)
+    {
+        $user = Auth::user();
+
+        // 1. Ambil anggota TPK
+        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        if (!$anggotaTPK) {
+            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        }
+
+        // 2. Ambil posyandu & wilayah
+        $posyandu = $anggotaTPK->posyandu;
+        $wilayah  = $posyandu?->wilayah;
+        if (!$wilayah) {
+            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+        }
+
+        // Default kelurahan
+        $filterKelurahan = $wilayah->kelurahan ?? null;
+
+        // ==========================
+        // A. Query KUNJUNGAN BUMIL
+        // ==========================
+        $qBumil = Pregnancy::query();
+
+        if ($filterKelurahan)
+            $qBumil->where('kelurahan', $filterKelurahan);
+        if ($request->filled('posyandu'))
+            $qBumil->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $qBumil->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $qBumil->where('rt', $request->rt);
+
+        // AMBIL DATA
+        $bumil = $qBumil->get();
+
+        // Tentukan "kasus" ≠ Normal
+        $nik_case = $bumil->filter(function ($item) {
+            return
+                ($item->status_gizi_hb && $item->status_gizi_hb !== 'Normal') ||
+                ($item->status_gizi_lila && $item->status_gizi_lila !== 'Normal') ||
+                ($item->status_risiko_usia && $item->status_risiko_usia !== 'Normal');
+        })->pluck('nik_ibu')->unique();
+
+
+        // ==========================
+        // B. Query INTERVENSI BUMIL
+        // ==========================
+        $qIntervensi = Intervensi::query();
+
+        if ($request->filled('posyandu'))
+            $qIntervensi->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $qIntervensi->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $qIntervensi->where('rt', $request->rt);
+
+        $intervensi = $qIntervensi->get();
+
+
+        // ==========================
+        // C. GROUPING NIK
+        // ==========================
+        $nikKunjungan   = $nik_case;
+        $nikIntervensi  = $intervensi->pluck('nik_ibu')->unique();
+
+        $punya_keduanya   = $nikKunjungan->intersect($nikIntervensi);
+        $hanya_kunjungan  = $nikKunjungan->diff($nikIntervensi);
+        $hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
+
+
+        // ==========================
+        // D. BUILD DETAIL
+        // ==========================
+        $mapKunjungan   = $bumil->keyBy('nik_ibu');
+        $mapIntervensi  = $intervensi->groupBy('nik_ibu');
+
+        // punya keduanya
+        $detail_keduanya = $punya_keduanya->map(function ($nik) use ($mapKunjungan, $mapIntervensi) {
+            return [
+                'nik_ibu'         => $nik,
+                'nama_ibu'        => $mapKunjungan[$nik]->nama_ibu ?? null,
+                'kelurahan'       => $mapKunjungan[$nik]->kelurahan ?? null,
+                'posyandu'        => $mapKunjungan[$nik]->posyandu ?? null,
+                'data_kunjungan'  => $mapKunjungan[$nik] ?? null,
+                'data_intervensi' => $mapIntervensi[$nik] ?? [],
+            ];
+        });
+
+        // hanya kunjungan
+        $detail_hanya_kunjungan = $hanya_kunjungan->map(function ($nik) use ($mapKunjungan) {
+            $row = $mapKunjungan[$nik];
+            return [
+                'nik_ibu'        => $nik,
+                'nama_ibu'       => $row->nama_ibu ?? null,
+                'kelurahan'      => $row->kelurahan ?? null,
+                'posyandu'       => $row->posyandu ?? null,
+                'data_kunjungan' => $row,
+            ];
+        });
+
+        // hanya intervensi
+        $detail_hanya_intervensi = $hanya_intervensi->map(function ($nik) use ($mapIntervensi) {
+            $first = $mapIntervensi[$nik]->first();
+            return [
+                'nik_ibu'        => $nik,
+                'nama_ibu'       => $first->nama_ibu ?? null,
+                'kelurahan'      => $first->kelurahan ?? null,
+                'posyandu'       => $first->posyandu ?? null,
+                'data_intervensi'=> $mapIntervensi[$nik] ?? [],
+            ];
+        });
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Data intervensi & kunjungan bumil berhasil dimuat',
+
+            'grouping' => [
+                'punya_keduanya'    => $punya_keduanya->count(),
+                'hanya_kunjungan'   => $hanya_kunjungan->count(),
+                'hanya_intervensi'  => $hanya_intervensi->count(),
+            ],
+
+            'detail' => [
+                'punya_keduanya'    => $detail_keduanya->values(),
+                'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
+                'hanya_intervensi'  => $detail_hanya_intervensi->values(),
+            ],
+        ]);
     }
 
     public function indikatorBulanan(Request $request)
