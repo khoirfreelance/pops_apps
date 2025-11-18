@@ -1585,13 +1585,25 @@ export default {
       return labels
     },
     async applyFilter() {
-      await this.hitungStatistik()
-      await this.generateDataTable()
-      await this.masalahGanda()
-      await this.hitungIntervensi()
-      this.renderBarChart()
-      this.renderLineChart()
-      this.renderFunnelChart()
+      this.isLoading = true;
+      try {
+        await Promise.all([
+          this.hitungStatistik(),
+          this.generateDataTable(),
+          this.masalahGanda(),
+          this.hitungIntervensi(),
+          this.generateInfoBoxes()
+        ]);
+
+        this.renderBarChart();
+        this.renderLineChart();
+        this.renderFunnelChart();
+
+      } catch (e) {
+        this.showError("Gagal menerapkan filter", e);
+      } finally {
+        this.isLoading = false; // END LOADING
+      }
     },
     async hitungStatistik() {
       try {
@@ -1920,6 +1932,9 @@ export default {
             return;
         }
         this.totalKasus = res.data.totalCase
+        this.totalSudah = res.data.sudahIntervensi || 0;
+        this.totalBelum = res.data.belumIntervensi || 0;
+
       } catch (e) {
         this.showError('Error Ambil Data', e);
       }
@@ -1947,11 +1962,11 @@ export default {
             return;
         }
 
-        const sudah = res.data.grouping.punya_keduanya;
+        /* const sudah = res.data.grouping.punya_keduanya;
         const belum = this.totalKasus - sudah;
 
         this.totalSudah = sudah;
-        this.totalBelum = belum;
+        this.totalBelum = belum; */
 
         // 💚 anak
         if (this.activeMenu === 'anak') {
@@ -1990,129 +2005,27 @@ export default {
       return null; // gagal parse
     },
 
-
     // only anak
-    generateInfoBoxes() {
-      let intervensiKurang = 98;
-      let kasusBaru = 50;
-      let dataPending = 10;
-      let maxDiffBulan = 50;
-
-      const data = this.dataLoad || [];
-
-      const stuntingByDesa = {};
-      const stuntingPerBulan = {};
-
-      const periodeFilter = this.filters?.periode;
-      const periodeDate = periodeFilter ? new Date(periodeFilter + "-01") : null;
-
-      data.forEach(child => {
-
-        const kunj = child.data_kunjungan;
-        if (!kunj) return;
-
-        const tgl = new Date(kunj.tgl_pengukuran);
-        const ym = `${tgl.getFullYear()}-${String(tgl.getMonth() + 1).padStart(2, "0")}`;
-
-        const isStunting = ["Stunted", "Severely Stunted"].includes(kunj.tb_u);
-
-        if (isStunting) {
-          stuntingPerBulan[ym] = (stuntingPerBulan[ym] || 0) + 1;
-
-          if (child.kelurahan) {
-            stuntingByDesa[child.kelurahan] = (stuntingByDesa[child.kelurahan] || 0) + 1;
-          }
+    async generateInfoBoxes() {
+      try {
+        const params = {
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || '',
         }
+        const res = await axios.get(`${baseURL}/api/children/info-boxes`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
 
-        // --- cari prev & current (API hanya punya 1 data? maka prev = null)
-        const current = kunj;
-        // eslint-disable-next-line no-unused-vars
-        const prev = null; // API kamu tidak punya histori pengukuran
+        this.infoBoxes = res.data.boxes || [];
 
-        // --- intervensi kurang
-        const bermasalah =
-          ["Underweight", "Severely Underweight"].includes(kunj.bb_u) ||
-          ["Stunted", "Severely Stunted"].includes(kunj.tb_u) ||
-          ["Wasted", "Severely Wasted"].includes(kunj.bb_tb);
-
-        const adaPMT = child.data_intervensi?.some(i =>
-          (i.jenis || "").toUpperCase() === "PMT"
-        );
-
-        if (bermasalah && !adaPMT) intervensiKurang++;
-
-        // --- kasus baru: API kamu belum punya prev → selalu 0
-        // Biarkan default
-
-        // --- data pending
-        if (current) {
-          const refDate = periodeDate || new Date();
-          const diffBulan =
-            (refDate.getFullYear() - tgl.getFullYear()) * 12 +
-            (refDate.getMonth() - tgl.getMonth());
-
-          if (diffBulan > maxDiffBulan) maxDiffBulan = diffBulan;
-          if (diffBulan >= 2) dataPending++;
-        }
-      });
-
-      // --- hitung tren stunting
-      const bulanSorted = Object.keys(stuntingPerBulan).sort();
-      let stuntingNow = 0;
-      let stuntingPrev = 0;
-
-      if (periodeDate) {
-        const ymNow = `${periodeDate.getFullYear()}-${String(
-          periodeDate.getMonth() + 1
-        ).padStart(2, "0")}`;
-        const ymPrev = `${periodeDate.getFullYear()}-${String(
-          periodeDate.getMonth()
-        ).padStart(2, "0")}`;
-        stuntingNow = stuntingPerBulan[ymNow] || 0;
-        stuntingPrev = stuntingPerBulan[ymPrev] || 0;
-      } else {
-        const last = bulanSorted[bulanSorted.length - 1];
-        const prev = bulanSorted[bulanSorted.length - 2];
-        stuntingNow = stuntingPerBulan[last] || 0;
-        stuntingPrev = stuntingPerBulan[prev] || 0;
+      } catch (e) {
+        this.showError('Error Ambil Data', e);
       }
-
-      // eslint-disable-next-line no-unused-vars
-      const naik =
-        stuntingPrev === 0 ? 0 : ((stuntingNow - stuntingPrev) / stuntingPrev) * 100;
-
-      // Desa tertinggi
-      let desaTertinggi = this.kelurahan;
-      if (Object.keys(stuntingByDesa).length > 0) {
-        desaTertinggi = Object.entries(stuntingByDesa).sort((a, b) => b[1] - a[1])[0][0];
-      }
-
-      const bulanTerakhir =
-        maxDiffBulan > 1 ? `${maxDiffBulan} bulan terakhir` : "bulan ini";
-
-      this.infoBoxes = [
-        {
-          type: "danger",
-          //title: `Stunting ${naik >= 0 ? "naik" : "turun"} ${Math.abs(naik).toFixed(1)}%`,
-          title: `Stunting naik 50 %`,
-          desc: `Dibanding periode sebelumnya, tertinggi di Desa <strong>${desaTertinggi}</strong>.`,
-        },
-        {
-          type: "warning",
-          title: "Intervensi",
-          desc: `${intervensiKurang} anak bermasalah gizi belum mendapat bantuan.`,
-        },
-        {
-          type: "info",
-          title: "Kasus baru",
-          desc: `${kasusBaru} kasus stunting baru terdeteksi pada periode ini.`,
-        },
-        {
-          type: "success",
-          title: "Data Pending",
-          desc: `${dataPending} anak belum update data pengukuran ${bulanTerakhir}.`,
-        },
-      ];
     },
     renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
       const ctx = this.$refs[refName]?.getContext('2d');
@@ -2253,61 +2166,61 @@ export default {
       };
     },
     renderLineChart(periodeBulan = 12) {
-      const data = this.dataLoad || []
-      if (!data.length) return
+      const data = this.dataLoad || [];
+      if (!data.length) return;
 
-      const now = new Date()
-      const startDate = new Date()
-      startDate.setMonth(now.getMonth() - periodeBulan + 1)
+      const now = new Date();
+      const startDate = new Date();
+      startDate.setMonth(now.getMonth() - periodeBulan + 1);
 
-      // 🔥 Tanpa intervensi = rumusan null/kosong
-      const tanpaIntervensi = data.filter(a =>
-        !a.rumusan || a.rumusan === "" || a.rumusan === null
-      )
+      const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
-      const allPosyandu = tanpaIntervensi.flatMap(anak => {
-        const k = anak.data_kunjungan
-        if (!k) return []
-
-        return [{
-          tanggal: new Date(k.tgl_pengukuran),
-          bb_naik: k.naik_berat_badan
-        }]
-      })
-
-
-      const recent = allPosyandu.filter(
-        p => p.tanggal >= startDate && p.tanggal <= now
-      )
-
-      const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
-
-      const monthlyData = {}
+      // 🔹 Siapkan object untuk menampung data tiap bulan
+      const monthlyData = {};
       for (let i = 0; i < periodeBulan; i++) {
-        const temp = new Date(startDate)
-        temp.setMonth(startDate.getMonth() + i)
-        const key = `${temp.getFullYear()}-${String(temp.getMonth()+1).padStart(2,'0')}`
-        monthlyData[key] = { total: 0, tidakMembaik: 0 }
+        const temp = new Date(startDate);
+        temp.setMonth(startDate.getMonth() + i);
+        const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}`;
+        monthlyData[key] = { total: 0, tidakMembaik: 0 };
       }
 
+      // 🔹 Ambil semua kunjungan (data_kunjungan bisa array atau objek tunggal)
+      const allKunjungan = data.flatMap(anak => {
+        if (!anak.data_kunjungan) return [];
+        const kunj = Array.isArray(anak.data_kunjungan) ? anak.data_kunjungan : [anak.data_kunjungan];
+
+        return kunj.map(k => ({
+          tanggal: new Date(k.tgl_pengukuran),
+          bb_naik: k.naik_berat_badan,
+          rumusan: anak.rumusan
+        }));
+      });
+
+      // 🔹 Filter kunjungan yang masuk periode bulan
+      const recent = allKunjungan.filter(k => k.tanggal >= startDate && k.tanggal <= now);
+
+      // 🔹 Hitung total dan tidak membaik per bulan
       recent.forEach(p => {
-        const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth()+1).padStart(2,'0')}`
+        const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2,'0')}`;
         if (monthlyData[key]) {
-          monthlyData[key].total++
-          if (!p.bb_naik) monthlyData[key].tidakMembaik++
+          monthlyData[key].total++;
+          // kondisi "tidak membaik" = bb_naik null/false dan rumusan kosong/null
+          if (!p.bb_naik && (!p.rumusan || p.rumusan === "")) monthlyData[key].tidakMembaik++;
         }
-      })
+      });
 
-      const sortedKeys = Object.keys(monthlyData).sort()
+      // 🔹 Siapkan data untuk chart
+      const sortedKeys = Object.keys(monthlyData).sort();
       const labels = sortedKeys.map(key => {
-        const [, month] = key.split('-')
-        return monthNames[parseInt(month) - 1]
-      })
-      const dataTidakMembaik = sortedKeys.map(key => monthlyData[key].tidakMembaik)
+        const [, month] = key.split('-');
+        return monthNames[parseInt(month) - 1];
+      });
+      const dataTidakMembaik = sortedKeys.map(key => monthlyData[key].tidakMembaik);
 
-      if (this.lineChart) this.lineChart.destroy()
+      // 🔹 Render chart
+      if (this.lineChart) this.lineChart.destroy();
 
-      const ctx = this.$refs.lineChart.getContext('2d')
+      const ctx = this.$refs.lineChart.getContext('2d');
       this.lineChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -2326,9 +2239,11 @@ export default {
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          }
         }
-      })
+      });
     },
     renderBarChart(periodeBulan = 12) {
       const data = this.dataLoad_belum || [];
@@ -2338,42 +2253,35 @@ export default {
       const startDate = new Date();
       startDate.setMonth(now.getMonth() - periodeBulan);
 
-      // 🔹 Ambil ENTIRE POSYANDU ENTRY dari data_kunjungan
       const allPosyandu = data.flatMap(anak => {
         const kun = anak.data_kunjungan;
-
         if (!kun) return [];
-
         return [{
           posyandu: kun.posyandu || 'Tidak Diketahui',
           tanggal: new Date(kun.tgl_pengukuran),
-          bb_naik: kun.naik_berat_badan   // null artinya "tidak membaik"
+          bb_naik: kun.naik_berat_badan
         }];
       });
 
-      // 🔹 Nama posyandu unik
-      const allPosyanduNames = [...new Set(allPosyandu.map(p =>
-        p.posyandu || 'Tidak Diketahui'
-      ))];
+      const allPosyanduNames = [...new Set(allPosyandu.map(p => p.posyandu || 'Tidak Diketahui'))];
 
-      // 🔹 Filter hanya yang masuk range waktu
-      const recent = allPosyandu.filter(p =>
-        p.tanggal >= startDate && p.tanggal <= now
-      );
+      const recent = allPosyandu.filter(p => p.tanggal >= startDate && p.tanggal <= now);
 
-      // 🔹 Hitung jumlah tidak membaik per posyandu
       const posyanduCounts = {};
       allPosyanduNames.forEach(name => posyanduCounts[name] = 0);
-
       recent.forEach(p => {
         const key = p.posyandu || 'Tidak Diketahui';
-        if (!p.bb_naik) posyanduCounts[key]++;  // null → tidak membaik
+        if (!p.bb_naik) posyanduCounts[key]++;
       });
 
-      // 🔹 Chart data
-      const labels = Object.keys(posyanduCounts);
-      const values = Object.values(posyanduCounts);
+      const top5 = Object.entries(posyanduCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
 
+      const labels = top5.map(item => item[0]);
+      const values = top5.map(item => item[1]);
+
+      // 🔹 Hancurkan chart lama sebelum buat baru
       if (this.barChart) this.barChart.destroy();
 
       const ctx = this.$refs.barChart.getContext('2d');
@@ -2390,9 +2298,7 @@ export default {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true },
             x: { title: { display: true, text: "Posyandu" } }
@@ -3201,7 +3107,7 @@ export default {
       await this.generateDataTable();
       await this.masalahGanda();
       await this.hitungIntervensi();
-      //await this.loadIntervensiBumil();
+      await this.generateInfoBoxes();
 
       this.renderLineChart();
       this.renderBarChart();

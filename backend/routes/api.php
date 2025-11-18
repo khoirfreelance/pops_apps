@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/children/status', [ChildrenController::class, 'status']);
     Route::get('/children/tren', [ChildrenController::class, 'tren']);
     Route::get('/children/case', [ChildrenController::class, 'case']);
+    Route::get('/children/info-boxes', [ChildrenController::class, 'infoBoxes']);
     Route::get('/children/intervensi', [ChildrenController::class, 'intervensi']);
     Route::get('/children/index_kunjungan', [ChildrenController::class, 'kunjungan']);
     Route::post('/children/import_kunjungan', [ChildrenController::class, 'import_kunjungan']);
