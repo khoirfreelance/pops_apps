@@ -2174,9 +2174,10 @@ export default {
             anchor: 'center',
             clamp: true,
             offset: 0,
+            // eslint-disable-next-line no-unused-vars
             formatter: (value, ctx) => {
-              const label = ctx.chart.data.labels[ctx.dataIndex];
-              return [label, `${value}%`];
+              //const label = ctx.chart.data.labels[ctx.dataIndex];
+              return [`${value}%`];
             },
           },
           },

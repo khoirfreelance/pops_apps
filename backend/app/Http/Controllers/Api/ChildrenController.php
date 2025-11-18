@@ -318,7 +318,7 @@ class ChildrenController extends Controller
                 ->get();
 
             // ✅ 6. PENDAMPINGAN
-            $pendampingan = Child::query()
+            /* $pendampingan = Child::query()
                 ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
                 ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '>=', $val))
                 ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '<=', $val))
@@ -328,10 +328,10 @@ class ChildrenController extends Controller
                 ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
                 ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
                 ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-                ->get();
+                ->get(); */
 
             // ✅ 7. INTERVENSI
-            $intervensi = Intervensi::query()
+            /* $intervensi = Intervensi::query()
                 ->when($filterKelurahan, fn($q) => $q->where('desa', $filterKelurahan))
                 ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
                 ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
@@ -339,10 +339,10 @@ class ChildrenController extends Controller
                 ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '>=', $val))
                 ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '<=', $val))
                 ->when($filters['intervensi'] ?? null, fn($q, $val) => $q->whereIn('kategori', (array) $val))
-                ->get();
+                ->get(); */
 
             // Gabungkan (utamakan kunjungan)
-            $data = $kunjungan->isNotEmpty() ? $kunjungan : ($pendampingan->isNotEmpty() ? $pendampingan : $intervensi);
+            $data = $kunjungan;//->isNotEmpty() ? $kunjungan : ($pendampingan->isNotEmpty() ? $pendampingan : $intervensi);
 
             if ($data->isEmpty()) {
                 $defaultCounts = [
