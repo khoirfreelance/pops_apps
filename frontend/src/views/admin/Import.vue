@@ -143,7 +143,7 @@
                               <li>Pastikan data sudah lengkap sebelum di import</li>
                               <li>
                                 Silahkan unduh contoh dengan klik
-                                <a href="/example_catin.csv">Example.csv</a>
+                                <a href="/example_kunjungan_posyandu.csv">Example.csv</a>
                               </li>
                             </ul>
                           </div>
@@ -257,7 +257,7 @@
                               <li>Pastikan data sudah lengkap sebelum di import</li>
                               <li>
                                 Silahkan unduh contoh dengan klik
-                                <a href="/example_catin.csv">Example.csv</a>
+                                <a href="/example_pendampingan_anak.csv">Example.csv</a>
                               </li>
                             </ul>
                           </div>
@@ -414,7 +414,7 @@
                   <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                     <!-- Label -->
                     <label class="form-label fw-semibold mb-0">
-                      Upload Data Calon Pengantin (CSV)
+                      Upload Data Ibu Hamil (CSV)
                     </label>
 
                     <!-- Search + Button -->
@@ -446,7 +446,7 @@
                           <li>Pastikan data sudah lengkap sebelum di import</li>
                           <li>
                             Silahkan unduh contoh dengan klik
-                            <a href="/example_catin.csv">Example.csv</a>
+                            <a href="/frontend/public/example_bumil.csv">Example.csv</a>
                           </li>
                         </ul>
                       </div>
@@ -628,7 +628,7 @@
                           <li>Pastikan data sudah lengkap sebelum di import</li>
                           <li>
                             Silahkan unduh contoh dengan klik
-                            <a href="/example_catin.csv">Example.csv</a>
+                            <a href="/example_bumil.csv">Example.csv</a>
                           </li>
                         </ul>
                       </div>

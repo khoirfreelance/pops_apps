@@ -254,7 +254,10 @@
                               {{ bumil.nama }}
                             </a>
                           </td>
-                          <td>{{ bumil.anemia }}</td>
+                          <td>
+                            <span v-if="bumil.anemia === 'Anemia' " class="badge bg-danger text-white">Ya</span>
+                            <span v-else>{{ bumil.anemia }}</span>
+                          </td>
                           <td>
                             <span v-if="bumil.risiko === 'Berisiko' " class="badge bg-danger text-white">Ya</span>
                             <span v-else>{{ bumil.risiko }}</span>

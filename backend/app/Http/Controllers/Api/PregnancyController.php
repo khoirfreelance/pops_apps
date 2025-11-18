@@ -159,7 +159,7 @@ class PregnancyController extends Controller
                     'kelurahan' => $latest->kelurahan,
                     'rt' => $latest->rt,
                     'rw' => $latest->rw,
-                    'tanggal_pendampinga' => $latest->tanggal_pendampingan,
+                    'tanggal_pendampingan' => $latest->tanggal_pendampingan,
                     'riwayat_pemeriksaan' => $riwayat,
                     'hpl' => $latest->hpl
                 ];
@@ -471,13 +471,13 @@ class PregnancyController extends Controller
                 $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
                 $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
 
-                $query->whereBetween('tanggal_pendampingan', [
+                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
                     $periodeAwal->format('Y-m-d'),
                     $periodeAkhir->format('Y-m-d'),
                 ]);
             } elseif ($request->filled('periode')) {
                 $periode = $this->parseBulanTahun($request->periode);
-                $query->whereBetween('tanggal_pendampingan', [
+                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
                     $periode->copy()->startOfMonth()->format('Y-m-d'),
                     $periode->copy()->endOfMonth()->format('Y-m-d'),
                 ]);
@@ -522,11 +522,11 @@ class PregnancyController extends Controller
 
             // ✅ Group by nik_ibu, ambil record terakhir
             $grouped = $data->groupBy('nik_ibu')->map(fn($group) =>
-                $group->sortByDesc('tanggal_pendampingan')->first()
+                $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first()
             );
 
             $groups = $data->groupBy('nik_ibu')->map(fn($group) =>
-                $group->sortByDesc('tanggal_pendampingan')
+                $group->sortByDesc('tanggal_pemeriksaan_terakhir')
             );
 
             $groupedData = $grouped->values();
@@ -601,7 +601,7 @@ class PregnancyController extends Controller
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
-                'groups' => $groups,
+                'groups' => $groupedData,
                 'kelurahan' => $wilayah['kelurahan'] ?? '-',
 
             ], 200);
