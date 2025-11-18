@@ -256,7 +256,7 @@
                           </td>
                           <td>{{ bumil.anemia }}</td>
                           <td>
-                            <span v-if="bumil.risiko === 'Ya' || bumil.risiko === 'Beresiko Tinggi' " class="badge bg-danger text-white">Ya</span>
+                            <span v-if="bumil.risiko === 'Berisiko' " class="badge bg-danger text-white">Ya</span>
                             <span v-else>{{ bumil.risiko }}</span>
                           </td>
                           <td>
@@ -785,7 +785,7 @@ export default {
   computed: {
     filterOptions() {
       return {
-        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Beresiko Tinggi'], filter:'Filter status ibu hamil:' },
+        status: { label: 'Status', placeholder: 'Pilih Status', options: ['KEK', 'Anemia', 'Berisiko'], filter:'Filter status ibu hamil:' },
         intervensi: { label: 'Intervensi', placeholder: 'Pilih Intervensi', options: ["MBG","KIE","Bansos", "PMT", "Bantuan Lainnya", "Belum mendapatkan intervensi"],filter:'' },
         usia: { label: 'Usia (Tahun)', placeholder: 'Pilih Usia', options: ['<20', '20-30', '30-40', '>40'],filter:'' },
       }
@@ -831,7 +831,7 @@ export default {
             nama: item.nama_ibu || '-',
             usia: item.usia_ibu || '-',
             nama_suami: item.nama_suami || '-',
-            risiko: item.status_kehamilan || '-',
+            risiko: item.status_risiko_usia || '-',
             rw: item.rw || '-',
             rt: item.rt || '-',
             // ambil nilai terakhir dari pemeriksaan

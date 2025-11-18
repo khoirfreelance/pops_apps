@@ -137,6 +137,7 @@ class PregnancyController extends Controller
                         'kadar_hb' => $g->kadar_hb,
                         'status_gizi_hb' => $g->status_gizi_hb,
                         'lila' => $g->lila,
+                        'status_risiko_usia' => $g->status_risiko_usia,
                         'status_gizi_lila' => $g->status_gizi_lila,
                         'usia_kehamilan_minggu' => $g->usia_kehamilan_minggu,
                         'posyandu' => $g->posyandu,
@@ -151,7 +152,7 @@ class PregnancyController extends Controller
                     'nik_suami' => $latest->nik_suami,
                     'kehamilan_ke' => $latest->kehamilan_ke,
                     'jumlah_anak' => $latest->jumlah_anak,
-                    'status_kehamilan' => $latest->status_kehamilan,
+                    'status_risiko_usia' => $latest->status_risiko_usia,
                     'provinsi' => $latest->provinsi,
                     'kota' => $latest->kota,
                     'kecamatan' => $latest->kecamatan,
@@ -524,6 +525,10 @@ class PregnancyController extends Controller
                 $group->sortByDesc('tanggal_pendampingan')->first()
             );
 
+            $groups = $data->groupBy('nik_ibu')->map(fn($group) =>
+                $group->sortByDesc('tanggal_pendampingan')
+            );
+
             $groupedData = $grouped->values();
             $total = $groupedData->count();
 
@@ -570,7 +575,7 @@ class PregnancyController extends Controller
             $count = [
                 'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek'))->count(),
                 'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia'))->count(),
-                'Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko_usia ?? ''), 'normal'))->count(),
+                'Berisiko' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko'))->count(),
                 'Normal' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko_usia ?? ''), 'normal'))->count(),
                 'Total Bumil' => $total,
             ];
@@ -596,13 +601,9 @@ class PregnancyController extends Controller
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
+                'groups' => $groups,
                 'kelurahan' => $wilayah['kelurahan'] ?? '-',
-            ], 200);
 
-            return response()->json([
-                'total' => $total,
-                'counts' => $result,
-                'kelurahan' => $wilayah['kelurahan'] ?? '-',
             ], 200);
 
         } catch (\Exception $e) {
