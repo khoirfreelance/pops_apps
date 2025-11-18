@@ -1295,7 +1295,7 @@ import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
-import axios from 'axios'
+import axios, { all } from 'axios'
 import {
   Chart,
   PieController,
@@ -2005,6 +2005,10 @@ export default {
       return null; // gagal parse
     },
 
+    toDate(d) {
+      return new Date(d + "T00:00:00"); // bikin aman di timezone
+    },
+
     // only anak
     async generateInfoBoxes() {
       try {
@@ -2306,7 +2310,7 @@ export default {
         }
       });
     },
-    async renderFunnelChart(periodeBulan = 12) {
+    async renderFunnelChart() {
       this.$nextTick(() => {
         const canvas = this.$refs.funnelChart;
         if (!canvas) return;
@@ -2317,9 +2321,36 @@ export default {
 
         if (!data.length) return;
 
-        const now = new Date();
-        const startDate = new Date();
-        startDate.setMonth(now.getMonth() - periodeBulan);
+        // periode: 2025-09
+        const periodeBulan = this.filterPeriode;
+
+        // 1. If periode is null → set to last month (YYYY-MM)
+        if (!this.filters.periode) {
+          const now = new Date();
+          now.setMonth(now.getMonth() - 1);
+
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, "0");
+
+          this.filters.periode = `${year}-${month}`;
+        }
+
+        console.log("periode:", this.filters.periode);
+
+        // 2. Parse periode (format YYYY-MM)
+        const [year, month] = this.filters.periode.split("-").map(Number);
+
+        // 3. END DATE → last day of selected month
+        // JS trick: new Date(year, month, 0)
+        const endDateObj = new Date(year, month, 0);
+        const endDate = endDateObj;
+
+        // 4. START DATE → first day of (month - periodeBulan + 1)
+        // JS months are 0-based, so subtract +1 more
+        const startDateObj = new Date(year, month - periodeBulan, 1);
+        let startDate = startDateObj;
+
+
 
         // 🔹 Flatten intervensi (boleh kosong → masuk "Belum Mendapatkan Bantuan")
         const allIntervensi = data.flatMap(anak => {
@@ -2344,7 +2375,7 @@ export default {
         // 🔹 Hanya intervensi dengan tanggal valid yang masuk range
         const recentIntervensi = allIntervensi.filter(i => {
           if (!i.tanggal) return true; // yang "belum dapat bantuan"
-          return i.tanggal >= startDate && i.tanggal <= now;
+          return i.tanggal >= startDate && i.tanggal <= endDate;
         });
 
         const jenisList = [
@@ -2395,7 +2426,7 @@ export default {
         });
       });
     },
-    async renderSudahChart(periodeBulan = 12) {
+    async renderSudahChart() {
       this.$nextTick(() => {
         const canvas = this.$refs.sudahChart;
         if (!canvas) return;
@@ -2404,9 +2435,36 @@ export default {
         const data = this.dataLoad || [];
         if (!data.length) return;
 
-        const now = new Date();
-        const startDate = new Date();
-        startDate.setMonth(now.getMonth() - periodeBulan);
+
+        // periode: 2025-09
+        const periodeBulan = this.filterPeriode;
+
+        // 1. If periode is null → set to last month (YYYY-MM)
+        if (!this.filters.periode) {
+          const now = new Date();
+          now.setMonth(now.getMonth() - 1);
+
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, "0");
+
+          this.filters.periode = `${year}-${month}`;
+        }
+
+        console.log("periode:", this.filters.periode);
+
+        // 2. Parse periode (format YYYY-MM)
+        const [year, month] = this.filters.periode.split("-").map(Number);
+
+        // 3. END DATE → last day of selected month
+        // JS trick: new Date(year, month, 0)
+        const endDateObj = new Date(year, month, 0);
+        const endDate = endDateObj;
+
+        // 4. START DATE → first day of (month - periodeBulan + 1)
+        // JS months are 0-based, so subtract +1 more
+        const startDateObj = new Date(year, month - periodeBulan, 1);
+        let startDate = startDateObj;
+
 
         const allIntervensi = data.flatMap(anak => {
           let itv = anak.raw.data_intervensi;
@@ -2419,14 +2477,17 @@ export default {
           const tgl = this.parseDate(itv.tgl_intervensi);
           if (!tgl) return []; // tanggal tidak valid → skip
 
+          const tgl_intervensi = new Date(tgl)
+
           return [{
-            tanggal: tgl,
+            tanggal: tgl_intervensi,
             jenis
           }];
         });
 
+        
         const recentIntervensi = allIntervensi.filter(i =>
-          i.tanggal >= startDate && i.tanggal <= now
+          i.tanggal >= startDate && i.tanggal <= endDate
         );
 
         const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
