@@ -37,14 +37,14 @@
 
           <!-- Statistic Cards -->
           <div class="mt-3">
-            <div class="row justify-content-between g-2">
+            <div class="row justify-content-center g-2">
               <div
                 v-for="(stat, index) in stats"
                 :key="index"
                 class="col-xl-1_9 col-lg-2 col-md-3 col-sm-6 col-6"
               >
                 <div class="stat-card shadow-sm rounded h-100">
-                  <h6 class="text-muted small pt-2 ps-2" style="font-size: 10px;">{{ stat.title }}</h6>
+                  <h6 class="text-muted pt-2 ps-2" style="font-size: 10px;">{{ stat.title }}</h6>
                   <div class="card-body d-flex align-items-center justify-content-between px-2">
                     <!-- Text -->
                     <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
@@ -61,9 +61,9 @@
           <!-- Judul Laporan -->
           <div class="text-center mt-3">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
-              <h5 class="title mb-0 text-capitalize fw-bold">
+              <h1 class="title mb-0 text-capitalize fw-bold">
                 Laporan Status Gizi {{ kelurahan }} Bulan {{ thisMonth }}
-              </h5>
+              </h1>
             </div>
           </div>
 
@@ -71,7 +71,7 @@
           <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 sticky-filter">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
-              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-12 col-12">
                 <label class="form-label fs-md-1">Kel/Desa</label>
                 <select v-model="filters.kelurahan" class="form-select text-muted" disabled>
                   <option :value="kelurahan">{{ kelurahan }}</option>
@@ -79,7 +79,7 @@
               </div>
 
               <!-- Posyandu -->
-              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-6">
+              <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-12">
                 <label class="form-label">Posyandu</label>
                 <select
                   v-model="filters.posyandu"
@@ -220,7 +220,7 @@
                         <div
                           v-for="(item, index) in kesehatanData.anak"
                           :key="index"
-                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
+                          class="col-xl-4 col-lg-6 col-sm-12 col-12 mb-3"
                         >
                           <div
                             class="card shadow-sm border-0 rounded-3 overflow-hidden"
@@ -231,24 +231,10 @@
                                 <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                                 <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
                               </div>
-                              <h5 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h5>
+                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
                             </div>
-
-                            <!-- SVG LINE CHART -->
                             <div class="card-footer bg-transparent border-0 pt-0">
-                              <svg
-                                viewBox="0 0 100 30"
-                                class="svg-line"
-                                preserveAspectRatio="none"
-                                :class="`stroke-${item.color}`"
-                              >
-                                <polyline
-                                  fill="none"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                                />
-                              </svg>
+                              <canvas :id="'chart-' + index" height="50"></canvas>
                             </div>
                           </div>
                         </div>
@@ -1295,7 +1281,7 @@ import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
-import axios, { all } from 'axios'
+import axios from 'axios'
 import {
   Chart,
   PieController,
@@ -1614,7 +1600,6 @@ export default {
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
         };
-
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
         let res = null;
 
@@ -1628,24 +1613,77 @@ export default {
           case 'catin':
             res = await axios.get(`${baseURL}/api/bride/status`, { headers, params });
             break;
-          default:
-            return;
+          default: return;
         }
 
         const data = res.data;
         const total = data.total || 0;
         this.totalAnak = total;
 
-        this.kesehatanData[this.activeMenu] = data.counts.map(item => ({
-          title: item.title,
-          value: item.value,
-          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
-          color: item.color,
-        }));
+        this.kesehatanData[this.activeMenu] = data.counts.map((item, index) => {
+          const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+
+          // panggil renderLineChart, bukan renderChart
+          this.$nextTick(() => {
+            this.rendersvgChart('chart-' + index, item.trend, [item.color]);
+          });
+
+          return {
+            title: item.title,
+            value: item.value,
+            percent: percent + '%',
+            color: item.color,
+          };
+        });
 
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error);
       }
+    },
+    rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+      const ctx = this.$refs[refName]?.getContext('2d');
+      if (!ctx) return;
+
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
+      if (!Array.isArray(dataTable) || !dataTable.length) return;
+
+      const labels = dataTable.map(row => row[labelKey]);
+      const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Persentase',
+            data: values,
+            borderColor: colors[0] || 'rgb(0,123,255)',
+            backgroundColor: 'transparent',
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.parsed.y + '%';
+                },
+              },
+            },
+          },
+          scales: {
+            x: { title: { display: false } },
+            y: { beginAtZero: true, max: 100, title: { display: false } },
+          },
+        },
+      });
     },
     async generateDataTable() {
       try {
@@ -2005,10 +2043,6 @@ export default {
       return null; // gagal parse
     },
 
-    toDate(d) {
-      return new Date(d + "T00:00:00"); // bikin aman di timezone
-    },
-
     // only anak
     async generateInfoBoxes() {
       try {
@@ -2066,9 +2100,13 @@ export default {
         },
         options: {
           responsive: true,
-          layout: { padding: 25 },
+          layout: { padding: 15 },
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'bottom',
+              align: 'start',
+            },
             tooltip: {
               callbacks: {
                 label: function(context) {
@@ -2310,51 +2348,26 @@ export default {
         }
       });
     },
-    async renderFunnelChart() {
+    async renderFunnelChart(periodeBulan = 12) {
       this.$nextTick(() => {
         const canvas = this.$refs.funnelChart;
         if (!canvas) return;
 
         const ctx = canvas.getContext("2d");
-        const data = this.dataLoad_belum || [];
+        const data = this.dataLoad || [];
         console.log('isinya:',this.dataLoad);
 
         if (!data.length) return;
 
-        // periode: 2025-09
-        const periodeBulan = this.filterPeriode;
-
-        // 1. If periode is null → set to last month (YYYY-MM)
-        if (!this.filters.periode) {
-          const now = new Date();
-          now.setMonth(now.getMonth() - 1);
-
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, "0");
-
-          this.filters.periode = `${year}-${month}`;
-        }
-
-        console.log("periode:", this.filters.periode);
-
-        // 2. Parse periode (format YYYY-MM)
-        const [year, month] = this.filters.periode.split("-").map(Number);
-
-        // 3. END DATE → last day of selected month
-        // JS trick: new Date(year, month, 0)
-        const endDateObj = new Date(year, month, 0);
-        const endDate = endDateObj;
-
-        // 4. START DATE → first day of (month - periodeBulan + 1)
-        // JS months are 0-based, so subtract +1 more
-        const startDateObj = new Date(year, month - periodeBulan, 1);
-        let startDate = startDateObj;
-
-
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setMonth(now.getMonth() - periodeBulan);
 
         // 🔹 Flatten intervensi (boleh kosong → masuk "Belum Mendapatkan Bantuan")
         const allIntervensi = data.flatMap(anak => {
-          const itv = anak.data_intervensi;
+          //const itv = anak.data_intervensi;
+           let itv = anak.raw.data_intervensi;
+          itv = Array.isArray(itv) ? itv[0] : itv; // ambil intervensi pertama saja
 
           // Tidak ada intervensi → masuk kategori default
           if (!itv) {
@@ -2375,7 +2388,7 @@ export default {
         // 🔹 Hanya intervensi dengan tanggal valid yang masuk range
         const recentIntervensi = allIntervensi.filter(i => {
           if (!i.tanggal) return true; // yang "belum dapat bantuan"
-          return i.tanggal >= startDate && i.tanggal <= endDate;
+          return i.tanggal >= startDate && i.tanggal <= now;
         });
 
         const jenisList = [
@@ -2426,7 +2439,7 @@ export default {
         });
       });
     },
-    async renderSudahChart() {
+    async renderSudahChart(periodeBulan = 12) {
       this.$nextTick(() => {
         const canvas = this.$refs.sudahChart;
         if (!canvas) return;
@@ -2435,59 +2448,30 @@ export default {
         const data = this.dataLoad || [];
         if (!data.length) return;
 
-
-        // periode: 2025-09
-        const periodeBulan = this.filterPeriode;
-
-        // 1. If periode is null → set to last month (YYYY-MM)
-        if (!this.filters.periode) {
-          const now = new Date();
-          now.setMonth(now.getMonth() - 1);
-
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, "0");
-
-          this.filters.periode = `${year}-${month}`;
-        }
-
-        console.log("periode:", this.filters.periode);
-
-        // 2. Parse periode (format YYYY-MM)
-        const [year, month] = this.filters.periode.split("-").map(Number);
-
-        // 3. END DATE → last day of selected month
-        // JS trick: new Date(year, month, 0)
-        const endDateObj = new Date(year, month, 0);
-        const endDate = endDateObj;
-
-        // 4. START DATE → first day of (month - periodeBulan + 1)
-        // JS months are 0-based, so subtract +1 more
-        const startDateObj = new Date(year, month - periodeBulan, 1);
-        let startDate = startDateObj;
-
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setMonth(now.getMonth() - periodeBulan);
 
         const allIntervensi = data.flatMap(anak => {
-          let itv = anak.raw.data_intervensi;
-          itv = Array.isArray(itv) ? itv[0] : itv; // ambil intervensi pertama saja
+          const itv = anak.data_intervensi;
           if (!itv) return [];
 
+          //const jenis = itv.jenis_intervensi?.trim();
+          //if (!jenis) return []; // kosong → tidak masuk chart
           let jenis = itv.kategori?.trim();
           if (!jenis || jenis == "Lainnya") jenis = "Bantuan Lainnya";
 
           const tgl = this.parseDate(itv.tgl_intervensi);
           if (!tgl) return []; // tanggal tidak valid → skip
 
-          const tgl_intervensi = new Date(tgl)
-
           return [{
-            tanggal: tgl_intervensi,
+            tanggal: tgl,
             jenis
           }];
         });
 
-        
         const recentIntervensi = allIntervensi.filter(i =>
-          i.tanggal >= startDate && i.tanggal <= endDate
+          i.tanggal >= startDate && i.tanggal <= now
         );
 
         const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
@@ -2742,7 +2726,8 @@ export default {
         if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
-        const data = this.dataLoad || [];
+        //const data = this.dataLoad || [];
+        const data = this.dataLoad_belum || [];
 
         // 🛑 Jika data kosong sama sekali
         if (!data.length) {
@@ -3176,6 +3161,7 @@ export default {
       this.renderFunnelChart();
       this.renderSudahChart();
       this.renderBumilChart();
+      this.rendersvgChart();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
 

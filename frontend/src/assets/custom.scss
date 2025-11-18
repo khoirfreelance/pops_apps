@@ -17,7 +17,7 @@ $additional2: #a2aaad;
 // ===========================================
 
 // Font family
-$headings-font-family: 'Neuton', serif;
+$headings-font-family: 'Inter', sans-serif;
 $font-family-base: 'Inter', sans-serif;
 
 // Ukuran dasar dan skala
@@ -34,13 +34,13 @@ $headings-line-height: 1.25;
 
 // Menghitung manual dengan skala 1.25 (Major Third)
 // Base = 16px → h1-h6 pakai rem (1rem = 16px)
-$h1-font-size: 3.815rem;  // 61.04px
-$h2-font-size: 3.052rem;  // 48.83px
-$h3-font-size: 2.441rem;  // 39.06px
-$h4-font-size: 1.953rem;  // 31.25px
-$h5-font-size: 1.563rem;  // 25px
-$h6-font-size: 1.25rem;   // 20px
-$p-font-size: 1rem;       // 16px
+$h1-font-size: 24px;  // 61.04px
+$h2-font-size: 20px;  // 48.83px
+$h3-font-size: 18px;  // 39.06px
+$h4-font-size: 16px;  // 31.25px
+$h5-font-size: 14px;  // 25px
+$h6-font-size: 12px;   // 20px
+$p-font-size: 12px;       // 16px
 $small-font-size: 0.8rem; // 12.8px
 
 // ===========================================

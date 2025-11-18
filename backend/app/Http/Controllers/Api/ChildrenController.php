@@ -1460,131 +1460,6 @@ class ChildrenController extends Controller
     public function intervensi(Request $request)
     {
         $user = Auth::user();
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) return response()->json(['message' => 'User tidak terdaftar TPK'], 404);
-
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah  = $posyandu?->wilayah;
-        if (!$wilayah) return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
-
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
-        // 🔹 Tentukan range 3 bulan terakhir
-        $periode = $request->filled('periode')
-            ? Carbon::createFromFormat('Y-m', $request->periode)
-            : now()->subMonth();
-
-        $end = $periode->copy()->endOfMonth();
-        $start = $periode->copy()->subMonths(2)->startOfMonth(); // 3 bulan
-
-        // ==========================
-        // A. Ambil kunjungan anak kasus
-        // ==========================
-        $kunjunganQuery = Kunjungan::query()
-            ->where(function($q) {
-                $q->where('bb_u', '!=', 'Normal')
-                ->orWhere('tb_u', '!=', 'Normal')
-                ->orWhere('bb_tb', '!=', 'Normal');
-            })
-            ->whereBetween('tgl_pengukuran', [$start, $end]);
-
-        if ($filterKelurahan) $kunjunganQuery->where('kelurahan', $filterKelurahan);
-        if ($request->filled('posyandu')) $kunjunganQuery->where('posyandu', $request->posyandu);
-        if ($request->filled('rw')) $kunjunganQuery->where('rw', $request->rw);
-        if ($request->filled('rt')) $kunjunganQuery->where('rt', $request->rt);
-
-        $kunjungan = $kunjunganQuery->get();
-
-        $nikKasus = $kunjungan->pluck('nik')->unique();
-
-        // ==========================
-        // B. Ambil intervensi terkait
-        // ==========================
-        $intervensiQuery = Intervensi::query();
-        if ($request->filled('posyandu')) $intervensiQuery->where('posyandu', $request->posyandu);
-        if ($request->filled('rw')) $intervensiQuery->where('rw', $request->rw);
-        if ($request->filled('rt')) $intervensiQuery->where('rt', $request->rt);
-
-        $intervensi = $intervensiQuery->get();
-        $nikIntervensi = $intervensi->pluck('nik_subjek')->unique();
-
-        // ==========================
-        // C. Grouping
-        // ==========================
-        $punya_keduanya   = $nikKasus->intersect($nikIntervensi);
-        $hanya_kunjungan  = $nikKasus->diff($nikIntervensi);
-        $hanya_intervensi = $nikIntervensi->diff($nikKasus);
-
-        // ==========================
-        // D. Build detail anak
-        // ==========================
-        $mapKunjungan  = $kunjungan->keyBy('nik');
-        $mapIntervensi = $intervensi->groupBy('nik_subjek');
-
-        $detail_keduanya = $punya_keduanya->map(fn($nik) => [
-            'nik'             => $nik,
-            'nama'            => $mapKunjungan[$nik]->nama_anak ?? null,
-            'kelurahan'       => $mapKunjungan[$nik]->kelurahan ?? null,
-            'posyandu'        => $mapKunjungan[$nik]->posyandu ?? null,
-            'data_kunjungan'  => $mapKunjungan[$nik],
-            'data_intervensi' => $mapIntervensi[$nik] ?? []
-        ]);
-
-        $detail_hanya_kunjungan = $hanya_kunjungan->map(fn($nik) => [
-            'nik' => $nik,
-            'nama' => $mapKunjungan[$nik]->nama_anak ?? null,
-            'kelurahan' => $mapKunjungan[$nik]->kelurahan ?? null,
-            'posyandu'  => $mapKunjungan[$nik]->posyandu ?? null,
-            'data_kunjungan' => $mapKunjungan[$nik]
-        ]);
-
-        $detail_hanya_intervensi = $hanya_intervensi->map(fn($nik) => [
-            'nik' => $nik,
-            'nama' => $mapIntervensi[$nik]->first()->nama_subjek ?? null,
-            'kelurahan' => $mapIntervensi[$nik]->first()->kelurahan ?? null,
-            'posyandu' => $mapIntervensi[$nik]->first()->posyandu ?? null,
-            'data_intervensi' => $mapIntervensi[$nik]
-        ]);
-
-        // ==========================
-        // E. Hitung jumlah per jenis intervensi
-        // ==========================
-        $jenisList = ['MBG','KIE','Bansos','PMT','Bantuan Lainnya','Belum Mendapatkan Bantuan'];
-
-        $counts = [];
-        foreach ($jenisList as $j) {
-            $counts[$j] = $intervensi->filter(fn($i) => ($i->jenis_intervensi ?? 'Belum Mendapatkan Bantuan') === $j)->count();
-        }
-
-        // ==========================
-        // F. Top 5 posyandu kasus gizi ganda
-        // ==========================
-        $topPosyandu = $kunjungan->groupBy('posyandu')
-            ->map(fn($grp) => $grp->count())
-            ->sortDesc()
-            ->take(5);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data intervensi & kunjungan berhasil dimuat',
-            'grouping' => [
-                'punya_keduanya'   => $punya_keduanya->count(),
-                'hanya_kunjungan'  => $hanya_kunjungan->count(),
-                'hanya_intervensi' => $hanya_intervensi->count(),
-                'per_jenis_intervensi' => $counts,
-                'top_posyandu' => $topPosyandu
-            ],
-            'detail' => [
-                'punya_keduanya'    => $detail_keduanya->values(),
-                'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
-                'hanya_intervensi'  => $detail_hanya_intervensi->values(),
-            ]
-        ]);
-    }
-
-    /* public function intervensi(Request $request)
-    {
-        $user = Auth::user();
 
         // 1. Ambil data anggota TPK
         $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
@@ -1708,6 +1583,6 @@ class ChildrenController extends Controller
                 'hanya_intervensi'  => $detail_hanya_intervensi->values(),
             ]
         ]);
-    } */
+    }
 
 }
