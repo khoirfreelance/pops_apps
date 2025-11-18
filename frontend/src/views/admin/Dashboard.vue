@@ -1723,14 +1723,14 @@ export default {
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
-              trenClass = "text-success";
+              trenClass = "text-danger";
             }
             else if (diff < 0) {
               if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-              trenIcon = "bi bi-caret-down-fill";
-              trenClass = "text-danger";
+                trenIcon = "bi bi-caret-down-fill";
+                trenClass = "text-success";
             }
             else {
               tren = "0.00%";
@@ -1782,14 +1782,14 @@ export default {
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
-              trenClass = "text-success";
+              trenClass = "text-danger";
             }
             else if (diff < 0) {
               if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
-              trenClass = "text-danger";
+              trenClass = "text-success";
             }
             else {
               tren = "0.00%";
@@ -1840,14 +1840,14 @@ export default {
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-up-fill";
-              trenClass = "text-success";
+              trenClass = "text-danger";
             }
             else if (diff < 0) {
               if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
               else
                 tren = ((diff / prevValue) * 100).toFixed(2) + '%';
               trenIcon = "bi bi-caret-down-fill";
-              trenClass = "text-danger";
+              trenClass = "text-success";
             }
             else {
               tren = "0.00%";
@@ -2133,22 +2133,10 @@ export default {
         this[refName + 'Instance'].destroy();
       }
 
-
-      /* if (!Array.isArray(dataTable) || !dataTable.length) {
-        const canvas = this.$refs[refName];
-        const ctx2 = canvas?.getContext('2d');
-
-        // Bersihkan dan tulis pesan "No Data"
-        if (ctx2) {
-          ctx2.clearRect(0, 0, canvas.width, canvas.height);
-          ctx2.font = '14px sans-serif';
-          ctx2.fillStyle = '#999';
-          ctx2.textAlign = 'center';
-          ctx2.fillText('Tidak ada data untuk bulan ini', canvas.width / 2, canvas.height / 2);
-        }
-
+      if (!Array.isArray(dataTable) || !dataTable.length) {
+        console.warn(`⚠️ Tidak ada data untuk chart ${refName}`);
         return;
-      } */
+      }
 
       const labels = dataTable.map(row => row[labelKey]);
       const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
@@ -3245,7 +3233,7 @@ export default {
 
       // 🔟 Simpan hasil awal ke filteredData sesuai tipe menu
       // 🔹 Render chart awal (sesuai tipe menu aktif)
-      this.renderChart('pieChart_bb', this.dataTable_bb, [
+      /* this.renderChart('pieChart_bb', this.dataTable_bb, [
           '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
         ]);
         this.renderChart('pieChart_tb', this.dataTable_tb, [
@@ -3253,7 +3241,7 @@ export default {
         ]);
         this.renderChart('pieChart_status', this.dataTable_status, [
           '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-        ]);
+        ]); */
 
       // 11️⃣ Setup resize listener untuk responsive
       this.handleResize();
