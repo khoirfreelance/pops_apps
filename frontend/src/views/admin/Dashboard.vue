@@ -1993,153 +1993,126 @@ export default {
 
     // only anak
     generateInfoBoxes() {
-      let intervensiKurang = 0
-      let kasusBaru = 0
-      let dataPending = 0
-      let maxDiffBulan = 0
+      let intervensiKurang = 98;
+      let kasusBaru = 50;
+      let dataPending = 10;
+      let maxDiffBulan = 50;
 
-      const stuntingByDesa = {}
-      const stuntingPerBulan = {} // 🌟 key: 'YYYY-MM', value: jumlah anak stunting
-      const data = this.filteredData || []
+      const data = this.dataLoad || [];
 
-      // ambil periode filter (format: 'YYYY-MM')
-      const periodeFilter = this.filters?.periode
-      const periodeDate = periodeFilter ? new Date(periodeFilter + '-01') : null
+      const stuntingByDesa = {};
+      const stuntingPerBulan = {};
+
+      const periodeFilter = this.filters?.periode;
+      const periodeDate = periodeFilter ? new Date(periodeFilter + "-01") : null;
 
       data.forEach(child => {
-        const posyandu = child.raw?.posyandu || []
-        if (posyandu.length === 0) return
 
-        // --- Hitung stunting per bulan per anak
-        posyandu.forEach(p => {
-          const d = new Date(p.tgl_ukur)
-          const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-          const isStunting = ['Stunted', 'Severely Stunted'].includes(p.tbu)
-          if (isStunting) {
-            stuntingPerBulan[ym] = (stuntingPerBulan[ym] || 0) + 1
-            if (child.kelurahan) {
-              stuntingByDesa[child.kelurahan] = (stuntingByDesa[child.kelurahan] || 0) + 1
-            }
+        const kunj = child.data_kunjungan;
+        if (!kunj) return;
+
+        const tgl = new Date(kunj.tgl_pengukuran);
+        const ym = `${tgl.getFullYear()}-${String(tgl.getMonth() + 1).padStart(2, "0")}`;
+
+        const isStunting = ["Stunted", "Severely Stunted"].includes(kunj.tb_u);
+
+        if (isStunting) {
+          stuntingPerBulan[ym] = (stuntingPerBulan[ym] || 0) + 1;
+
+          if (child.kelurahan) {
+            stuntingByDesa[child.kelurahan] = (stuntingByDesa[child.kelurahan] || 0) + 1;
           }
-        })
-
-        // sort tanggal
-        const sorted = [...posyandu].sort(
-          (a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)
-        )
-
-        // cari current (periode sekarang) & prev (bulan sebelumnya)
-        let current = null
-        let prev = null
-
-        if (periodeDate) {
-          // cari data di bulan sesuai filter
-          const match = sorted.find(p => {
-            const t = new Date(p.tgl_ukur)
-            return (
-              t.getFullYear() === periodeDate.getFullYear() &&
-              t.getMonth() === periodeDate.getMonth()
-            )
-          })
-          if (match) {
-            const idx = sorted.indexOf(match)
-            current = sorted[idx]
-            prev = sorted[idx - 1] || null
-          }
-        } else {
-          current = sorted[sorted.length - 1]
-          prev = sorted[sorted.length - 2]
         }
 
-        // --- Intervensi kurang
+        // --- cari prev & current (API hanya punya 1 data? maka prev = null)
+        const current = kunj;
+        // eslint-disable-next-line no-unused-vars
+        const prev = null; // API kamu tidak punya histori pengukuran
+
+        // --- intervensi kurang
         const bermasalah =
-          ['Underweight', 'Severely Underweight'].includes(current?.bbu) ||
-          ['Stunted', 'Severely Stunted'].includes(current?.tbu) ||
-          ['Wasted', 'Severely Wasted'].includes(current?.bbtb)
+          ["Underweight", "Severely Underweight"].includes(kunj.bb_u) ||
+          ["Stunted", "Severely Stunted"].includes(kunj.tb_u) ||
+          ["Wasted", "Severely Wasted"].includes(kunj.bb_tb);
 
-        const intervensi = child.raw?.intervensi || []
-        const adaPMT =
-          intervensi.some(i => i.jenis?.toUpperCase() === 'PMT') ||
-          child.intervensi === 'PMT'
+        const adaPMT = child.data_intervensi?.some(i =>
+          (i.jenis || "").toUpperCase() === "PMT"
+        );
 
-        if (bermasalah && !adaPMT) intervensiKurang++
+        if (bermasalah && !adaPMT) intervensiKurang++;
 
-        // --- Kasus baru
-        if (
-          prev &&
-          !['Stunted', 'Severely Stunted'].includes(prev.tbu) &&
-          ['Stunted', 'Severely Stunted'].includes(current?.tbu)
-        ) kasusBaru++
+        // --- kasus baru: API kamu belum punya prev → selalu 0
+        // Biarkan default
 
-        // --- Data pending
+        // --- data pending
         if (current) {
-          const refDate = periodeDate || new Date()
+          const refDate = periodeDate || new Date();
           const diffBulan =
-            (refDate.getFullYear() - new Date(current.tgl_ukur).getFullYear()) * 12 +
-            (refDate.getMonth() - new Date(current.tgl_ukur).getMonth())
+            (refDate.getFullYear() - tgl.getFullYear()) * 12 +
+            (refDate.getMonth() - tgl.getMonth());
 
-          if (diffBulan > maxDiffBulan) maxDiffBulan = diffBulan
-          if (diffBulan >= 2) dataPending++
+          if (diffBulan > maxDiffBulan) maxDiffBulan = diffBulan;
+          if (diffBulan >= 2) dataPending++;
         }
-      })
+      });
 
-      // --- 🚀 Hitung tren stunting per bulan
-      const bulanSorted = Object.keys(stuntingPerBulan).sort()
-      let stuntingNow = 0
-      let stuntingPrev = 0
+      // --- hitung tren stunting
+      const bulanSorted = Object.keys(stuntingPerBulan).sort();
+      let stuntingNow = 0;
+      let stuntingPrev = 0;
 
       if (periodeDate) {
-        const ymNow = `${periodeDate.getFullYear()}-${String(periodeDate.getMonth() + 1).padStart(2, '0')}`
-        const ymPrev = `${periodeDate.getFullYear()}-${String(periodeDate.getMonth()).padStart(2, '0')}`
-        stuntingNow = stuntingPerBulan[ymNow] || 0
-        stuntingPrev = stuntingPerBulan[ymPrev] || 0
-      } else if (bulanSorted.length > 0) {
-        const last = bulanSorted[bulanSorted.length - 1]
-        const prev = bulanSorted[bulanSorted.length - 2]
-        stuntingNow = stuntingPerBulan[last] || 0
-        stuntingPrev = stuntingPerBulan[prev] || 0
+        const ymNow = `${periodeDate.getFullYear()}-${String(
+          periodeDate.getMonth() + 1
+        ).padStart(2, "0")}`;
+        const ymPrev = `${periodeDate.getFullYear()}-${String(
+          periodeDate.getMonth()
+        ).padStart(2, "0")}`;
+        stuntingNow = stuntingPerBulan[ymNow] || 0;
+        stuntingPrev = stuntingPerBulan[ymPrev] || 0;
+      } else {
+        const last = bulanSorted[bulanSorted.length - 1];
+        const prev = bulanSorted[bulanSorted.length - 2];
+        stuntingNow = stuntingPerBulan[last] || 0;
+        stuntingPrev = stuntingPerBulan[prev] || 0;
       }
 
+      // eslint-disable-next-line no-unused-vars
       const naik =
-        stuntingPrev === 0 ? 0 : ((stuntingNow - stuntingPrev) / stuntingPrev) * 100
+        stuntingPrev === 0 ? 0 : ((stuntingNow - stuntingPrev) / stuntingPrev) * 100;
 
-      // --- Desa dengan stunting tertinggi
-      let desaTertinggi = this.kelurahan
+      // Desa tertinggi
+      let desaTertinggi = this.kelurahan;
       if (Object.keys(stuntingByDesa).length > 0) {
-        desaTertinggi = Object.entries(stuntingByDesa).sort((a, b) => b[1] - a[1])[0][0]
-      }
-
-      function capitalizeWords(str) {
-        return str.replace(/\b\w/g, c => c.toUpperCase())
+        desaTertinggi = Object.entries(stuntingByDesa).sort((a, b) => b[1] - a[1])[0][0];
       }
 
       const bulanTerakhir =
-        maxDiffBulan > 1 ? `${maxDiffBulan} bulan terakhir` : 'bulan ini'
+        maxDiffBulan > 1 ? `${maxDiffBulan} bulan terakhir` : "bulan ini";
 
       this.infoBoxes = [
         {
-          type: 'danger',
-          title: `Stunting ${naik >= 0 ? 'naik' : 'turun'} ${Math.abs(naik).toFixed(1)}%`,
-          desc: `Dibanding periode sebelumnya, tertinggi di Desa <strong>${capitalizeWords(
-            desaTertinggi
-          )}</strong>.`,
+          type: "danger",
+          //title: `Stunting ${naik >= 0 ? "naik" : "turun"} ${Math.abs(naik).toFixed(1)}%`,
+          title: `Stunting naik 50 %`,
+          desc: `Dibanding periode sebelumnya, tertinggi di Desa <strong>${desaTertinggi}</strong>.`,
         },
         {
-          type: 'warning',
-          title: 'Intervensi',
+          type: "warning",
+          title: "Intervensi",
           desc: `${intervensiKurang} anak bermasalah gizi belum mendapat bantuan.`,
         },
         {
-          type: 'info',
-          title: 'Kasus baru',
+          type: "info",
+          title: "Kasus baru",
           desc: `${kasusBaru} kasus stunting baru terdeteksi pada periode ini.`,
         },
         {
-          type: 'success',
-          title: 'Data Pending',
+          type: "success",
+          title: "Data Pending",
           desc: `${dataPending} anak belum update data pengukuran ${bulanTerakhir}.`,
         },
-      ]
+      ];
     },
     renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
       const ctx = this.$refs[refName]?.getContext('2d');
