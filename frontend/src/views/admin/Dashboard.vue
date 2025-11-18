@@ -2184,14 +2184,10 @@ export default {
             anchor: 'center',
             clamp: true,
             offset: 0,
-            formatter: (value) => {
-              //const label = ctx.chart.data.labels[ctx.dataIndex];
-              return [`${value}%`];
-            },
-            /* formatter: (value, ctx) => {
+            formatter: (value, ctx) => {
               const label = ctx.chart.data.labels[ctx.dataIndex];
               return [label, `${value}%`];
-            }, */
+            },
           },
           },
           onHover: (event, elements) => {
@@ -2278,12 +2274,16 @@ export default {
         !a.rumusan || a.rumusan === "" || a.rumusan === null
       )
 
-      const allPosyandu = tanpaIntervensi.flatMap(anak =>
-        (anak.raw?.posyandu || []).map(p => ({
-          tanggal: new Date(p.tgl_ukur),
-          bb_naik: p.bb_naik
-        }))
-      )
+      const allPosyandu = tanpaIntervensi.flatMap(anak => {
+        const k = anak.data_kunjungan
+        if (!k) return []
+
+        return [{
+          tanggal: new Date(k.tgl_pengukuran),
+          bb_naik: k.naik_berat_badan
+        }]
+      })
+
 
       const recent = allPosyandu.filter(
         p => p.tanggal >= startDate && p.tanggal <= now
@@ -2340,244 +2340,224 @@ export default {
       })
     },
     renderBarChart(periodeBulan = 3) {
-      const data = this.dataLoad_belum || []
-      if (!data.length) return
+  const data = this.dataLoad_belum || [];
+  if (!data.length) return;
 
-      // 🔹 Tentukan rentang waktu (default 3 bulan terakhir)
-      const now = new Date()
-      const startDate = new Date()
-      startDate.setMonth(now.getMonth() - periodeBulan)
+  const now = new Date();
+  const startDate = new Date();
+  startDate.setMonth(now.getMonth() - periodeBulan);
 
-      // 🔹 Ambil semua entri posyandu dari setiap anak
-      const allPosyandu = data.flatMap((anak) =>
-        (Array.isArray(anak.raw?.posyandu) ? anak.raw.posyandu : []).map((p) => ({
-          posyandu: p.posyandu || 'Tidak Diketahui',
-          tanggal: new Date(p.tgl_ukur),
-          bb_naik: p.bb_naik,
-        }))
-      )
+  // 🔹 Ambil ENTIRE POSYANDU ENTRY dari data_kunjungan
+  const allPosyandu = data.flatMap(anak => {
+    const kun = anak.data_kunjungan;
+    if (!kun) return [];
 
+    return [{
+      posyandu: kun.posyandu || 'Tidak Diketahui',
+      tanggal: new Date(kun.tgl_pengukuran),
+      bb_naik: kun.naik_berat_badan   // null artinya "tidak membaik"
+    }];
+  });
 
-      // 🔹 Ambil daftar unik semua posyandu (agar yang 0 juga muncul)
-      const allPosyanduNames = [
-        ...new Set(allPosyandu.map((p) => p.posyandu || 'Tidak Diketahui')),
-      ]
+  // 🔹 Nama posyandu unik
+  const allPosyanduNames = [...new Set(allPosyandu.map(p =>
+    p.posyandu || 'Tidak Diketahui'
+  ))];
 
-      // 🔹 Filter hanya data dalam periode waktu
-      const recent = allPosyandu.filter(
-        (p) => p.tanggal >= startDate && p.tanggal <= now
-      )
+  // 🔹 Filter hanya yang masuk range waktu
+  const recent = allPosyandu.filter(p =>
+    p.tanggal >= startDate && p.tanggal <= now
+  );
 
-      // 🔹 Kelompokkan berdasarkan nama posyandu
-      const posyanduCounts = {}
-      allPosyanduNames.forEach((name) => (posyanduCounts[name] = 0)) // inisialisasi 0
+  // 🔹 Hitung jumlah tidak membaik per posyandu
+  const posyanduCounts = {};
+  allPosyanduNames.forEach(name => posyanduCounts[name] = 0);
 
-      recent.forEach((p) => {
-        const key = p.posyandu || 'Tidak Diketahui'
-        if (!p.bb_naik) posyanduCounts[key]++
-      })
+  recent.forEach(p => {
+    const key = p.posyandu || 'Tidak Diketahui';
+    if (!p.bb_naik) posyanduCounts[key]++;  // null → tidak membaik
+  });
 
-      // 🔹 Siapkan data untuk Chart.js
-      const labels = Object.keys(posyanduCounts)
-      const values = Object.values(posyanduCounts)
+  // 🔹 Chart data
+  const labels = Object.keys(posyanduCounts);
+  const values = Object.values(posyanduCounts);
 
-      // 🔹 Hancurkan chart lama kalau ada
-      if (this.barChart) this.barChart.destroy()
+  if (this.barChart) this.barChart.destroy();
 
-      // 🔹 Render chart baru
-      const ctx = this.$refs.barChart.getContext('2d')
-      this.barChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Anak Tidak Membaik',
-              data: values,
-              backgroundColor: 'rgba(255, 99, 132, 0.6)',
-              borderRadius: 8,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: {
-              display: false,
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => `${ctx.parsed.y} anak tidak membaik`,
-              },
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Jumlah Anak',
-              },
-            },
-            x: {
-              title: {
-                display: true,
-                text: 'Posyandu',
-              },
-            },
-          },
-        },
-      })
+  const ctx = this.$refs.barChart.getContext('2d');
+  this.barChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Anak Tidak Membaik",
+        data: values,
+        backgroundColor: "rgba(255, 99, 132, 0.6)",
+        borderRadius: 8
+      }]
     },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true },
+        x: { title: { display: true, text: "Posyandu" } }
+      }
+    }
+  });
+},
     renderFunnelChart(periodeBulan = 3) {
-      this.$nextTick(() => {
-        const canvas = this.$refs.funnelChart
-        if (!canvas) return // belum dirender
+  this.$nextTick(() => {
+    const canvas = this.$refs.funnelChart;
+    if (!canvas) return;
 
-        const ctx = canvas.getContext('2d')
-        const data = this.dataLoad || []
-        if (!data.length) return
+    const ctx = canvas.getContext('2d');
+    const data = this.dataLoad || [];
+    if (!data.length) return;
 
-        const now = new Date()
-        const startDate = new Date()
-        startDate.setMonth(now.getMonth() - periodeBulan)
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setMonth(now.getMonth() - periodeBulan);
 
-        // 🔹 Flatten semua intervensi dari semua anak
-        const allIntervensi = data.flatMap(anak =>
-          (anak.raw?.intervensi || []).map(i => ({
-            tanggal: new Date(i.tanggal),
-            jenis: i.kategori || "Belum Mendapatkan Bantuan"
-          }))
-        )
+    // 🔹 Flatten semua intervensi (termasuk yang tidak punya jenis)
+    const allIntervensi = data.flatMap(anak => {
+      const itv = anak.data_intervensi;
+      if (!itv) return [];
 
-        // 🔹 Filter intervensi dalam periode
-        const recentIntervensi = allIntervensi.filter(
-          i => i.tanggal >= startDate && i.tanggal <= now
-        )
+      return [{
+        tanggal: new Date(itv.tgl_intervensi),
+        jenis: itv.jenis_intervensi || "Belum Mendapatkan Bantuan",
+      }];
+    });
 
-        // 🔹 Daftar jenis tetap (supaya tampil meski 0)
-        const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya', 'Belum Mendapatkan Bantuan']
-        const counts = jenisList.map(jenis =>
-          recentIntervensi.filter(i => i.jenis === jenis).length
-        )
+    // 🔹 Filter dalam periode waktu
+    const recentIntervensi = allIntervensi.filter(i =>
+      i.tanggal >= startDate && i.tanggal <= now
+    );
 
-        // 🔹 Hapus chart lama
-        if (this.funnelChart) this.funnelChart.destroy()
+    // 🔹 Jenis tetap
+    const jenisList = [
+      "MBG",
+      "KIE",
+      "Bansos",
+      "PMT",
+      "Bantuan Lainnya",
+      "Belum Mendapatkan Bantuan"
+    ];
 
-        // 🔹 Render Chart.js horizontal bar
-        this.funnelChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: jenisList,
-            datasets: [
-              {
-                data: counts,
-                backgroundColor: [
-                  '#006341',
-                  '#007d52',
-                  '#009562',
-                  '#6fa287',
-                  '#6d8b7b',
-                  '#ea7f7f'
-                ],
-                color: '#FFFFFF'
-              }
-            ]
-          },
-          options: {
-            indexAxis: 'y',
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                color: '#FFFFFF',
-                anchor: 'center',
-                align: 'center',
-                font: { weight: 'bold' },
-                formatter: value => value || '0'
-              },
-              title: { display: false }
-            },
-            scales: { x: { beginAtZero: true } }
+    const counts = jenisList.map(jenis =>
+      recentIntervensi.filter(i => i.jenis === jenis).length
+    );
+
+    if (this.funnelChart) this.funnelChart.destroy();
+
+    this.funnelChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: jenisList,
+        datasets: [{
+          data: counts,
+          backgroundColor: [
+            "#006341",
+            "#007d52",
+            "#009562",
+            "#6fa287",
+            "#6d8b7b",
+            "#ea7f7f"
+          ]
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: "#fff",
+            anchor: "center",
+            align: "center",
+            font: { weight: "bold" },
+            formatter: v => v || "0"
           }
-        })
-      })
-    },
+        },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  });
+}
+,
     renderSudahChart(periodeBulan = 3) {
-      this.$nextTick(() => {
-        const canvas = this.$refs.sudahChart
-        if (!canvas) return
+  this.$nextTick(() => {
+    const canvas = this.$refs.sudahChart;
+    if (!canvas) return;
 
-        const ctx = canvas.getContext('2d')
-        const data = this.dataLoad || []
-        if (!data.length) return
+    const ctx = canvas.getContext("2d");
+    const data = this.dataLoad || [];
+    if (!data.length) return;
 
-        const now = new Date()
-        const startDate = new Date()
-        startDate.setMonth(now.getMonth() - periodeBulan)
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setMonth(now.getMonth() - periodeBulan);
 
-        // 🔹 Flatten intervensi valid (jenis tidak null/0/kosong)
-        const allIntervensi = data.flatMap(anak =>
-          (anak.raw?.intervensi || [])
-          .filter(i => i.kategori && i.kategori.trim() !== "")
-          .map(i => ({
-            tanggal: new Date(i.tanggal),
-            jenis: i.kategori
-          }))
+    // 🔹 Intervensi yang jenisnya TIDAK kosong/null
+    const allIntervensi = data.flatMap(anak => {
+      const itv = anak.data_intervensi;
+      if (!itv) return [];
 
-        )
+      if (!itv.jenis_intervensi || itv.jenis_intervensi.trim() === "")
+        return [];
 
-        // 🔹 Filter dalam periode
-        const recentIntervensi = allIntervensi.filter(
-          i => i.tanggal >= startDate && i.tanggal <= now
-        )
+      return [{
+        tanggal: new Date(itv.tgl_intervensi),
+        jenis: itv.jenis_intervensi
+      }];
+    });
 
-        // 🔹 Pakai daftar tetap supaya muncul meski kosong
-        const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
-        const counts = jenisList.map(jenis =>
-          recentIntervensi.filter(i => i.jenis === jenis).length
-        )
+    const recentIntervensi = allIntervensi.filter(i =>
+      i.tanggal >= startDate && i.tanggal <= now
+    );
 
-        // 🔹 Hapus chart lama
-        if (this.sudahChart) this.sudahChart.destroy()
+    const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
+    const counts = jenisList.map(jenis =>
+      recentIntervensi.filter(i => i.jenis === jenis).length
+    );
 
-        // 🔹 Render chart
-        this.sudahChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: jenisList,
-            datasets: [
-              {
-                data: counts,
-                backgroundColor: [
-                  '#006341',
-                  '#007d52',
-                  '#009562',
-                  '#6fa287',
-                  '#6d8b7b'
-                ],
-                color: '#FFFFFF'
-              }
-            ]
-          },
-          options: {
-            indexAxis: 'y',
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                color: '#FFFFFF',
-                anchor: 'center',
-                align: 'center',
-                font: { weight: 'bold' },
-                formatter: value => value || '0'
-              },
-              title: { display: false }
-            },
-            scales: { x: { beginAtZero: true } }
+    if (this.sudahChart) this.sudahChart.destroy();
+
+    this.sudahChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: jenisList,
+        datasets: [{
+          data: counts,
+          backgroundColor: [
+            "#006341",
+            "#007d52",
+            "#009562",
+            "#6fa287",
+            "#6d8b7b"
+          ]
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: "#fff",
+            anchor: "center",
+            align: "center",
+            font: { weight: "bold" },
+            formatter: v => v || "0"
           }
-        })
-      })
-    },
+        },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  });
+}
+,
 
     // only Bumil
     async generateIndikatorBumilBulanan() {
