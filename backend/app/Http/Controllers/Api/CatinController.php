@@ -469,7 +469,7 @@ class CatinController extends Controller
                 $count = [
                     'Anemia' => 0,
                     'KEK' => 0,
-                    'Berisiko' => 0,
+                    'Risiko Usia' => 0,
                     'Total Berisiko' => 0,
                     'Total Catin' => 0,
                 ];
@@ -484,7 +484,7 @@ class CatinController extends Controller
                         'color' => match ($key) {
                             'KEK' => 'danger',
                             'Anemia' => 'warning',
-                            'Berisiko' => 'violet',
+                            'Risiko Usia' => 'violet',
                             'Total Berisiko' => 'dark',
                             default => 'secondary'
                         }
@@ -551,7 +551,7 @@ class CatinController extends Controller
             $count = [
                 'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
                 'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kek ?? ''), 'kek'))->count(),
-                'Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal'))->count(),
+                'Risiko Usia' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal'))->count(),
                 'Total Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal') || str_contains(strtolower($i->status_kek ?? ''), 'kek') || str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
                 'Total Catin' => $total,
             ];

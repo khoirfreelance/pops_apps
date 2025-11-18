@@ -628,7 +628,7 @@
                           <li>Pastikan data sudah lengkap sebelum di import</li>
                           <li>
                             Silahkan unduh contoh dengan klik
-                            <a href="/example_bumil.csv">Example.csv</a>
+                            <a href="/example_catin.csv">Example.csv</a>
                           </li>
                         </ul>
                       </div>

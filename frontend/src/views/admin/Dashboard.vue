@@ -3175,6 +3175,7 @@ export default {
       this.renderBarChart();
       this.renderFunnelChart();
       this.renderSudahChart();
+      this.renderBumilChart();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
 
@@ -3225,6 +3226,7 @@ export default {
       this.masalahGanda()
       this.hitungIntervensi()
       this.renderIntervensiBumilChart()
+
       //this.loadIntervensiBumil()
       this.generateIndikatorBumilBulanan()
       this.generateIndikatorCatinBulanan()

@@ -813,9 +813,9 @@ class PregnancyController extends Controller
                 $prevJumlah = $prevCount[$status] ?? 0;
                 $delta = $jumlah - $prevJumlah;
 
-                $tren = $delta === 0 ? '-' : ($delta > 0 ? "Naik {$delta}" : "Turun " . abs($delta));
+                $tren = $delta === 0 ? '-' : ($delta > 0 ? "{$delta}" : abs($delta));
                 $trenClass = $delta > 0 ? 'text-danger' : ($delta < 0 ? 'text-success' : 'text-muted');
-                $trenIcon  = $delta > 0 ? 'fa-solid fa-arrow-up' : ($delta < 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-minus');
+                $trenIcon  = $delta > 0 ? 'fa-solid fa-caret-up' : ($delta < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
 
                 $dataTable[] = [
                     'status' => $status,
