@@ -842,7 +842,7 @@ class CatinController extends Controller
                 )->count();
 
                 $result['Berisiko'][$idx] = $rows->filter(fn($i) =>
-                    !str_contains(strtolower($i->status_risiko ?? ''), 'normal')
+                    !str_contains(strtolower($i->status_risiko_usia ?? ''), 'normal')
                 )->count();
             }
 

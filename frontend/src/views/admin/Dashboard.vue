@@ -231,7 +231,7 @@
                                 <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                                 <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
                               </div>
-                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                              <h5 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h5>
                             </div>
 
                             <!-- SVG LINE CHART -->
@@ -260,7 +260,7 @@
                       <div class="card text-center shadow-sm border p-2 w-100">
                         <h6 class="text-muted my-4 fw-bold">Total Anak Balita</h6>
                         <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                          <h2 class="fw-bold text-success mb-0">{{totalAnak}}</h2>
+                          <h4 class="fw-bold text-success mb-0">{{totalAnak}}</h4>
                         </div>
                         <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
                       </div>
@@ -2184,10 +2184,14 @@ export default {
             anchor: 'center',
             clamp: true,
             offset: 0,
-            formatter: (value, ctx) => {
+            formatter: (value) => {
+              //const label = ctx.chart.data.labels[ctx.dataIndex];
+              return [`${value}%`];
+            },
+            /* formatter: (value, ctx) => {
               const label = ctx.chart.data.labels[ctx.dataIndex];
               return [label, `${value}%`];
-            },
+            }, */
           },
           },
           onHover: (event, elements) => {
