@@ -316,7 +316,7 @@ class ChildrenController extends Controller
                 ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
                 ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
                 ->get();
-
+            // deactive other children activy
             // ✅ 6. PENDAMPINGAN
             /* $pendampingan = Child::query()
                 ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
