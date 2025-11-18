@@ -2134,7 +2134,7 @@ export default {
       }
 
 
-      if (!Array.isArray(dataTable) || !dataTable.length) {
+      /* if (!Array.isArray(dataTable) || !dataTable.length) {
         const canvas = this.$refs[refName];
         const ctx2 = canvas?.getContext('2d');
 
@@ -2148,7 +2148,7 @@ export default {
         }
 
         return;
-      }
+      } */
 
       const labels = dataTable.map(row => row[labelKey]);
       const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
