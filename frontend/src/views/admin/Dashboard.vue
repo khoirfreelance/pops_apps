@@ -2340,224 +2340,222 @@ export default {
       })
     },
     renderBarChart(periodeBulan = 3) {
-  const data = this.dataLoad_belum || [];
-  if (!data.length) return;
+      const data = this.dataLoad_belum || [];
+      if (!data.length) return;
 
-  const now = new Date();
-  const startDate = new Date();
-  startDate.setMonth(now.getMonth() - periodeBulan);
+      const now = new Date();
+      const startDate = new Date();
+      startDate.setMonth(now.getMonth() - periodeBulan);
 
-  // 🔹 Ambil ENTIRE POSYANDU ENTRY dari data_kunjungan
-  const allPosyandu = data.flatMap(anak => {
-    const kun = anak.data_kunjungan;
-    if (!kun) return [];
+      // 🔹 Ambil ENTIRE POSYANDU ENTRY dari data_kunjungan
+      const allPosyandu = data.flatMap(anak => {
+        const kun = anak.data_kunjungan;
+        if (!kun) return [];
 
-    return [{
-      posyandu: kun.posyandu || 'Tidak Diketahui',
-      tanggal: new Date(kun.tgl_pengukuran),
-      bb_naik: kun.naik_berat_badan   // null artinya "tidak membaik"
-    }];
-  });
+        return [{
+          posyandu: kun.posyandu || 'Tidak Diketahui',
+          tanggal: new Date(kun.tgl_pengukuran),
+          bb_naik: kun.naik_berat_badan   // null artinya "tidak membaik"
+        }];
+      });
 
-  // 🔹 Nama posyandu unik
-  const allPosyanduNames = [...new Set(allPosyandu.map(p =>
-    p.posyandu || 'Tidak Diketahui'
-  ))];
+      // 🔹 Nama posyandu unik
+      const allPosyanduNames = [...new Set(allPosyandu.map(p =>
+        p.posyandu || 'Tidak Diketahui'
+      ))];
 
-  // 🔹 Filter hanya yang masuk range waktu
-  const recent = allPosyandu.filter(p =>
-    p.tanggal >= startDate && p.tanggal <= now
-  );
+      // 🔹 Filter hanya yang masuk range waktu
+      const recent = allPosyandu.filter(p =>
+        p.tanggal >= startDate && p.tanggal <= now
+      );
 
-  // 🔹 Hitung jumlah tidak membaik per posyandu
-  const posyanduCounts = {};
-  allPosyanduNames.forEach(name => posyanduCounts[name] = 0);
+      // 🔹 Hitung jumlah tidak membaik per posyandu
+      const posyanduCounts = {};
+      allPosyanduNames.forEach(name => posyanduCounts[name] = 0);
 
-  recent.forEach(p => {
-    const key = p.posyandu || 'Tidak Diketahui';
-    if (!p.bb_naik) posyanduCounts[key]++;  // null → tidak membaik
-  });
+      recent.forEach(p => {
+        const key = p.posyandu || 'Tidak Diketahui';
+        if (!p.bb_naik) posyanduCounts[key]++;  // null → tidak membaik
+      });
 
-  // 🔹 Chart data
-  const labels = Object.keys(posyanduCounts);
-  const values = Object.values(posyanduCounts);
+      // 🔹 Chart data
+      const labels = Object.keys(posyanduCounts);
+      const values = Object.values(posyanduCounts);
 
-  if (this.barChart) this.barChart.destroy();
+      if (this.barChart) this.barChart.destroy();
 
-  const ctx = this.$refs.barChart.getContext('2d');
-  this.barChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Anak Tidak Membaik",
-        data: values,
-        backgroundColor: "rgba(255, 99, 132, 0.6)",
-        borderRadius: 8
-      }]
+      const ctx = this.$refs.barChart.getContext('2d');
+      this.barChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Anak Tidak Membaik",
+            data: values,
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true },
+            x: { title: { display: true, text: "Posyandu" } }
+          }
+        }
+      });
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        y: { beginAtZero: true },
-        x: { title: { display: true, text: "Posyandu" } }
-      }
-    }
-  });
-},
     renderFunnelChart(periodeBulan = 3) {
-  this.$nextTick(() => {
-    const canvas = this.$refs.funnelChart;
-    if (!canvas) return;
+      this.$nextTick(() => {
+        const canvas = this.$refs.funnelChart;
+        if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    const data = this.dataLoad || [];
-    if (!data.length) return;
+        const ctx = canvas.getContext('2d');
+        const data = this.dataLoad || [];
+        if (!data.length) return;
 
-    const now = new Date();
-    const startDate = new Date();
-    startDate.setMonth(now.getMonth() - periodeBulan);
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setMonth(now.getMonth() - periodeBulan);
 
-    // 🔹 Flatten semua intervensi (termasuk yang tidak punya jenis)
-    const allIntervensi = data.flatMap(anak => {
-      const itv = anak.data_intervensi;
-      if (!itv) return [];
+        // 🔹 Flatten semua intervensi (termasuk yang tidak punya jenis)
+        const allIntervensi = data.flatMap(anak => {
+          const itv = anak.data_intervensi;
+          if (!itv) return [];
 
-      return [{
-        tanggal: new Date(itv.tgl_intervensi),
-        jenis: itv.jenis_intervensi || "Belum Mendapatkan Bantuan",
-      }];
-    });
+          return [{
+            tanggal: new Date(itv.tgl_intervensi),
+            jenis: itv.jenis_intervensi || "Belum Mendapatkan Bantuan",
+          }];
+        });
 
-    // 🔹 Filter dalam periode waktu
-    const recentIntervensi = allIntervensi.filter(i =>
-      i.tanggal >= startDate && i.tanggal <= now
-    );
+        // 🔹 Filter dalam periode waktu
+        const recentIntervensi = allIntervensi.filter(i =>
+          i.tanggal >= startDate && i.tanggal <= now
+        );
 
-    // 🔹 Jenis tetap
-    const jenisList = [
-      "MBG",
-      "KIE",
-      "Bansos",
-      "PMT",
-      "Bantuan Lainnya",
-      "Belum Mendapatkan Bantuan"
-    ];
+        // 🔹 Jenis tetap
+        const jenisList = [
+          "MBG",
+          "KIE",
+          "Bansos",
+          "PMT",
+          "Bantuan Lainnya",
+          "Belum Mendapatkan Bantuan"
+        ];
 
-    const counts = jenisList.map(jenis =>
-      recentIntervensi.filter(i => i.jenis === jenis).length
-    );
+        const counts = jenisList.map(jenis =>
+          recentIntervensi.filter(i => i.jenis === jenis).length
+        );
 
-    if (this.funnelChart) this.funnelChart.destroy();
+        if (this.funnelChart) this.funnelChart.destroy();
 
-    this.funnelChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: jenisList,
-        datasets: [{
-          data: counts,
-          backgroundColor: [
-            "#006341",
-            "#007d52",
-            "#009562",
-            "#6fa287",
-            "#6d8b7b",
-            "#ea7f7f"
-          ]
-        }]
-      },
-      options: {
-        indexAxis: "y",
-        plugins: {
-          legend: { display: false },
-          datalabels: {
-            color: "#fff",
-            anchor: "center",
-            align: "center",
-            font: { weight: "bold" },
-            formatter: v => v || "0"
+        this.funnelChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: jenisList,
+            datasets: [{
+              data: counts,
+              backgroundColor: [
+                "#006341",
+                "#007d52",
+                "#009562",
+                "#6fa287",
+                "#6d8b7b",
+                "#ea7f7f"
+              ]
+            }]
+          },
+          options: {
+            indexAxis: "y",
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                color: "#fff",
+                anchor: "center",
+                align: "center",
+                font: { weight: "bold" },
+                formatter: v => v || "0"
+              }
+            },
+            scales: { x: { beginAtZero: true } }
           }
-        },
-        scales: { x: { beginAtZero: true } }
-      }
-    });
-  });
-}
-,
+        });
+      });
+    },
     renderSudahChart(periodeBulan = 3) {
-  this.$nextTick(() => {
-    const canvas = this.$refs.sudahChart;
-    if (!canvas) return;
+      this.$nextTick(() => {
+        const canvas = this.$refs.sudahChart;
+        if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    const data = this.dataLoad || [];
-    if (!data.length) return;
+        const ctx = canvas.getContext("2d");
+        const data = this.dataLoad || [];
+        if (!data.length) return;
 
-    const now = new Date();
-    const startDate = new Date();
-    startDate.setMonth(now.getMonth() - periodeBulan);
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setMonth(now.getMonth() - periodeBulan);
 
-    // 🔹 Intervensi yang jenisnya TIDAK kosong/null
-    const allIntervensi = data.flatMap(anak => {
-      const itv = anak.data_intervensi;
-      if (!itv) return [];
+        // 🔹 Intervensi yang jenisnya TIDAK kosong/null
+        const allIntervensi = data.flatMap(anak => {
+          const itv = anak.data_intervensi;
+          if (!itv) return [];
 
-      if (!itv.jenis_intervensi || itv.jenis_intervensi.trim() === "")
-        return [];
+          if (!itv.jenis_intervensi || itv.jenis_intervensi.trim() === "")
+            return [];
 
-      return [{
-        tanggal: new Date(itv.tgl_intervensi),
-        jenis: itv.jenis_intervensi
-      }];
-    });
+          return [{
+            tanggal: new Date(itv.tgl_intervensi),
+            jenis: itv.jenis_intervensi
+          }];
+        });
 
-    const recentIntervensi = allIntervensi.filter(i =>
-      i.tanggal >= startDate && i.tanggal <= now
-    );
+        const recentIntervensi = allIntervensi.filter(i =>
+          i.tanggal >= startDate && i.tanggal <= now
+        );
 
-    const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
-    const counts = jenisList.map(jenis =>
-      recentIntervensi.filter(i => i.jenis === jenis).length
-    );
+        const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
+        const counts = jenisList.map(jenis =>
+          recentIntervensi.filter(i => i.jenis === jenis).length
+        );
 
-    if (this.sudahChart) this.sudahChart.destroy();
+        if (this.sudahChart) this.sudahChart.destroy();
 
-    this.sudahChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: jenisList,
-        datasets: [{
-          data: counts,
-          backgroundColor: [
-            "#006341",
-            "#007d52",
-            "#009562",
-            "#6fa287",
-            "#6d8b7b"
-          ]
-        }]
-      },
-      options: {
-        indexAxis: "y",
-        plugins: {
-          legend: { display: false },
-          datalabels: {
-            color: "#fff",
-            anchor: "center",
-            align: "center",
-            font: { weight: "bold" },
-            formatter: v => v || "0"
+        this.sudahChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: jenisList,
+            datasets: [{
+              data: counts,
+              backgroundColor: [
+                "#006341",
+                "#007d52",
+                "#009562",
+                "#6fa287",
+                "#6d8b7b"
+              ]
+            }]
+          },
+          options: {
+            indexAxis: "y",
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                color: "#fff",
+                anchor: "center",
+                align: "center",
+                font: { weight: "bold" },
+                formatter: v => v || "0"
+              }
+            },
+            scales: { x: { beginAtZero: true } }
           }
-        },
-        scales: { x: { beginAtZero: true } }
-      }
-    });
-  });
-}
-,
+        });
+      });
+    },
 
     // only Bumil
     async generateIndikatorBumilBulanan() {
