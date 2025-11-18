@@ -2312,7 +2312,7 @@ export default {
         if (!canvas) return;
 
         const ctx = canvas.getContext("2d");
-        const data = this.dataLoad || [];
+        const data = this.dataLoad_belum || [];
         console.log('isinya:',this.dataLoad);
 
         if (!data.length) return;
@@ -2409,11 +2409,12 @@ export default {
         startDate.setMonth(now.getMonth() - periodeBulan);
 
         const allIntervensi = data.flatMap(anak => {
-          const itv = anak.data_intervensi;
+          let itv = anak.raw.data_intervensi;
+          itv = Array.isArray(itv) ? itv[0] : itv; // ambil intervensi pertama saja
           if (!itv) return [];
 
-          const jenis = itv.jenis_intervensi?.trim();
-          if (!jenis) return []; // kosong → tidak masuk chart
+          let jenis = itv.kategori?.trim();
+          if (!jenis || jenis == "Lainnya") jenis = "Bantuan Lainnya";
 
           const tgl = this.parseDate(itv.tgl_intervensi);
           if (!tgl) return []; // tanggal tidak valid → skip
