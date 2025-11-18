@@ -794,7 +794,7 @@ class PregnancyController extends Controller
                     'total' => $total,
                     'KEK' => $rows->filter(fn($r) => $this->detectKek($r))->count(),
                     'Anemia' => $rows->filter(fn($r) => $this->detectAnemia($r))->count(),
-                    'Risiko Tinggi' => $rows->filter(fn($r) => $this->detectRisti($r))->count(),
+                    'Risiko Usia' => $rows->filter(fn($r) => $this->detectRisti($r))->count(),
                 ];
             };
 
@@ -802,7 +802,7 @@ class PregnancyController extends Controller
             $prevCount = $countStatus($previous);
 
             // 7️⃣ Susun tabel seperti gizi anak
-            $statuses = ['KEK', 'Anemia', 'Risiko Tinggi'];
+            $statuses = ['KEK', 'Anemia', 'Risiko Usia'];
             $dataTable = [];
 
             foreach ($statuses as $status) {
@@ -811,11 +811,17 @@ class PregnancyController extends Controller
                 $persen = $total > 0 ? round(($jumlah / $total) * 100, 1) : 0;
 
                 $prevJumlah = $prevCount[$status] ?? 0;
-                $delta = $jumlah - $prevJumlah;
+                $prevTotal  = $prevCount['total'] ?? 0;
+                $prevPersen = $prevTotal > 0 ? round(($prevJumlah / $prevTotal) * 100, 1) : 0;
 
-                $tren = $delta === 0 ? '-' : ($delta > 0 ? "{$delta}" : abs($delta));
-                $trenClass = $delta > 0 ? 'text-danger' : ($delta < 0 ? 'text-success' : 'text-muted');
-                $trenIcon  = $delta > 0 ? 'fa-solid fa-caret-up' : ($delta < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
+                // tren dalam persentase
+                $deltaPersen = $persen - $prevPersen;
+                $tren = $deltaPersen === 0
+                    ? '-'
+                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
+
+                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
+                $trenIcon  = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
 
                 $dataTable[] = [
                     'status' => $status,
@@ -1114,9 +1120,9 @@ class PregnancyController extends Controller
 
     protected function detectRisti($row)
     {
-        if (isset($row->status_kehamilan) && $row->status_kehamilan) {
-            $s = strtolower($row->status_kehamilan);
-            return Str::contains($s, ['risiko', 'berisiko', 'high risk', 'risti']);
+        if (isset($row->status_risiko_usia) && $row->status_risiko_usia) {
+            $s = strtolower($row->status_risiko_usia);
+            return Str::contains($s, ['berisiko']);
         }
         return false;
     }

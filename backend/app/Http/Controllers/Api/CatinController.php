@@ -677,11 +677,17 @@ class CatinController extends Controller
                 $persen = $total > 0 ? round(($jumlah / $total) * 100, 1) : 0;
 
                 $prevJumlah = $prevCount[$status] ?? 0;
-                $delta = $jumlah - $prevJumlah;
-                $tren = $delta === 0 ? '-' : ($delta > 0 ? "Naik {$delta}" : "Turun " . abs($delta));
+                $prevTotal = $prevCount['total'] ?? 0;
+                $prevPersen = $prevTotal > 0 ? round(($prevJumlah / $prevTotal) * 100, 1) : 0;
 
-                $trenClass = $delta > 0 ? 'text-danger' : ($delta < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $delta > 0 ? 'fa-solid fa-arrow-up' : ($delta < 0 ? 'fa-solid fa-arrow-down' : 'fa-solid fa-minus');
+                // tren dalam persentase
+                $deltaPersen = $persen - $prevPersen;
+                $tren = $deltaPersen === 0
+                    ? '-'
+                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
+
+                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
+                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
 
                 $dataTable[] = [
                     'status' => $status,
@@ -692,6 +698,7 @@ class CatinController extends Controller
                     'trenIcon' => $trenIcon,
                 ];
             }
+
 
             // jika data kosong, kirim default 0
             if ($currCount['total'] === 0) {
