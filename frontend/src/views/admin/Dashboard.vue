@@ -1973,6 +1973,23 @@ export default {
         this.showError('Error Ambil Data', e);
       }
     },
+    parseDate(str) {
+      if (!str) return null;
+
+      // Jika sudah valid
+      const d = new Date(str);
+      if (!isNaN(d)) return d;
+
+      // Coba format DD-MM-YYYY atau DD/MM/YYYY
+      let parts = str.includes('-') ? str.split('-') : str.split('/');
+      if (parts.length === 3) {
+        let [d, m, y] = parts;
+        return new Date(Number(y), Number(m) - 1, Number(d));
+      }
+
+      return null; // gagal parse
+    },
+
 
     // only anak
     generateInfoBoxes() {
@@ -2261,7 +2278,7 @@ export default {
         raw: item
       };
     },
-    renderLineChart(periodeBulan = 3) {
+    renderLineChart(periodeBulan = 12) {
       const data = this.dataLoad || []
       if (!data.length) return
 
@@ -2339,7 +2356,7 @@ export default {
         }
       })
     },
-    renderBarChart(periodeBulan = 3) {
+    renderBarChart(periodeBulan = 12) {
       const data = this.dataLoad_belum || [];
       if (!data.length) return;
 
@@ -2350,6 +2367,7 @@ export default {
       // 🔹 Ambil ENTIRE POSYANDU ENTRY dari data_kunjungan
       const allPosyandu = data.flatMap(anak => {
         const kun = anak.data_kunjungan;
+
         if (!kun) return [];
 
         return [{
@@ -2408,36 +2426,47 @@ export default {
         }
       });
     },
-    renderFunnelChart(periodeBulan = 3) {
+    async renderFunnelChart(periodeBulan = 12) {
       this.$nextTick(() => {
         const canvas = this.$refs.funnelChart;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         const data = this.dataLoad || [];
+        console.log('isinya:',this.dataLoad);
+
         if (!data.length) return;
 
         const now = new Date();
         const startDate = new Date();
         startDate.setMonth(now.getMonth() - periodeBulan);
 
-        // 🔹 Flatten semua intervensi (termasuk yang tidak punya jenis)
+        // 🔹 Flatten intervensi (boleh kosong → masuk "Belum Mendapatkan Bantuan")
         const allIntervensi = data.flatMap(anak => {
           const itv = anak.data_intervensi;
-          if (!itv) return [];
+
+          // Tidak ada intervensi → masuk kategori default
+          if (!itv) {
+            return [{
+              tanggal: null,
+              jenis: "Belum Mendapatkan Bantuan"
+            }];
+          }
+
+          const tgl = this.parseDate(itv.tgl_intervensi);
 
           return [{
-            tanggal: new Date(itv.tgl_intervensi),
-            jenis: itv.jenis_intervensi || "Belum Mendapatkan Bantuan",
+            tanggal: tgl,
+            jenis: itv.jenis_intervensi?.trim() || "Belum Mendapatkan Bantuan"
           }];
         });
 
-        // 🔹 Filter dalam periode waktu
-        const recentIntervensi = allIntervensi.filter(i =>
-          i.tanggal >= startDate && i.tanggal <= now
-        );
+        // 🔹 Hanya intervensi dengan tanggal valid yang masuk range
+        const recentIntervensi = allIntervensi.filter(i => {
+          if (!i.tanggal) return true; // yang "belum dapat bantuan"
+          return i.tanggal >= startDate && i.tanggal <= now;
+        });
 
-        // 🔹 Jenis tetap
         const jenisList = [
           "MBG",
           "KIE",
@@ -2486,7 +2515,7 @@ export default {
         });
       });
     },
-    renderSudahChart(periodeBulan = 3) {
+    async renderSudahChart(periodeBulan = 12) {
       this.$nextTick(() => {
         const canvas = this.$refs.sudahChart;
         if (!canvas) return;
@@ -2499,17 +2528,19 @@ export default {
         const startDate = new Date();
         startDate.setMonth(now.getMonth() - periodeBulan);
 
-        // 🔹 Intervensi yang jenisnya TIDAK kosong/null
         const allIntervensi = data.flatMap(anak => {
           const itv = anak.data_intervensi;
           if (!itv) return [];
 
-          if (!itv.jenis_intervensi || itv.jenis_intervensi.trim() === "")
-            return [];
+          const jenis = itv.jenis_intervensi?.trim();
+          if (!jenis) return []; // kosong → tidak masuk chart
+
+          const tgl = this.parseDate(itv.tgl_intervensi);
+          if (!tgl) return []; // tanggal tidak valid → skip
 
           return [{
-            tanggal: new Date(itv.tgl_intervensi),
-            jenis: itv.jenis_intervensi
+            tanggal: tgl,
+            jenis
           }];
         });
 
@@ -2518,6 +2549,7 @@ export default {
         );
 
         const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
+
         const counts = jenisList.map(jenis =>
           recentIntervensi.filter(i => i.jenis === jenis).length
         );
