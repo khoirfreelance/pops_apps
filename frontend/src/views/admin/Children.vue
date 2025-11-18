@@ -337,8 +337,8 @@
                       <div class="card-header">
                         <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                       </div>
-                      <div class="card-body py-3 d-flex justify-content-between align-items-center">
-                        <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                      <div class="card-body d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h6>
                         <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
                       </div>
 
@@ -352,7 +352,7 @@
                 <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
                   <h6 class="text-muted fw-bold">Total Anak Balita</h6>
                   <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
+                    <h6 class="fw-bold text-success mb-0">{{totalAnak}}</h6>
                   </div>
                 </div>
               </div>
