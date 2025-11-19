@@ -289,18 +289,12 @@ class ChildrenController extends Controller
                 'posyandu', 'rw', 'rt', 'bbu', 'tbu', 'bbtb', 'stagnan'
             ]);
 
-            // Jika FE kirim periode → override
             if ($request->filled('periode')) {
-
                 $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
-
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
-
             } else {
-                // DEFAULT →  H-1 BULAN BERJALAN
                 $tanggal = now()->subMonth();
-
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             }
@@ -323,17 +317,16 @@ class ChildrenController extends Controller
                 )
                 ->get();
 
-            // Jika tidak ada data
             if ($kunjungan->isEmpty()) {
                 return response()->json([
                     'total' => 0,
                     'counts' => [
-                        ['title' => 'Stunting', 'value' => 0, 'percent' => '0%', 'color' => 'danger'],
-                        ['title' => 'Wasting', 'value' => 0, 'percent' => '0%', 'color' => 'warning'],
-                        ['title' => 'Underweight', 'value' => 0, 'percent' => '0%', 'color' => 'violet'],
-                        ['title' => 'Normal', 'value' => 0, 'percent' => '0%', 'color' => 'success'],
-                        ['title' => 'BB Stagnan', 'value' => 0, 'percent' => '0%', 'color' => 'info'],
-                        ['title' => 'Overweight', 'value' => 0, 'percent' => '0%', 'color' => 'dark'],
+                        ['title' => 'Stunting', 'value' => 0, 'percent' => '0%', 'color' => 'danger', 'trend' => []],
+                        ['title' => 'Wasting', 'value' => 0, 'percent' => '0%', 'color' => 'warning', 'trend' => []],
+                        ['title' => 'Underweight', 'value' => 0, 'percent' => '0%', 'color' => 'violet', 'trend' => []],
+                        ['title' => 'Normal', 'value' => 0, 'percent' => '0%', 'color' => 'success', 'trend' => []],
+                        ['title' => 'BB Stagnan', 'value' => 0, 'percent' => '0%', 'color' => 'info', 'trend' => []],
+                        ['title' => 'Overweight', 'value' => 0, 'percent' => '0%', 'color' => 'dark', 'trend' => []],
                     ],
                     'kelurahan' => $filterKelurahan,
                 ]);
@@ -375,7 +368,59 @@ class ChildrenController extends Controller
             }
 
             // ================================
-            // 6. Format output
+            // 6. HITUNG TREND 3 BULAN TERAKHIR
+            // ================================
+            $trendCount = [];
+
+            foreach ($count as $status => $val) {
+
+                $trend = collect();
+
+                for ($i = 2; $i >= 0; $i--) {
+                    $tgl = now()->subMonths($i);
+                    $awal = $tgl->copy()->startOfMonth()->format('Y-m-d');
+                    $akhir = $tgl->copy()->endOfMonth()->format('Y-m-d');
+
+                    $kunjunganBulan = Kunjungan::query()
+                        ->where('kelurahan', $filterKelurahan)
+                        ->whereDate('tgl_pengukuran', '>=', $awal)
+                        ->whereDate('tgl_pengukuran', '<=', $akhir)
+                        ->get();
+
+                    $totalBulan = $kunjunganBulan->count();
+                    $jumlahStatusBulan = 0;
+
+                    foreach ($kunjunganBulan as $row) {
+                        $bbu = strtolower($row->bb_u ?? '');
+                        $tbu = strtolower($row->tb_u ?? '');
+                        $bbtb = strtolower($row->bb_tb ?? '');
+
+                        if ($status === 'Stunting' && str_contains($tbu, 'stunted')) $jumlahStatusBulan++;
+                        if ($status === 'Wasting' && str_contains($bbtb, 'wasted')) $jumlahStatusBulan++;
+                        if ($status === 'Underweight' && str_contains($bbu, 'underweight')) $jumlahStatusBulan++;
+                        if ($status === 'Normal'
+                            && $bbu === 'normal' && $tbu === 'normal' && $bbtb === 'normal')
+                            $jumlahStatusBulan++;
+                        if ($status === 'Overweight'
+                            && (str_contains($bbtb, 'overweight') || str_contains($bbtb, 'obes')))
+                            $jumlahStatusBulan++;
+                        if ($status === 'BB Stagnan' && is_null($row->naik_berat_badan))
+                            $jumlahStatusBulan++;
+                    }
+
+                    $persen = $totalBulan ? round(($jumlahStatusBulan / $totalBulan) * 100, 1) : 0;
+
+                    $trend->push([
+                        'bulan' => $tgl->format('M'),
+                        'persen' => $persen
+                    ]);
+                }
+
+                $trendCount[$status] = $trend;
+            }
+
+            // ================================
+            // 7. Format output + TREND
             // ================================
             $result = [];
             foreach ($count as $title => $value) {
@@ -396,6 +441,7 @@ class ChildrenController extends Controller
                     'value'   => $value,
                     'percent' => "{$percent}%",
                     'color'   => $color,
+                    'trend'   => $trendCount[$title] ?? [],
                 ];
             }
 
@@ -412,6 +458,7 @@ class ChildrenController extends Controller
             ], 500);
         }
     }
+
 
     public function infoBoxes(Request $request)
     {

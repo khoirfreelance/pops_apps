@@ -19,9 +19,9 @@
           {{ kelurahan || 'Wilayah' }}
         </span>
       </a>
-      <h5 class="header-title">
+      <h1 class="header-title">
         Pusat Operasi Penurunan Stunting Desa {{ kelurahan || '...' }}
-      </h5>
+      </h1>
     </div>
 
 

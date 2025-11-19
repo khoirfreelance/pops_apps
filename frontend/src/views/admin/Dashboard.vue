@@ -213,17 +213,17 @@
                   <h5 class="fw-bold text-success mb-3">Ringkasan Status Gizi Bulan Ini</h5>
 
                   <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1 align-items-center">
+                  <div class="row flex-grow-1 align-items-stretch">
                     <!-- GIZI CARDS -->
-                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
-                      <div class="row justify-content-center">
+                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12 h-100">
+                      <div class="row justify-content-center h-100">
                         <div
                           v-for="(item, index) in kesehatanData.anak"
                           :key="index"
                           class="col-xl-4 col-lg-6 col-sm-12 col-12 mb-3"
                         >
                           <div
-                            class="card shadow-sm border-0 rounded-3 overflow-hidden"
+                            class="card shadow-sm border-0 rounded-3 overflow-hidden h-100"
                             :class="`border-start border-4 border-${item.color}`"
                           >
                             <div class="card-body py-3 d-flex justify-content-between">
@@ -234,7 +234,7 @@
                               <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
                             </div>
                             <div class="card-footer bg-transparent border-0 pt-0">
-                              <canvas :id="'chart-' + index" height="50"></canvas>
+                              <canvas :ref="'chart-' + index" height="50"></canvas>
                             </div>
                           </div>
                         </div>
@@ -242,16 +242,17 @@
                     </div>
 
                     <!-- TOTAL ANAK -->
-                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
-                      <div class="card text-center shadow-sm border p-2 w-100">
+                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-stretch">
+                      <div class="card text-center shadow-sm border p-2 w-100 h-100">
                         <h6 class="text-muted my-4 fw-bold">Total Anak Balita</h6>
                         <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                          <h4 class="fw-bold text-success mb-0">{{totalAnak}}</h4>
+                          <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
                         </div>
                         <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
                       </div>
                     </div>
                   </div>
+
                 </div>
 
                 <!-- INFO BOXES -->
@@ -1325,6 +1326,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      jmlTotalAnak:0,
       noIntervensiMessage: "",
       dataLoad_belum :[],
       dataLoad:[],
@@ -1498,7 +1500,7 @@ export default {
           { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
           { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
           { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
-          { title: 'Anak <= 5 Tahun', value: this.totalAnak, icon: 'fa-solid fa-baby' },
+          { title: 'Anak <= 5 Tahun', value: data.anak, icon: 'fa-solid fa-baby' },
         ]
       } catch (e) {
         console.error(e)
@@ -1600,19 +1602,14 @@ export default {
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
         };
+
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
         let res = null;
 
         switch (this.activeMenu) {
-          case 'anak':
-            res = await axios.get(`${baseURL}/api/children/status`, { headers, params });
-            break;
-          case 'bumil':
-            res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params });
-            break;
-          case 'catin':
-            res = await axios.get(`${baseURL}/api/bride/status`, { headers, params });
-            break;
+          case 'anak': res = await axios.get(`${baseURL}/api/children/status`, { headers, params }); break;
+          case 'bumil': res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params }); break;
+          case 'catin': res = await axios.get(`${baseURL}/api/bride/status`, { headers, params }); break;
           default: return;
         }
 
@@ -1620,20 +1617,19 @@ export default {
         const total = data.total || 0;
         this.totalAnak = total;
 
-        this.kesehatanData[this.activeMenu] = data.counts.map((item, index) => {
-          const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : 0;
+        this.kesehatanData[this.activeMenu] = data.counts.map((item) => ({
+          title: item.title,
+          value: item.value,
+          percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
+          color: item.color,
+          trend: item.trend,
+        }));
 
-          // panggil renderLineChart, bukan renderChart
-          this.$nextTick(() => {
-            this.rendersvgChart('chart-' + index, item.trend, [item.color]);
+        // 🔥 render chart setelah semua elemen DOM selesai muncul
+        this.$nextTick(() => {
+          this.kesehatanData[this.activeMenu].forEach((item, index) => {
+            this.rendersvgChart(`chart-${index}`, item.trend, [item.color]);
           });
-
-          return {
-            title: item.title,
-            value: item.value,
-            percent: percent + '%',
-            color: item.color,
-          };
         });
 
       } catch (error) {
@@ -1641,7 +1637,13 @@ export default {
       }
     },
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      const ctx = this.$refs[refName]?.getContext('2d');
+      let ref = this.$refs[refName];
+      if (!ref) return;
+
+      const canvas = Array.isArray(ref) ? ref[0] : ref;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
@@ -1650,18 +1652,30 @@ export default {
       const labels = dataTable.map(row => row[labelKey]);
       const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
 
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: "#0d6efd",
+        violet:"#4f0891",
+        secondary: "#6c757d",
+        success: "#198754",
+        danger: "#dc3545",
+        warning: "#ffc107",
+        info: "#0dcaf0",
+        dark: "#212529",
+      };
+      const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+
       this[refName + 'Instance'] = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labels,
+          labels,
           datasets: [{
-            label: 'Persentase',
             data: values,
-            borderColor: colors[0] || 'rgb(0,123,255)',
-            backgroundColor: 'transparent',
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6,
+            borderColor,
+            borderWidth: 2,
+            tension: 0,
+            pointRadius: 0.1,           // ❌ no dots
+            pointHoverRadius: 0.1,      // ❌ no hover dots
             fill: false,
           }],
         },
@@ -1670,18 +1684,27 @@ export default {
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return context.parsed.y + '%';
-                },
-              },
-            },
+            //tooltip: { enabled: false }, // ❌ no tooltip
+            datalabels: { display: false },
           },
           scales: {
-            x: { title: { display: false } },
-            y: { beginAtZero: true, max: 100, title: { display: false } },
+            x: {
+              display: false, // ❌ hide x axis
+              grid: { display: false }, // ❌ remove grid
+            },
+            y: {
+              display: false, // ❌ hide y axis
+              grid: { display: false }, // ❌ remove grid
+              beginAtZero: true,
+              max: 100,
+            }
           },
+          elements: {
+            line: {
+              borderCapStyle: 'round',   // ✔ smooth edges
+              borderJoinStyle: 'round',
+            }
+          }
         },
       });
     },
@@ -2143,7 +2166,22 @@ export default {
             if (!elements.length) return;
             const index = elements[0].index;
             const item = dataTable[index];
-            const status = item.status;
+            let state = '';
+            if(item.status === 'Berat Badan Sangat Kurang (Severely Underweight)') state = 'Severely Underweight';
+            else if(item.status === 'Berat Badan Kurang (Underweight)') state = 'Underweight';
+            else if(item.status === 'Berat Badan Normal') state = 'Normal';
+            else if(item.status === 'Risiko Berat Badan Lebih') state = 'Risiko BB Lebih';
+            else if(item.status === 'Sangat Pendek (Severely Stunted)') state = 'Severely Stunted';
+            else if(item.status === 'Pendek (Stunted)') state = 'Stunted';
+            else if(item.status === 'Normal') state = 'Normal';
+            else if(item.status === 'Tinggi') state = 'Tinggi';
+            else if(item.status === 'Gizi Buruk (Severely Wasted)') state = 'Severely Wasted';
+            else if(item.status === 'Gizi Kurang (Wasted)') state = 'Wasted';
+            else if(item.status === 'Gizi Baik (Normal)') state = 'Normal';
+            else if(item.status === 'Berisiko Gizi Lebih (Possible Risk of Overweight)') state = 'Possible Risk of Overweight';
+            else if(item.status === 'Gizi Lebih (Overweight)') state = 'Overweight';
+            else if(item.status === 'Obesitas (Obese)') state = 'Obese';
+            const status = state;
 
             let tipe = '';
             if (refName === 'pieChart_bb') tipe = 'BB/U';

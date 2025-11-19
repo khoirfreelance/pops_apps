@@ -37,17 +37,20 @@ class DashboardController extends Controller
         $uniqueRt = $rts->unique()->count();
         $uniqueRw = $rws->unique()->count();
 
-        $anakDariPendampingan = Child::select('nik_anak', DB::raw('MAX(usia) as usia_terbaru'))
-            ->groupBy('nik_anak')
-            ->having('usia_terbaru', '>', 60)
-            ->count();
+        $anakDariPendampingan = Child::whereRaw(
+                'TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60'
+            )
+            ->distinct('nik_anak')
+            ->count('nik_anak');
 
-        $anakDariKunjungan = Kunjungan::select('nik', DB::raw('MAX(usia_saat_ukur) as usia_terbaru'))
-            ->groupBy('nik')
-            ->having('usia_terbaru', '>', 60)
-            ->count();
+        $anakDariKunjungan = Kunjungan::whereRaw(
+                'TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60'
+            )
+            ->distinct('nik')
+            ->count('nik');
 
-        $anak = $anakDariPendampingan +1;//$anakDariKunjungan;
+
+        $anak = $anakDariPendampingan + $anakDariKunjungan;
 
         return response()->json([
             'rw' => $uniqueRw,
