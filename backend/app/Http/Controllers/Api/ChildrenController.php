@@ -1518,21 +1518,29 @@ class ChildrenController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Ambil data anggota TPK
+        // 1️⃣ Ambil data anggota TPK
         $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
 
-        // 2. Ambil posyandu & wilayah
+        // 2️⃣ Ambil posyandu & wilayah
         $posyandu = $anggotaTPK->posyandu;
         $wilayah  = $posyandu?->wilayah;
         if (!$wilayah) {
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
 
-        // Filter default
         $filterKelurahan = $wilayah->kelurahan ?? null;
+
+        // ==========================
+        // Tentukan periode
+        // ==========================
+        if ($request->filled('periode')) {
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+        } else {
+            $tanggal = now()->subMonth(); // default bulan berjalan -1
+        }
 
         // ==========================
         // A. Query KUNJUNGAN
@@ -1548,14 +1556,18 @@ class ChildrenController extends Controller
         if ($request->filled('rt'))
             $qKunjungan->where('rt', $request->rt);
 
-        // AMBIL DATA TERLEBIH DAHULU
+        $qKunjungan->whereYear('tgl_pengukuran', $tanggal->year)
+                ->whereMonth('tgl_pengukuran', $tanggal->month);
+
         $kunjungan = $qKunjungan->get();
 
-        // Cari semua anak kasus (≠ Normal)
+        // 🔥 Filter anak dengan **masalah gizi ganda**
         $nik_case = $kunjungan->filter(function ($item) {
-            return $item->bb_u !== 'Normal'
-                || $item->tb_u !== 'Normal'
-                || $item->bb_tb !== 'Normal';
+            $gizi_ganda = 0;
+            if ($item->bb_u !== 'Normal') $gizi_ganda++;
+            if ($item->tb_u !== 'Normal') $gizi_ganda++;
+            if ($item->bb_tb !== 'Normal') $gizi_ganda++;
+            return $gizi_ganda >= 2; // minimal 2 parameter bermasalah → gizi ganda
         })->pluck('nik')->unique();
 
         // ==========================
@@ -1563,6 +1575,8 @@ class ChildrenController extends Controller
         // ==========================
         $qIntervensi = Intervensi::query();
 
+        if ($filterKelurahan)
+            $qIntervensi->where('desa', $filterKelurahan);
         if ($request->filled('posyandu'))
             $qIntervensi->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -1570,19 +1584,20 @@ class ChildrenController extends Controller
         if ($request->filled('rt'))
             $qIntervensi->where('rt', $request->rt);
 
-        $intervensi = $qIntervensi->get();
+        $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
+                    ->whereMonth('tgl_intervensi', $tanggal->month);
 
+        $intervensi = $qIntervensi->get();
 
         // ==========================
         // C. GROUPING NIK
         // ==========================
-        $nikKunjungan   = $nik_case;//$kunjungan->pluck('nik')->unique();
+        $nikKunjungan   = $nik_case;
         $nikIntervensi  = $intervensi->pluck('nik_subjek')->unique();
 
         $punya_keduanya   = $nikKunjungan->intersect($nikIntervensi);
         $hanya_kunjungan  = $nikKunjungan->diff($nikIntervensi);
         $hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
-
 
         // ==========================
         // D. Build DETAIL
@@ -1623,17 +1638,15 @@ class ChildrenController extends Controller
             ];
         });
 
-
         return response()->json([
             'status' => 'success',
-            'message' => 'Data intervensi & kunjungan berhasil dimuat',
-
+            'message' => 'Data intervensi & kunjungan gizi ganda berhasil dimuat',
             'grouping' => [
+                'total_case'        => $nikKunjungan->count(),
                 'punya_keduanya'    => $punya_keduanya->count(),
                 'hanya_kunjungan'   => $hanya_kunjungan->count(),
                 'hanya_intervensi'  => $hanya_intervensi->count(),
             ],
-
             'detail' => [
                 'punya_keduanya'    => $detail_keduanya->values(),
                 'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
@@ -1668,12 +1681,9 @@ class ChildrenController extends Controller
         }
 
         // 🔍 filter manual
-        if ($request->filled('posyandu'))
-            $query->where('posyandu', $request->posyandu);
-        if ($request->filled('rw'))
-            $query->where('rw', $request->rw);
-        if ($request->filled('rt'))
-            $query->where('rt', $request->rt);
+        if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw')) $query->where('rw', $request->rw);
+        if ($request->filled('rt')) $query->where('rt', $request->rt);
 
         // 4️⃣ Filter periode
         if ($request->filled('periode')) {
@@ -1681,7 +1691,6 @@ class ChildrenController extends Controller
             $query->whereYear('tgl_pengukuran', $tanggal->year)
                 ->whereMonth('tgl_pengukuran', $tanggal->month);
         } else {
-            // ➤ default H-1 bulan berjalan
             $tanggal = now()->subMonth();
             $query->whereYear('tgl_pengukuran', $tanggal->year)
                 ->whereMonth('tgl_pengukuran', $tanggal->month);
@@ -1690,31 +1699,30 @@ class ChildrenController extends Controller
         // 5️⃣ Ambil data kunjungan bulan tersebut
         $data = $query->get();
 
-        // 6️⃣ Ambil NIK yang masuk "gizi ganda"
+        // 6️⃣ Ambil NIK yang masuk "gizi ganda" dan nama tidak null
         $nik_case = $data->filter(function ($item) {
-            return $item->bb_u !== 'Normal'
-                || $item->tb_u !== 'Normal'
-                || $item->bb_tb !== 'Normal';
+            return ($item->bb_u !== 'Normal' || $item->tb_u !== 'Normal' || $item->bb_tb !== 'Normal');
         })->pluck('nik')->unique();
 
-        // 7️⃣ Ambil data intervensi
-        $intervensi = Intervensi::whereIn('nik_subjek', $nik_case)->get();
+        // 7️⃣ Ambil data intervensi untuk NIK tersebut
+        $intervensi = Intervensi::whereIn('nik_subjek', $nik_case)
+            ->whereNotNull('nama_subjek')
+            ->get();
 
         // -------------------------
         // 8️⃣ Hitung summary
         // -------------------------
         $totalGanda = $nik_case->count();
-        $sudahIntervensi = $intervensi->pluck('nik_subjek')->unique()->count();
-        $belumIntervensi = $totalGanda - $sudahIntervensi;
+        $sudahIntervensiCount = $intervensi->pluck('nik_subjek')->unique()->count();
+        $belumIntervensiCount = $totalGanda - $sudahIntervensiCount;
 
         // -------------------------
         // 9️⃣ Top 5 posyandu dengan gizi ganda terbanyak
         // -------------------------
         $topPosyandu = $data
             ->filter(fn($i) =>
-                $i->bb_u !== 'Normal' ||
-                $i->tb_u !== 'Normal' ||
-                $i->bb_tb !== 'Normal'
+                ($i->bb_u !== 'Normal' || $i->tb_u !== 'Normal' || $i->bb_tb !== 'Normal')
+                && !is_null($i->nama) && trim($i->nama) !== ''
             )
             ->groupBy('posyandu')
             ->map(fn($v) => $v->count())
@@ -1766,9 +1774,8 @@ class ChildrenController extends Controller
         // -------------------------
         $detail = $data
             ->filter(fn($i) =>
-                $i->bb_u !== 'Normal' ||
-                $i->tb_u !== 'Normal' ||
-                $i->bb_tb !== 'Normal'
+                ($i->bb_u !== 'Normal' || $i->tb_u !== 'Normal' || $i->bb_tb !== 'Normal')
+                && !is_null($i->nama) && trim($i->nama) !== ''
             )
             ->map(function ($item) use ($intervensi) {
                 return [
@@ -1784,16 +1791,24 @@ class ChildrenController extends Controller
             })
             ->values();
 
+        // -------------------------
+        // 1️⃣2️⃣ List anak sudah / belum intervensi
+        // -------------------------
+        $sudahIntervensi = $detail->filter(fn($i) => $i['intervensi']->isNotEmpty())->values();
+        $belumIntervensi = $detail->filter(fn($i) => $i['intervensi']->isEmpty())->values();
 
         return response()->json([
             'summary' => [
                 'total_gizi_ganda' => $totalGanda,
-                'sudah_intervensi' => $sudahIntervensi,
-                'belum_intervensi' => $belumIntervensi,
+                'sudah_intervensi' => $sudahIntervensiCount,
+                'belum_intervensi' => $belumIntervensiCount,
             ],
             'top_posyandu' => $topPosyandu,
             'tidak_berubah_3_bulan' => $riwayat,
-            'detail_anak' => $detail
+            'detail_anak' => $detail,
+            'anak_sudah_intervensi' => $sudahIntervensi,
+            'anak_belum_intervensi' => $belumIntervensi,
         ]);
     }
+
 }

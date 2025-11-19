@@ -424,7 +424,7 @@
                         <div class="container position-relative" style="margin-top: -2.5rem;">
                           <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
                             <button
-                              class="w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                              class="small w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(false)"
                             >
@@ -432,7 +432,7 @@
                             </button>
 
                             <button
-                              class="w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                              class="small w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(true)"
                             >
@@ -1439,6 +1439,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      diagramIntervensi:[],
       jmlTotalAnak:0,
       noIntervensiMessage: "",
       dataLoad_belum :[],
@@ -1449,7 +1450,6 @@ export default {
         bumil: [],
         catin: []
       },
-      detailAnak:[],
       dataTable_bumil:[],
       dataTable_bb:[],
       dataTable_tb:[],
@@ -2240,21 +2240,21 @@ export default {
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
 
-        let res = null;
+        //let res = null;
 
         switch (this.activeMenu) {
           case 'anak':
-            res = await axios.get(`${baseURL}/api/children/case`, { headers, params });
+            await axios.get(`${baseURL}/api/children/case`, { headers, params });
             break;
           case 'bumil':
-            res = await axios.get(`${baseURL}/api/pregnancy/case`, { headers, params });
+            await axios.get(`${baseURL}/api/pregnancy/case`, { headers, params });
             break;
           default:
             return;
         }
-        this.totalKasus = res.data.totalCase
+        /* this.totalKasus = res.data.totalCase
         this.totalSudah = res.data.sudahIntervensi || 0;
-        this.totalBelum = res.data.belumIntervensi || 0;
+        this.totalBelum = res.data.belumIntervensi || 0; */
 
       } catch (e) {
         this.showError('Error Ambil Data', e);
@@ -2282,6 +2282,12 @@ export default {
           default:
             return;
         }
+
+        this.totalKasus = res.data.grouping.total_case
+        this.totalSudah = res.data.grouping.punya_keduanya || 0;
+        this.totalBelum = res.data.grouping.hanya_kunjungan || 0;
+
+        this
 
         // 💚 anak
         if (this.activeMenu === 'anak') {
@@ -2504,27 +2510,33 @@ export default {
       const data = this.dataLoad || [];
       if (!data.length) return;
 
-      // ============================================
-      // ⚡ CUT OFF DATE: ikut filter periode
-      // ============================================
-      let cutoff = new Date(); // default: bulan berjalan
+      const now = new Date();
+      let cutoff;
 
+      // ============================================
+      // 🔹 Tentukan cut-off date
+      // ============================================
       if (this.filters?.periode) {
         // Format: YYYY-MM
         const [y, m] = this.filters.periode.split("-").map(Number);
-        cutoff = new Date(y, m - 1, 1); // tanggal 1 periode
+        cutoff = new Date(y, m - 1, 1);
+      } else {
+        // Default: bulan berjalan
+        cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
       }
 
-      // Hitung startDate: cutoff - (periodeBulan - 1)
+      // ============================================
+      // 🔹 Tentukan startDate (periodeBulan terakhir)
+      // ============================================
       const startDate = new Date(cutoff);
       startDate.setMonth(cutoff.getMonth() - (periodeBulan - 1));
 
-      const endDate = new Date(cutoff); // sampai bulan cutoff saja
+      const endDate = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0); // akhir bulan cut-off
 
       const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
       // ============================================
-      // 🔹 Persiapan data bulan (dinamis berdasarkan cutoff)
+      // 🔹 Inisialisasi data per bulan
       // ============================================
       const monthlyData = {};
       for (let i = 0; i < periodeBulan; i++) {
@@ -2554,23 +2566,19 @@ export default {
       });
 
       // ============================================
-      // 🔹 Filter sesuai range cutoff–startDate
+      // 🔹 Filter data sesuai periode startDate–cutoff
       // ============================================
       const recent = allKunjungan.filter(k =>
         k.tanggal >= startDate &&
-        k.tanggal <= new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0)
+        k.tanggal <= endDate
       );
 
       // ============================================
-      // 🔥 Function cek gizi ganda
+      // 🔹 Function cek gizi ganda
       // ============================================
       const isGiziGanda = (bb_u, tb_u, bb_tb) => {
         const notNormal = (x) => x && x !== "Normal";
-        const count = [
-          notNormal(bb_u),
-          notNormal(tb_u),
-          notNormal(bb_tb)
-        ].filter(Boolean).length;
+        const count = [notNormal(bb_u), notNormal(tb_u), notNormal(bb_tb)].filter(Boolean).length;
         return count >= 2;
       };
 
@@ -2579,7 +2587,6 @@ export default {
       // ============================================
       recent.forEach(p => {
         const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2,'0')}`;
-
         if (monthlyData[key] && isGiziGanda(p.bb_u, p.tb_u, p.bb_tb)) {
           monthlyData[key].giziGanda++;
         }
@@ -2597,7 +2604,7 @@ export default {
       const dataGiziGanda = sortedKeys.map(key => monthlyData[key].giziGanda);
 
       // ============================================
-      // 🔹 Render Chart
+      // 🔹 Render chart
       // ============================================
       if (this.lineChart) this.lineChart.destroy();
 
@@ -2631,23 +2638,20 @@ export default {
       if (!data.length) return;
 
       const now = new Date();
-      const startDate = new Date();
+      let startDate, endDate;
 
       // ===============================
-      // 🔥 DEFAULT CUT-OFF
-      // - Jika filter periode: gunakan bulan periode sebagai cut off
-      // - Jika tidak ada: gunakan 3 bulan terakhir dari bulan berjalan
+      // 🔥 TENTUKAN PERIODE CUT-OFF
       // ===============================
       if (this.filters?.periode) {
         // format periode biasanya "2025-08" → ubah ke date
         const [tahun, bulan] = this.filters.periode.split("-");
-        startDate.setFullYear(parseInt(tahun));
-        startDate.setMonth(parseInt(bulan) - 1); // bulan mulai dari 0
-        startDate.setDate(1); // awal bulan
+        startDate = new Date(parseInt(tahun), parseInt(bulan) - 1, 1);
+        endDate = new Date(parseInt(tahun), parseInt(bulan), 0, 23, 59, 59); // akhir bulan
       } else {
-        // default 3 bulan terakhir berjalan
-        startDate.setMonth(now.getMonth() - 2);
-        startDate.setDate(1);
+        // default 1 bulan terakhir (h-1 bulan berjalan)
+        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59); // akhir bulan
       }
 
       // ===============================
@@ -2663,21 +2667,19 @@ export default {
         }];
       });
 
-      const allPosyanduNames = [...new Set(allPosyandu.map(p => p.posyandu || 'Tidak Diketahui'))];
-
-      // ===============================
-      // 🔥 FILTER DATA SESUAI CUT-OFF
-      // ===============================
-      const recent = allPosyandu.filter(p => p.tanggal >= startDate && p.tanggal <= now);
-
       const posyanduCounts = {};
-      allPosyanduNames.forEach(name => posyanduCounts[name] = 0);
 
-      recent.forEach(p => {
-        const key = p.posyandu || 'Tidak Diketahui';
-        if (!p.bb_naik) posyanduCounts[key]++;
+      allPosyandu.forEach(p => {
+        if (p.tanggal >= startDate && p.tanggal <= endDate && !p.bb_naik) {
+          const key = p.posyandu || 'Tidak Diketahui';
+          if (!posyanduCounts[key]) posyanduCounts[key] = 0;
+          posyanduCounts[key]++;
+        }
       });
 
+      // ===============================
+      // 🔥 AMBIL TOP 5 POSYANDU
+      // ===============================
       const top5 = Object.entries(posyanduCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
@@ -2686,7 +2688,7 @@ export default {
       const values = top5.map(item => item[1]);
 
       // ===============================
-      // 🔥 HANCURKAN CHART LAMA
+      // 🔥 HANCURKAN CHART LAMA DAN RENDER BAR CHART
       // ===============================
       if (this.barChart) this.barChart.destroy();
 
@@ -2719,10 +2721,12 @@ export default {
 
         const ctx = canvas.getContext("2d");
 
-        const dataAnak = this.detailAnak || [];
-        if (!dataAnak.length) return;
+        const dataSudah = this.dataLoad || [];       // anak punya keduanya
+        const dataBelum = this.dataLoad_belum || []; // anak hanya_kunjungan
 
-        // 🔎 Ambil periode filter
+        if (!dataSudah.length && !dataBelum.length) return;
+
+        // 🔎 Tentukan periode filter
         let targetYear, targetMonth;
         if (this.filters?.periode) {
           const [y, m] = this.filters.periode.split("-").map(Number);
@@ -2730,12 +2734,14 @@ export default {
           targetMonth = m;
         } else {
           const now = new Date();
-          const hMinus1 = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          targetYear = hMinus1.getFullYear();
-          targetMonth = hMinus1.getMonth() + 1;
+          const defaultDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          // eslint-disable-next-line no-unused-vars
+          targetYear = defaultDate.getFullYear();
+          // eslint-disable-next-line no-unused-vars
+          targetMonth = defaultDate.getMonth() + 1;
         }
 
-        // 🧩 Daftar kategori intervensi
+        // 🧩 Daftar kategori
         const jenisList = [
           "MBG",
           "KIE",
@@ -2744,36 +2750,51 @@ export default {
           "Lainnya",
           "Belum Mendapatkan Bantuan"
         ];
+
+        // ==========================
+        // 1️⃣ Inisialisasi counter kategori
+        // ==========================
         const counter = Object.fromEntries(jenisList.map(j => [j, 0]));
 
-        // ====================================================================
-        // 1️⃣ PROSES ANAK YANG SUDAH MENDAPATKAN INTERVENSI SESUAI PERIODE
-        // ====================================================================
-        dataAnak.forEach(anak => {
-          const intervensi = anak.intervensi || anak.raw?.data_intervensi;
+        // ==========================
+        // 2️⃣ Hitung intervensi anak yang punya keduanya
+        // ==========================
+        dataSudah.forEach(anak => {
+          const intervensi = anak.raw?.data_intervensi;
           if (!Array.isArray(intervensi) || !intervensi.length) return;
 
-          // Ambil intervensi terbaru sesuai periode
-          const validItv = intervensi.find(itv => {
-            if (!itv.tgl_intervensi) return false;
-            const tgl = new Date(itv.tgl_intervensi);
-            return tgl.getFullYear() === targetYear && tgl.getMonth() + 1 === targetMonth;
+          intervensi.forEach(itv => {
+            const kategori = itv.kategori?.trim() || "Lainnya";
+            if (counter[kategori] !== undefined) {
+              counter[kategori]++;
+            } else {
+              counter["Lainnya"]++;
+            }
           });
-
-          if (!validItv) return;
-
-          const kategori = (validItv.kategori || "Lainnya").trim();
-          counter[kategori] = (counter[kategori] || 0) + 1;
         });
 
-        // 2️⃣ ANAK BELUM MENDAPATKAN INTERVENSI
-        counter["Belum Mendapatkan Bantuan"] = this.totalBelum || 0;
+        // ==========================
+        // 3️⃣ Pastikan total 'Sudah' = totalKasus (grouping.punya_keduanya)
+        // ==========================
+        const totalSudahChart = Object.keys(counter)
+          .filter(k => k !== "Belum Mendapatkan Bantuan")
+          .reduce((sum, k) => sum + counter[k], 0);
 
+        const diff = (this.totalSudah || 0) - totalSudahChart;
+        if (diff > 0) {
+          counter["Lainnya"] += diff; // selisih masuk Lainnya
+        }
+
+        // ==========================
+        // 4️⃣ Hitung Belum Mendapatkan Bantuan dari dataBelum
+        // ==========================
+        counter["Belum Mendapatkan Bantuan"] = dataBelum.length || 0;
+
+        // ==========================
+        // 5️⃣ Render chart
+        // ==========================
         const counts = jenisList.map(j => counter[j]);
 
-        // ====================================================================
-        // 3️⃣ RENDER CHART JS
-        // ====================================================================
         if (this.funnelChart) this.funnelChart.destroy();
 
         this.funnelChart = new Chart(ctx, {
@@ -2809,116 +2830,6 @@ export default {
         });
       });
     },
-    async generateRingkasan() {
-      try {
-        const params = {
-              posyandu: this.filters.posyandu || '',
-              rw: this.filters.rw || '',
-          rt: this.filters.rt || '',
-          periode: this.filters.periode || '',
-        }
-        const res = await axios.get(`${baseURL}/api/children/ringkasan`, {
-          params,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const result = res.data
-
-        this.totalKasus = res.data.summary.total_gizi_ganda;
-        this.totalSudah = res.data.summary.sudah_intervensi || 0;
-        this.totalBelum = res.data.summary.belum_intervensi || 0;
-
-        this.topPosyandu = result.top_posyandu || []
-
-        this.tidakBerubah3Bulan = result.tidak_berubah_3_bulan || []
-
-        this.detailAnak = result.detail_anak || []
-
-        // Opsional: debug
-        console.log("Ringkasan Loaded:", result)
-
-      } catch (error) {
-        console.error("Error memuat ringkasan:", error)
-        this.$toast?.error("Gagal memuat ringkasan data")
-      }
-    },
-    /* async renderSudahChart(periodeBulan = 12) {
-      this.$nextTick(() => {
-        const canvas = this.$refs.sudahChart;
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        const data = this.dataLoad || [];
-        if (!data.length) return;
-
-        const now = new Date();
-        const startDate = new Date();
-        startDate.setMonth(now.getMonth() - periodeBulan);
-
-        const allIntervensi = data.flatMap(anak => {
-          const itv = anak.data_intervensi;
-          if (!itv) return [];
-
-          //const jenis = itv.jenis_intervensi?.trim();
-          //if (!jenis) return []; // kosong → tidak masuk chart
-          let jenis = itv.kategori?.trim();
-          if (!jenis || jenis == "Lainnya") jenis = "Bantuan Lainnya";
-
-          const tgl = this.parseDate(itv.tgl_intervensi);
-          if (!tgl) return []; // tanggal tidak valid → skip
-
-          return [{
-            tanggal: tgl,
-            jenis
-          }];
-        });
-
-        const recentIntervensi = allIntervensi.filter(i =>
-          i.tanggal >= startDate && i.tanggal <= now
-        );
-
-        const jenisList = ["MBG", "KIE", "Bansos", "PMT", "Bantuan Lainnya"];
-
-        const counts = jenisList.map(jenis =>
-          recentIntervensi.filter(i => i.jenis === jenis).length
-        );
-
-        if (this.sudahChart) this.sudahChart.destroy();
-
-        this.sudahChart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: jenisList,
-            datasets: [{
-              data: counts,
-              backgroundColor: [
-                "#006341",
-                "#007d52",
-                "#009562",
-                "#6fa287",
-                "#6d8b7b"
-              ]
-            }]
-          },
-          options: {
-            indexAxis: "y",
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                color: "#fff",
-                anchor: "center",
-                align: "center",
-                font: { weight: "bold" },
-                formatter: v => v || "0"
-              }
-            },
-            scales: { x: { beginAtZero: true } }
-          }
-        });
-      });
-    }, */
 
     // only Bumil
     async generateIndikatorBumilBulanan() {
@@ -3252,7 +3163,6 @@ export default {
 
   },
   computed: {
-
     // Sudah
     filteredAnak() {
       if (!this.dataLoad) return [];
@@ -3571,7 +3481,6 @@ export default {
       await this.masalahGanda();
       await this.hitungIntervensi();
       await this.generateInfoBoxes();
-      await this.generateRingkasan();
 
       this.renderLineChart();
       this.renderBarChart();
