@@ -2394,7 +2394,7 @@ export default {
         raw: item
       };
     },
-    renderLineChart(periodeBulan = 12) {
+    renderLineChart(periodeBulan = 3) {
       const data = this.dataLoad || [];
       if (!data.length) return;
 
@@ -2491,7 +2491,7 @@ export default {
         }
       });
     },
-    renderBarChart(periodeBulan = 12) {
+    renderBarChart(periodeBulan = 3) {
       const data = this.dataLoad_belum || [];
       if (!data.length) return;
 
