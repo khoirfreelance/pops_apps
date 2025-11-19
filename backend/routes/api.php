@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/children/info-boxes', [ChildrenController::class, 'infoBoxes']);
     Route::get('/children/intervensi', [ChildrenController::class, 'intervensi']);
     Route::get('/children/index_kunjungan', [ChildrenController::class, 'kunjungan']);
+    Route::get('/children/ringkasan', [ChildrenController::class, 'ringkasan']);
     Route::post('/children/import_kunjungan', [ChildrenController::class, 'import_kunjungan']);
     Route::post('/children/import_pendampingan', [ChildrenController::class, 'import_pendampingan']);
     Route::post('/children/import_intervensi', [ChildrenController::class, 'import_intervensi']);

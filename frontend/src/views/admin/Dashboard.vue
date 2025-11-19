@@ -1449,6 +1449,7 @@ export default {
         bumil: [],
         catin: []
       },
+      detailAnak:[],
       dataTable_bumil:[],
       dataTable_bb:[],
       dataTable_tb:[],
@@ -2718,68 +2719,57 @@ export default {
 
         const ctx = canvas.getContext("2d");
 
-        const dataSudah = this.dataLoad || [];
-        const dataBelum = this.dataLoad_belum || [];
+        const dataAnak = this.detailAnak || [];
+        if (!dataAnak.length) return;
 
-        if (!dataSudah.length && !dataBelum.length) return;
+        // 🔎 Ambil periode filter
+        let targetYear, targetMonth;
+        if (this.filters?.periode) {
+          const [y, m] = this.filters.periode.split("-").map(Number);
+          targetYear = y;
+          targetMonth = m;
+        } else {
+          const now = new Date();
+          const hMinus1 = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          targetYear = hMinus1.getFullYear();
+          targetMonth = hMinus1.getMonth() + 1;
+        }
 
-        // 🔎 Ambil filter bulan
-        const periode = this.filters?.periode || ""; // format: yyyy-mm
-        const [filterYear, filterMonth] = periode.split("-").map(Number);
-
-        const targetYear = filterYear || new Date().getFullYear();
-        const targetMonth = filterMonth || (new Date().getMonth() + 1);
-
-        // 🧩 Daftar kategori
+        // 🧩 Daftar kategori intervensi
         const jenisList = [
           "MBG",
           "KIE",
           "Bansos",
           "PMT",
-          "Bantuan Lainnya",
+          "Lainnya",
           "Belum Mendapatkan Bantuan"
         ];
-
         const counter = Object.fromEntries(jenisList.map(j => [j, 0]));
 
         // ====================================================================
-        // 1️⃣ PROSES ANAK YANG SUDAH MENDAPATKAN INTERVENSI
+        // 1️⃣ PROSES ANAK YANG SUDAH MENDAPATKAN INTERVENSI SESUAI PERIODE
         // ====================================================================
-        dataSudah.forEach(anak => {
-          const intervensi = anak.raw?.data_intervensi;
-
+        dataAnak.forEach(anak => {
+          const intervensi = anak.intervensi || anak.raw?.data_intervensi;
           if (!Array.isArray(intervensi) || !intervensi.length) return;
 
-          // Ambil intervensi terbaru atau pertama
-          const itv = intervensi[0];
+          // Ambil intervensi terbaru sesuai periode
+          const validItv = intervensi.find(itv => {
+            if (!itv.tgl_intervensi) return false;
+            const tgl = new Date(itv.tgl_intervensi);
+            return tgl.getFullYear() === targetYear && tgl.getMonth() + 1 === targetMonth;
+          });
 
-          if (!itv.tgl_intervensi) return;
+          if (!validItv) return;
 
-          const tgl = new Date(itv.tgl_intervensi);
-          const y = tgl.getFullYear();
-          const m = tgl.getMonth() + 1;
-
-          // Hanya intervensi bulan yang difilter
-          if (y !== targetYear || m !== targetMonth) return;
-
-          const kategori = itv.kategori?.trim() || "Bantuan Lainnya";
-
-          if (counter[kategori] !== undefined) {
-            counter[kategori]++;
-          } else {
-            counter["Bantuan Lainnya"]++; // fallback
-          }
+          const kategori = (validItv.kategori || "Lainnya").trim();
+          counter[kategori] = (counter[kategori] || 0) + 1;
         });
 
-        // 2️⃣ PROSES ANAK BELUM MENDAPATKAN INTERVENSI — pakai API masalah ganda
+        // 2️⃣ ANAK BELUM MENDAPATKAN INTERVENSI
         counter["Belum Mendapatkan Bantuan"] = this.totalBelum || 0;
 
-        /* dataBelum.forEach(() => {
-          counter["Belum Mendapatkan Bantuan"]++;
-        }); */
-
         const counts = jenisList.map(j => counter[j]);
-
 
         // ====================================================================
         // 3️⃣ RENDER CHART JS
@@ -2818,6 +2808,41 @@ export default {
           }
         });
       });
+    },
+    async generateRingkasan() {
+      try {
+        const params = {
+              posyandu: this.filters.posyandu || '',
+              rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || '',
+        }
+        const res = await axios.get(`${baseURL}/api/children/ringkasan`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const result = res.data
+
+        this.totalKasus = res.data.summary.total_gizi_ganda;
+        this.totalSudah = res.data.summary.sudah_intervensi || 0;
+        this.totalBelum = res.data.summary.belum_intervensi || 0;
+
+        this.topPosyandu = result.top_posyandu || []
+
+        this.tidakBerubah3Bulan = result.tidak_berubah_3_bulan || []
+
+        this.detailAnak = result.detail_anak || []
+
+        // Opsional: debug
+        console.log("Ringkasan Loaded:", result)
+
+      } catch (error) {
+        console.error("Error memuat ringkasan:", error)
+        this.$toast?.error("Gagal memuat ringkasan data")
+      }
     },
     /* async renderSudahChart(periodeBulan = 12) {
       this.$nextTick(() => {
@@ -3227,6 +3252,7 @@ export default {
 
   },
   computed: {
+
     // Sudah
     filteredAnak() {
       if (!this.dataLoad) return [];
@@ -3545,6 +3571,7 @@ export default {
       await this.masalahGanda();
       await this.hitungIntervensi();
       await this.generateInfoBoxes();
+      await this.generateRingkasan();
 
       this.renderLineChart();
       this.renderBarChart();
