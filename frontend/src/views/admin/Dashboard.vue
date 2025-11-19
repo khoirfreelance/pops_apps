@@ -466,8 +466,8 @@
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                             <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
                             <div class="chart-placeholder text-muted text-center py-4">
-                              <canvas v-if="isSudah" ref="sudahChart"></canvas>
-                              <canvas v-else ref="funnelChart"></canvas>
+                              <!-- <canvas v-if="isSudah" ref="sudahChart"></canvas> -->
+                              <canvas ref="funnelChart"></canvas>
                             </div>
                           </div>
                         </div>
@@ -1672,7 +1672,7 @@ export default {
           datasets: [{
             data: values,
             borderColor,
-            borderWidth: 2,
+            borderWidth: 3,
             tension: 0,
             pointRadius: 0.1,           // ❌ no dots
             pointHoverRadius: 0.1,      // ❌ no hover dots
@@ -2023,12 +2023,6 @@ export default {
             return;
         }
 
-        /* const sudah = res.data.grouping.punya_keduanya;
-        const belum = this.totalKasus - sudah;
-
-        this.totalSudah = sudah;
-        this.totalBelum = belum; */
-
         // 💚 anak
         if (this.activeMenu === 'anak') {
           this.dataLoad = res.data.detail.punya_keduanya.map(item => this.mapToAnak(item));
@@ -2255,59 +2249,76 @@ export default {
 
       const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
-      // 🔹 Siapkan object untuk menampung data tiap bulan
+      // 🔹 Persiapan data bulan
       const monthlyData = {};
       for (let i = 0; i < periodeBulan; i++) {
         const temp = new Date(startDate);
         temp.setMonth(startDate.getMonth() + i);
-        const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}`;
-        monthlyData[key] = { total: 0, tidakMembaik: 0 };
+        const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2,'0')}`;
+        monthlyData[key] = { giziGanda: 0 };
       }
 
-      // 🔹 Ambil semua kunjungan (data_kunjungan bisa array atau objek tunggal)
+      // 🔹 Ambil semua kunjungan anak
       const allKunjungan = data.flatMap(anak => {
         if (!anak.data_kunjungan) return [];
-        const kunj = Array.isArray(anak.data_kunjungan) ? anak.data_kunjungan : [anak.data_kunjungan];
+
+        const kunj = Array.isArray(anak.data_kunjungan)
+          ? anak.data_kunjungan
+          : [anak.data_kunjungan];
 
         return kunj.map(k => ({
           tanggal: new Date(k.tgl_pengukuran),
-          bb_naik: k.naik_berat_badan,
-          rumusan: anak.rumusan
+          bb_u: k.bb_u,
+          tb_u: k.tb_u,
+          bb_tb: k.bb_tb
         }));
       });
 
-      // 🔹 Filter kunjungan yang masuk periode bulan
+      // 🔹 Filter sesuai periode
       const recent = allKunjungan.filter(k => k.tanggal >= startDate && k.tanggal <= now);
 
-      // 🔹 Hitung total dan tidak membaik per bulan
+      // 🔥 Function cek gizi ganda
+      const isGiziGanda = (bb_u, tb_u, bb_tb) => {
+        const notNormal = status => status && status !== 'Normal';
+
+        const nn_bb_u  = notNormal(bb_u);
+        const nn_tb_u  = notNormal(tb_u);
+        const nn_bb_tb = notNormal(bb_tb);
+
+        const count = [nn_bb_u, nn_tb_u, nn_bb_tb].filter(v => v).length;
+        return count >= 2; // minimal 2 status tidak normal
+      };
+
+      // 🔹 Hitung gizi ganda per bulan
       recent.forEach(p => {
         const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2,'0')}`;
-        if (monthlyData[key]) {
-          monthlyData[key].total++;
-          // kondisi "tidak membaik" = bb_naik null/false dan rumusan kosong/null
-          if (!p.bb_naik && (!p.rumusan || p.rumusan === "")) monthlyData[key].tidakMembaik++;
+
+        if (monthlyData[key] && isGiziGanda(p.bb_u, p.tb_u, p.bb_tb)) {
+          monthlyData[key].giziGanda++;
         }
       });
 
-      // 🔹 Siapkan data untuk chart
+      // 🔹 Siapkan data chart
       const sortedKeys = Object.keys(monthlyData).sort();
       const labels = sortedKeys.map(key => {
         const [, month] = key.split('-');
         return monthNames[parseInt(month) - 1];
       });
-      const dataTidakMembaik = sortedKeys.map(key => monthlyData[key].tidakMembaik);
+      const dataGiziGanda = sortedKeys.map(key => monthlyData[key].giziGanda);
 
-      // 🔹 Render chart
+      // 🔹 Render Chart
       if (this.lineChart) this.lineChart.destroy();
 
-      const ctx = this.$refs.lineChart.getContext('2d');
+      const ctx = this.$refs.lineChart?.getContext('2d');
+      if (!ctx) return;
+
       this.lineChart = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
           datasets: [{
-            label: 'Jumlah Anak Tidak Membaik (Tanpa Intervensi)',
-            data: dataTidakMembaik,
+            label: 'Jumlah anak tidak membaik',
+            data: dataGiziGanda,
             borderColor: 'goldenrod',
             backgroundColor: 'rgba(255, 215, 0, 0.3)',
             fill: true,
@@ -2386,49 +2397,26 @@ export default {
         }
       });
     },
-    async renderFunnelChart(periodeBulan = 12) {
+    async renderFunnelChart() {
       this.$nextTick(() => {
         const canvas = this.$refs.funnelChart;
         if (!canvas) return;
 
         const ctx = canvas.getContext("2d");
-        const data = this.dataLoad || [];
-        console.log('isinya:',this.dataLoad);
 
-        if (!data.length) return;
+        const dataSudah = this.dataLoad || [];
+        const dataBelum = this.dataLoad_belum || [];
 
-        const now = new Date();
-        const startDate = new Date();
-        startDate.setMonth(now.getMonth() - periodeBulan);
+        if (!dataSudah.length && !dataBelum.length) return;
 
-        // 🔹 Flatten intervensi (boleh kosong → masuk "Belum Mendapatkan Bantuan")
-        const allIntervensi = data.flatMap(anak => {
-          //const itv = anak.data_intervensi;
-           let itv = anak.raw.data_intervensi;
-          itv = Array.isArray(itv) ? itv[0] : itv; // ambil intervensi pertama saja
+        // 🔎 Ambil filter bulan
+        const periode = this.filters?.periode || ""; // format: yyyy-mm
+        const [filterYear, filterMonth] = periode.split("-").map(Number);
 
-          // Tidak ada intervensi → masuk kategori default
-          if (!itv) {
-            return [{
-              tanggal: null,
-              jenis: "Belum Mendapatkan Bantuan"
-            }];
-          }
+        const targetYear = filterYear || new Date().getFullYear();
+        const targetMonth = filterMonth || (new Date().getMonth() + 1);
 
-          const tgl = this.parseDate(itv.tgl_intervensi);
-
-          return [{
-            tanggal: tgl,
-            jenis: itv.jenis_intervensi?.trim() || "Belum Mendapatkan Bantuan"
-          }];
-        });
-
-        // 🔹 Hanya intervensi dengan tanggal valid yang masuk range
-        const recentIntervensi = allIntervensi.filter(i => {
-          if (!i.tanggal) return true; // yang "belum dapat bantuan"
-          return i.tanggal >= startDate && i.tanggal <= now;
-        });
-
+        // 🧩 Daftar kategori
         const jenisList = [
           "MBG",
           "KIE",
@@ -2438,10 +2426,50 @@ export default {
           "Belum Mendapatkan Bantuan"
         ];
 
-        const counts = jenisList.map(jenis =>
-          recentIntervensi.filter(i => i.jenis === jenis).length
-        );
+        const counter = Object.fromEntries(jenisList.map(j => [j, 0]));
 
+        // ====================================================================
+        // 1️⃣ PROSES ANAK YANG SUDAH MENDAPATKAN INTERVENSI
+        // ====================================================================
+        dataSudah.forEach(anak => {
+          const intervensi = anak.raw?.data_intervensi;
+
+          if (!Array.isArray(intervensi) || !intervensi.length) return;
+
+          // Ambil intervensi terbaru atau pertama
+          const itv = intervensi[0];
+
+          if (!itv.tgl_intervensi) return;
+
+          const tgl = new Date(itv.tgl_intervensi);
+          const y = tgl.getFullYear();
+          const m = tgl.getMonth() + 1;
+
+          // Hanya intervensi bulan yang difilter
+          if (y !== targetYear || m !== targetMonth) return;
+
+          const kategori = itv.kategori?.trim() || "Bantuan Lainnya";
+
+          if (counter[kategori] !== undefined) {
+            counter[kategori]++;
+          } else {
+            counter["Bantuan Lainnya"]++; // fallback
+          }
+        });
+
+        // 2️⃣ PROSES ANAK BELUM MENDAPATKAN INTERVENSI — pakai API masalah ganda
+        counter["Belum Mendapatkan Bantuan"] = this.totalBelum || 0;
+
+        /* dataBelum.forEach(() => {
+          counter["Belum Mendapatkan Bantuan"]++;
+        }); */
+
+        const counts = jenisList.map(j => counter[j]);
+
+
+        // ====================================================================
+        // 3️⃣ RENDER CHART JS
+        // ====================================================================
         if (this.funnelChart) this.funnelChart.destroy();
 
         this.funnelChart = new Chart(ctx, {
@@ -2477,7 +2505,7 @@ export default {
         });
       });
     },
-    async renderSudahChart(periodeBulan = 12) {
+    /* async renderSudahChart(periodeBulan = 12) {
       this.$nextTick(() => {
         const canvas = this.$refs.sudahChart;
         if (!canvas) return;
@@ -2551,7 +2579,7 @@ export default {
           }
         });
       });
-    },
+    }, */
 
     // only Bumil
     async generateIndikatorBumilBulanan() {
@@ -3197,7 +3225,7 @@ export default {
       this.renderLineChart();
       this.renderBarChart();
       this.renderFunnelChart();
-      this.renderSudahChart();
+      //this.renderSudahChart();
       this.renderBumilChart();
       this.rendersvgChart();
       // 6️⃣ Generate data table sesuai tipe menu
@@ -3255,7 +3283,7 @@ export default {
       this.generateIndikatorBumilBulanan()
       this.generateIndikatorCatinBulanan()
     },
-    isSudah(newVal) {
+    /* isSudah(newVal) {
       this.$nextTick(() => {
         if (newVal) {
           this.renderSudahChart()
@@ -3263,7 +3291,7 @@ export default {
           this.renderFunnelChart()
         }
       })
-    }
+    } */
   }
 }
 </script>
