@@ -655,59 +655,66 @@
             <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
               <!-- Issue and Stat Card -->
               <div class="container-fluid my-4">
-                <div class="row">
-                  <div class="row justify-content-center">
-                    <div
-                      v-for="(item, index) in kesehatanData.bumil"
-                      :key="index"
-                      class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
-                    >
-                      <div
-                        class="card shadow-sm border-0 rounded-2 overflow-hidden"
-                        :class="`border-start border-4 border-${item.color}`"
-                      >
-                        <div class="card-header">
-                          <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                        </div>
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                          <p
-                            v-if="index !== kesehatanData.anak.length - 1"
-                            class="mb-0"
-                            :class="`text-${item.color}`"
-                          >
-                            {{ item.percent }}
-                          </p>
-                          <p v-else class="my-auto">
-                            <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
-                          </p>
-                          <!-- Hanya tampilkan persentase kalau bukan card terakhir -->
-                          <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
-                            {{ item.value }}
-                          </h3>
+                <div class="row justify-content-center">
 
-                        </div>
-                        <!-- SVG LINE CHART -->
-                        <div class="card-footer bg-transparent border-0 pt-0">
-                          <svg
-                            viewBox="0 0 100 30"
-                            class="svg-line"
-                            preserveAspectRatio="none"
-                            :class="`stroke-${item.color}`"
-                          >
-                            <polyline
-                              fill="none"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                            />
-                          </svg>
-                        </div>
+                  <div
+                    v-for="(item, index) in kesehatanData.bumil"
+                    :key="index"
+                    class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
+                  >
+                    <div
+                      class="card shadow-sm border-0 rounded-2 overflow-hidden h-100"
+                      :class="`border-start border-4 border-${item.color}`"
+                    >
+                      <div class="card-header">
+                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                      </div>
+
+                      <div class="card-body d-flex justify-content-between align-items-center">
+
+                        <!-- 👇 Jika bukan card terakhir: tampilkan persentase -->
+                        <p
+                          v-if="index !== kesehatanData.bumil.length - 1"
+                          class="mb-0"
+                          :class="`text-${item.color}`"
+                        >
+                          {{ item.percent }}
+                        </p>
+
+                        <!-- 👇 Card terakhir: icon -->
+                        <h3 v-else class="my-auto">
+                          <i class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
+                        </h3>
+
+                        <!-- Value -->
+                        <h1 class="fw-bold mb-0" :class="`text-${item.color}`">
+                          {{ item.value }}
+                        </h1>
+
+                      </div>
+
+                      <!-- FOOTER: chart atau spacer -->
+                      <div class="card-footer bg-transparent border-0 pt-0">
+                        <!-- Chart hanya untuk card selain terakhir -->
+                        <canvas
+                          v-if="index !== kesehatanData.bumil.length - 1"
+                          :ref="'chart-bumil-' + index"
+                          height="50"
+                        ></canvas>
+
+                        <!-- Spacer untuk Total Bumil agar tinggi sama -->
+                        <div
+                          v-else
+                          style="height:50px; visibility:hidden;"
+                        ></div>
                       </div>
 
                     </div>
                   </div>
+
                 </div>
               </div>
+
 
               <!-- Tren -->
               <div class="container-fluid">
@@ -1005,10 +1012,15 @@
                         class="card shadow-sm border-0 rounded-2 overflow-hidden"
                         :class="`border-start border-4 border-${item.color}`"
                       >
+                        <!-- Judul -->
                         <div class="card-header">
                           <h6 class="fw-bold mb-1">{{ item.title }}</h6>
                         </div>
+
+                        <!-- Body -->
                         <div class="card-body d-flex justify-content-between align-items-center">
+
+                          <!-- Persen utk semua kecuali card terakhir -->
                           <p
                             v-if="index !== kesehatanData.catin.length - 1"
                             class="mb-0"
@@ -1016,35 +1028,32 @@
                           >
                             {{ item.percent }}
                           </p>
-                          <p v-else class="my-auto">
-                            <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
-                          </p>
-                          <!-- Hanya tampilkan persentase kalau bukan card terakhir -->
-                          <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
-                            {{ item.value }}
+
+                          <!-- Ikon utk card terakhir -->
+                          <h3 v-else class="my-auto">
+                            <i class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
                           </h3>
+
+                          <!-- Value -->
+                          <h1 class="fw-bold mb-0" :class="`text-${item.color}`">
+                            {{ item.value }}
+                          </h1>
                         </div>
-                        <!-- SVG LINE CHART -->
-                        <div class="card-footer bg-transparent border-0 pt-0">
-                          <svg
-                            viewBox="0 0 100 30"
-                            class="svg-line"
-                            preserveAspectRatio="none"
-                            :class="`stroke-${item.color}`"
-                          >
-                            <polyline
-                              fill="none"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                            />
-                          </svg>
+
+                        <!-- Chart: Hanya utk kecuali card terakhir -->
+                        <div
+                          class="card-footer bg-transparent border-0 pt-0"
+                          v-if="index !== kesehatanData.catin.length - 1"
+                        >
+                          <canvas :ref="'chart-catin-' + index" height="50"></canvas>
                         </div>
+
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+
 
               <!-- TREN -->
               <div class="container-fluid">
@@ -1629,6 +1638,8 @@ export default {
         this.$nextTick(() => {
           this.kesehatanData[this.activeMenu].forEach((item, index) => {
             this.rendersvgChart(`chart-${index}`, item.trend, [item.color]);
+            this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color]);
+            this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color]);
           });
         });
 
@@ -1637,6 +1648,150 @@ export default {
       }
     },
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+      let ref = this.$refs[refName];
+      if (!ref) return;
+
+      const canvas = Array.isArray(ref) ? ref[0] : ref;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
+      if (!Array.isArray(dataTable) || !dataTable.length) return;
+
+      const labels = dataTable.map(row => row[labelKey]);
+      const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: "#0d6efd",
+        violet:"#4f0891",
+        secondary: "#6c757d",
+        success: "#198754",
+        danger: "#dc3545",
+        warning: "#ffc107",
+        info: "#0dcaf0",
+        dark: "#212529",
+      };
+      const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor,
+            borderWidth: 3,
+            tension: 0,
+            pointRadius: 0.1,           // ❌ no dots
+            pointHoverRadius: 0.1,      // ❌ no hover dots
+            fill: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            //tooltip: { enabled: false }, // ❌ no tooltip
+            datalabels: { display: false },
+          },
+          scales: {
+            x: {
+              display: false, // ❌ hide x axis
+              grid: { display: false }, // ❌ remove grid
+            },
+            y: {
+              display: false, // ❌ hide y axis
+              grid: { display: false }, // ❌ remove grid
+              beginAtZero: true,
+              max: 100,
+            }
+          },
+          elements: {
+            line: {
+              borderCapStyle: 'round',   // ✔ smooth edges
+              borderJoinStyle: 'round',
+            }
+          }
+        },
+      });
+    },
+    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+      let ref = this.$refs[refName];
+      if (!ref) return;
+
+      const canvas = Array.isArray(ref) ? ref[0] : ref;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
+      if (!Array.isArray(dataTable) || !dataTable.length) return;
+
+      const labels = dataTable.map(row => row[labelKey]);
+      const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: "#0d6efd",
+        violet:"#4f0891",
+        secondary: "#6c757d",
+        success: "#198754",
+        danger: "#dc3545",
+        warning: "#ffc107",
+        info: "#0dcaf0",
+        dark: "#212529",
+      };
+      const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor,
+            borderWidth: 3,
+            tension: 0,
+            pointRadius: 0.1,           // ❌ no dots
+            pointHoverRadius: 0.1,      // ❌ no hover dots
+            fill: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            //tooltip: { enabled: false }, // ❌ no tooltip
+            datalabels: { display: false },
+          },
+          scales: {
+            x: {
+              display: false, // ❌ hide x axis
+              grid: { display: false }, // ❌ remove grid
+            },
+            y: {
+              display: false, // ❌ hide y axis
+              grid: { display: false }, // ❌ remove grid
+              beginAtZero: true,
+              max: 100,
+            }
+          },
+          elements: {
+            line: {
+              borderCapStyle: 'round',   // ✔ smooth edges
+              borderJoinStyle: 'round',
+            }
+          }
+        },
+      });
+    },
+    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName];
       if (!ref) return;
 
@@ -3228,6 +3383,7 @@ export default {
       //this.renderSudahChart();
       this.renderBumilChart();
       this.rendersvgChart();
+      this.rendersvgChart_Bumil();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
 

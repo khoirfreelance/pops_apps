@@ -414,122 +414,119 @@ class CatinController extends Controller
         try {
             $user = Auth::user();
 
-            // ✅ 1. Cari data anggota_tpk user
+            // 1️⃣ Anggota TPK
             $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
-
             if (!$anggotaTPK) {
                 return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
             }
 
-            // ✅ 2. Ambil posyandu dan wilayah
+            // 2️⃣ Wilayah
             $posyandu = $anggotaTPK->posyandu;
             $wilayah = $posyandu?->wilayah;
 
-            $query = Catin::query();
-
             if (!$wilayah) {
-                return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+                return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
             }
 
-            // ✅ 3. Dapatkan kelurahan user
             $filterKelurahan = $wilayah->kelurahan ?? null;
-
             $query = Catin::query();
-            // ✅ Selalu filter berdasar wilayah user (default)
+
+            // 3️⃣ Filter wilayah default
             if ($filterKelurahan) {
                 $query->where('kelurahan', $filterKelurahan);
             }
 
-            // ✅ Filter tambahan dari frontend
+            // 4️⃣ Filter tambahan
             if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
             if ($request->filled('rw')) $query->where('rw', $request->rw);
             if ($request->filled('rt')) $query->where('rt', $request->rt);
 
+            // 5️⃣ Filter periode
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
                 $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
                 $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
-
-                $query->whereBetween('tanggal_pendampingan', [
-                    $periodeAwal->format('Y-m-d'),
-                    $periodeAkhir->format('Y-m-d'),
-                ]);
+                $query->whereBetween('tanggal_pendampingan', [$periodeAwal, $periodeAkhir]);
             } elseif ($request->filled('periode')) {
                 $periode = $this->parseBulanTahun($request->periode);
                 $query->whereBetween('tanggal_pendampingan', [
-                    $periode->copy()->startOfMonth()->format('Y-m-d'),
-                    $periode->copy()->endOfMonth()->format('Y-m-d'),
+                    $periode->copy()->startOfMonth(),
+                    $periode->copy()->endOfMonth(),
                 ]);
             }
 
-            // ✅ Ambil data
+            // 6️⃣ Ambil data
             $data = $query->get();
 
+            // ======================================================
+            // 0️⃣ JIKA KOSONG
+            // ======================================================
             if ($data->isEmpty()) {
-                // tetap generate hasil kosong tapi lengkap
-                $count = [
-                    'Anemia' => 0,
-                    'KEK' => 0,
-                    'Risiko Usia' => 0,
-                    'Total Berisiko' => 0,
-                    'Total Catin' => 0,
+
+                $keys = [
+                    'Anemia',
+                    'KEK',
+                    'Risiko Usia',
+                    'Total Berisiko',
+                    'Total Catin'
                 ];
 
                 $result = [];
-                foreach ($count as $key => $val) {
-                    $percent = 0;
+                foreach ($keys as $key) {
                     $result[] = [
                         'title' => $key,
-                        'value' => $val,
-                        'percent' => $percent,
+                        'value' => 0,
+                        'percent' => 0,
                         'color' => match ($key) {
                             'KEK' => 'danger',
                             'Anemia' => 'warning',
                             'Risiko Usia' => 'violet',
                             'Total Berisiko' => 'dark',
                             default => 'secondary'
-                        }
+                        },
+                        'trend' => $this->catinTrend($key, $filterKelurahan) // 🔥 tetap ada tren walaupun kosong
                     ];
                 }
 
                 return response()->json([
                     'total' => 0,
                     'counts' => $result,
-                    'kelurahan' => $wilayah['kelurahan'] ?? '-',
+                    'kelurahan' => $wilayah->kelurahan ?? '-',
                 ]);
             }
 
-
-            // ✅ Group by nik_perempuan, ambil record terakhir
-            $grouped = $data->groupBy('nik_perempuan')->map(fn($group) =>
-                $group->sortByDesc('tanggal_pendampingan')->first()
+            // 7️⃣ Ambil data terakhir per NIK
+            $grouped = $data->groupBy('nik_perempuan')->map(fn($g) =>
+                $g->sortByDesc('tanggal_pendampingan')->first()
             );
 
             $groupedData = $grouped->values();
             $total = $groupedData->count();
 
-            // ✅ Filter usia_perempuan
+            // 8️⃣ Filter usia
             if ($request->filled('usia') && is_array($request->usia)) {
                 $groupedData = $groupedData->filter(function ($item) use ($request) {
                     foreach ($request->usia as $range) {
-                        $range = trim($range);
                         if ($range === '<20' && $item->usia_perempuan < 20) return true;
                         if ($range === '>40' && $item->usia_perempuan > 40) return true;
+
                         if (str_contains($range, '-')) {
                             [$min, $max] = explode('-', $range);
-                            if ($item->usia_perempuan >= (int)$min && $item->usia_perempuan <= (int)$max) return true;
+                            if ($item->usia_perempuan >= $min && $item->usia_perempuan <= $max) return true;
                         }
                     }
                     return false;
                 });
             }
 
-            // ✅ Filter by status
+            // 9️⃣ Filter status
             if ($request->filled('status')) {
                 $statuses = (array)$request->status;
+
                 $groupedData = $groupedData->filter(function ($item) use ($statuses) {
                     foreach ($statuses as $status) {
                         $s = strtolower($status);
-                        // ambil semua data selain "normal" kalau status = risiko
+
+                        // "risiko" = selain normal
                         if ($s === 'risiko') {
                             return !str_contains(strtolower($item->status_risiko ?? ''), 'normal');
                         }
@@ -544,22 +541,28 @@ class CatinController extends Controller
                     }
                     return false;
                 });
+
                 $total = $groupedData->count();
             }
 
-            // ✅ Hitung status kesehatan
+            // 1️⃣0️⃣ Hitung status utama
             $count = [
                 'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
                 'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kek ?? ''), 'kek'))->count(),
                 'Risiko Usia' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal'))->count(),
-                'Total Berisiko' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal') || str_contains(strtolower($i->status_kek ?? ''), 'kek') || str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
+                'Total Berisiko' => $groupedData->filter(fn($i) =>
+                    !str_contains(strtolower($i->status_risiko ?? ''), 'normal')
+                    || str_contains(strtolower($i->status_kek ?? ''), 'kek')
+                    || str_contains(strtolower($i->status_hb ?? ''), 'anemia')
+                )->count(),
                 'Total Catin' => $total,
             ];
 
-            // ✅ Format hasil
+            // 1️⃣1️⃣ Format hasil + TREND
             $result = [];
             foreach ($count as $key => $val) {
                 $percent = $total > 0 ? round(($val / $total) * 100, 1) : 0;
+
                 $result[] = [
                     'title' => $key,
                     'value' => $val,
@@ -567,22 +570,23 @@ class CatinController extends Controller
                     'color' => match ($key) {
                         'KEK' => 'danger',
                         'Anemia' => 'warning',
-                        'Berisiko' => 'violet',
+                        'Risiko Usia' => 'violet',
                         'Total Berisiko' => 'dark',
                         default => 'secondary'
-                    }
+                    },
+                    'trend' => $this->catinTrend($key, $filterKelurahan) // 🔥 TREND DI sini
                 ];
             }
 
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
-                'kelurahan' => $wilayah['kelurahan'] ?? '-',
-            ], 200);
+                'kelurahan' => $wilayah->kelurahan ?? '-',
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengambil data status kehamilan',
+                'message' => 'Gagal mengambil data status Catin',
                 'error' => $e->getMessage(),
             ], 500);
         }

@@ -438,14 +438,15 @@ class PregnancyController extends Controller
         try {
             $user = Auth::user();
 
-            // ✅ 1. Cari data anggota_tpk user
+            // =====================================
+            // 1. Ambil wilayah user
+            // =====================================
             $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
 
             if (!$anggotaTPK) {
                 return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
             }
 
-            // ✅ 2. Ambil posyandu dan wilayah
             $posyandu = $anggotaTPK->posyandu;
             $wilayah = $posyandu?->wilayah;
 
@@ -453,162 +454,182 @@ class PregnancyController extends Controller
                 return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
             }
 
-            // ✅ 3. Dapatkan kelurahan user
             $filterKelurahan = $wilayah->kelurahan ?? null;
 
-            $query = Pregnancy::query();
-            // ✅ Selalu filter berdasar wilayah user (default)
-            if ($filterKelurahan) {
-                $query->where('kelurahan', $filterKelurahan);
-            }
-
-            // ✅ Filter tambahan dari frontend
-            if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
-            if ($request->filled('rw')) $query->where('rw', $request->rw);
-            if ($request->filled('rt')) $query->where('rt', $request->rt);
-
+            // =====================================
+            // 2. Tentukan periode (default H-1 bulan)
+            // =====================================
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
+                $periodeAwal  = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
                 $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
-
-                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
-                    $periodeAwal->format('Y-m-d'),
-                    $periodeAkhir->format('Y-m-d'),
-                ]);
             } elseif ($request->filled('periode')) {
                 $periode = $this->parseBulanTahun($request->periode);
-                $query->whereBetween('tanggal_pemeriksaan_terakhir', [
-                    $periode->copy()->startOfMonth()->format('Y-m-d'),
-                    $periode->copy()->endOfMonth()->format('Y-m-d'),
-                ]);
+                $periodeAwal  = $periode->copy()->startOfMonth();
+                $periodeAkhir = $periode->copy()->endOfMonth();
+            } else {
+                $periode = now()->subMonth(); // default H-1
+                $periodeAwal  = $periode->copy()->startOfMonth();
+                $periodeAkhir = $periode->copy()->endOfMonth();
             }
 
-            // ✅ Ambil data
+            // =====================================
+            // 3. Query utama
+            // =====================================
+            $query = Catin::query()
+                ->where('kelurahan', $filterKelurahan)
+                ->whereBetween('tanggal_pendampingan', [
+                    $periodeAwal->format('Y-m-d'),
+                    $periodeAkhir->format('Y-m-d'),
+                ])
+                ->when($request->posyandu, fn($q, $v) => $q->where('posyandu', $v))
+                ->when($request->rw, fn($q, $v) => $q->where('rw', $v))
+                ->when($request->rt, fn($q, $v) => $q->where('rt', $v));
+
             $data = $query->get();
 
+            // =====================================
+            // 4. Jika kosong → return template kosong
+            // =====================================
             if ($data->isEmpty()) {
-                // tetap generate hasil kosong tapi lengkap
-                $count = [
-                    'Anemia' => 0,
-                    'KEK' => 0,
-                    'Berisiko' => 0,
-                    'Normal' => 0,
-                    'Total Bumil' => 0,
-                ];
-
-                $result = [];
-                foreach ($count as $key => $val) {
-                    $percent = 0;
-                    $result[] = [
-                        'title' => $key,
-                        'value' => $val,
-                        'percent' => $percent,
-                        'color' => match ($key) {
-                            'KEK' => 'danger',
-                            'Anemia' => 'warning',
-                            'Berisiko' => 'violet',
-                            'Normal' => 'success',
-                            default => 'secondary'
-                        }
-                    ];
-                }
-
                 return response()->json([
                     'total' => 0,
-                    'counts' => $result,
-                    'kelurahan' => $wilayah['kelurahan'] ?? '-',
+                    'counts' => [
+                        ['title' => 'Anemia','value' => 0,'percent' => '0%','color' => 'warning','trend' => []],
+                        ['title' => 'KEK','value' => 0,'percent' => '0%','color' => 'danger','trend' => []],
+                        ['title' => 'Risiko Usia','value' => 0,'percent' => '0%','color' => 'violet','trend' => []],
+                        ['title' => 'Total Berisiko','value' => 0,'percent' => '0%','color' => 'dark','trend' => []],
+                        ['title' => 'Total Catin','value' => 0,'percent' => '0%','color' => 'secondary','trend' => []],
+                    ],
+                    'kelurahan' => $filterKelurahan,
                 ]);
             }
 
-            // ✅ Group by nik_ibu, ambil record terakhir
-            $grouped = $data->groupBy('nik_ibu')->map(fn($group) =>
-                $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first()
+            // =====================================
+            // 5. Ambil record terbaru per NIK
+            // =====================================
+            $grouped = $data->groupBy('nik_perempuan')->map(fn($g) =>
+                $g->sortByDesc('tanggal_pendampingan')->first()
             );
 
-            $groups = $data->groupBy('nik_ibu')->map(fn($group) =>
-                $group->sortByDesc('tanggal_pemeriksaan_terakhir')
-            );
+            $final = $grouped->values();
+            $total = $final->count();
 
-            $groupedData = $grouped->values();
-            $total = $groupedData->count();
-
-            // ✅ Filter usia_ibu
-            if ($request->filled('usia') && is_array($request->usia)) {
-                $groupedData = $groupedData->filter(function ($item) use ($request) {
-                    foreach ($request->usia as $range) {
-                        $range = trim($range);
-                        if ($range === '<20' && $item->usia_ibu < 20) return true;
-                        if ($range === '>40' && $item->usia_ibu > 40) return true;
-                        if (str_contains($range, '-')) {
-                            [$min, $max] = explode('-', $range);
-                            if ($item->usia_ibu >= (int)$min && $item->usia_ibu <= (int)$max) return true;
-                        }
-                    }
-                    return false;
-                });
-            }
-
-            // ✅ Filter by status
-            if ($request->filled('status')) {
-                $statuses = (array)$request->status;
-                $groupedData = $groupedData->filter(function ($item) use ($statuses) {
-                    foreach ($statuses as $status) {
-                        $s = strtolower($status);
-                        if ($s === 'risiko') {
-                            return !str_contains(strtolower($item->status_risiko ?? ''), 'normal');
-                        }
-
-                        if (
-                            str_contains(strtolower($item->status_risiko_usia ?? ''), $s) ||
-                            str_contains(strtolower($item->status_gizi_hb ?? ''), $s) ||
-                            str_contains(strtolower($item->status_gizi_lila ?? ''), $s)
-                        ) {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-                $total = $groupedData->count();
-            }
-
-            // ✅ Hitung status kesehatan
+            // =====================================
+            // 6. Hitung status seperti sebelumnya
+            // =====================================
             $count = [
-                'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek'))->count(),
-                'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia'))->count(),
-                'Berisiko' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko'))->count(),
-                'Normal' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko_usia ?? ''), 'normal'))->count(),
-                'Total Bumil' => $total,
+                'Anemia' => $final->filter(fn($i) => str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
+                'KEK' => $final->filter(fn($i) => str_contains(strtolower($i->status_kek ?? ''), 'kek'))->count(),
+                'Risiko Usia' => $final->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal'))->count(),
+                'Total Berisiko' => $final->filter(fn($i) =>
+                    !str_contains(strtolower($i->status_risiko ?? ''), 'normal') ||
+                    str_contains(strtolower($i->status_kek ?? ''), 'kek') ||
+                    str_contains(strtolower($i->status_hb ?? ''), 'anemia')
+                )->count(),
+                'Total Catin' => $total,
             ];
 
-            // ✅ Format hasil
-            $result = [];
-            foreach ($count as $key => $val) {
-                $percent = $total > 0 ? round(($val / $total) * 100, 1) : 0;
-                $result[] = [
-                    'title' => $key,
-                    'value' => $val,
-                    'percent' => $percent,
-                    'color' => match ($key) {
-                        'KEK' => 'danger',
-                        'Anemia' => 'warning',
-                        'Berisiko' => 'violet',
-                        'Normal' => 'success',
-                        default => 'secondary'
+            // =====================================
+            // 7. TREND 3 BULAN TERAKHIR
+            // =====================================
+            $trendCount = [];
+
+            foreach ($count as $status => $v) {
+
+                $trend = collect();
+
+                for ($i = 2; $i >= 0; $i--) {
+
+                    $tgl = now()->subMonths($i);
+                    $awal = $tgl->copy()->startOfMonth();
+                    $akhir = $tgl->copy()->endOfMonth();
+
+                    $monthData = Catin::query()
+                        ->where('kelurahan', $filterKelurahan)
+                        ->whereBetween('tanggal_pendampingan', [
+                            $awal->format('Y-m-d'),
+                            $akhir->format('Y-m-d'),
+                        ])
+                        ->get();
+
+                    // ambil record terbaru per nik
+                    $groupedMonth = $monthData->groupBy('nik_perempuan')->map(fn($g) =>
+                        $g->sortByDesc('tanggal_pendampingan')->first()
+                    );
+
+                    $totalMonth = $groupedMonth->count();
+                    $jumlah = 0;
+
+                    foreach ($groupedMonth as $row) {
+
+                        $hb = strtolower($row->status_hb ?? '');
+                        $kek = strtolower($row->status_kek ?? '');
+                        $ris = strtolower($row->status_risiko ?? '');
+
+                        if ($status === 'Anemia' && str_contains($hb, 'anemia')) $jumlah++;
+                        if ($status === 'KEK' && str_contains($kek, 'kek')) $jumlah++;
+                        if ($status === 'Risiko Usia' && !str_contains($ris, 'normal')) $jumlah++;
+
+                        if ($status === 'Total Berisiko') {
+                            if (
+                                !str_contains($ris, 'normal') ||
+                                str_contains($kek, 'kek') ||
+                                str_contains($hb, 'anemia')
+                            ) $jumlah++;
+                        }
+
+                        if ($status === 'Total Catin') {
+                            $jumlah = $totalMonth; // total catin per bulan
+                        }
                     }
+
+                    $persen = $totalMonth ? round(($jumlah / $totalMonth) * 100, 1) : 0;
+
+                    $trend->push([
+                        'bulan' => $tgl->format('M'),
+                        'persen' => $persen,
+                    ]);
+                }
+
+                $trendCount[$status] = $trend;
+            }
+
+            // =====================================
+            // 8. Format output final
+            // =====================================
+            $result = [];
+
+            foreach ($count as $title => $value) {
+
+                $color = match ($title) {
+                    'KEK' => 'danger',
+                    'Anemia' => 'warning',
+                    'Risiko Usia' => 'violet',
+                    'Total Berisiko' => 'dark',
+                    'Total Catin' => 'secondary'
+                };
+
+                $percent = $total ? round(($value / $total) * 100, 1) : 0;
+
+                $result[] = [
+                    'title'   => $title,
+                    'value'   => $value,
+                    'percent' => "{$percent}%",
+                    'color'   => $color,
+                    'trend'   => $trendCount[$title],
                 ];
             }
 
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
-                'groups' => $groupedData,
-                'kelurahan' => $wilayah['kelurahan'] ?? '-',
-
-            ], 200);
+                'kelurahan' => $filterKelurahan,
+                'final' => $final,
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Gagal mengambil data status kehamilan',
+                'message' => 'Gagal mengambil data status catin',
                 'error' => $e->getMessage(),
             ], 500);
         }

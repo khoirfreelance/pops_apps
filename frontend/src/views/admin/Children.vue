@@ -1939,14 +1939,14 @@ export default {
       await this.loadChildren()
 
       // Ambil query param
-      //const { tipe, status } = this.$route.query
-      //console.log('data dari dashboard:', tipe, status)
+      const { tipe, status } = this.$route.query
+      console.log('data dari dashboard:', tipe, status)
 
       // Copy semua children
       this.filteredData = [...this.children]
 
       // Terapkan filter dari chart
-      /* if (tipe && status) {
+      if (tipe && status) {
         this.filters.bbu = []
         this.filters.tbu = []
         this.filters.bbtb = []
@@ -1961,7 +1961,7 @@ export default {
         if (typeof this.applyFilter === 'function') {
           this.applyFilter()
         }
-      } */
+      }
 
 
       this.handleResize()
