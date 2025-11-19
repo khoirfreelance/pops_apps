@@ -44,7 +44,7 @@
                 class="col-xl-1_9 col-lg-2 col-md-3 col-sm-6 col-6"
               >
                 <div class="stat-card shadow-sm rounded h-100">
-                  <h6 class="text-muted pt-2 ps-2" style="font-size: 10px;">{{ stat.title }}</h6>
+                  <h6 class="text-muted pt-2 ps-2">{{ stat.title }}</h6>
                   <div class="card-body d-flex align-items-center justify-content-between px-2">
                     <!-- Text -->
                     <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
@@ -62,7 +62,7 @@
           <div class="text-center mt-3">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <h1 class="title mb-0 text-capitalize fw-bold">
-                Laporan Status Gizi {{ kelurahan }} Bulan {{ thisMonth }}
+                Laporan Status Gizi {{ kelurahan }} Bulan {{ periodeLabel }}
               </h1>
             </div>
           </div>
@@ -133,7 +133,6 @@
                     {{ p.label }}
                   </option>
                 </select>
-
               </div>
 
               <!-- Tombol Cari -->
@@ -1203,7 +1202,13 @@
 @media (min-width: 992px) and (max-width: 1399.98px) {
   .col-lg-2 {
     flex: 0 0 auto;
-    width: 20%; /* 5 kolom */
+    width: 11.11%; /* 5 kolom */
+  }
+  .h4{
+    font-size: 8px !important;
+  }
+  .h6{
+    font-size: 8px !important;
   }
 }
 
@@ -1245,14 +1250,14 @@
 
   h6 {
     font-family: "Inter", sans-serif;
-    font-size: 0.75rem;
+    /* //font-size: 0.75rem; */
     margin: 0;
   }
 
   h4 {
     font-family: "Inter", sans-serif;
     color: #000;
-    font-size: 1.1rem;
+    /* font-size: 1.1rem; */
     margin: 0;
   }
 }
@@ -1263,26 +1268,10 @@
   justify-content: flex-end;
   align-items: flex-start;
   height: 60px;
-  h6 {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.75rem;
-    line-height: 1.1;
-    margin: 0;
-  }
-
-  h4 {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.25rem;
-    line-height: 1;
-    color: #000;
-    margin: 0;
-  }
-
   .spacer {
     flex: 1;
   }
 }
-
 
 </style>
 
@@ -2289,7 +2278,8 @@ export default {
               },
             },
             datalabels: {
-            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+              display: false,
+            //display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
             color: 'rgb(0, 0, 0)',      // solid hitam
             font: {
               size: 11,
@@ -2491,7 +2481,7 @@ export default {
         }
       });
     },
-    renderBarChart(periodeBulan = 3) {
+    renderBarChart(periodeBulan = 12) {
       const data = this.dataLoad_belum || [];
       if (!data.length) return;
 
@@ -3334,6 +3324,16 @@ export default {
         "...",
         total
       ];
+    },
+    periodeLabel() {
+      // Jika user pilih ALL → tampilkan bulan berjalan
+      if (!this.filters.periode) {
+        return new Date().toLocaleString("id-ID", { month: "long", year: "numeric" })
+      }
+
+      const [year, month] = this.filters.periode.split("-")
+      const date = new Date(year, month - 1, 1)
+      return date.toLocaleString("id-ID", { month: "long", year: "numeric" })
     }
   },
   created() {
@@ -3395,18 +3395,6 @@ export default {
 
       // 9️⃣ Pastikan filter kelurahan sudah terisi
       this.filters.kelurahan = this.kelurahan;
-
-      // 🔟 Simpan hasil awal ke filteredData sesuai tipe menu
-      // 🔹 Render chart awal (sesuai tipe menu aktif)
-      /* this.renderChart('pieChart_bb', this.dataTable_bb, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
-        ]);
-        this.renderChart('pieChart_tb', this.dataTable_tb, [
-          '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
-        ]);
-        this.renderChart('pieChart_status', this.dataTable_status, [
-          '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-        ]); */
 
       // 11️⃣ Setup resize listener untuk responsive
       this.handleResize();
