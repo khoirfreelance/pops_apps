@@ -2503,22 +2503,40 @@ export default {
       const data = this.dataLoad || [];
       if (!data.length) return;
 
-      const now = new Date();
-      const startDate = new Date();
-      startDate.setMonth(now.getMonth() - periodeBulan + 1);
+      // ============================================
+      // ⚡ CUT OFF DATE: ikut filter periode
+      // ============================================
+      let cutoff = new Date(); // default: bulan berjalan
+
+      if (this.filters?.periode) {
+        // Format: YYYY-MM
+        const [y, m] = this.filters.periode.split("-").map(Number);
+        cutoff = new Date(y, m - 1, 1); // tanggal 1 periode
+      }
+
+      // Hitung startDate: cutoff - (periodeBulan - 1)
+      const startDate = new Date(cutoff);
+      startDate.setMonth(cutoff.getMonth() - (periodeBulan - 1));
+
+      const endDate = new Date(cutoff); // sampai bulan cutoff saja
 
       const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
-      // 🔹 Persiapan data bulan
+      // ============================================
+      // 🔹 Persiapan data bulan (dinamis berdasarkan cutoff)
+      // ============================================
       const monthlyData = {};
       for (let i = 0; i < periodeBulan; i++) {
         const temp = new Date(startDate);
         temp.setMonth(startDate.getMonth() + i);
+
         const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2,'0')}`;
         monthlyData[key] = { giziGanda: 0 };
       }
 
-      // 🔹 Ambil semua kunjungan anak
+      // ============================================
+      // 🔹 Flatten data kunjungan
+      // ============================================
       const allKunjungan = data.flatMap(anak => {
         if (!anak.data_kunjungan) return [];
 
@@ -2534,22 +2552,30 @@ export default {
         }));
       });
 
-      // 🔹 Filter sesuai periode
-      const recent = allKunjungan.filter(k => k.tanggal >= startDate && k.tanggal <= now);
+      // ============================================
+      // 🔹 Filter sesuai range cutoff–startDate
+      // ============================================
+      const recent = allKunjungan.filter(k =>
+        k.tanggal >= startDate &&
+        k.tanggal <= new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0)
+      );
 
+      // ============================================
       // 🔥 Function cek gizi ganda
+      // ============================================
       const isGiziGanda = (bb_u, tb_u, bb_tb) => {
-        const notNormal = status => status && status !== 'Normal';
-
-        const nn_bb_u  = notNormal(bb_u);
-        const nn_tb_u  = notNormal(tb_u);
-        const nn_bb_tb = notNormal(bb_tb);
-
-        const count = [nn_bb_u, nn_tb_u, nn_bb_tb].filter(v => v).length;
-        return count >= 2; // minimal 2 status tidak normal
+        const notNormal = (x) => x && x !== "Normal";
+        const count = [
+          notNormal(bb_u),
+          notNormal(tb_u),
+          notNormal(bb_tb)
+        ].filter(Boolean).length;
+        return count >= 2;
       };
 
+      // ============================================
       // 🔹 Hitung gizi ganda per bulan
+      // ============================================
       recent.forEach(p => {
         const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2,'0')}`;
 
@@ -2558,15 +2584,20 @@ export default {
         }
       });
 
-      // 🔹 Siapkan data chart
+      // ============================================
+      // 🔹 Siapkan label dan dataset
+      // ============================================
       const sortedKeys = Object.keys(monthlyData).sort();
       const labels = sortedKeys.map(key => {
         const [, month] = key.split('-');
         return monthNames[parseInt(month) - 1];
       });
+
       const dataGiziGanda = sortedKeys.map(key => monthlyData[key].giziGanda);
 
+      // ============================================
       // 🔹 Render Chart
+      // ============================================
       if (this.lineChart) this.lineChart.destroy();
 
       const ctx = this.$refs.lineChart?.getContext('2d');
@@ -2590,20 +2621,37 @@ export default {
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } }
-          }
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
         }
       });
     },
-    renderBarChart(periodeBulan = 12) {
+    renderBarChart() {
       const data = this.dataLoad_belum || [];
       if (!data.length) return;
 
       const now = new Date();
       const startDate = new Date();
-      startDate.setMonth(now.getMonth() - periodeBulan);
 
+      // ===============================
+      // 🔥 DEFAULT CUT-OFF
+      // - Jika filter periode: gunakan bulan periode sebagai cut off
+      // - Jika tidak ada: gunakan 3 bulan terakhir dari bulan berjalan
+      // ===============================
+      if (this.filters?.periode) {
+        // format periode biasanya "2025-08" → ubah ke date
+        const [tahun, bulan] = this.filters.periode.split("-");
+        startDate.setFullYear(parseInt(tahun));
+        startDate.setMonth(parseInt(bulan) - 1); // bulan mulai dari 0
+        startDate.setDate(1); // awal bulan
+      } else {
+        // default 3 bulan terakhir berjalan
+        startDate.setMonth(now.getMonth() - 2);
+        startDate.setDate(1);
+      }
+
+      // ===============================
+      // 🔥 PROSES DATA POSYANDU
+      // ===============================
       const allPosyandu = data.flatMap(anak => {
         const kun = anak.data_kunjungan;
         if (!kun) return [];
@@ -2616,10 +2664,14 @@ export default {
 
       const allPosyanduNames = [...new Set(allPosyandu.map(p => p.posyandu || 'Tidak Diketahui'))];
 
+      // ===============================
+      // 🔥 FILTER DATA SESUAI CUT-OFF
+      // ===============================
       const recent = allPosyandu.filter(p => p.tanggal >= startDate && p.tanggal <= now);
 
       const posyanduCounts = {};
       allPosyanduNames.forEach(name => posyanduCounts[name] = 0);
+
       recent.forEach(p => {
         const key = p.posyandu || 'Tidak Diketahui';
         if (!p.bb_naik) posyanduCounts[key]++;
@@ -2632,7 +2684,9 @@ export default {
       const labels = top5.map(item => item[0]);
       const values = top5.map(item => item[1]);
 
-      // 🔹 Hancurkan chart lama sebelum buat baru
+      // ===============================
+      // 🔥 HANCURKAN CHART LAMA
+      // ===============================
       if (this.barChart) this.barChart.destroy();
 
       const ctx = this.$refs.barChart.getContext('2d');

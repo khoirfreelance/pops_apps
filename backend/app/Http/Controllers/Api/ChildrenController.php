@@ -368,19 +368,30 @@ class ChildrenController extends Controller
             }
 
             // ================================
-            // 6. HITUNG TREND 3 BULAN TERAKHIR
+            // 6. HITUNG TREND 3 BULAN TERAKHIR (DINAMIS DARI PERIODE)
             // ================================
             $trendCount = [];
+
+            // Tentukan cut-off
+            if ($request->filled('periode')) {
+                // periode format: YYYY-MM
+                $cutoff = Carbon::createFromFormat('Y-m', $request->periode)->startOfMonth();
+            } else {
+                $cutoff = now()->startOfMonth();
+            }
 
             foreach ($count as $status => $val) {
 
                 $trend = collect();
 
+                // Loop 3 bulan terakhir: cut-off -2 sampai cut-off
                 for ($i = 2; $i >= 0; $i--) {
-                    $tgl = now()->subMonths($i);
-                    $awal = $tgl->copy()->startOfMonth()->format('Y-m-d');
-                    $akhir = $tgl->copy()->endOfMonth()->format('Y-m-d');
 
+                    $tgl = $cutoff->copy()->subMonths($i);
+                    $awal = $tgl->startOfMonth()->format('Y-m-d');
+                    $akhir = $tgl->endOfMonth()->format('Y-m-d');
+
+                    // Ambil kunjungan bulan tersebut
                     $kunjunganBulan = Kunjungan::query()
                         ->where('kelurahan', $filterKelurahan)
                         ->whereDate('tgl_pengukuran', '>=', $awal)
@@ -418,6 +429,7 @@ class ChildrenController extends Controller
 
                 $trendCount[$status] = $trend;
             }
+
 
             // ================================
             // 7. Format output + TREND
@@ -1436,7 +1448,7 @@ class ChildrenController extends Controller
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
 
-        // 3. Default filter kelurahan user
+        // 3. Default filter kelurahan
         $filterKelurahan = $wilayah->kelurahan ?? null;
 
         $query = Kunjungan::query();
@@ -1444,7 +1456,7 @@ class ChildrenController extends Controller
             $query->where('kelurahan', $filterKelurahan);
         }
 
-        // 4. Filter manual
+        // Filter manual
         if ($request->filled('posyandu'))
             $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -1452,53 +1464,53 @@ class ChildrenController extends Controller
         if ($request->filled('rt'))
             $query->where('rt', $request->rt);
 
-        // 5. Filter periode
+        // 4. Filter periode
         if ($request->filled('periode')) {
             $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
             $query->whereYear('tgl_pengukuran', $tanggal->year)
                 ->whereMonth('tgl_pengukuran', $tanggal->month);
         } else {
+            // default H-1 bulan
             $query->whereYear('tgl_pengukuran', now()->subMonth()->year)
                 ->whereMonth('tgl_pengukuran', now()->subMonth()->month);
         }
 
-        // 6. Ambil seluruh data Kunjungan yg relevan
+        // 5. Ambil data Kunjungan
         $data = $query->get();
 
-        // 7. Hitung daftar anak case
+        // 6. Cari NIK anak kasus
         $nik_case = $data->filter(function ($item) {
             return $item->bb_u !== 'Normal'
                 || $item->tb_u !== 'Normal'
                 || $item->bb_tb !== 'Normal';
         })->pluck('nik')->unique();
 
-        // 8. Ambil intervensi untuk nik_case
+        // 7. Ambil intervensi untuk nik_case (tanpa filter)
         $intervensi = Intervensi::whereIn('nik_subjek', $nik_case)->get();
 
         $nik_intervensi = $intervensi->pluck('nik_subjek')->unique();
 
-        // 9. Hitung sudah & belum intervensi
-        $sudah_intervensi   = $nik_case->intersect($nik_intervensi)->count();
-        $belum_intervensi   = $nik_case->diff($nik_intervensi)->count();
+        $sudah_intervensi = $nik_case->intersect($nik_intervensi)->count();
+        $belum_intervensi = $nik_case->diff($nik_intervensi)->count();
 
         // Grouping lama
-        $bb_u_tb_u = $data->filter(fn($item) => $item->bb_u !== 'Normal' && $item->tb_u !== 'Normal')->count();
-        $tb_u_bb_tb = $data->filter(fn($item) => $item->tb_u !== 'Normal' && $item->bb_tb !== 'Normal')->count();
-        $bb_u_bb_tb = $data->filter(fn($item) => $item->bb_u !== 'Normal' && $item->bb_tb !== 'Normal')->count();
+        $bb_u_tb_u = $data->filter(fn($i) => $i->bb_u !== 'Normal' && $i->tb_u !== 'Normal')->count();
+        $tb_u_bb_tb = $data->filter(fn($i) => $i->tb_u !== 'Normal' && $i->bb_tb !== 'Normal')->count();
+        $bb_u_bb_tb = $data->filter(fn($i) => $i->bb_u !== 'Normal' && $i->bb_tb !== 'Normal')->count();
 
         return response()->json([
             'status' => 'success',
             'message' => 'Data anak berhasil dimuat',
 
             'grouping' => [
-                'bb_u_tb_u'   => $bb_u_tb_u,
-                'tb_u_bb_tb'  => $tb_u_bb_tb,
-                'bb_u_bb_tb'  => $bb_u_bb_tb,
+                'bb_u_tb_u'  => $bb_u_tb_u,
+                'tb_u_bb_tb' => $tb_u_bb_tb,
+                'bb_u_bb_tb' => $bb_u_bb_tb,
             ],
 
-            'totalCase'          => $nik_case->count(),
-            'sudahIntervensi'    => $sudah_intervensi,
-            'belumIntervensi'    => $belum_intervensi,
+            'totalCase'       => $nik_case->count(),
+            'sudahIntervensi' => $sudah_intervensi,
+            'belumIntervensi' => $belum_intervensi,
         ]);
     }
 
@@ -1519,7 +1531,6 @@ class ChildrenController extends Controller
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
 
-        // Filter default
         $filterKelurahan = $wilayah->kelurahan ?? null;
 
         // ==========================
@@ -1536,15 +1547,25 @@ class ChildrenController extends Controller
         if ($request->filled('rt'))
             $qKunjungan->where('rt', $request->rt);
 
-        // AMBIL DATA TERLEBIH DAHULU
+        // 🔥 Filter periode sama seperti case()
+        if ($request->filled('periode')) {
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            $qKunjungan->whereYear('tgl_pengukuran', $tanggal->year)
+                    ->whereMonth('tgl_pengukuran', $tanggal->month);
+        } else {
+            $qKunjungan->whereYear('tgl_pengukuran', now()->subMonth()->year)
+                    ->whereMonth('tgl_pengukuran', now()->subMonth()->month);
+        }
+
         $kunjungan = $qKunjungan->get();
 
-        // Cari semua anak kasus (≠ Normal)
+        // Cari anak kasus
         $nik_case = $kunjungan->filter(function ($item) {
             return $item->bb_u !== 'Normal'
                 || $item->tb_u !== 'Normal'
                 || $item->bb_tb !== 'Normal';
         })->pluck('nik')->unique();
+
 
         // ==========================
         // B. Query INTERVENSI
@@ -1558,14 +1579,24 @@ class ChildrenController extends Controller
         if ($request->filled('rt'))
             $qIntervensi->where('rt', $request->rt);
 
+        // 🔥 Filter periode sama dengan case()
+        if ($request->filled('periode')) {
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
+                        ->whereMonth('tgl_intervensi', $tanggal->month);
+        } else {
+            $qIntervensi->whereYear('tgl_intervensi', now()->subMonth()->year)
+                        ->whereMonth('tgl_intervensi', now()->subMonth()->month);
+        }
+
         $intervensi = $qIntervensi->get();
 
 
         // ==========================
         // C. GROUPING NIK
         // ==========================
-        $nikKunjungan   = $nik_case;//$kunjungan->pluck('nik')->unique();
-        $nikIntervensi  = $intervensi->pluck('nik_subjek')->unique();
+        $nikKunjungan  = $nik_case;
+        $nikIntervensi = $intervensi->pluck('nik_subjek')->unique();
 
         $punya_keduanya   = $nikKunjungan->intersect($nikIntervensi);
         $hanya_kunjungan  = $nikKunjungan->diff($nikIntervensi);
@@ -1573,10 +1604,10 @@ class ChildrenController extends Controller
 
 
         // ==========================
-        // D. Build DETAIL
+        // D. DETAIL DATA
         // ==========================
-        $mapKunjungan   = $kunjungan->keyBy('nik');
-        $mapIntervensi  = $intervensi->groupBy('nik_subjek');
+        $mapKunjungan  = $kunjungan->keyBy('nik');
+        $mapIntervensi = $intervensi->groupBy('nik_subjek');
 
         $detail_keduanya = $punya_keduanya->map(function ($nik) use ($mapKunjungan, $mapIntervensi) {
             return [
@@ -1611,23 +1642,23 @@ class ChildrenController extends Controller
             ];
         });
 
-
         return response()->json([
             'status' => 'success',
             'message' => 'Data intervensi & kunjungan berhasil dimuat',
 
             'grouping' => [
-                'punya_keduanya'    => $punya_keduanya->count(),
-                'hanya_kunjungan'   => $hanya_kunjungan->count(),
-                'hanya_intervensi'  => $hanya_intervensi->count(),
+                'punya_keduanya'   => $punya_keduanya->count(),
+                'hanya_kunjungan'  => $hanya_kunjungan->count(),
+                'hanya_intervensi' => $hanya_intervensi->count(),
             ],
 
             'detail' => [
-                'punya_keduanya'    => $detail_keduanya->values(),
-                'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
-                'hanya_intervensi'  => $detail_hanya_intervensi->values(),
+                'punya_keduanya'   => $detail_keduanya->values(),
+                'hanya_kunjungan'  => $detail_hanya_kunjungan->values(),
+                'hanya_intervensi' => $detail_hanya_intervensi->values(),
             ]
         ]);
     }
+
 
 }
