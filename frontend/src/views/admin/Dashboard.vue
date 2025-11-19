@@ -279,23 +279,17 @@
 
               <!-- Pie Chart-->
               <div class="container-fluid">
-                <div class="row">
-                  <!-- Judul -->
-                  <div class="col-12 mb-3">
-                    <h2 class="fw-bold text-success mb-3">
-                      Ringkasan Status Gizi Bulan
-                      {{ filters.periode ? periodeLabel : 'Ini' }}
-                    </h2>
-
-                  </div>
+                <!-- Row utama -->
+                <div class="row g-3 align-items-start">
 
                   <!-- Kolom Kiri: BB/U & TB/U -->
-                  <div class="col-12 col-xl-8">
+                  <div class="col-12 col-xl-8 d-flex flex-column gap-3">
+
                     <!-- Card BB/U -->
-                    <div class="card border-primary shadow-sm mb-3">
-                      <div class="card-body p-3">
+                    <div class="card border-primary shadow-sm h-100 d-flex flex-column">
+                      <div class="card-body p-3 d-flex flex-column">
                         <h5 class="fw-bold text-primary mb-3">Berat Badan / Usia</h5>
-                        <div class="row g-3 align-items-center">
+                        <div class="row g-3 flex-grow-1 align-items-stretch">
                           <div class="col-12 col-xl-7 table-responsive">
                             <table class="table table-borderless align-middle mb-0">
                               <thead>
@@ -309,30 +303,26 @@
                               </thead>
                               <tbody>
                                 <tr v-for="(row, index) in dataTable_bb" :key="index">
-                                  <td>
-                                    <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
-                                  </td>
+                                  <td><i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i></td>
                                   <td class="text-additional small">{{ row.status }}</td>
                                   <td class="text-additional small">{{ row.jumlah }}</td>
                                   <td class="text-additional small">{{ row.persen }} %</td>
                                   <td class="small" :class="row.trenClass">
-                                    <span v-if="row.tren !== '-'">
-                                      <i :class="row.trenIcon"></i> {{ row.tren }}
-                                    </span>
+                                    <span v-if="row.tren !== '-'"><i :class="row.trenIcon"></i> {{ row.tren }}</span>
                                     <span v-else>-</span>
                                   </td>
                                 </tr>
                               </tbody>
                               <tfoot>
                                 <tr>
-                                  <td colspan="4" class="pt-2">
+                                  <td colspan="4" class="small pt-2">
                                     <a href="/admin/dashboard/detail?tipe=bbu">Lihat Grafik Selengkapnya</a>
                                   </td>
                                 </tr>
                               </tfoot>
                             </table>
                           </div>
-                          <div class="col-12 col-xl-5 text-center">
+                          <div class="col-12 col-xl-5 d-flex justify-content-center align-items-end">
                             <canvas ref="pieChart_bb" class="mx-auto" style="max-width: 200px; max-height: 200px;"></canvas>
                           </div>
                         </div>
@@ -340,10 +330,10 @@
                     </div>
 
                     <!-- Card TB/U -->
-                    <div class="card border-primary shadow-sm mb-3">
-                      <div class="card-body p-3">
+                    <div class="card border-primary shadow-sm h-100 d-flex flex-column mt-5">
+                      <div class="card-body p-3 d-flex flex-column">
                         <h5 class="fw-bold text-primary mb-3">Tinggi Badan / Usia</h5>
-                        <div class="row g-3 align-items-center">
+                        <div class="row g-3 flex-grow-1 align-items-stretch">
                           <div class="col-12 col-xl-7 table-responsive">
                             <table class="table table-borderless align-middle mb-0">
                               <thead>
@@ -357,43 +347,40 @@
                               </thead>
                               <tbody>
                                 <tr v-for="(row, index) in dataTable_tb" :key="index">
-                                  <td>
-                                    <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
-                                  </td>
+                                  <td><i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i></td>
                                   <td class="text-additional small">{{ row.status }}</td>
                                   <td class="text-additional small">{{ row.jumlah }}</td>
                                   <td class="text-additional small">{{ row.persen }} %</td>
                                   <td class="small" :class="row.trenClass">
-                                    <span v-if="row.tren !== '-'">
-                                      <i :class="row.trenIcon"></i> {{ row.tren }}
-                                    </span>
+                                    <span v-if="row.tren !== '-'"><i :class="row.trenIcon"></i> {{ row.tren }}</span>
                                     <span v-else>-</span>
                                   </td>
                                 </tr>
                               </tbody>
                               <tfoot>
                                 <tr>
-                                  <td colspan="4" class="pt-2">
+                                  <td colspan="4" class="small pt-2">
                                     <a href="/admin/dashboard/detail?tipe=tbu">Lihat Grafik Selengkapnya</a>
                                   </td>
                                 </tr>
                               </tfoot>
                             </table>
                           </div>
-                          <div class="col-12 col-xl-5 text-center">
+                          <div class="col-12 col-xl-5 d-flex justify-content-center align-items-end">
                             <canvas ref="pieChart_tb" class="mx-auto" style="max-width: 200px; max-height: 200px;"></canvas>
                           </div>
                         </div>
                       </div>
                     </div>
+
                   </div>
 
                   <!-- Kolom Kanan: BB/TB -->
-                  <div class="col-12 col-xl-4">
-                    <div class="card border-primary shadow-sm mb-3">
-                      <div class="card-body p-3">
+                  <div class="col-12 col-xl-4 h-100 d-flex flex-column">
+                    <div class="card border-primary shadow-sm h-100 d-flex flex-column">
+                      <div class="card-body p-3 d-flex flex-column">
                         <h5 class="fw-bold text-primary mb-3">Berat Badan / Tinggi Badan</h5>
-                        <div class="row g-3">
+                        <div class="row g-3 flex-grow-1 align-items-stretch">
                           <div class="col-12 table-responsive">
                             <table class="table table-borderless align-middle mb-0">
                               <thead>
@@ -407,25 +394,21 @@
                               </thead>
                               <tbody>
                                 <tr v-for="(row, index) in dataTable_bbtb" :key="index">
-                                  <td>
-                                    <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
-                                  </td>
+                                  <td><i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i></td>
                                   <td class="text-additional small">{{ row.status }}</td>
                                   <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
                                   <td class="text-additional small">{{ row.persen ? row.persen + ' %' : '0 %' }}</td>
                                   <td class="small" :class="row.trenClass">
-                                    <span v-if="row.tren && row.tren !== '-'">
-                                      <i :class="row.trenIcon"></i> {{ row.tren }}
-                                    </span>
+                                    <span v-if="row.tren && row.tren !== '-'"><i :class="row.trenIcon"></i> {{ row.tren }}</span>
                                     <span v-else>-</span>
                                   </td>
                                 </tr>
                               </tbody>
                             </table>
                           </div>
-                          <div class="col-12 text-center">
+                          <div class="col-12 d-flex justify-content-center align-items-end flex-column">
                             <canvas ref="pieChart_status" class="mx-auto" style="max-width: 200px; max-height: 200px;"></canvas>
-                            <div class="mt-2">
+                            <div class="mt-2 text-center small">
                               <a href="/admin/dashboard/detail?tipe=bbtb">Lihat Grafik Selengkapnya</a>
                             </div>
                           </div>
@@ -433,7 +416,9 @@
                       </div>
                     </div>
                   </div>
+
                 </div>
+
               </div>
 
               <!-- Ringkasan -->
@@ -462,7 +447,7 @@
                             <button
                               class="small w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
                               style="border-bottom-width: 5px !important;"
-                              @click="toggleSudah(false)"
+
                             >
                               <span class="small text-danger" >Anak belum dapat Intervensi <br> {{ totalBelum }}</span>
                             </button>
@@ -470,7 +455,7 @@
                             <button
                               class="small w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
                               style="border-bottom-width: 5px !important;"
-                              @click="toggleSudah(true)"
+
                             >
                             <span class="small text-success">Anak sudah dapat Intervensi <br> {{ totalSudah }}</span>
 
@@ -526,34 +511,29 @@
 
                         <!-- BAWAH: TABEL -->
                         <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
-                          <div v-if="isSudah">
-                            <table class="table table-striped table-sm align-middle p-2">
+                            <table class="table table-striped table-sm align-middle">
                               <thead class="table-success">
                                 <tr>
-                                  <th class="text-center p-2">No</th>
-                                  <th class="text-center p-2" width="300">Nama</th>
-                                  <th class="text-center p-2">Jenis Intervensi</th>
-                                  <th class="text-center p-2">Stunting</th>
-                                  <th class="text-center p-2">Wasting</th>
-                                  <th class="text-center p-2">Underweight</th>
-                                  <th class="text-center p-2">BB Sangat</th>
-                                  <th class="text-center p-2">Overweight</th>
+                                  <th class="h4 text-center">No</th>
+                                  <th class="h4 text-center" width="300">Nama</th>
+                                  <th class="h4 text-center">Jenis Intervensi</th>
+                                  <th class="h4 text-center">Stunting</th>
+                                  <th class="h4 text-center">Wasting</th>
+                                  <th class="h4 text-center">Underweight</th>
+                                  <th class="h4 text-center">BB Sangat</th>
+                                  <th class="h4 text-center">Overweight</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr
-                                  v-for="(anak, i) in paginatedAnak"
-                                  :key="'load-' + i"
-                                  class="small text-center"
-                                >
-                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
+                                <tr v-for="(anak, i) in paginatedAnakGabungan" :key="i" class="small text-center">
+                                  <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
                                   <td>{{ anak.nama }}</td>
-                                  <td class="text-center">{{ anak.rumusan }}</td>
-                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                  <td class="text-center">{{ anak.rumusan || '' }}</td>
+                                  <td><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                                  <td><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                                  <td><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                                  <td><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                                  <td><i v-if="anak.overweight" class="bi bi-check2"></i></td>
                                 </tr>
                               </tbody>
                               <tfoot>
@@ -561,7 +541,7 @@
                                   <td colspan="100%" class="text-end">
                                     <button
                                       class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportToCSV(true)"
+                                      @click="exportCSV(true)"
                                     >
                                       <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                                       Export CSV
@@ -583,7 +563,7 @@
 
                                 <!-- Numbered pages + dots -->
                                 <li
-                                  v-for="(page, i) in paginationNumbersAnak"
+                                  v-for="(page, i) in paginationNumbersAnakGabungan"
                                   :key="i"
                                   class="page-item"
                                   :class="{ active: currentPage === page, disabled: page === '...' }"
@@ -605,83 +585,6 @@
 
                               </ul>
                             </nav>
-
-                          </div>
-                          <div v-else>
-                            <table class="table table-striped table-sm align-middle p-2 small">
-                              <thead class="table-success">
-                                <tr>
-                                  <th class="text-center p-2">No</th>
-                                  <th class="text-center p-2" width="300">Nama</th>
-                                  <th class="text-center p-2">Stunting</th>
-                                  <th class="text-center p-2">Wasting</th>
-                                  <th class="text-center p-2">Underweight</th>
-                                  <th class="text-center p-2">BB Sangat</th>
-                                  <th class="text-center p-2">Overweight</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(anak, i) in paginatedAnak_belum" :key="i">
-                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                  <td>{{ anak.nama }}</td>
-                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
-                                </tr>
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <td colspan="100%" class="text-end">
-                                    <button
-                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportToCSV(false)"
-                                    >
-                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Export CSV
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                            <!-- Pagination -->
-                            <nav>
-                              <ul class="pagination justify-content-center">
-
-                                <!-- Prev -->
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button class="page-link" @click="currentPage > 1 && currentPage--">
-                                    Previous
-                                  </button>
-                                </li>
-
-                                <!-- Numbered pages + dots -->
-                                <li
-                                  v-for="(page, i) in paginationNumbersAnak_belum"
-                                  :key="i"
-                                  class="page-item"
-                                  :class="{ active: currentPage === page, disabled: page === '...' }"
-                                >
-                                  <button
-                                    class="page-link"
-                                    @click="page !== '...' && (currentPage = page)"
-                                  >
-                                    {{ page }}
-                                  </button>
-                                </li>
-
-                                <!-- Next -->
-                                <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
-                                  <button class="page-link" @click="currentPage < totalPagesAnak && currentPage++">
-                                    Next
-                                  </button>
-                                </li>
-
-                              </ul>
-                            </nav>
-
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -1590,6 +1493,68 @@ export default {
   },
   methods: {
     // Mandatory
+    exportCSV() {
+      // ambil data gabungan filtered
+      const data = this.filteredAnakGabungan;
+
+      if (!data.length) {
+        alert("Tidak ada data untuk diexport!");
+        return;
+      }
+
+      // header CSV
+      const headers = [
+        "No",
+        "Nama",
+        "NIK",
+        "Nama Ortu",
+        "RT",
+        "RW",
+        "Posyandu",
+        "Rumusan",
+        "Stunting",
+        "Wasting",
+        "Underweight",
+        "BB Sangat",
+        "Overweight"
+      ];
+
+      // buat array baris
+      const rows = data.map((item, index) => {
+        const kunjungan = item.data_kunjungan || {};
+        return [
+          index + 1,
+          item.nama || "",
+          item.nik || "",
+          kunjungan.nama_ortu || "",
+          kunjungan.rt || "",
+          kunjungan.rw || "",
+          item.posyandu || "",
+          item.rumusan || "",
+          item.stunting ? "✓" : "",
+          item.wasting ? "✓" : "",
+          item.underweight ? "✓" : "",
+          item.bb_sangat ? "✓" : "",
+          item.overweight ? "✓" : ""
+        ];
+      });
+
+      // gabungkan header + rows
+      const csvContent = [headers, ...rows]
+        .map(e => e.map(v => `"${v}"`).join(",")) // wrap semua value di tanda kutip agar aman
+        .join("\n");
+
+      // buat blob dan link download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `data_anak_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    },
     setMenu(type) {
       this.activeMenu = type;
       this.hitungStatistik();
@@ -2365,9 +2330,9 @@ export default {
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  const label = context.label || '';
+                  //const label = context.label || '';
                   const value = context.parsed;
-                  return value > 0 ? [`${label}`, `${value}%`] : [];
+                  return value > 0 ? [`${value}%`] : [];
                 },
               },
             },
@@ -2728,7 +2693,7 @@ export default {
           "Bansos",
           "PMT",
           "Lainnya",
-          "Belum Mendapatkan Bantuan"
+          "Belum dapat Bantuan"
         ];
 
         // ==========================
@@ -3431,7 +3396,69 @@ export default {
       const [year, month] = this.filters.periode.split("-")
       const date = new Date(year, month - 1, 1)
       return date.toLocaleString("id-ID", { month: "long", year: "numeric" })
-    }
+    },
+
+    filteredAnakGabungan() {
+      if (!this.dataLoad) return [];
+
+      // gabungkan data sudah dan belum
+      const sudah = Array.isArray(this.dataLoad) ? this.dataLoad : Object.values(this.dataLoad);
+      const belum = Array.isArray(this.dataLoad_belum) ? this.dataLoad_belum : Object.values(this.dataLoad_belum);
+
+      // tambahkan property rumusan untuk yang belum intervensi
+      const belumDenganRumusan = belum.map(item => ({ ...item, rumusan: "Belum mendapatkan intervensi" }));
+
+      const arr = [...sudah, ...belumDenganRumusan];
+
+      // filter search
+      const q = this.searchQuery?.toLowerCase() ?? '';
+      return arr.filter(item => {
+        const nama = item.nama?.toLowerCase() || '';
+        const nik = item.nik || '';
+        const kunjungan = item.data_kunjungan || {};
+        const ortu = kunjungan.nama_ortu?.toLowerCase() || '';
+        const rt = kunjungan.rt?.toString() || '';
+        const rw = kunjungan.rw?.toString() || '';
+        const posyandu = item.posyandu?.toLowerCase() || '';
+
+        return (
+          nama.includes(q) ||
+          nik.includes(q) ||
+          ortu.includes(q) ||
+          rt.includes(q) ||
+          rw.includes(q) ||
+          posyandu.includes(q)
+        );
+      });
+    },
+
+    paginatedAnakGabungan() {
+      const filtered = this.filteredAnakGabungan;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    },
+
+    totalPagesAnakGabungan() {
+      return Math.ceil(this.filteredAnakGabungan.length / this.perPage);
+    },
+
+    paginationNumbersAnakGabungan() {
+      const total = this.totalPagesAnakGabungan;
+      const current = this.currentPage;
+      // eslint-disable-next-line no-unused-vars
+      const delta = 2;
+      let range = [];
+
+      if (total <= 3) {
+        for (let i = 1; i <= total; i++) range.push(i);
+        return range;
+      }
+
+      if (current <= 3) return [1, 2, 3, "...", total];
+      if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
+
+      return [1, "...", current - 1, current, current + 1, "...", total];
+    },
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
