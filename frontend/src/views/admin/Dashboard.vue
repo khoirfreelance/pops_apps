@@ -41,7 +41,7 @@
               <div
                 v-for="(stat, index) in stats"
                 :key="index"
-                class="col-xl-1_9 col-lg-2 col-md-3 col-sm-6 col-6"
+                class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-6 col-6"
               >
                 <div class="stat-card shadow-sm rounded h-100">
                   <h6 class="text-muted pt-2 ps-2">{{ stat.title }}</h6>
@@ -281,7 +281,10 @@
               <div class="container-fluid">
                 <!-- Row utama -->
                 <div class="row g-3 align-items-start">
-
+                  <!-- Judul -->
+                  <h2 class="fw-bold text-success">
+                    Komposisi Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
+                  </h2>
                   <!-- Kolom Kiri: BB/U & TB/U -->
                   <div class="col-12 col-xl-8 d-flex flex-column gap-3">
 
@@ -605,7 +608,7 @@
                     class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
                   >
                     <div
-                      class="card shadow-sm border-0 rounded-2 overflow-hidden h-100"
+                      class="card shadow-sm border-0 rounded-2"
                       :class="`border-start border-4 border-${item.color}`"
                     >
                       <div class="card-header">
@@ -615,13 +618,13 @@
                       <div class="card-body d-flex justify-content-between align-items-center">
 
                         <!-- 👇 Jika bukan card terakhir: tampilkan persentase -->
-                        <p
+                        <h5
                           v-if="index !== kesehatanData.bumil.length - 1"
                           class="mb-0"
                           :class="`text-${item.color}`"
                         >
                           {{ item.percent }}
-                        </p>
+                      </h5>
 
                         <!-- 👇 Card terakhir: icon -->
                         <h3 v-else class="my-auto">
@@ -1222,7 +1225,7 @@ label {
   }
   /* fallback grid untuk ukuran lain */
   @media (min-width: 992px) and (max-width: 1399.98px) {
-    .col-lg-2 {
+    .col-lg-2_custom {
       flex: 0 0 auto;
       width: 11.11%; /* 5 kolom */
     }
@@ -2341,8 +2344,8 @@ export default {
             //display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
             color: 'rgb(0, 0, 0)',      // solid hitam
             font: {
-              size: 11,
-              weight: 'bold',
+              size: 8,
+              weight: 'thin',
               opacity: 1,               // pastikan tidak transparan
             },
             backgroundColor: 'rgba(255,255,255,0)', // transparan di belakang teks
@@ -2693,7 +2696,7 @@ export default {
           "Bansos",
           "PMT",
           "Lainnya",
-          "Belum dapat Bantuan"
+          "Belum Mendapatkan Bantuan"
         ];
 
         // ==========================
@@ -2766,6 +2769,9 @@ export default {
                   autoSkip: false,     // ❗ wajib biar tidak disembunyikan
                   maxRotation: 0,
                   minRotation: 0,
+                  font: {
+                    size: 8       // ukuran font Y-axis
+                  }
                 },
                 afterFit: (scale) => {
                   scale.width = 130;   // tambah lebar area label
