@@ -205,66 +205,75 @@
 
             <!-- Tab Anak -->
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
-              <div class="container-fluid my-2 row">
-                <!-- RINGKASAN STATUS GIZI -->
-                <div class="col-md-8 d-flex flex-column">
-                  <!-- judul tetap di atas -->
-                  <h2 class="fw-bold text-success mb-3">Ringkasan Status Gizi Bulan Ini</h2>
+              <div class="container-fluid px-0 my-3">
+                <!-- Row utama tanpa gutter -->
+                <div class="row gx-2">
+                  <!-- RINGKASAN STATUS GIZI -->
+                  <div class="col-md-8 d-flex flex-column">
+                    <!-- Judul -->
+                    <h2 class="fw-bold text-success mb-4">
+                      Ringkasan Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
+                    </h2>
 
-                  <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1">
-                    <!-- GIZI CARDS -->
-                    <div class="col-lg-6 col-xl-10 col-md-6 col-sm-12">
-                      <div class="row justify-content-center">
-                        <div
-                          v-for="(item, index) in kesehatanData.anak"
-                          :key="index"
-                          class="col-xl-4 col-lg-6 col-sm-12 col-12 mb-3"
-                        >
+                    <!-- Row isi -->
+                    <div class="row g-2"> <!-- g-2 lebih kecil daripada gx-3 gy-3 -->
+
+                      <!-- GIZI CARDS -->
+                      <div class="col-12 col-md-10">
+                        <div class="row g-2">
                           <div
-                            class="card shadow-sm border-0 overflow-hidden"
-                            :class="`border-start border-4 border-${item.color}`"
+                            v-for="(item, index) in kesehatanData.anak"
+                            :key="index"
+                            class="col-6 col-lg-4"
                           >
-                            <div class="card-body py-3 d-flex justify-content-between">
-                              <div>
-                                <h3 class="fw-bold mb-1">{{ item.title }}</h3>
-                                <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
+                            <div
+                              class="card shadow-sm border-0 h-100"
+                              :class="`border-start border-4 border-${item.color}`"
+                            >
+                              <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                  <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                                  <p class="mb-0 small" :class="`text-${item.color}`">{{ item.percent }}</p>
+                                </div>
+                                <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
                               </div>
-                              <h2 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h2>
-                            </div>
-                            <div class="card-footer bg-transparent border-0 pt-0">
-                              <canvas :ref="'chart-' + index" height="50"></canvas>
+                              <div class="card-footer bg-transparent border-0 pt-0">
+                                <canvas :ref="'chart-' + index" height="45"></canvas>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <!-- TOTAL ANAK -->
-                    <div class="col-lg-6 col-xl-2 col-md-6 col-sm-12 d-flex">
-                      <div class="card text-center shadow-sm border p-2 w-100">
-                        <h2 class="text-muted my-4 fw-bold">Total Anak Balita</h2>
-                        <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                          <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
+                      <!-- TOTAL ANAK -->
+                      <div class="col-12 col-md-2 d-flex">
+                        <div class="card text-center shadow-sm border p-3 w-100 d-flex flex-column justify-content-between" >
+                          <!-- Judul selalu di atas -->
+                          <h5 class="text-muted fw-bold mb-2">Total Anak Balita</h5>
+
+                          <!-- Angka di tengah secara vertikal -->
+                          <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
+
+                          <!-- Icon di bawah -->
+                          <i class="bi bi-people fs-2 text-dark mt-2"></i>
                         </div>
-                        <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
                       </div>
                     </div>
                   </div>
 
-                </div>
-
-                <!-- INFO BOXES -->
-                <div class="col-md-4 mt-3 d-flex flex-column small">
-                  <div
-                    v-for="(box, idx) in infoBoxes"
-                    :key="idx"
-                    class="alert mb-2"
-                    :class="`alert-${box.type}`"
-                  >
-                    <strong >{{ box.title }}</strong><br />
-                    <span v-html="box.desc"></span> <!-- pakai v-html -->
+                  <!-- INFO BOXES -->
+                  <div class="col-md-4 mt-2 small">
+                    <div
+                      v-for="(box, idx) in infoBoxes"
+                      :key="idx"
+                      class="alert py-2 mb-2"
+                      :class="`alert-${box.type}`"
+                    >
+                      <strong>{{ box.title }}</strong><br />
+                      <span v-html="box.desc"></span>
+                    </div>
                   </div>
+
                 </div>
               </div>
 
@@ -273,7 +282,11 @@
                 <div class="row">
                   <!-- Judul -->
                   <div class="col-12 mb-3">
-                    <h2 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h2>
+                    <h2 class="fw-bold text-success mb-3">
+                      Ringkasan Status Gizi Bulan
+                      {{ filters.periode ? periodeLabel : 'Ini' }}
+                    </h2>
+
                   </div>
 
                   <!-- Kolom Kiri: BB/U & TB/U -->
