@@ -35,10 +35,10 @@
 
           <!-- Judul Laporan -->
           <div class="text-center mt-4">
-            <div class="bg-primary text-white py-1 px-4 d-inline-block rounded-top">
-              <h5 class="mb-0">
-                Laporan Status Gizi dan Stagnansi <span class="text-capitalize fw-bold">{{ kelurahan }}</span> Bulan <span class="fw-bold">{{ thisMonth }}</span>
-              </h5>
+            <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
+              <h1 class="title mb-0 text-capitalize fw-bold">
+                Laporan Status Gizi {{ kelurahan }} Bulan {{ periodeLabel }}
+              </h1>
             </div>
           </div>
 
@@ -1886,6 +1886,16 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   computed:{
+    periodeLabel() {
+      // Jika user pilih ALL → tampilkan bulan berjalan
+      if (!this.filters.periode) {
+        return new Date().toLocaleString("id-ID", { month: "long", year: "numeric" })
+      }
+
+      const [year, month] = this.filters.periode.split("-")
+      const date = new Date(year, month - 1, 1)
+      return date.toLocaleString("id-ID", { month: "long", year: "numeric" })
+    },
     underDisplayText() {
       const total = this.filters.bbu.length;
       const allSelected = total === this.bbuOptions.length;

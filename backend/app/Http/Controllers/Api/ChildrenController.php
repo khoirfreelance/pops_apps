@@ -22,33 +22,14 @@ class ChildrenController extends Controller
 
     public function index(Request $request)
     {
-        // Normalisasi format periode
-        if (!empty($filters['periodeAwal'])) {
-            try {
-                $filters['periodeAwal'] = \Carbon\Carbon::parse($filters['periodeAwal'])->startOfMonth()->format('Y-m-d');
-            } catch (\Exception $e) {
-                $filters['periodeAwal'] = null;
-            }
-        }
-
-        if (!empty($filters['periodeAkhir'])) {
-            try {
-                $filters['periodeAkhir'] = \Carbon\Carbon::parse($filters['periodeAkhir'])->endOfMonth()->format('Y-m-d');
-            } catch (\Exception $e) {
-                $filters['periodeAkhir'] = null;
-            }
-        }
-
         $user = Auth::user();
 
-        // ✅ 1. Cari data anggota_tpk user
         $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
 
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
 
-        // ✅ 2. Ambil posyandu dan wilayah
         $posyandu = $anggotaTPK->posyandu;
         $wilayah = $posyandu?->wilayah;
 
@@ -56,10 +37,8 @@ class ChildrenController extends Controller
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
 
-        // ✅ 3. Dapatkan kelurahan user
         $filterKelurahan = $wilayah->kelurahan ?? null;
 
-        // ✅ 4. Ambil semua filter dari request
         $filters = $request->only([
             'periodeAwal',
             'periodeAkhir',
@@ -73,8 +52,36 @@ class ChildrenController extends Controller
             'intervensi'
         ]);
 
-        // ✅ 5. KUNJUNGAN (utama)
-        $kunjungan = Kunjungan::query()
+        // ===============================
+        // 1️⃣ Subquery Pendampingan per NIK
+        // ===============================
+        $pendampinganSub = Child::selectRaw("
+            nik_anak,
+            GROUP_CONCAT(CONCAT(tgl_pendampingan, '|', petugas) SEPARATOR '||') as pendampingan_data
+        ")
+        ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
+        ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
+        ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
+        ->groupBy('nik_anak');
+
+        // ===============================
+        // 2️⃣ Subquery Intervensi per NIK
+        // ===============================
+        $intervensiSub = Intervensi::selectRaw("
+            nik_subjek,
+            GROUP_CONCAT(CONCAT(kategori, '|', tgl_intervensi, '|', bantuan) SEPARATOR '||') as intervensi_data
+        ")
+        ->when($filterKelurahan, fn($q) => $q->where('desa', $filterKelurahan))
+        ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
+        ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
+        ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
+        ->when($filters['intervensi'] ?? null, fn($q, $val) => $q->whereIn('kategori', (array) $val))
+        ->groupBy('nik_subjek');
+
+        // ===============================
+        // 3️⃣ Query utama Kunjungan
+        // ===============================
+        $kunjunganQuery = Kunjungan::query()
             ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
             ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '>=', $val))
             ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '<=', $val))
@@ -85,99 +92,47 @@ class ChildrenController extends Controller
             ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
             ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
             ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-            ->get();
+            ->leftJoinSub($pendampinganSub, 'p', 'p.nik_anak', '=', 'kunjungan.nik')
+            ->leftJoinSub($intervensiSub, 'i', 'i.nik_subjek', '=', 'kunjungan.nik')
+            ->select('kunjungan.*', 'p.pendampingan_data', 'i.intervensi_data');
 
-        // ✅ 6. PENDAMPINGAN
-        $pendampingan = Child::query()
-            ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '<=', $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
-            ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
-            ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
-            ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-            ->get();
+        $kunjunganData = $kunjunganQuery->get();
 
-        // ✅ 7. INTERVENSI
-        $intervensi = Intervensi::query()
-            ->when($filterKelurahan, fn($q) => $q->where('desa', $filterKelurahan))
-            ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '<=', $val))
-            ->when($filters['intervensi'] ?? null, fn($q, $val) => $q->whereIn('kategori', (array) $val))
-            ->get();
-
-        $grouped = [];
-
-        // 1️⃣ KUNJUNGAN — sumber utama data anak
-        foreach ($kunjungan as $item) {
-            $nik = $item->nik ?? $item->nik_ortu ?? '';
-            if (!$nik)
-                continue;
-
-            if (!isset($grouped[$nik])) {
-                $grouped[$nik] = [
-                    'id' => $item->id,
-                    'nama' => $item->nama_anak ?? '-',
-                    'nik' => $item->nik ?? '',
-                    'jk' => $item->jk ?? '-',
-                    'provinsi' => $item->provinsi ?? '-',
-                    'kota' => $item->kota ?? '-',
-                    'kecamatan' => $item->kecamatan ?? '-',
-                    'kelurahan' => $item->kelurahan ?? '-',
-                    'rw' => $item->rw ?? '-',
-                    'rt' => $item->rt ?? '-',
-                    'kelahiran' => [],
-                    'keluarga' => [],
-                    'pendampingan' => [],
-                    'posyandu' => [],
-                    'intervensi' => []
-                ];
+        // ===============================
+        // 4️⃣ Format hasil menjadi array per anak
+        // ===============================
+        $data_anak = $kunjunganData->map(function($item) {
+            // Parse pendampingan
+            $pendampinganArr = [];
+            if ($item->pendampingan_data) {
+                $pendampinganRaw = explode('||', $item->pendampingan_data);
+                foreach ($pendampinganRaw as $pd) {
+                    [$tgl, $kader] = explode('|', $pd);
+                    $pendampinganArr[] = [
+                        'tanggal' => $tgl,
+                        'kader' => $kader,
+                    ];
+                }
             }
 
-            $grouped[$nik]['posyandu'][] = [
-                'posyandu' => $item->posyandu,
-                'tgl_ukur' => $item->tgl_pengukuran,
-                'usia' => $item->usia_saat_ukur,
-                'bbu' => $item->bb_u,
-                'tbu' => $item->tb_u,
-                'bbtb' => $item->bb_tb,
-                'bb' => $item->bb,
-                'tb' => $item->tb,
-                'bb_naik' => $item->naik_berat_badan,
-            ];
+            // Parse intervensi
+            $intervensiArr = [];
+            if ($item->intervensi_data) {
+                $intervensiRaw = explode('||', $item->intervensi_data);
+                foreach ($intervensiRaw as $iv) {
+                    [$jenis, $tgl, $bantuan] = explode('|', $iv);
+                    $intervensiArr[] = [
+                        'jenis' => $jenis,
+                        'tgl_intervensi' => $tgl,
+                        'bantuan' => $bantuan,
+                    ];
+                }
+            }
 
-            $grouped[$nik]['kelahiran'][] = [
-                'tgl_lahir' => $item->tgl_lahir ?? '-',
-                'bb_lahir' => $item->bb_lahir ?? '-',
-                'pb_lahir' => $item->tb_lahir ?? '-',
-            ];
-
-            $grouped[$nik]['keluarga'][] = [
-                'nama_ayah' => $item->peran === 'Ayah' ? $item->nama_ortu : '-',
-                'nama_ibu' => $item->peran === 'Ibu' ? $item->nama_ortu : '-',
-                'pekerjaan_ayah' => '-',
-                'pekerjaan_ibu' => '-',
-                'usia_ayah' => '-',
-                'usia_ibu' => '-',
-                'anak_ke' => '-',
-            ];
-        }
-
-        // 2️⃣ PENDAMPINGAN
-        foreach ($pendampingan as $item) {
-            $nik = $item->nik_anak ?? $item->nik_ibu ?? '';
-            if (!$nik)
-                continue;
-
-            $grouped[$nik] ??= [
+            return [
                 'id' => $item->id,
                 'nama' => $item->nama_anak ?? '-',
-                'nik' => $item->nik_anak ?? '',
+                'nik' => $item->nik,
                 'jk' => $item->jk ?? '-',
                 'provinsi' => $item->provinsi ?? '-',
                 'kota' => $item->kota ?? '-',
@@ -185,71 +140,32 @@ class ChildrenController extends Controller
                 'kelurahan' => $item->kelurahan ?? '-',
                 'rw' => $item->rw ?? '-',
                 'rt' => $item->rt ?? '-',
-                'kelahiran' => [],
-                'keluarga' => [],
-                'pendampingan' => [],
-                'posyandu' => [],
-                'intervensi' => []
-            ];
-
-            $grouped[$nik]['pendampingan'][] = [
-                'kader' => $item->petugas ?? '-',
-                'tanggal' => $item->tgl_pendampingan ?? '-',
-            ];
-
-            if (empty($grouped[$nik]['keluarga'])) {
-                $grouped[$nik]['keluarga'][] = [
-                    'nama_ayah' => $item->nama_ayah ?? '-',
-                    'nama_ibu' => $item->nama_ibu ?? '-',
-                    'pekerjaan_ayah' => $item->pekerjaan_ayah ?? '-',
-                    'pekerjaan_ibu' => $item->pekerjaan_ibu ?? '-',
-                    'usia_ayah' => $item->usia_ayah ?? '-',
-                    'usia_ibu' => $item->usia_ibu ?? '-',
-                    'anak_ke' => $item->anak_ke ?? '-',
-                ];
-            }
-
-            if (empty($grouped[$nik]['kelahiran'])) {
-                $grouped[$nik]['kelahiran'][] = [
+                'kelahiran' => [
                     'tgl_lahir' => $item->tgl_lahir ?? '-',
                     'bb_lahir' => $item->bb_lahir ?? '-',
                     'pb_lahir' => $item->tb_lahir ?? '-',
-                ];
-            }
-        }
-
-        // 3️⃣ INTERVENSI
-        foreach ($intervensi as $item) {
-            $nik = $item->nik_subjek ?? $item->nik_wali ?? '';
-            if (!$nik)
-                continue;
-
-            $grouped[$nik] ??= [
-                'id' => $item->id,
-                'nama' => $item->nama_subjek ?? '-',
-                'nik' => $item->nik_subjek ?? '',
-                'jk' => $item->jk ?? '-',
-                'provinsi' => $item->desa ?? '-',
-                'kota' => '-',
-                'kecamatan' => '-',
-                'kelurahan' => '-',
-                'rw' => $item->rw ?? '-',
-                'rt' => $item->rt ?? '-',
-                'kelahiran' => [],
-                'keluarga' => [],
-                'pendampingan' => [],
-                'posyandu' => [],
-                'intervensi' => []
+                ],
+                'keluarga' => [
+                    'nama_ayah' => $item->nama_ayah ?? '-',
+                    'nama_ibu' => $item->nama_ibu ?? '-',
+                ],
+                'posyandu' => [
+                    [
+                        'posyandu' => $item->posyandu,
+                        'tgl_ukur' => $item->tgl_pengukuran,
+                        'usia' => $item->usia_saat_ukur,
+                        'bbu' => $item->bb_u,
+                        'tbu' => $item->tb_u,
+                        'bbtb' => $item->bb_tb,
+                        'bb' => $item->bb,
+                        'tb' => $item->tb,
+                        'bb_naik' => $item->naik_berat_badan,
+                    ]
+                ],
+                'pendampingan' => $pendampinganArr,
+                'intervensi' => $intervensiArr,
             ];
-
-            $grouped[$nik]['intervensi'][] = [
-                'jenis' => $item->kategori ?? '-',
-                'tgl_intervensi' => $item->tgl_intervensi ?? '-',
-                'bantuan' => $item->bantuan ?? '-',
-            ];
-        }
-
-        $data_anak = array_values($grouped);
+        });
 
         return response()->json([
             'status' => 'success',
@@ -293,6 +209,11 @@ class ChildrenController extends Controller
                 $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
+            } elseif($request->filled('periodeAwal') || $request->filled('periodeAkhir')){
+                $tanggalAwal = Carbon::createFromFormat('Y-m', $request->periodeAwal);
+                $tanggalAkhir = Carbon::createFromFormat('Y-m', $request->periodeAkhir);
+                $filters['periodeAwal']  = $tanggalAwal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAkhir'] = $tanggalAkhir->copy()->endOfMonth()->format('Y-m-d');
             } else {
                 $tanggal = now()->subMonth();
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');

@@ -73,8 +73,8 @@
               <!-- Kelurahan/Desa -->
               <div class="col-xl-2 col-lg-4 col-md-4 col-sm-12 col-12">
                 <label class="form-label fs-md-1">Kel/Desa</label>
-                <select v-model="filters.kelurahan" class="form-select text-muted" disabled>
-                  <option :value="kelurahan">{{ kelurahan }}</option>
+                <select v-model="filters.kelurahan" class="form-select text-muted small" disabled>
+                  <option :value="kelurahan" class="small">{{ kelurahan }}</option>
                 </select>
               </div>
 
@@ -209,28 +209,28 @@
                 <!-- RINGKASAN STATUS GIZI -->
                 <div class="col-md-8 d-flex flex-column">
                   <!-- judul tetap di atas -->
-                  <h5 class="fw-bold text-success mb-3">Ringkasan Status Gizi Bulan Ini</h5>
+                  <h2 class="fw-bold text-success mb-3">Ringkasan Status Gizi Bulan Ini</h2>
 
                   <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1 align-items-stretch">
+                  <div class="row flex-grow-1">
                     <!-- GIZI CARDS -->
-                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12 h-100">
-                      <div class="row justify-content-center h-100">
+                    <div class="col-lg-6 col-xl-10 col-md-6 col-sm-12">
+                      <div class="row justify-content-center">
                         <div
                           v-for="(item, index) in kesehatanData.anak"
                           :key="index"
                           class="col-xl-4 col-lg-6 col-sm-12 col-12 mb-3"
                         >
                           <div
-                            class="card shadow-sm border-0 rounded-3 overflow-hidden h-100"
+                            class="card shadow-sm border-0 overflow-hidden"
                             :class="`border-start border-4 border-${item.color}`"
                           >
                             <div class="card-body py-3 d-flex justify-content-between">
                               <div>
-                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                                <h3 class="fw-bold mb-1">{{ item.title }}</h3>
                                 <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
                               </div>
-                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                              <h2 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h2>
                             </div>
                             <div class="card-footer bg-transparent border-0 pt-0">
                               <canvas :ref="'chart-' + index" height="50"></canvas>
@@ -241,9 +241,9 @@
                     </div>
 
                     <!-- TOTAL ANAK -->
-                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-stretch">
-                      <div class="card text-center shadow-sm border p-2 w-100 h-100">
-                        <h6 class="text-muted my-4 fw-bold">Total Anak Balita</h6>
+                    <div class="col-lg-6 col-xl-2 col-md-6 col-sm-12 d-flex">
+                      <div class="card text-center shadow-sm border p-2 w-100">
+                        <h2 class="text-muted my-4 fw-bold">Total Anak Balita</h2>
                         <div class="flex-grow-1 d-flex flex-column justify-content-center">
                           <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
                         </div>
@@ -262,137 +262,160 @@
                     class="alert mb-2"
                     :class="`alert-${box.type}`"
                   >
-                    <strong>{{ box.title }}</strong><br />
+                    <strong >{{ box.title }}</strong><br />
                     <span v-html="box.desc"></span> <!-- pakai v-html -->
                   </div>
                 </div>
               </div>
 
               <!-- Pie Chart-->
-              <div class="container-fluid row">
-                <div class="col-md-12">
-                  <h5 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h5>
-                </div>
-                <div class="col-12 col-xl-8">
-                  <!-- Berat Badan / Usia -->
-                  <div class="card border border-primary shadow p-3 my-3">
-                    <h6 class="fw-bold text-primary">Berat Badan / Usia</h6>
-                    <div class="row">
-                      <!-- Table -->
-                      <div class="col-12 col-xl-7 table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <tbody>
-                            <tr>
-                              <td class="text-additional fw-semibold">Status</td>
-                              <td class="text-additional fw-semibold">Jumlah</td>
-                              <td class="text-additional fw-semibold">Persen</td>
-                              <td class="text-additional fw-semibold">Tren</td>
-                            </tr>
-                            <tr v-for="(row, index) in dataTable_bb" :key="index">
-                              <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah }}</td>
-                              <td class="text-additional small">{{ row.persen }} %</td>
-                              <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                          <tfoot>
-                            <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail?tipe=bbu">Lihat Grafik Selengkapnya</a></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
+              <div class="container-fluid">
+                <div class="row">
+                  <!-- Judul -->
+                  <div class="col-12 mb-3">
+                    <h2 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h2>
+                  </div>
 
-                      <!-- Chart -->
-                      <div class="col-12 col-xl-5 table-responsive text-center">
-                        <canvas ref="pieChart_bb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
+                  <!-- Kolom Kiri: BB/U & TB/U -->
+                  <div class="col-12 col-xl-8">
+                    <!-- Card BB/U -->
+                    <div class="card border-primary shadow-sm mb-3">
+                      <div class="card-body p-3">
+                        <h5 class="fw-bold text-primary mb-3">Berat Badan / Usia</h5>
+                        <div class="row g-3 align-items-center">
+                          <div class="col-12 col-xl-7 table-responsive">
+                            <table class="table table-borderless align-middle mb-0">
+                              <thead>
+                                <tr class="fw-semibold h5 text-additional">
+                                  <th>Ket</th>
+                                  <th>Status</th>
+                                  <th>Jumlah</th>
+                                  <th>Persen</th>
+                                  <th>Tren</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="(row, index) in dataTable_bb" :key="index">
+                                  <td>
+                                    <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
+                                  </td>
+                                  <td class="text-additional small">{{ row.status }}</td>
+                                  <td class="text-additional small">{{ row.jumlah }}</td>
+                                  <td class="text-additional small">{{ row.persen }} %</td>
+                                  <td class="small" :class="row.trenClass">
+                                    <span v-if="row.tren !== '-'">
+                                      <i :class="row.trenIcon"></i> {{ row.tren }}
+                                    </span>
+                                    <span v-else>-</span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="4" class="pt-2">
+                                    <a href="/admin/dashboard/detail?tipe=bbu">Lihat Grafik Selengkapnya</a>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                          <div class="col-12 col-xl-5 text-center">
+                            <canvas ref="pieChart_bb" class="mx-auto" style="max-width: 200px; max-height: 200px;"></canvas>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Card TB/U -->
+                    <div class="card border-primary shadow-sm mb-3">
+                      <div class="card-body p-3">
+                        <h5 class="fw-bold text-primary mb-3">Tinggi Badan / Usia</h5>
+                        <div class="row g-3 align-items-center">
+                          <div class="col-12 col-xl-7 table-responsive">
+                            <table class="table table-borderless align-middle mb-0">
+                              <thead>
+                                <tr class="fw-semibold h5 text-additional">
+                                  <th>Ket</th>
+                                  <th>Status</th>
+                                  <th>Jumlah</th>
+                                  <th>Persen</th>
+                                  <th>Tren</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="(row, index) in dataTable_tb" :key="index">
+                                  <td>
+                                    <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
+                                  </td>
+                                  <td class="text-additional small">{{ row.status }}</td>
+                                  <td class="text-additional small">{{ row.jumlah }}</td>
+                                  <td class="text-additional small">{{ row.persen }} %</td>
+                                  <td class="small" :class="row.trenClass">
+                                    <span v-if="row.tren !== '-'">
+                                      <i :class="row.trenIcon"></i> {{ row.tren }}
+                                    </span>
+                                    <span v-else>-</span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="4" class="pt-2">
+                                    <a href="/admin/dashboard/detail?tipe=tbu">Lihat Grafik Selengkapnya</a>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                          <div class="col-12 col-xl-5 text-center">
+                            <canvas ref="pieChart_tb" class="mx-auto" style="max-width: 200px; max-height: 200px;"></canvas>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Tinggi Badan / Usia -->
-                  <div class="card border border-primary shadow p-3 my-3">
-                    <h6 class="fw-bold text-primary">Tinggi Badan / Usia</h6>
-                    <div class="row">
-                      <div class="col-12 col-xl-7 table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <tbody>
-                            <tr>
-                              <td class="text-additional fw-bold">Status</td>
-                              <td class="text-additional fw-bold">Jumlah</td>
-                              <td class="text-additional fw-bold">Persen</td>
-                              <td class="text-additional fw-bold">Tren</td>
-                            </tr>
-                            <tr v-for="(row, index) in dataTable_tb" :key="index">
-                              <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah }}</td>
-                              <td class="text-additional small">{{ row.persen }} %</td>
-                              <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                          <tfoot>
-                            <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail?tipe=tbu">Lihat Grafik Selengkapnya</a></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                      <div class="col-12 col-xl-5 table-responsive text-center">
-                        <canvas ref="pieChart_tb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-12 col-xl-4">
-                  <!-- Berat Badan / Tinggi Badan -->
-                  <div class="card border border-primary shadow p-3 my-3">
-                    <h6 class="fw-bold text-primary">Berat Badan / Tinggi Badan</h6>
-                    <div class="row">
-                      <div class="col-12 table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <thead>
-                            <tr class="fw-semibold text-additional">
-                              <th class="text-additional">Status</th>
-                              <th class="text-additional">Jumlah</th>
-                              <th class="text-additional">Persen</th>
-                              <th class="text-additional">Tren</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(row, index) in dataTable_bbtb" :key="index">
-                              <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
-                              <td class="text-additional small">
-                                {{ row.persen ? row.persen + ' %' : '0 %' }}
-                              </td>
-                              <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren && row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="col-12 table-responsive text-center">
-                        <canvas
-                          ref="pieChart_status"
-                          class="mx-auto"
-                          style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"
-                        ></canvas>
-                        <div class="d-flex flex-wrap justify-content-between mt-3">
-                          <a href="/admin/dashboard/detail?tipe=bbtb">Lihat Grafik Selengkapnya</a>
+                  <!-- Kolom Kanan: BB/TB -->
+                  <div class="col-12 col-xl-4">
+                    <div class="card border-primary shadow-sm mb-3">
+                      <div class="card-body p-3">
+                        <h5 class="fw-bold text-primary mb-3">Berat Badan / Tinggi Badan</h5>
+                        <div class="row g-3">
+                          <div class="col-12 table-responsive">
+                            <table class="table table-borderless align-middle mb-0">
+                              <thead>
+                                <tr class="fw-semibold h5 text-additional">
+                                  <th>Ket</th>
+                                  <th>Status</th>
+                                  <th>Jumlah</th>
+                                  <th>Persen</th>
+                                  <th>Tren</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="(row, index) in dataTable_bbtb" :key="index">
+                                  <td>
+                                    <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
+                                  </td>
+                                  <td class="text-additional small">{{ row.status }}</td>
+                                  <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                                  <td class="text-additional small">{{ row.persen ? row.persen + ' %' : '0 %' }}</td>
+                                  <td class="small" :class="row.trenClass">
+                                    <span v-if="row.tren && row.tren !== '-'">
+                                      <i :class="row.trenIcon"></i> {{ row.tren }}
+                                    </span>
+                                    <span v-else>-</span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div class="col-12 text-center">
+                            <canvas ref="pieChart_status" class="mx-auto" style="max-width: 200px; max-height: 200px;"></canvas>
+                            <div class="mt-2">
+                              <a href="/admin/dashboard/detail?tipe=bbtb">Lihat Grafik Selengkapnya</a>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -404,7 +427,7 @@
               <div class="container-fluid mt-3">
                 <div class="row">
                   <div class="col-12 d-flex justify-content-between mb-2">
-                    <h5 class="fw-bold text-primary">Anak Dengan Masalah Gizi Ganda</h5>
+                    <h2 class="fw-bold text-primary">Anak Dengan Masalah Gizi Ganda</h2>
                   </div>
 
                   <!-- CARD UTAMA -->
@@ -413,12 +436,12 @@
 
                      <!-- HEADER -->
                       <div class="text-center position-relative mb-0">
-                        <h6
+                        <h1
                           class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
                           style="width: 55% !important;"
                         >
                           {{ totalKasus }} dengan Masalah Gizi Ganda
-                        </h6>
+                        </h1>
 
                         <!-- TAB NAV -->
                         <div class="container position-relative" style="margin-top: -2.5rem;">
@@ -428,7 +451,7 @@
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(false)"
                             >
-                              Anak belum dapat Intervensi <br> {{ totalBelum }}
+                              <span class="small text-danger">Anak belum dapat Intervensi <br> {{ totalBelum }}</span>
                             </button>
 
                             <button
@@ -436,7 +459,8 @@
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(true)"
                             >
-                              Anak sudah dapat Intervensi <br> {{ totalSudah }}
+                            <span class="small text-success">Anak sudah dapat Intervensi <br> {{ totalSudah }}</span>
+
                             </button>
                           </div>
                         </div>
@@ -449,10 +473,10 @@
                         <div class="col-md-4 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                             <div>
-                              <h6 class="text-center text-success mb-2">
+                              <h2 class="text-center text-success mb-2">
                                 Jumlah anak tidak membaik<br />
                                 <span class="fw-semibold">dalam {{ filterPeriode }} bulan terakhir</span>
-                              </h6>
+                              </h2>
                             </div>
                             <div class="chart-placeholder text-muted text-center mt-auto">
                               <canvas ref="lineChart" style="max-height: 250px;"></canvas>
@@ -463,7 +487,7 @@
                         <!-- TENGAH ATAS -->
                         <div class="col-md-4 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
+                            <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                             <div class="chart-placeholder text-muted text-center py-4">
                               <!-- <canvas v-if="isSudah" ref="sudahChart"></canvas> -->
                               <canvas ref="funnelChart"></canvas>
@@ -474,10 +498,10 @@
                         <!-- KANAN ATAS -->
                         <div class="col-md-4 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h6 class="text-center text-success mb-2">
+                            <h2 class="text-center text-success mb-2">
                               Top 5 Posyandu<br />
                               <span class="fw-semibold">dengan anak tidak membaik dalam {{filterPeriode}} bulan terakhir</span>
-                            </h6>
+                            </h2>
                             <div class="chart-placeholder text-muted text-center py-4">
                               <canvas ref="barChart"></canvas>
                             </div>
@@ -666,7 +690,7 @@
                       :class="`border-start border-4 border-${item.color}`"
                     >
                       <div class="card-header">
-                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                        <h2 class="fw-bold mb-1">{{ item.title }}</h2>
                       </div>
 
                       <div class="card-body d-flex justify-content-between align-items-center">
@@ -717,7 +741,7 @@
 
               <!-- Tren -->
               <div class="container-fluid">
-                <h5 class="fw-bold text-primary mb-3">Status Kesehatan Ibu Hamil</h5>
+                <h2 class="fw-bold text-primary mb-3">Status Kesehatan Ibu Hamil</h2>
 
                 <!-- Row utama: tabel & chart berdampingan -->
                 <div class="row g-3">
@@ -791,7 +815,7 @@
               <div class="container-fluid mt-3">
                 <div class="row">
                   <div class="col-12 d-flex justify-content-start mb-2">
-                    <h5 class="fw-bold text-primary">Ibu Hamil dengan masalah Kesehatan Ganda</h5>
+                    <h2 class="fw-bold text-primary">Ibu Hamil dengan masalah Kesehatan Ganda</h2>
                   </div>
 
                   <!-- CARD UTAMA -->
@@ -800,12 +824,12 @@
 
                     <!-- HEADER -->
                       <div class="text-center position-relative mb-0">
-                        <h6
+                        <h2
                           class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
                           style="width: 55% !important;"
                         >
                           {{ totalKasus }} dengan Masalah Gizi Ganda
-                        </h6>
+                        </h2>
 
                         <!-- TAB NAV -->
                         <div class="container position-relative" style="margin-top: -2.5rem;">
@@ -836,9 +860,9 @@
                         <div class="col-md-6 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                             <div>
-                              <h6 class="text-center text-success mb-2">
+                              <h2 class="text-center text-success mb-2">
                                 Grafik tren Ibu Hamil
-                              </h6>
+                              </h2>
                             </div>
                             <div class="chart-placeholder text-muted text-center mt-auto">
                               <canvas ref="bumilTrendChart" style="max-height: 280px; min-height: 200px !important;height: 100% !important;width: 100% !important;"></canvas>
@@ -849,7 +873,7 @@
                         <!-- TENGAH ATAS -->
                         <div class="col-md-6 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
+                            <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                             <div class="chart-placeholder text-muted text-center py-4">
                               <div class="text-center text-muted" v-if="noIntervensiMessage">
                                 {{ noIntervensiMessage }}
@@ -1013,7 +1037,7 @@
                       >
                         <!-- Judul -->
                         <div class="card-header">
-                          <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                          <h2 class="fw-bold mb-1">{{ item.title }}</h2>
                         </div>
 
                         <!-- Body -->
@@ -1056,7 +1080,7 @@
 
               <!-- TREN -->
               <div class="container-fluid">
-                <h5 class="fw-bold text-primary mb-3">Status Kesehatan Calon Pengantin</h5>
+                <h2 class="fw-bold text-primary mb-3">Status Kesehatan Calon Pengantin</h2>
 
                 <!-- Row utama: tabel-->
                 <div class="row g-3">
@@ -1266,7 +1290,7 @@
         border-radius: 8px;
         width: 25px !important;
         height: 25px !important;
-        font-size: 8px !important;
+        font-size: 12px !important;
         flex-shrink: 0;
       }
 
@@ -1367,8 +1391,8 @@
         background-color: var(--bs-secondary);
         color: #fff;
         border-radius: 8px;
-        width: 25px !important;
-        height: 25px !important;
+        width: 30px !important;
+        height: 30px !important;
         font-size: 12px !important;
         flex-shrink: 0;
       }
@@ -1979,7 +2003,6 @@ export default {
         };
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
-
         let res = null;
 
         switch (this.activeMenu) {
@@ -1996,17 +2019,103 @@ export default {
             return;
         }
 
-        //console.log('debug datatable :', res.data);
+        // ==================== ANAK ====================
+        if (this.activeMenu === 'anak') {
+          // ----- BB/U -----
+          const bbCurrent = res.data.bb?.data?.current || {};
+          const bbLast = res.data.bb?.data?.previous || {};
+          const totalCurrent = res.data.bb?.total?.current || 0;
+          const bbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b'];
 
-        // =============================
-        //  B U M I L
-        // =============================
+          this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah], idx) => {
+            const prevValue = bbLast[status] ?? 0;
+            const diff = jumlah - prevValue;
+
+            let tren = "-", trenIcon = "", trenClass = "";
+            if (prevValue === 0 && jumlah === 0) tren = "-";
+            else if (diff > 0) { tren = prevValue === 0 ? "100.00%" : ((diff / prevValue) * 100).toFixed(2) + "%"; trenIcon="bi bi-caret-up-fill"; trenClass="text-danger"; }
+            else if (diff < 0) { tren = prevValue === 0 ? "100.00%" : ((diff / prevValue) * 100).toFixed(2) + "%"; trenIcon="bi bi-caret-down-fill"; trenClass="text-success"; }
+            else { tren="0.00%"; trenIcon="bi bi-caret-right-fill"; trenClass="text-secondary"; }
+
+            return {
+              status,
+              jumlah,
+              persen: totalCurrent > 0 ? ((jumlah / totalCurrent) * 100).toFixed(1) : 0,
+              tren,
+              trenIcon,
+              trenClass,
+              color: bbColors[idx % bbColors.length], // warna slice sinkron dengan chart
+            };
+          });
+
+          // ----- TB/U -----
+          const tbCurrent = res.data.tb?.data?.current || {};
+          const tbLast = res.data.tb?.data?.previous || {};
+          const totalCurrentTB = res.data.tb?.total?.current || 0;
+          const tbColors = ['#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b'];
+
+          this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah], idx) => {
+            const prevValue = tbLast[status] ?? 0;
+            const diff = jumlah - prevValue;
+
+            let tren = "-", trenIcon = "", trenClass = "";
+            if (prevValue === 0 && jumlah === 0) tren = "-";
+            else if (diff > 0) { tren = prevValue === 0 ? "100.00%" : ((diff / prevValue) * 100).toFixed(2) + "%"; trenIcon="bi bi-caret-up-fill"; trenClass="text-danger"; }
+            else if (diff < 0) { tren = prevValue === 0 ? "100.00%" : ((diff / prevValue) * 100).toFixed(2) + "%"; trenIcon="bi bi-caret-down-fill"; trenClass="text-success"; }
+            else { tren="0.00%"; trenIcon="bi bi-caret-right-fill"; trenClass="text-secondary"; }
+
+            return {
+              status,
+              jumlah,
+              persen: totalCurrentTB > 0 ? ((jumlah / totalCurrentTB) * 100).toFixed(1) : 0,
+              tren,
+              trenIcon,
+              trenClass,
+              color: tbColors[idx % tbColors.length],
+            };
+          });
+
+          // ----- BB/TB -----
+          const bbtbCurrent = res.data.bbtb?.data?.current || {};
+          const bbtbLast = res.data.bbtb?.data?.previous || {};
+          const totalCurrentBBTB = res.data.bbtb?.total?.current || 0;
+          const bbtbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd'];
+
+          this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah], idx) => {
+            const prevValue = bbtbLast[status] ?? 0;
+            const diff = jumlah - prevValue;
+
+            let tren = "-", trenIcon = "", trenClass = "";
+            if (prevValue === 0 && jumlah === 0) tren = "-";
+            else if (diff > 0) { tren = prevValue === 0 ? "100.00%" : ((diff / prevValue) * 100).toFixed(2) + "%"; trenIcon="bi bi-caret-up-fill"; trenClass="text-danger"; }
+            else if (diff < 0) { tren = prevValue === 0 ? "100.00%" : ((diff / prevValue) * 100).toFixed(2) + "%"; trenIcon="bi bi-caret-down-fill"; trenClass="text-success"; }
+            else { tren="0.00%"; trenIcon="bi bi-caret-right-fill"; trenClass="text-secondary"; }
+
+            return {
+              status,
+              jumlah,
+              persen: totalCurrentBBTB > 0 ? ((jumlah / totalCurrentBBTB) * 100).toFixed(1) : 0,
+              tren,
+              trenIcon,
+              trenClass,
+              color: bbtbColors[idx % bbtbColors.length],
+            };
+          });
+
+          // ==================== Render Pie Chart ====================
+          this.$nextTick(() => {
+            this.renderChart('pieChart_bb', this.dataTable_bb, this.dataTable_bb.map(r=>r.color));
+            this.renderChart('pieChart_tb', this.dataTable_tb, this.dataTable_tb.map(r=>r.color));
+            this.renderChart('pieChart_status', this.dataTable_bbtb, this.dataTable_bbtb.map(r=>r.color));
+          });
+        }
+
+        // ==================== BUMIL & CATIN (tidak perlu warna pie dinamis) ====================
         if (this.activeMenu === 'bumil') {
           this.dataTable_bumil = (res.data.dataTable_bumil || []).map(row => ({
             status: row.status || '-',
             jumlah: row.jumlah ?? 0,
             persen: row.persen ?? 0,
-
             tren: row.tren ?? '-',
             trenIcon: row.trenIcon ?? '',
             trenClass: row.trenClass ?? '',
@@ -2015,211 +2124,16 @@ export default {
 
         if (this.activeMenu === 'catin') {
           const dataCatin = res.data.dataTable_catin;
-
           this.dataTable_catin = Array.isArray(dataCatin)
-          ? dataCatin
-          : Object.values(dataCatin || {})
-            .map(row => ({
-              status: row.status || '-',
-              jumlah: row.jumlah ?? 0,
-              persen: row.persen ?? 0,
-              tren: row.tren ?? '-',
-              trenIcon: row.trenIcon ?? '',
-              trenClass: row.trenClass ?? '',
-            }));
-
-        }
-
-        if (this.activeMenu === 'anak') {
-
-          // ==================== BB/U ====================
-          const bbCurrent = res.data.bb?.data?.current || {};
-          const bbLast = res.data.bb?.data?.previous || {};
-
-          const totalCurrent = res.data.bb?.total?.current || 0;
-
-          this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah]) => {
-            const prevValue = bbLast[status] ?? 0;
-            const diff = jumlah - prevValue;
-
-            let tren = "-";
-            let trenIcon = "";
-            let trenClass = "";
-
-            if (prevValue === 0 && jumlah === 0) {
-              tren = "-";
-              trenIcon = "";
-              trenClass = "";
-            }
-            else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
-              else
-                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-              trenIcon = "bi bi-caret-up-fill";
-              trenClass = "text-danger";
-            }
-            else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
-              else
-                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-                trenIcon = "bi bi-caret-down-fill";
-                trenClass = "text-success";
-            }
-            else {
-              tren = "0.00%";
-              trenIcon = "bi bi-caret-right-fill";
-              trenClass = "text-secondary";
-            }
-
-
-            const persen = totalCurrent === 0 ? 0 : ((jumlah / totalCurrent) * 100).toFixed(2);
-
-            return {
-              status,
-              jumlah,
-              persen,
-              tren,
-              trenIcon,
-              trenClass,
-            };
-          });
-
-          const totalBB = res.data.bb?.total?.current || 0;
-          this.dataTable_bb = this.dataTable_bb.map(row => ({
-            ...row,
-            persen: totalBB > 0 ? ((row.jumlah / totalBB) * 100).toFixed(1) : 0
-          }));
-
-          // ==================== TB/U ====================
-          const tbCurrent = res.data.tb?.data?.current || {};
-          const tbLast = res.data.tb?.data?.previous || {};
-
-          const totalCurrentTB = res.data.tb?.total?.current || 0;
-
-
-          this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah]) => {
-            const prevValue = tbLast[status] ?? 0;
-            const diff = jumlah - prevValue;
-
-            let tren = "-";
-            let trenIcon = "";
-            let trenClass = "";
-
-            if (prevValue === 0 && jumlah === 0) {
-              tren = "-";
-              trenIcon = "";
-              trenClass = "";
-            }
-            else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
-              else
-                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-              trenIcon = "bi bi-caret-up-fill";
-              trenClass = "text-danger";
-            }
-            else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
-              else
-                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-              trenIcon = "bi bi-caret-down-fill";
-              trenClass = "text-success";
-            }
-            else {
-              tren = "0.00%";
-              trenIcon = "bi bi-caret-right-fill";
-              trenClass = "text-secondary";
-            }
-
-
-            const persen = totalCurrentTB === 0 ? 0 : ((jumlah / totalCurrentTB) * 100).toFixed(2);
-
-            return {
-              status,
-              jumlah,
-              persen,
-              tren,
-              trenIcon,
-              trenClass,
-            };
-          });
-
-          const totalTB = res.data.tb?.total?.current || 0;
-          this.dataTable_tb = this.dataTable_tb.map(row => ({
-            ...row,
-            persen: totalTB > 0 ? ((row.jumlah / totalTB) * 100).toFixed(1) : 0
-          }));
-
-          // ==================== BB/TB ====================
-          const bbtbCurrent = res.data.bbtb?.data?.current || {};
-          const bbtbLast = res.data.bbtb?.data?.previous || {};
-
-          const totalCurrentBBTB = res.data.bbtb?.total?.current || 0;
-
-          this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah]) => {
-            const prevValue = bbtbLast[status] ?? 0;
-            const diff = jumlah - prevValue;
-
-            let tren = "-";
-            let trenIcon = "";
-            let trenClass = "";
-
-            if (prevValue === 0 && jumlah === 0) {
-              tren = "-";
-              trenIcon = "";
-              trenClass = "";
-            }
-            else if (diff > 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
-              else
-                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-              trenIcon = "bi bi-caret-up-fill";
-              trenClass = "text-danger";
-            }
-            else if (diff < 0) {
-              if (prevValue === 0 && jumlah > 0) tren = (100).toFixed(2) + '%';
-              else
-                tren = ((diff / prevValue) * 100).toFixed(2) + '%';
-              trenIcon = "bi bi-caret-down-fill";
-              trenClass = "text-success";
-            }
-            else {
-              tren = "0.00%";
-              trenIcon = "bi bi-caret-right-fill";
-              trenClass = "text-secondary";
-            }
-
-
-            const persen = totalCurrentBBTB === 0 ? 0 : ((jumlah / totalCurrentBBTB) * 100).toFixed(2);
-
-            return {
-              status,
-              jumlah,
-              persen,
-              tren,
-              trenIcon,
-              trenClass,
-            };
-          });
-
-          const totalBBTB = res.data.bbtb?.total?.current || 0;
-          this.dataTable_bbtb = this.dataTable_bbtb.map(row => ({
-            ...row,
-            persen: totalBBTB > 0 ? ((row.jumlah / totalBBTB) * 100).toFixed(1) : 0
-          }));
-
-          // ==================== Render Pie Chart ====================
-          this.$nextTick(() => {
-            this.renderChart('pieChart_bb', this.dataTable_bb, [
-              '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b',
-            ]);
-            this.renderChart('pieChart_tb', this.dataTable_tb, [
-              '#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b',
-            ]);
-            this.renderChart('pieChart_status', this.dataTable_bbtb, [
-              '#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd',
-            ]);
-          });
-
+            ? dataCatin
+            : Object.values(dataCatin || {}).map(row => ({
+                status: row.status || '-',
+                jumlah: row.jumlah ?? 0,
+                persen: row.persen ?? 0,
+                tren: row.tren ?? '-',
+                trenIcon: row.trenIcon ?? '',
+                trenClass: row.trenClass ?? '',
+              }));
         }
       } catch (e) {
         this.showError('Error Ambil Data', e);
@@ -2383,12 +2297,19 @@ export default {
         },
         options: {
           responsive: true,
-          layout: { padding: 15 },
+          layout: { padding: 10 },
           plugins: {
             legend: {
-              display: true,
+              display: false,
               position: 'bottom',
               align: 'start',
+              labels: {
+                font: {
+                  size: 10 // ubah angka sesuai kebutuhan
+                },
+                //boxWidth: 12,       // lebar kotak indikator
+                maxWidth: 75
+              },
             },
             tooltip: {
               callbacks: {

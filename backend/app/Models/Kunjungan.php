@@ -59,4 +59,14 @@ class Kunjungan extends Model
         'kpsp',
         'no_kk'
     ];
+
+    public function pendampingan()
+    {
+        return $this->hasMany(Child::class, 'nik_anak', 'nik');
+    }
+
+    public function intervensi()
+    {
+        return $this->hasMany(Intervensi::class, 'nik_subjek', 'nik');
+    }
 }
