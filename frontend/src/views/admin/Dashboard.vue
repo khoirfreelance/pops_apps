@@ -464,7 +464,7 @@
                               style="border-bottom-width: 5px !important;"
                               @click="toggleSudah(false)"
                             >
-                              <span class="small text-danger">Anak belum dapat Intervensi <br> {{ totalBelum }}</span>
+                              <span class="small text-danger" >Anak belum dapat Intervensi <br> {{ totalBelum }}</span>
                             </button>
 
                             <button
@@ -486,10 +486,10 @@
                         <div class="col-md-4 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                             <div>
-                              <h2 class="text-center text-success mb-2">
+                              <h3 class="text-center text-success mb-2">
                                 Jumlah anak tidak membaik<br />
                                 <span class="fw-semibold">dalam {{ filterPeriode }} bulan terakhir</span>
-                              </h2>
+                              </h3>
                             </div>
                             <div class="chart-placeholder text-muted text-center mt-auto">
                               <canvas ref="lineChart" style="max-height: 250px;"></canvas>
@@ -500,10 +500,13 @@
                         <!-- TENGAH ATAS -->
                         <div class="col-md-4 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
+                            <h3 class="text-center text-success mb-2">Diagram Intervensi</h3>
                             <div class="chart-placeholder text-muted text-center py-4">
                               <!-- <canvas v-if="isSudah" ref="sudahChart"></canvas> -->
-                              <canvas ref="funnelChart"></canvas>
+                               <div class="table-responsive">
+                                <canvas ref="funnelChart"></canvas>
+                               </div>
+
                             </div>
                           </div>
                         </div>
@@ -511,10 +514,10 @@
                         <!-- KANAN ATAS -->
                         <div class="col-md-4 col-sm-12">
                           <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h2 class="text-center text-success mb-2">
+                            <h3 class="text-center text-success mb-2">
                               Top 5 Posyandu<br />
                               <span class="fw-semibold">dengan anak tidak membaik dalam {{filterPeriode}} bulan terakhir</span>
-                            </h2>
+                            </h3>
                             <div class="chart-placeholder text-muted text-center py-4">
                               <canvas ref="barChart"></canvas>
                             </div>
@@ -1167,6 +1170,41 @@
 </template>
 
 <style scoped>
+/* ============================= */
+/* DEFAULT UNTUK LAYAR ≥ 1300px */
+/* ============================= */
+.form-control, /* input, textarea */
+.form-select,
+button {
+  font-size: 0.9rem;
+}
+
+label {
+  font-size: 0.9rem;   /* label proporsional */
+}
+
+/* ============================= */
+/* UNTUK LAYAR < 1300px */
+/* ============================= */
+@media (max-width: 1299px) {
+  .form-control,
+  .form-select,
+  button {
+    font-size: 0.75rem;
+  }
+
+  label {
+    font-size: 0.75rem;   /* label lebih kecil */
+  }
+}
+
+/* disabled select tetap proporsional */
+.form-select:disabled {
+  opacity: 1;
+  background-color: #f8f9fa;
+}
+
+
   .sticky-filter {
     position: sticky;
     top: 75px; /* sesuaikan dengan tinggi HeaderAdmin kamu */
@@ -2644,7 +2682,14 @@ export default {
           plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true },
-            x: { title: { display: true, text: "Posyandu" } }
+            x: { title: { display: false } }
+          },
+          ticks: {
+            autoSkip: false,   // jangan skip label
+            font: {
+              size: 8,       // perkecil font
+              weight: "normal"
+            }
           }
         }
       });
@@ -2750,6 +2795,19 @@ export default {
           },
           options: {
             indexAxis: "y",
+            scales: {
+              y: {
+                ticks: {
+                  autoSkip: false,     // ❗ wajib biar tidak disembunyikan
+                  maxRotation: 0,
+                  minRotation: 0,
+                },
+                afterFit: (scale) => {
+                  scale.width = 130;   // tambah lebar area label
+                }
+              },
+              x: { beginAtZero: true }
+            },
             plugins: {
               legend: { display: false },
               datalabels: {
@@ -2760,7 +2818,6 @@ export default {
                 formatter: v => v || "0"
               }
             },
-            scales: { x: { beginAtZero: true } }
           }
         });
       });
