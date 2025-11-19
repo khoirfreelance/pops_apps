@@ -1253,7 +1253,7 @@
       border-top: 4px solid var(--bs-secondary);
       height: 90px; /* proporsional */
       transition: all 0.2s ease-in-out;
-      max-width: 80px;
+      max-width: 120px;
 
       &:hover {
         transform: translateY(-2px);
@@ -1266,20 +1266,20 @@
         border-radius: 8px;
         width: 25px !important;
         height: 25px !important;
-        font-size: 12px !important;
+        font-size: 8px !important;
         flex-shrink: 0;
       }
 
       h6 {
         font-family: "Inter", sans-serif;
-        font-size: 14px !important;
+        font-size: 10px !important;
         margin: 0;
       }
 
       h4 {
         font-family: "Inter", sans-serif;
         color: #000;
-        font-size: 12px !important;
+        font-size: 14px !important;
         margin: 0;
       }
     }
