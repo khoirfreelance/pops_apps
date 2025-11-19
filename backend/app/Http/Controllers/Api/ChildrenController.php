@@ -459,7 +459,6 @@ class ChildrenController extends Controller
         }
     }
 
-
     public function infoBoxes(Request $request)
     {
         $user = Auth::user();
@@ -569,7 +568,6 @@ class ChildrenController extends Controller
 
         $nikPMT = \App\Models\Intervensi::where('status_subjek','anak')
             ->whereIn('nik_subjek', $nikBermasalah)
-            ->whereRaw("UPPER(kategori)='PMT'")
             ->pluck('nik_subjek')
             ->toArray();
 
@@ -689,8 +687,8 @@ class ChildrenController extends Controller
                 ],
                 [
                     'type'  => 'warning',
-                    'title' => 'Intervensi PMT Kurang',
-                    'desc'  => "{$intervensiKurang} anak bermasalah gizi belum mendapat PMT."
+                    'title' => 'Intervensi',
+                    'desc'  => "{$intervensiKurang} anak bermasalah gizi belum mendapat Intervensi."
                 ],
                 [
                     'type'  => 'info',
