@@ -618,7 +618,7 @@
 
                                 <!-- Numbered pages + dots -->
                                 <li
-                                  v-for="(page, i) in paginationNumbersAnak"
+                                  v-for="(page, i) in paginationNumbersAnak_belum"
                                   :key="i"
                                   class="page-item"
                                   :class="{ active: currentPage === page, disabled: page === '...' }"
@@ -2701,7 +2701,8 @@ export default {
             label: "Anak Tidak Membaik",
             data: values,
             backgroundColor: "rgba(255, 99, 132, 0.6)",
-            borderRadius: 8
+            borderRadius: 8,
+            maxBarThickness: 40 // ✅ maksimal lebar bar tetap
           }]
         },
         options: {
