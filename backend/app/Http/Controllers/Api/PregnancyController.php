@@ -627,6 +627,7 @@ class PregnancyController extends Controller
                 'counts' => $result,
                 'kelurahan' => $filterKelurahan,
                 'final' => $final,
+                'groupMonth' => $groupedMonth
             ]);
 
         } catch (\Exception $e) {
@@ -691,7 +692,7 @@ class PregnancyController extends Controller
                 'kecamatan' => $latest->kecamatan ?? '-',
                 'provinsi' => $latest->provinsi ?? '-',
                 'kota' => $latest->kota ?? '-',
-                'status_gizi' => $latest->status_kehamilan ?? '-',
+                'status_gizi' => $latest->status_risiko_usia ?? '-',
             ];
 
             // ✅ Riwayat Pemeriksaan (3 terakhir)
@@ -700,7 +701,7 @@ class PregnancyController extends Controller
                     'tanggal' => optional($item->tanggal_pemeriksaan_terakhir)->format('Y-m-d'),
                     'anemia' => $item->status_gizi_hb ?? '-',
                     'kek' => $item->status_gizi_lila ?? '-',
-                    'risiko' => $item->status_kehamilan ?? '-',
+                    'risiko' => $item->status_risiko_usia ?? '-',
                     'berat_badan' => $item->berat_badan ?? '-',
                     'tinggi_badan' => $item->tinggi_badan ?? '-',
                     'imt' => $item->imt ?? '-',
@@ -724,7 +725,7 @@ class PregnancyController extends Controller
                 return [
                     'tgl_pendampingan' => optional($item->tanggal_pendampingan)->format('Y-m-d'),
                     'kehamilan_ke' => $item->kehamilan_ke ?? '-',
-                    'risiko' => $item->status_kehamilan ?? '-',
+                    'risiko' => $item->status_risiko_usia ?? '-',
                     'tb' => $item->tinggi_badan ?? '-',
                     'bb' => $item->berat_badan ?? '-',
                     'lila' => $item->lila ?? '-',
@@ -1068,7 +1069,7 @@ class PregnancyController extends Controller
                 // 🔹 Deteksi kondisi (case-insensitive)
                 $isKek = str_contains(strtolower(trim($latest->status_gizi_lila ?? '')), 'kek');
                 $isAnemia = str_contains(strtolower(trim($latest->status_gizi_hb ?? '')), 'anemia');
-                $isRisti = str_contains(strtolower(trim($latest->status_kehamilan ?? '')), 'berisiko');
+                $isRisti = str_contains(strtolower(trim($latest->status_risiko_usia ?? '')), 'berisiko');
 
                 // 🔹 Deteksi intervensi
                 $kekInterv = $this->detectIntervensiFor($group, 'kek');
@@ -1201,24 +1202,33 @@ class PregnancyController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Ambil anggota TPK
+        // 1️⃣ Ambil data anggota TPK
         $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
 
-        // 2. Ambil posyandu & wilayah
+        // 2️⃣ Ambil posyandu & wilayah
         $posyandu = $anggotaTPK->posyandu;
         $wilayah  = $posyandu?->wilayah;
         if (!$wilayah) {
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
 
-        // Default kelurahan
         $filterKelurahan = $wilayah->kelurahan ?? null;
 
         // ==========================
-        // A. Query KUNJUNGAN BUMIL
+        // Tentukan periode (Y-m)
+        // ==========================
+        if ($request->filled('periode')) {
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+        } else {
+            $tanggal = now()->subMonth(); // default bulan berjalan -1
+        }
+
+
+        // ==========================
+        // A. QUERY KUNJUNGAN BUMIL
         // ==========================
         $qBumil = Pregnancy::query();
 
@@ -1231,29 +1241,45 @@ class PregnancyController extends Controller
         if ($request->filled('rt'))
             $qBumil->where('rt', $request->rt);
 
-        // AMBIL DATA
+        // Filter periode
+        $qBumil->whereYear('tanggal_pendampingan', $tanggal->year)
+            ->whereMonth('tanggal_pendampingan', $tanggal->month);
+
         $bumil = $qBumil->get();
 
-        // Tentukan "kasus" ≠ Normal
+
+        // ==========================
+        // 🔥 STATUS GANDA BUMIL (KEK, Anemia, Berisiko)
+        // ==========================
         $nik_case = $bumil->filter(function ($item) {
-            return
-                ($item->status_gizi_hb && $item->status_gizi_hb !== 'Normal') ||
-                ($item->status_gizi_lila && $item->status_gizi_lila !== 'Normal') ||
-                ($item->status_risiko_usia && $item->status_risiko_usia !== 'Normal');
+
+            $ganda = 0;
+
+            if ($item->status_gizi_lila && $item->status_gizi_lila !== 'Normal') $ganda++;   // KEK
+            if ($item->status_gizi_hb && $item->status_gizi_hb !== 'Normal') $ganda++;       // Anemia
+            if ($item->status_risiko_usia && $item->status_risiko_usia !== 'Normal') $ganda++; // Berisiko
+
+            return $ganda >= 2; // minimal 2 parameter bermasalah → status ganda
         })->pluck('nik_ibu')->unique();
 
 
         // ==========================
-        // B. Query INTERVENSI BUMIL
+        // B. QUERY INTERVENSI BUMIL
         // ==========================
         $qIntervensi = Intervensi::query();
-
+        $qIntervensi->where('status_subjek', 'bumil');
+        if ($filterKelurahan)
+            $qIntervensi->where('desa', $filterKelurahan);
         if ($request->filled('posyandu'))
             $qIntervensi->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
             $qIntervensi->where('rw', $request->rw);
         if ($request->filled('rt'))
             $qIntervensi->where('rt', $request->rt);
+
+        // Filter periode
+        $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
+                    ->whereMonth('tgl_intervensi', $tanggal->month);
 
         $intervensi = $qIntervensi->get();
 
@@ -1316,6 +1342,7 @@ class PregnancyController extends Controller
             'message' => 'Data intervensi & kunjungan bumil berhasil dimuat',
 
             'grouping' => [
+                'total_case'        => $nikKunjungan->count(),
                 'punya_keduanya'    => $punya_keduanya->count(),
                 'hanya_kunjungan'   => $hanya_kunjungan->count(),
                 'hanya_intervensi'  => $hanya_intervensi->count(),
@@ -1346,7 +1373,7 @@ class PregnancyController extends Controller
                 'tanggal_pemeriksaan_terakhir',
                 'status_gizi_lila',
                 'status_gizi_hb',
-                'status_kehamilan'
+                'status_risiko_usia'
             ]);
 
             // 🔹 Buat 12 bulan terakhir (misal: "Nov 2024", "Dec 2024", ..., "Oct 2025")
@@ -1376,7 +1403,7 @@ class PregnancyController extends Controller
 
                 $isKEK = str_contains(strtolower(trim($item->status_gizi_lila ?? '')), 'kek');
                 $isAnemia = str_contains(strtolower(trim($item->status_gizi_hb ?? '')), 'ya');
-                $isBerisiko = str_contains(strtolower(trim($item->status_kehamilan ?? '')), 'berisiko');
+                $isBerisiko = str_contains(strtolower(trim($item->status_risiko_usia ?? '')), 'berisiko');
 
 
                 if ($isKEK) {

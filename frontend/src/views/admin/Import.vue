@@ -534,9 +534,6 @@
                           <th @click="sortBy('ke')" class="cursor-pointer align-middle text-center">
                             Kehamilan ke <SortIcon :field="'ke'" />
                           </th>
-                          <th @click="sortBy('jml')" class="cursor-pointer align-middle text-center">
-                            Jumlah Anak <SortIcon :field="'jml'" />
-                          </th>
                           <th @click="sortBy('hpl')" class="cursor-pointer align-middle text-center">
                             HPL <SortIcon :field="'hpl'" />
                           </th>
@@ -549,10 +546,9 @@
                       <tbody>
                         <tr v-for="(item, i) in paginatedBumil" :key="i" class="small text-center">
                           <td class="text-start">{{ item.nama_ibu }}</td>
+                          <td>{{ item.kehamilan_ke }}</td>
+                          <td>{{ item.hpl }}</td>
                           <td>{{ item.usia_ibu }}</td>
-                          <td>{{ item.nama_suami }}</td>
-                          <td>{{ item.nik_ibu }}</td>
-                          <td>{{ item.nik_suami }}</td>
                         </tr>
 
                       </tbody>

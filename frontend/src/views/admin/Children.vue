@@ -335,11 +335,11 @@
                       :class="`border-start border-4 border-${item.color}`"
                     >
                       <div class="card-header">
-                        <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                        <h3 class="fw-bold mb-1">{{ item.title }}</h3>
                       </div>
                       <div class="card-body d-flex justify-content-between align-items-center">
-                        <h6 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h6>
-                        <p class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</p>
+                        <h2 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h2>
+                        <h4 class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</h4>
                       </div>
 
                     </div>
@@ -350,9 +350,9 @@
               <!-- TOTAL ANAK -->
               <div class="col-xl-2 col-sm-12">
                 <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
-                  <h6 class="text-muted fw-bold">Total Anak Balita</h6>
+                  <h3 class="text-muted fw-bold">Total Anak Balita</h3>
                   <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h6 class="fw-bold text-success mb-0">{{totalAnak}}</h6>
+                    <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
                   </div>
                 </div>
               </div>
@@ -1329,7 +1329,9 @@ export default {
         await this.hitungStatusGizi();
 
       } catch (e) {
-        this.showError('Error Ambil Data Anak', e);
+        console.error(e);
+
+        //this.showError('Error Ambil Data Anak', e);
       }
     },
     async applyFilter() {
@@ -1994,6 +1996,18 @@ export default {
 </script>
 
 <style scoped>
+/* ============================= */
+/* DEFAULT UNTUK LAYAR ≥ 1300px */
+/* ============================= */
+.form-control, /* input, textarea */
+.form-select,
+button {
+  font-size: 0.9rem;
+}
+
+label {
+  font-size: 0.9rem;   /* label proporsional */
+}
   .dropdown-menu .form-check-label {
     white-space: normal !important;
     word-break: break-word;

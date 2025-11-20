@@ -3514,6 +3514,7 @@ export default {
       this.renderBumilChart();
       this.rendersvgChart();
       this.rendersvgChart_Bumil();
+      this.rendersvgChart_Catin();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
 
@@ -3552,8 +3553,9 @@ export default {
       this.masalahGanda()
       this.hitungIntervensi()
       this.renderIntervensiBumilChart()
-
-      //this.loadIntervensiBumil()
+      this.rendersvgChart();
+      this.rendersvgChart_Bumil();
+      this.rendersvgChart_Catin();
       this.generateIndikatorBumilBulanan()
       this.generateIndikatorCatinBulanan()
     },
