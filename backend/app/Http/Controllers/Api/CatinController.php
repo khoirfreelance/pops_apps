@@ -966,15 +966,15 @@ class CatinController extends Controller
                 $rows = $rows->values();
 
                 $result['KEK'][$idx] = $rows->filter(fn($i) =>
-                    str_contains(strtolower($i->status_kek ?? ''), 'kek')
+                    str_contains(strtolower($i->status_kek ?? ''), 'KEK')
                 )->count();
 
                 $result['Anemia'][$idx] = $rows->filter(fn($i) =>
-                    str_contains(strtolower($i->status_hb ?? ''), 'anemia')
+                    str_contains(strtolower($i->status_hb ?? ''), 'Anemia')
                 )->count();
 
                 $result['Berisiko'][$idx] = $rows->filter(fn($i) =>
-                    str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko')
+                    str_contains(strtolower($i->status_risiko ?? ''), 'berisiko')
                 )->count();
             }
 
