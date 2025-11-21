@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Child;
+use App\Models\Cadre;
 use App\Models\Kunjungan;
 use App\Models\Wilayah;
 use App\Models\Posyandu;
@@ -19,13 +20,36 @@ use Carbon\Carbon;
 
 class ChildrenController extends Controller
 {
+    const bulan = [
+            '','Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
 
     public function index(Request $request)
     {
+        $filters = $request->only([
+            'periodeAwal',
+            'periodeAkhir',
+            'posyandu',
+            'rw',
+            'rt',
+            'bbu',
+            'tbu',
+            'bbtb',
+            'stagnan',
+            'intervensi'
+        ]);
+
         // Normalisasi format periode
         if (!empty($filters['periodeAwal'])) {
             try {
-                $filters['periodeAwal'] = \Carbon\Carbon::parse($filters['periodeAwal'])->startOfMonth()->format('Y-m-d');
+                $periodeAwal = explode(' ', $filters['periodeAwal']);
+                if(count($periodeAwal) === 1){
+                    $periodeAwal = explode('+', $filters['periodeAwal']);
+                } 
+                $bulanIndex = array_search($periodeAwal[0], self::bulan);
+                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
+                    ->startOfMonth()->format('Y-m-d');
             } catch (\Exception $e) {
                 $filters['periodeAwal'] = null;
             }
@@ -33,7 +57,13 @@ class ChildrenController extends Controller
 
         if (!empty($filters['periodeAkhir'])) {
             try {
-                $filters['periodeAkhir'] = \Carbon\Carbon::parse($filters['periodeAkhir'])->endOfMonth()->format('Y-m-d');
+                $periodeAkhir = explode(' ', $filters['periodeAkhir']);
+                if(count($periodeAkhir) === 1){
+                    $periodeAkhir = explode('+', $filters['periodeAkhir']);
+                } 
+                $bulanIndex = array_search($periodeAkhir[0], self::bulan);
+                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
+                    ->endOfMonth()->format('Y-m-d');
             } catch (\Exception $e) {
                 $filters['periodeAkhir'] = null;
             }
@@ -42,7 +72,7 @@ class ChildrenController extends Controller
         $user = Auth::user();
 
         // ✅ 1. Cari data anggota_tpk user
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
 
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
@@ -59,19 +89,6 @@ class ChildrenController extends Controller
         // ✅ 3. Dapatkan kelurahan user
         $filterKelurahan = $wilayah->kelurahan ?? null;
 
-        // ✅ 4. Ambil semua filter dari request
-        $filters = $request->only([
-            'periodeAwal',
-            'periodeAkhir',
-            'posyandu',
-            'rw',
-            'rt',
-            'bbu',
-            'tbu',
-            'bbtb',
-            'stagnan',
-            'intervensi'
-        ]);
 
         // ✅ 5. KUNJUNGAN (utama)
         $kunjungan = Kunjungan::query()
@@ -86,6 +103,7 @@ class ChildrenController extends Controller
             ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
             ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
             ->get();
+
 
         // ✅ 6. PENDAMPINGAN
         $pendampingan = Child::query()
@@ -267,7 +285,7 @@ class ChildrenController extends Controller
             // ================================
             // 1. Ambil wilayah user
             // ================================
-            $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+            $anggotaTPK = Cadre::where('id_user', $user->id)->first();
 
             if (!$anggotaTPK) {
                 return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
@@ -286,7 +304,7 @@ class ChildrenController extends Controller
             // 2. Tentukan periode
             // ================================
             $filters = $request->only([
-                'posyandu', 'rw', 'rt', 'bbu', 'tbu', 'bbtb', 'stagnan'
+                'posyandu', 'rw', 'rt', 'bbu', 'tbu', 'bbtb', 'stagnan', 'periodeAwal', 'periodeAkhir'
             ]);
 
             if ($request->filled('periode')) {
@@ -294,10 +312,22 @@ class ChildrenController extends Controller
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             } elseif($request->filled('periodeAwal') || $request->filled('periodeAkhir')){
-                $tanggalAwal = Carbon::createFromFormat('Y-m', $request->periodeAwal);
-                $tanggalAkhir = Carbon::createFromFormat('Y-m', $request->periodeAkhir);
-                $filters['periodeAwal']  = $tanggalAwal->copy()->startOfMonth()->format('Y-m-d');
-                $filters['periodeAkhir'] = $tanggalAkhir->copy()->endOfMonth()->format('Y-m-d');
+                $periodeAwal = explode(' ', $filters['periodeAwal']);
+                if(count($periodeAwal) === 1){
+                    $periodeAwal = explode('+', $filters['periodeAwal']);
+                } 
+                $bulanIndex = array_search($periodeAwal[0], self::bulan);
+                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
+                    ->startOfMonth()->format('Y-m-d');
+                
+                $periodeAkhir = explode(' ', $filters['periodeAkhir']);
+                if(count($periodeAkhir) === 1){
+                    $periodeAkhir = explode('+', $filters['periodeAkhir']);
+                } 
+                $bulanIndex = array_search($periodeAkhir[0], self::bulan);
+                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
+                    ->endOfMonth()->format('Y-m-d');
+                
             } else {
                 $tanggal = now()->subMonth();
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
