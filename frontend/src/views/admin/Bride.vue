@@ -673,7 +673,7 @@ export default {
       username: '',
       today: '',
       thisMonth: '',
-      kelurahan: '',
+      //kelurahan: '',
       windowWidth: window.innerWidth,
       configCacheKey: 'site_config_cache',
       kesehatan: [],
@@ -912,7 +912,10 @@ export default {
         })
         const wilayah = res.data
         //console.log('✅ getWilayahUser ->', wilayah)
-        this.kelurahan = wilayah.kelurahan || '-'
+        this.filters.kelurahan = wilayah.kelurahan || '-'
+        this.kecamatan = wilayah.kecamatan || '-'
+        this.kota = wilayah.kota || '-'
+        this.provinsi = wilayah.provinsi || '-'
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'
@@ -1026,7 +1029,9 @@ export default {
           params: this.filters,
         });
 
-        // ✅ Ubah data object jadi array
+        console.log('data: ', res.data);
+
+        /* // ✅ Ubah data object jadi array
         const rawData = res.data?.data || {};
         const data = Object.keys(rawData).map(nik => ({
           nik_perempuan: nik,
@@ -1064,13 +1069,14 @@ export default {
           id: i + 1,
           nama_posyandu: nama,
         }));
-
+ */
         // console.log('isi catin:', this.catin);
       } catch (e) {
         console.error('Gagal ambil data pernikahan:', e);
+        /*
         this.catin = [];
         this.filteredCatin = [];
-        this.posyanduList = [];
+        this.posyanduList = []; */
       }
     },
 

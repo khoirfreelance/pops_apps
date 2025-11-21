@@ -809,45 +809,114 @@
                           </div>
 
                           <div class="row g-3">
-                            <!-- Chart BB/U -->
-                            <div class="col-md-6 col-12">
-                              <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                  <h6 class="mb-2">BB/U (0–60 bln)</h6>
-                                  <div style="height: 200px;">
-                                    <canvas ref="chartBB"></canvas>
-                                  </div>
 
+                            <!-- Tabs Header -->
+                            <ul class="nav nav-tabs mb-3" id="chartTab" role="tablist">
+                              <li class="nav-item" role="presentation">
+                                <button
+                                  class="nav-link active"
+                                  id="bb-tab"
+                                  data-bs-toggle="tab"
+                                  data-bs-target="#bb"
+                                  type="button"
+                                  role="tab"
+                                  aria-controls="bb"
+                                  aria-selected="true"
+                                >
+                                  BB/U
+                                </button>
+                              </li>
+                              <li class="nav-item" role="presentation">
+                                <button
+                                  class="nav-link"
+                                  id="tb-tab"
+                                  data-bs-toggle="tab"
+                                  data-bs-target="#tb"
+                                  type="button"
+                                  role="tab"
+                                  aria-controls="tb"
+                                  aria-selected="false"
+                                >
+                                  TB/U
+                                </button>
+                              </li>
+                              <li class="nav-item" role="presentation">
+                                <button
+                                  class="nav-link"
+                                  id="bbtb-tab"
+                                  data-bs-toggle="tab"
+                                  data-bs-target="#bbtb"
+                                  type="button"
+                                  role="tab"
+                                  aria-controls="tb"
+                                  aria-selected="false"
+                                >
+                                  BB/TB
+                                </button>
+                              </li>
+                            </ul>
+
+                            <!-- Tabs Content -->
+                            <div class="tab-content" id="chartTabContent">
+
+                              <!-- BB/U TAB -->
+                              <div
+                                class="tab-pane fade show active"
+                                id="bb"
+                                role="tabpanel"
+                                aria-labelledby="bb-tab"
+                              >
+                                <div class="col-12">
+                                  <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                      <h6 class="mb-2">BB/U (0–60 bln)</h6>
+                                      <div style="height: 200px;">
+                                        <canvas ref="chartBB"></canvas>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
+
+                              <!-- TB/U TAB -->
+                              <div
+                                class="tab-pane fade"
+                                id="tb"
+                                role="tabpanel"
+                                aria-labelledby="tb-tab"
+                              >
+                                <div class="col-12">
+                                  <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                      <h6 class="mb-2">TB/U (0–60 bln)</h6>
+                                      <div style="height: 200px;">
+                                        <canvas ref="chartTB"></canvas>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- BB/TB TAB -->
+                              <div
+                                class="tab-pane fade"
+                                id="bbtb"
+                                role="tabpanel"
+                                aria-labelledby="bbtb-tab"
+                              >
+                                <div class="col-12">
+                                  <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body">
+                                      <h6 class="mb-2">BB/TB</h6>
+                                      <div style="height: 200px;">
+                                        <canvas ref="chartBBTB"></canvas>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
                             </div>
-
-                            <!-- Chart TB/U -->
-                            <div class="col-md-6 col-12">
-                              <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                  <h6 class="mb-2">TB/U (0–60 bln)</h6>
-                                  <div style="height: 200px;">
-                                    <canvas ref="chartTB"></canvas>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <!-- Chart BB/TB -->
-                            <!-- <div class="col-md-4 col-12">
-                              <div class="card border-0 shadow-sm h-100">
-                                <div class="card-body">
-                                  <h6 class="mb-2">BB/TB</h6>
-                                  <div style="height: 200px;">
-                                    <canvas ref="chartBBTB"></canvas>
-                                  </div>
-                                  <div class="small text-muted mt-2">
-                                    Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
-                                  </div>
-                                </div>
-                              </div>
-                            </div> -->
                           </div>
 
                         </div>
