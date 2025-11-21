@@ -1041,6 +1041,12 @@ const SortIcon = {
 // PORT backend kamu
 const API_PORT = 8000;
 
+const bulan = [
+  'Januari', 'Februari', 'Maret', 'April',
+  'Mei', 'Juni', 'Juli', 'Agustus',
+  'September', 'Oktober', 'November', 'Desember'
+]
+
 // Bangun base URL dari window.location
 const { protocol, hostname } = window.location;
 // contoh hasil: "http://192.168.0.5:8000"
@@ -1318,6 +1324,19 @@ export default {
     },
     async loadChildren() {
       try {
+        let { periodeAwal, periodeAkhir } = this.filters;
+        // Jika salah satu kosong, kita treat sama: reset *keduanya*
+        if (!periodeAwal || !periodeAkhir) {
+          const now = new Date();
+          // Periode akhir = akhir bulan ini
+          const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          // Periode awal = 12 bulan lalu, awal bulan
+          const startDate = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1);
+          this.filters.periodeAwal = bulan[startDate.getMonth()] + "+" + startDate.getFullYear();
+          this.filters.periodeAkhir = bulan[endDate.getMonth()] + "+" + endDate.getFullYear();
+          console.log("Set default periode:", this.filters.periodeAwal, this.filters.periodeAkhir);
+        }
+
         const res = await axios.get(`${baseURL}/api/children`, {
           headers: {
             Accept: 'application/json',
@@ -1406,8 +1425,8 @@ export default {
     async applyFilter() {
       this.isLoading = true
       try {
-        await this.loadChildren(),
-        await this.hitungStatusGizi()
+        await this.loadChildren()
+        // await this.hitungStatusGizi()
       }catch(e){
         console.error(e);
       }finally{
@@ -1428,6 +1447,19 @@ export default {
           periodeAwal: this.filters.periodeAwal || '',
           periodeAkhir: this.filters.periodeAkhir || '',
         };
+
+        let { periodeAwal, periodeAkhir } = params;
+        // Jika salah satu kosong, kita treat sama: reset *keduanya*
+        if (!periodeAwal || !periodeAkhir) {
+          const now = new Date();
+          // Periode akhir = akhir bulan ini
+          const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          // Periode awal = 12 bulan lalu, awal bulan
+          const startDate = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1);
+          params.periodeAwal = bulan[startDate.getMonth()] + "+" + startDate.getFullYear();
+          params.periodeAkhir = bulan[endDate.getMonth()] + "+" + endDate.getFullYear();
+          console.log("Set default periode:", params.periodeAwal, params.periodeAkhir);
+        }
 
         const res = await axios.get(`${baseURL}/api/children/status`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -1491,7 +1523,7 @@ export default {
 
       this.filteredData = [...this.children]
       await this.loadChildren()
-      await this.hitungStatusGizi()
+      //await this.hitungStatusGizi()
     },
     selectAll_bbu() {
       this.filters.bbu = [...this.bbuOptions]
@@ -2015,7 +2047,7 @@ export default {
       await this.loadConfigWithCache()
       this.generatePeriodeOptions()
 
-      this.hitungStatusGizi()
+      
       // 🔥 Load children dulu
       await this.loadChildren()
 
