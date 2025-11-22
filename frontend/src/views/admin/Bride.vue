@@ -147,11 +147,11 @@
                 <label for="filter" class="text-primary"> Filter Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
                   <select v-model="filters.periodeAwal" class="form-select text-muted">
-                    <option value="">Awal</option>
+                    <option value="awal">Awal</option>
                     <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
                   </select>
                   <select v-model="filters.periodeAkhir" class="form-select text-muted">
-                    <option value="">Akhir</option>
+                    <option value="akhir">Akhir</option>
                     <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
                   </select>
                 </div>
@@ -222,6 +222,7 @@
                     <table class="table table-bordered table-hover align-middle text-center">
                       <thead class="table-primary small">
                         <tr>
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">No</th>
                           <th colspan="2">Nama Pasangan</th>
                           <th colspan="3">Catatan Berisiko</th>
                           <th colspan="2">Usia</th>
@@ -270,7 +271,14 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="catin in paginatedData" :key="catin.id" class="small">
+                        <tr
+                          v-for="(catin, index) in paginatedData"
+                          :key="catin.id"
+                          class="small"
+                        >
+                          <td>
+                            {{ index + 1 + (currentPage - 1) * perPage }}
+                          </td>
                           <td class="text-start">
                             <a href="#" @click.prevent="showDetail(catin)" class="fw-semibold text-decoration-none text-primary">
                               {{ catin.nama_perempuan }}

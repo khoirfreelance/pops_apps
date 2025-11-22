@@ -411,23 +411,7 @@ class CatinController extends Controller
     public function status(Request $request)
     {
         try {
-            $user = Auth::user();
-
-            // 1️⃣ Anggota TPK
-            $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
-            if (!$anggotaTPK) {
-                return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-            }
-
-            // 2️⃣ Wilayah
-            $posyandu = $anggotaTPK->posyandu;
-            $wilayah = $posyandu?->wilayah;
-
-            if (!$wilayah) {
-                return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
-            }
-
-            $filterKelurahan = $wilayah->kelurahan ?? null;
+            $filterKelurahan = $request->kelurahan ?? null;
             $query = Catin::query();
 
             // 3️⃣ Filter wilayah default
@@ -442,9 +426,26 @@ class CatinController extends Controller
 
             // 5️⃣ Filter periode
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
-                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
+                $periodeAwal = explode('awal', $filters['periodeAwal']);
+                if(count($periodeAwal) === 1){
+                    $periodeAwal = explode('+', $filters['periodeAwal']);
+                }
+                $bulanIndex = array_search($periodeAwal[0], self::bulan);
+                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
+                    ->startOfMonth()->format('Y-m-d');
+
+                $periodeAkhir = explode('akhir', $filters['periodeAkhir']);
+                if(count($periodeAkhir) === 1){
+                    $periodeAkhir = explode('+', $filters['periodeAkhir']);
+                }
+                $bulanIndex = array_search($periodeAkhir[0], self::bulan);
+                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
+                    ->endOfMonth()->format('Y-m-d');
+
                 $query->whereBetween('tanggal_pendampingan', [$periodeAwal, $periodeAkhir]);
+                /* $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
+                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
+                $query->whereBetween('tanggal_pendampingan', [$periodeAwal, $periodeAkhir]); */
             } elseif ($request->filled('periode')) {
                 $periode = $this->parseBulanTahun($request->periode);
                 $query->whereBetween('tanggal_pendampingan', [
@@ -526,7 +527,7 @@ class CatinController extends Controller
                         $s = strtolower($status);
 
                         // "risiko" = selain normal
-                        if ($s === 'risiko') {
+                        if ($s === 'Berisiko') {
                             return !str_contains(strtolower($item->status_risiko ?? ''), 'normal');
                         }
 
@@ -548,9 +549,9 @@ class CatinController extends Controller
             $count = [
                 'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
                 'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kek ?? ''), 'kek'))->count(),
-                'Risiko Usia' => $groupedData->filter(fn($i) => !str_contains(strtolower($i->status_risiko ?? ''), 'normal'))->count(),
+                'Risiko Usia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko ?? ''), 'berisiko'))->count(),
                 'Total Berisiko' => $groupedData->filter(fn($i) =>
-                    !str_contains(strtolower($i->status_risiko ?? ''), 'normal')
+                    str_contains(strtolower($i->status_risiko ?? ''), 'berisiko')
                     || str_contains(strtolower($i->status_kek ?? ''), 'kek')
                     || str_contains(strtolower($i->status_hb ?? ''), 'anemia')
                 )->count(),
