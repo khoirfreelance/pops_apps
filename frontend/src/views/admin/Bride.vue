@@ -696,6 +696,7 @@ export default {
       rwReadonly: true,
       rtReadonly: true,
       filters: {
+        ref:'page',
         kelurahan: '',
         posyandu:'',
         rt:'',
