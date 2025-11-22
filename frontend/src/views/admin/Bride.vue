@@ -695,8 +695,8 @@ export default {
       rtList: [],
       rwReadonly: true,
       rtReadonly: true,
+      ref:'p',
       filters: {
-        ref:'page',
         kelurahan: '',
         posyandu:'',
         rt:'',
@@ -893,6 +893,7 @@ export default {
       await this.hitungStatusKesehatan()
     },
     async resetFilter() {
+
       this.rwReadonly = true,
       this.rtReadonly = true,
       Object.keys(this.filters).forEach(k => {
@@ -1000,6 +1001,7 @@ export default {
     async hitungStatusKesehatan() {
       try {
         const params = {
+          ref:this.ref || '',
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',

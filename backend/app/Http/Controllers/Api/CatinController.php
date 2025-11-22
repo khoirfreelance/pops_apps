@@ -32,6 +32,29 @@ class CatinController extends Controller
         if ($request->filled('rw')) $query->where('rw', $request->rw);
         if ($request->filled('rt')) $query->where('rt', $request->rt);
 
+        // 5️⃣ Filter periode
+        if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+
+            $periodeAwal  = $this->parseBulanTahun($request->periodeAwal, false);
+            $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+
+            $query->whereBetween('tanggal_pendampingan', [
+                $periodeAwal,
+                $periodeAkhir
+            ]);
+
+        } else {
+
+            // DEFAULT 1 TAHUN TERAKHIR
+            $tanggalAkhir = Carbon::now()->endOfMonth();
+            $tanggalAwal  = Carbon::now()->subYear()->startOfMonth();
+
+            $query->whereBetween('tanggal_pendampingan', [
+                $tanggalAwal,
+                $tanggalAkhir
+            ]);
+        }
+
         // --- Ambil semua record dulu ---
         $all = $query->orderBy('tanggal_pemeriksaan')->get();
 
@@ -166,6 +189,7 @@ class CatinController extends Controller
             'data' => $grouped
         ]);
     }
+
     private function parseBulanTahun(string $periode, bool $akhirBulan = false): \Carbon\Carbon
     {
         // Daftar bulan dalam Bahasa Indonesia
@@ -425,34 +449,55 @@ class CatinController extends Controller
             if ($request->filled('rt')) $query->where('rt', $request->rt);
 
             // 5️⃣ Filter periode
-            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $periodeAwal = explode('awal', $filters['periodeAwal']);
-                if(count($periodeAwal) === 1){
-                    $periodeAwal = explode('+', $filters['periodeAwal']);
-                }
-                $bulanIndex = array_search($periodeAwal[0], self::bulan);
-                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
-                    ->startOfMonth()->format('Y-m-d');
+            if ($request->ref === 'p') {
 
-                $periodeAkhir = explode('akhir', $filters['periodeAkhir']);
-                if(count($periodeAkhir) === 1){
-                    $periodeAkhir = explode('+', $filters['periodeAkhir']);
-                }
-                $bulanIndex = array_search($periodeAkhir[0], self::bulan);
-                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
-                    ->endOfMonth()->format('Y-m-d');
+                // MODE RANGE (periodeAwal + periodeAkhir)
+                if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
 
-                $query->whereBetween('tanggal_pendampingan', [$periodeAwal, $periodeAkhir]);
-                /* $periodeAwal = $this->parseBulanTahun($request->periodeAwal)->startOfMonth();
-                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir)->endOfMonth();
-                $query->whereBetween('tanggal_pendampingan', [$periodeAwal, $periodeAkhir]); */
-            } elseif ($request->filled('periode')) {
-                $periode = $this->parseBulanTahun($request->periode);
-                $query->whereBetween('tanggal_pendampingan', [
-                    $periode->copy()->startOfMonth(),
-                    $periode->copy()->endOfMonth(),
-                ]);
+                    $periodeAwal  = $this->parseBulanTahun($request->periodeAwal, false);
+                    $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+
+                    $query->whereBetween('tanggal_pendampingan', [
+                        $periodeAwal,
+                        $periodeAkhir
+                    ]);
+
+                } else {
+
+                    // DEFAULT 1 TAHUN TERAKHIR
+                    $tanggalAkhir = Carbon::now()->endOfMonth();
+                    $tanggalAwal  = Carbon::now()->subYear()->startOfMonth();
+
+                    $query->whereBetween('tanggal_pendampingan', [
+                        $tanggalAwal,
+                        $tanggalAkhir
+                    ]);
+                }
+
+            } else {
+
+                // FILTER PER BULAN (dropdown)
+                if ($request->filled('periode')) {
+
+                    $periode = $this->parseBulanTahun($request->periode);
+
+                    $query->whereBetween('tanggal_pendampingan', [
+                        $periode->copy()->startOfMonth(),
+                        $periode->copy()->endOfMonth()
+                    ]);
+
+                } else {
+
+                    // DEFAULT BULAN BERJALAN - 1
+                    $periodeDefault = Carbon::now()->subMonthNoOverflow();
+
+                    $query->whereBetween('tanggal_pendampingan', [
+                        $periodeDefault->copy()->startOfMonth(),
+                        $periodeDefault->copy()->endOfMonth()
+                    ]);
+                }
             }
+
 
             // 6️⃣ Ambil data
             $data = $query->get();
@@ -582,6 +627,7 @@ class CatinController extends Controller
                 'total' => $total,
                 'counts' => $result,
                 'kelurahan' => $wilayah->kelurahan ?? '-',
+                //'filter'=> $filter
             ]);
 
         } catch (\Exception $e) {
@@ -595,8 +641,9 @@ class CatinController extends Controller
     public function tren(Request $request)
     {
         try {
-            $user = Auth::user();
+            //$user = Auth::user();
 
+            $filterKelurahan = $request->kelurahan;
             // wilayah default dari user
             $wilayah = [
                 'kelurahan' => $user->kelurahan ?? null,

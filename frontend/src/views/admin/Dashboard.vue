@@ -1476,6 +1476,7 @@ export default {
       children:[],
       bride:[],
       filters: {
+        ref:'d',
         kelurahan: '',
         posyandu: '',
         rw: '',
