@@ -35,10 +35,75 @@ class CatinController extends Controller
         // --- Ambil semua record dulu ---
         $all = $query->orderBy('tanggal_pemeriksaan')->get();
 
-        // --- Group by NIK perempuan ---
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER USIA
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('usia') && is_array($request->usia)) {
+            $all = $all->filter(function ($item) use ($request) {
+
+                $usia = $item->usia_perempuan ?? null;
+                if (!$usia) return false;
+
+                foreach ($request->usia as $range) {
+                    $range = trim($range);
+
+                    if ($range === '<20' && $usia < 20) return true;
+                    if ($range === '>40' && $usia > 40) return true;
+
+                    if (str_contains($range, '-')) {
+                        [$min, $max] = explode('-', $range);
+                        if ($usia >= (int)$min && $usia <= (int)$max) return true;
+                    }
+                }
+
+                return false;
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER STATUS (KEK, Anemia, Risiko ≠ Normal)
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('status') && is_array($request->status)) {
+
+            $statuses = array_map('strtolower', $request->status);
+
+            $all = $all->filter(function ($item) use ($statuses) {
+
+                foreach ($statuses as $status) {
+
+                    if (str_contains($status, 'kek')) {
+                        if (stripos($item->status_kek, 'kek') !== false) return true;
+                    }
+
+                    if (str_contains($status, 'anemia')) {
+                        if (stripos($item->status_hb, 'anemia') !== false) return true;
+                    }
+
+                    if (str_contains($status, 'risiko')) {
+                        if (
+                            empty($item->status_risiko) ||
+                            stripos($item->status_risiko, 'normal') === false
+                        ) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | GROUP BY NIK PEREMPUAN
+        |--------------------------------------------------------------------------
+        */
         $grouped = $all->groupBy('nik_perempuan')->map(function ($items) {
 
-            // Record pertama dijadikan master (atau boleh last)
             $main = $items->first();
 
             return [
@@ -47,12 +112,15 @@ class CatinController extends Controller
                 'nik_perempuan'   => $main->nik_perempuan,
                 'usia_perempuan'  => $main->usia_perempuan,
                 'hp_perempuan'    => $main->hp_perempuan,
+                'kerja_perempuan' => $main->pekerjaan_perempuan,
 
                 'nama_laki'       => $main->nama_laki,
                 'nik_laki'        => $main->nik_laki,
                 'usia_laki'       => $main->usia_laki,
                 'hp_laki'         => $main->hp_laki,
+                'kerja_laki'      => $main->pekerjaan_laki,
 
+                'status_risiko'   => $main->status_risiko,
                 'provinsi'        => $main->provinsi,
                 'kota'            => $main->kota,
                 'kecamatan'       => $main->kecamatan,
@@ -61,7 +129,10 @@ class CatinController extends Controller
                 'rt'              => $main->rt,
                 'posyandu'        => $main->posyandu,
 
-                // — Array RIWAYAT PEMERIKSAAN —
+                'tgl_pernikahan'  => $main->tanggal_rencana_menikah,
+                'tgl_kunjungan'   => $main->tanggal_pendampingan,
+
+                // RIWAYAT PEMERIKSAAN
                 'riwayat_pemeriksaan' => $items->map(function ($d) {
                     return [
                         'tanggal_pemeriksaan' => $d->tanggal_pemeriksaan,
@@ -72,19 +143,23 @@ class CatinController extends Controller
                         'status_hb'           => $d->status_hb,
                         'lila_perempuan'      => $d->lila_perempuan,
                         'status_kek'          => $d->status_kek,
+                        'riwayat_penyakit'    => $d->riwayat_penyakit,
+                        'terpapar_rokok'      => $d->terpapar_rokok,
+                        'menggunakan_jamban'  => $d->menggunakan_jamban,
+                        'sumber_air_bersih'   => $d->sumber_air_bersih
                     ];
                 })->values(),
 
-                // — Array RIWAYAT PENDAMPINGAN —
+                // RIWAYAT PENDAMPINGAN
                 'riwayat_pendampingan' => $items->whereNotNull('tanggal_pendampingan')->map(function ($d) {
                     return [
                         'tanggal_pendampingan' => $d->tanggal_pendampingan,
                         'nama_petugas'          => $d->nama_petugas,
                     ];
                 })->values(),
-
             ];
-        })->values(); // reset key jadi array biasa
+
+        })->values();
 
         return response()->json([
             'success' => true,

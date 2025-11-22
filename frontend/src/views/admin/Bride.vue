@@ -288,8 +288,8 @@
                           </td>
 
                           <td>
-                            <span v-if="catin.pemeriksaan_terakhir.status_risiko === 'Berisiko'" class="badge bg-danger text-white">{{catin.pemeriksaan_terakhir.status_risiko}}</span>
-                            <span v-else>{{ catin.pemeriksaan_terakhir.status_risiko }}</span>
+                            <span v-if="catin.status_risiko === 'Berisiko'" class="badge bg-danger text-white">{{catin.status_risiko}}</span>
+                            <span v-else>{{ catin.status_risiko }}</span>
                           </td>
 
                           <td>{{ catin.usia_perempuan }}</td>
@@ -301,15 +301,15 @@
                           <td>{{ catin.posyandu }}</td>
                           <td>{{ catin.rw }}</td>
                           <td>{{ catin.rt }}</td>
-                          <td>{{ this.formatDate(catin.pemeriksaan_terakhir.tanggal_pendampingan) }}</td>
+                          <td>{{ this.formatDate(catin.tgl_kunjungan) }}</td>
                           <td>{{ this.formatDate(catin.tgl_menikah) }}</td>
                           <td>{{ catin.pemeriksaan_terakhir.berat_perempuan }}</td>
                           <td>{{ catin.pemeriksaan_terakhir.tinggi_perempuan }}</td>
                           <td>{{ catin.pemeriksaan_terakhir.lila_perempuan }}</td>
                           <td>{{ catin.pemeriksaan_terakhir.hb_perempuan }}</td>
-                          <td>{{ catin.riwayat_penyakit != ''? catin.riwayat_penyakit:'-'}}</td>
-                          <td>{{ catin.jamban_sehat }}</td>
-                          <td>{{ catin.sumber_air_bersih }}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.riwayat_penyakit != ''? 'Ya':'Tidak'}}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.menggunakan_jamban = true ? 'Ya':'Tidak' }}</td>
+                          <td>{{ catin.pemeriksaan_terakhir.sumber_air_bersih = true? 'Ya':'Tidak' }}</td>
                         </tr>
                         <!-- ✅ Jika tidak ada data -->
                         <tr v-if="!paginatedData || paginatedData.length === 0">
@@ -1041,12 +1041,13 @@ export default {
         }));
         this.catin = data.map(item => ({
           nik: item.nik_perempuan,
+          status_risiko: item.status_risiko,
           nama_perempuan: item.nama_perempuan,
           nama_laki: item.nama_laki,
           usia_perempuan: item.usia_perempuan,
           usia_laki: item.usia_laki,
-          pekerjaan_perempuan: item.pekerjaan_perempuan,
-          pekerjaan_laki: item.pekerjaan_laki,
+          pekerjaan_perempuan: item.kerja_perempuan,
+          pekerjaan_laki: item.kerja_laki,
           posyandu: item.posyandu != ''? item.posyandu : '-',
           provinsi: item.provinsi,
           kota: item.kota,
@@ -1054,8 +1055,9 @@ export default {
           kelurahan: item.kelurahan,
           rt: item.rt,
           rw: item.rw,
-          tgl_menikah: item.tgl_menikah,
-          riwayat_penyakit: item.riwayat_penyakit,
+          tgl_kunjungan: item.tgl_kunjungan,
+          tgl_menikah: item.tgl_pernikahan,
+          riwayat_penyakit: item.riwayat_pemeriksaan.riwayat_penyakit,
           sumber_air_bersih: item.sumber_air_bersih == true? 'Ya' : 'Tidak',
           jamban_sehat: item.jamban_sehat == true? 'Ya' : 'Tidak',
           // ambil pemeriksaan terakhir
