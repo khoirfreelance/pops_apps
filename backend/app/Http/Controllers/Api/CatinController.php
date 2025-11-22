@@ -21,152 +21,76 @@ class CatinController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-
-        // ✅ 1. Cari data anggota_tpk user
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
-
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        // ✅ 2. Ambil posyandu dan wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
+        $filterKelurahan = $request->kelurahan;
 
         $query = Catin::query();
 
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        // ✅ 3. Dapatkan kelurahan user
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
-        // ✅ Selalu filter berdasar wilayah user (default)
         if ($filterKelurahan) {
             $query->where('kelurahan', $filterKelurahan);
         }
-        // ✅ Filter tambahan dari frontend
         if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw')) $query->where('rw', $request->rw);
         if ($request->filled('rt')) $query->where('rt', $request->rt);
 
-        if (!$request->filled('periode')) {
-            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
-                $periodeAwal = $this->parseBulanTahun($request->periodeAwal);
-                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+        // --- Ambil semua record dulu ---
+        $all = $query->orderBy('tanggal_pemeriksaan')->get();
 
-                $query->whereBetween('tanggal_pendampingan', [
-                    $periodeAwal->format('Y-m-d'),
-                    $periodeAkhir->format('Y-m-d'),
-                ]);
-            }
-        }else {
-            // filter dari dashboard
-            if ($request->filled('periode')) {
-                $periode = $this->parseBulanTahun($request->periode);
-                $query->whereBetween('tanggal_pendampingan', [
-                    $periode->format('Y-m-d'),
-                ]);
-            }
-        }
+        // --- Group by NIK perempuan ---
+        $grouped = $all->groupBy('nik_perempuan')->map(function ($items) {
 
-        $data = $query->get();
+            // Record pertama dijadikan master (atau boleh last)
+            $main = $items->first();
 
-        // ✅ Group data per ibu
-        $groupedData = $data->groupBy('nik_perempuan')->map(function ($group) {
-            $latest = $group->sortByDesc('tanggal_pendampingan')->first();
-            $riwayat = $group->sortBy('tanggal_pendampingan')->map(function ($g) {
-                return [
-                    'tanggal_pendampingan' => $g->tanggal_pendampingan,
-                    'berat_perempuan' => $g->berat_perempuan,
-                    'tinggi_perempuan' => $g->tinggi_perempuan,
-                    'imt' => $g->imt_perempuan,
-                    'hb_perempuan' => $g->hb_perempuan,
-                    'status_hb' => $g->status_hb,
-                    'lila_perempuan' => $g->lila_perempuan,
-                    'status_kek' => $g->status_kek,
-                    'posyandu' => $g->posyandu,
-                    'status_risiko' => $g->status_risiko
-                ];
-            })->values();
-            $seluruh_riwayat = $group->sortByDesc('tanggal_pendampingan')->values();
             return [
-                'nik_perempuan' => $latest->nik_perempuan,
-                'nik_laki' => $latest->nik_laki,
-                'nama_perempuan' => $latest->nama_perempuan,
-                'nama_laki' => $latest->nama_laki,
-                'usia_perempuan' => $latest->usia_perempuan,
-                'usia_laki' => $latest->usia_laki,
-                'pekerjaan_perempuan' => $latest->pekerjaan_perempuan,
-                'pekerjaan_laki' => $latest->pekerjaan_laki,
-                'posyandu' => $latest->posyandu,
-                'provinsi' => $latest->provinsi,
-                'kota' => $latest->kota,
-                'kecamatan' => $latest->kecamatan,
-                'kelurahan' => $latest->kelurahan,
-                'rt' => $latest->rt,
-                'rw' => $latest->rw,
-                'tgl_menikah' => $latest->tanggal_rencana_menikah,
-                'riwayat_penyakit' => $latest->riwayat_penyakit,
-                'sumber_air_bersih' => $latest->sumber_air_bersih,
-                'jamban_sehat' => $latest->menggunakan_jamban,
-                'riwayat_pemeriksaan' => $riwayat,
-                'riwayat_catin' => $seluruh_riwayat,
+                // informasi utama
+                'nama_perempuan'  => $main->nama_perempuan,
+                'nik_perempuan'   => $main->nik_perempuan,
+                'usia_perempuan'  => $main->usia_perempuan,
+                'hp_perempuan'    => $main->hp_perempuan,
+
+                'nama_laki'       => $main->nama_laki,
+                'nik_laki'        => $main->nik_laki,
+                'usia_laki'       => $main->usia_laki,
+                'hp_laki'         => $main->hp_laki,
+
+                'provinsi'        => $main->provinsi,
+                'kota'            => $main->kota,
+                'kecamatan'       => $main->kecamatan,
+                'kelurahan'       => $main->kelurahan,
+                'rw'              => $main->rw,
+                'rt'              => $main->rt,
+                'posyandu'        => $main->posyandu,
+
+                // — Array RIWAYAT PEMERIKSAAN —
+                'riwayat_pemeriksaan' => $items->map(function ($d) {
+                    return [
+                        'tanggal_pemeriksaan' => $d->tanggal_pemeriksaan,
+                        'berat_perempuan'     => $d->berat_perempuan,
+                        'tinggi_perempuan'    => $d->tinggi_perempuan,
+                        'imt_perempuan'       => $d->imt_perempuan,
+                        'hb_perempuan'        => $d->hb_perempuan,
+                        'status_hb'           => $d->status_hb,
+                        'lila_perempuan'      => $d->lila_perempuan,
+                        'status_kek'          => $d->status_kek,
+                    ];
+                })->values(),
+
+                // — Array RIWAYAT PENDAMPINGAN —
+                'riwayat_pendampingan' => $items->whereNotNull('tanggal_pendampingan')->map(function ($d) {
+                    return [
+                        'tanggal_pendampingan' => $d->tanggal_pendampingan,
+                        'nama_petugas'          => $d->nama_petugas,
+                    ];
+                })->values(),
+
             ];
-        });
-
-        // ✅ Filter usia_perempuan
-        if ($request->filled('usia') && is_array($request->usia)) {
-            $groupedData = $groupedData->filter(function ($item) use ($request) {
-                // pastikan bisa akses baik dari object maupun array
-                $usia = is_array($item) ? ($item['usia_perempuan'] ?? null) : ($item->usia_perempuan ?? null);
-
-                foreach ($request->usia as $range) {
-                    $range = trim($range);
-                    if ($usia === null) continue;
-
-                    if ($range === '<20' && $usia < 20) return true;
-                    if ($range === '>40' && $usia > 40) return true;
-
-                    if (str_contains($range, '-')) {
-                        [$min, $max] = explode('-', $range);
-                        if ($usia >= (int)$min && $usia <= (int)$max) return true;
-                    }
-                }
-
-                return false;
-            });
-        }
-
-        // ✅ Filter status (KEK, Anemia, Risiko ≠ Normal)
-        if ($request->filled('status') && is_array($request->status)) {
-            $query->where(function ($q) use ($request) {
-                foreach ($request->status as $status) {
-                    $statusLower = strtolower($status);
-                    if (str_contains($statusLower, 'kek')) {
-                        $q->orWhere('status_kek', 'like', '%kek%');
-                    } elseif (str_contains($statusLower, 'anemia')) {
-                        $q->orWhere('status_hb', 'like', '%anemia%');
-                    } elseif (str_contains($statusLower, 'risiko')) {
-                        $q->orWhere(function ($sub) {
-                            $sub->where('status_risiko', 'not like', '%normal%')
-                                ->orWhereNull('status_risiko');
-                        });
-                    }
-                }
-            });
-        }
-
+        })->values(); // reset key jadi array biasa
 
         return response()->json([
             'success' => true,
-            'data' => $groupedData,
-
+            'data' => $grouped
         ]);
     }
-
     private function parseBulanTahun(string $periode, bool $akhirBulan = false): \Carbon\Carbon
     {
         // Daftar bulan dalam Bahasa Indonesia
@@ -277,8 +201,8 @@ class CatinController extends Controller
                 'tanggal_pemeriksaan' => $this->convertDate($data[20] ?? null),
                 'berat_perempuan' => $data[21] ?? null,
                 'tinggi_perempuan' => $data[22] ?? null,
-                'hb_perempuan' => $data[23] ?? null,
-                'lila_perempuan' => $data[24] ?? null,
+                'hb_perempuan' => $data[24] ?? null,
+                'lila_perempuan' => $data[23] ?? null,
 
                 'terpapar_rokok' => $this->toBool($data[25] ?? null),
                 'mendapat_ttd' => $this->toBool($data[26] ?? null),
@@ -406,7 +330,7 @@ class CatinController extends Controller
     private function statusRisiko($usia_perempuan)
     {
         if (is_null($usia_perempuan)) return null;
-        return ($usia_perempuan < 21) ? 'Berisiko' : 'Normal';
+        return ($usia_perempuan < 21 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
     }
 
     public function status(Request $request)

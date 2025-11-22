@@ -673,7 +673,7 @@ export default {
       username: '',
       today: '',
       thisMonth: '',
-      //kelurahan: '',
+      kelurahan: '',
       windowWidth: window.innerWidth,
       configCacheKey: 'site_config_cache',
       kesehatan: [],
@@ -884,10 +884,12 @@ export default {
       await this.hitungStatusKesehatan()
     },
     async resetFilter() {
+      this.rwReadonly = true,
+      this.rtReadonly = true,
       Object.keys(this.filters).forEach(k => {
         if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
-      })
+      }),
       await this.loadBride(),
       await this.hitungStatusKesehatan()
     },
@@ -912,7 +914,7 @@ export default {
         })
         const wilayah = res.data
         //console.log('✅ getWilayahUser ->', wilayah)
-        this.filters.kelurahan = wilayah.kelurahan || '-'
+        this.kelurahan = wilayah.kelurahan || '-'
         this.kecamatan = wilayah.kecamatan || '-'
         this.kota = wilayah.kota || '-'
         this.provinsi = wilayah.provinsi || '-'
@@ -1031,7 +1033,7 @@ export default {
 
         console.log('data: ', res.data);
 
-        /* // ✅ Ubah data object jadi array
+        // ✅ Ubah data object jadi array
         const rawData = res.data?.data || {};
         const data = Object.keys(rawData).map(nik => ({
           nik_perempuan: nik,
@@ -1069,7 +1071,7 @@ export default {
           id: i + 1,
           nama_posyandu: nama,
         }));
- */
+
         // console.log('isi catin:', this.catin);
       } catch (e) {
         console.error('Gagal ambil data pernikahan:', e);

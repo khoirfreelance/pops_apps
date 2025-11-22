@@ -21,9 +21,9 @@ use Carbon\Carbon;
 class ChildrenController extends Controller
 {
     const bulan = [
-            '','Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-        ];
+        '','Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
 
     public function index(Request $request)
     {
@@ -46,7 +46,7 @@ class ChildrenController extends Controller
                 $periodeAwal = explode(' ', $filters['periodeAwal']);
                 if(count($periodeAwal) === 1){
                     $periodeAwal = explode('+', $filters['periodeAwal']);
-                } 
+                }
                 $bulanIndex = array_search($periodeAwal[0], self::bulan);
                 $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
                     ->startOfMonth()->format('Y-m-d');
@@ -60,7 +60,7 @@ class ChildrenController extends Controller
                 $periodeAkhir = explode(' ', $filters['periodeAkhir']);
                 if(count($periodeAkhir) === 1){
                     $periodeAkhir = explode('+', $filters['periodeAkhir']);
-                } 
+                }
                 $bulanIndex = array_search($periodeAkhir[0], self::bulan);
                 $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
                     ->endOfMonth()->format('Y-m-d');
@@ -315,19 +315,19 @@ class ChildrenController extends Controller
                 $periodeAwal = explode(' ', $filters['periodeAwal']);
                 if(count($periodeAwal) === 1){
                     $periodeAwal = explode('+', $filters['periodeAwal']);
-                } 
+                }
                 $bulanIndex = array_search($periodeAwal[0], self::bulan);
                 $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
                     ->startOfMonth()->format('Y-m-d');
-                
+
                 $periodeAkhir = explode(' ', $filters['periodeAkhir']);
                 if(count($periodeAkhir) === 1){
                     $periodeAkhir = explode('+', $filters['periodeAkhir']);
-                } 
+                }
                 $bulanIndex = array_search($periodeAkhir[0], self::bulan);
                 $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
                     ->endOfMonth()->format('Y-m-d');
-                
+
             } else {
                 $tanggal = now()->subMonth();
                 $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
