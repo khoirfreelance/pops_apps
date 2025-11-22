@@ -385,7 +385,11 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20 position-relative">
                 <label class="form-label text-primary">Filter Status Gizi:</label>
                 <div class="dropdown w-100">
-                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                  <button
+                    class="form-select text-start text-truncate"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                  >
                     <span v-if="filters.bbu.length === 0" class="text-muted"
                       >Pilih Underweight</span
                     >
@@ -435,7 +439,11 @@
               <!-- === TBU === -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                  <button
+                    class="form-select text-start text-truncate"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                  >
                     <span v-if="filters.tbu.length === 0" class="text-muted">Pilih Stunting</span>
                     <span v-else class="selected-text" :title="StuntingDisplayText">{{
                       StuntingDisplayText
@@ -485,7 +493,11 @@
               <!-- === BBTB === -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                  <button
+                    class="form-select text-start text-truncate"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                  >
                     <span v-if="filters.bbtb.length === 0" class="text-muted">Pilih Wasting</span>
                     <span v-else class="selected-text" :title="WastingDisplayText">{{
                       WastingDisplayText
@@ -535,7 +547,11 @@
               <!-- === STAGNAN === -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                  <button
+                    class="form-select text-start text-truncate"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                  >
                     <span v-if="filters.stagnan.length === 0" class="text-muted"
                       >Pilih BB Stagnan</span
                     >
@@ -587,7 +603,11 @@
               <!-- === INTERVENSI === -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                  <button
+                    class="form-select text-start text-truncate"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                  >
                     <span v-if="filters.intervensi.length === 0" class="text-muted"
                       >Pilih Intervensi</span
                     >
@@ -694,70 +714,65 @@
                 </button>
               </div>
             </form>
-          </div> 
+          </div>
 
           <div class="text-center mt-3">
-            <h5 class="ringkasan-header fw-bold text-success mb-3" style="font-size: 20px;">Ringkasan Statistik</h5>
+            <h5 class="ringkasan-header fw-bold text-success mb-3" style="font-size: 20px">
+              Ringkasan Statistik
+            </h5>
           </div>
 
           <!-- Ringkasan Statistik-->
           <div class="container-fluid my-4">
-  <div class="row">
-    <div class="col-xl-10 col-sm-12">
-      <div class="row justify-content-center">
+            <div class="row">
+              <div class="col-xl-10 col-sm-12">
+                <div class="row justify-content-center">
+                  <div
+                    v-for="(item, index) in gizi"
+                    :key="index"
+                    class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
+                  >
+                    <div
+                      class="card border-0 rounded-3 overflow-hidden shadow"
+                      :class="`border-start border-4 border-${item.color}`"
+                      style="width: 108%"
+                    >
+                      <div class="card-body position-relative">
+                        <!-- TITLE -->
+                        <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
 
-        <div
-          v-for="(item, index) in gizi"
-          :key="index"
-          class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
-        >
-          <div
-            class="card border-0 rounded-3 overflow-hidden shadow"
-            :class="`border-start border-4 border-${item.color}`"
-            style="width: 108%;"
-          >
-            <div class="card-body position-relative">
+                        <!-- VALUE -->
+                        <h3 class="fw-bold mb-0" :class="`text-${item.color}`" style="font-size: 20px;">
+                          {{ item.value }}
+                        </h3>
 
-              <!-- TITLE -->
-              <h5 class="fw-bold mb-1">{{ item.title }}</h5>
+                        <!-- PERCENT -->
+                        <p
+                          class="position-absolute bottom-0 end-0 mb-1 me-2 small"
+                          :class="`text-${item.color}`" style="font-size: 16px;"
+                        >
+                          {{ item.percent }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <!-- VALUE -->
-              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
-                {{ item.value }}
-              </h3>
-
-              <!-- PERCENT -->
-              <p
-                class="position-absolute bottom-0 end-0 mb-1 me-2 small"
-                :class="`text-${item.color}`"
-              >
-                {{ item.percent }}
-              </p>
-
+              <!-- TOTAL ANAK -->
+              <div class="col-xl-2 col-sm-12">
+                <div
+                  class="card text-center border p-2 h-100 d-flex flex-column justify-content-center shadow"
+                  style="width: 108%"
+                >
+                  <h3 class="text-muted fw-bold">Total Anak Balita</h3>
+                  <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                    <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- TOTAL ANAK -->
-    <div class="col-xl-2 col-sm-12">
-      <div
-        class="card text-center border p-2 h-100 d-flex flex-column justify-content-center shadow"
-        style="width: 108%;"
-      >
-        <h3 class="text-muted fw-bold">Total Anak Balita</h3>
-        <div class="flex-grow-1 d-flex flex-column justify-content-center">
-          <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
 
           <!-- Table and detail Section -->
           <div class="container-fluid mt-4">
@@ -1074,7 +1089,7 @@
 
                   <!-- Tombol Download -->
                   <button
-                    style="background-color: #0d8cff;"
+                    style="background-color: #0d8cff"
                     class="btn btn-primary rounded-pill px-4 mt-2 fw-semibold"
                     @click="downloadRiwayat"
                   >
@@ -1748,7 +1763,7 @@ export default {
           params: this.filters, // 🔹 kirim semua filter ke backend
         })
 
-        console.log(this.filters);
+        console.log(this.filters)
 
         const items = res.data.data_anak || []
 
@@ -2509,6 +2524,7 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
 /* ============================= */
 /* DEFAULT UNTUK LAYAR ≥ 1300px */
 /* ============================= */
@@ -2564,9 +2580,8 @@ label {
   border-radius: 50%;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
-
-.ringkasan-heade, .table-name{
+.ringkasan-header,
+.table-name {
   font-family: 'Neuton', serif;
   font-size: 20px;
   font-weight: bold;
@@ -2699,11 +2714,11 @@ label {
   transition: all 0.3s ease;
 }
 
-.tab-pane p{
+.tab-pane p {
   font-size: 13px;
 }
 
-.tab-pane-sub-title{
+.tab-pane-sub-title {
   font-size: 17px;
   font-weight: 600;
 }
@@ -2832,5 +2847,4 @@ label {
     font-size: 0.65rem;
   }
 }
-
 </style>
