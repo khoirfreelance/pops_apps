@@ -697,52 +697,71 @@
           </div> 
 
           <div class="text-center mt-3">
-            <h5 class="fw-bold text-success mb-3" style="font-size: 20px;">Ringkasan Statistik</h5>
+            <h5 class="ringkasan-header fw-bold text-success mb-3" style="font-size: 20px;">Ringkasan Statistik</h5>
           </div>
 
           <!-- Ringkasan Statistik-->
           <div class="container-fluid my-4">
-            <div class="row">
-              <div class="col-xl-10 col-sm-12">
-                <div class="row justify-content-center">
-                  <div
-                    v-for="(item, index) in gizi"
-                    :key="index"
-                    class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
-                  >
-                    <div
-                      class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                      :class="`border-start border-4 border-${item.color}`"
-                    >
-                      <div class="card-header">
-                        <h3 class="fw-bold mb-1">{{ item.title }}</h3>
-                      </div>
-                      <div class="card-body d-flex justify-content-between align-items-center">
-                        <h2 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h2>
-                        <h4 class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</h4>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+  <div class="row">
+    <div class="col-xl-10 col-sm-12">
+      <div class="row justify-content-center">
 
-              <!-- TOTAL ANAK -->
-              <div class="col-xl-2 col-sm-12">
-                <div
-                  class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center"
-                >
-                  <h3 class="text-muted fw-bold">Total Anak Balita</h3>
-                  <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
-                  </div>
-                </div>
-              </div>
+        <div
+          v-for="(item, index) in gizi"
+          :key="index"
+          class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
+        >
+          <div
+            class="card border-0 rounded-3 overflow-hidden shadow"
+            :class="`border-start border-4 border-${item.color}`"
+            style="width: 108%;"
+          >
+            <div class="card-body position-relative">
+
+              <!-- TITLE -->
+              <h5 class="fw-bold mb-1">{{ item.title }}</h5>
+
+              <!-- VALUE -->
+              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
+                {{ item.value }}
+              </h3>
+
+              <!-- PERCENT -->
+              <p
+                class="position-absolute bottom-0 end-0 mb-1 me-2 small"
+                :class="`text-${item.color}`"
+              >
+                {{ item.percent }}
+              </p>
+
             </div>
           </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TOTAL ANAK -->
+    <div class="col-xl-2 col-sm-12">
+      <div
+        class="card text-center border p-2 h-100 d-flex flex-column justify-content-center shadow"
+        style="width: 108%;"
+      >
+        <h3 class="text-muted fw-bold">Total Anak Balita</h3>
+        <div class="flex-grow-1 d-flex flex-column justify-content-center">
+          <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
 
           <!-- Table and detail Section -->
           <div class="container-fluid mt-4">
-            <h5 class="fw-bold text-success mb-3">Data Anak</h5>
+            <h5 class="table-name text-success mb-3">Data Anak</h5>
             <div class="row mt-4">
               <div :class="selectedAnak ? 'col-md-8' : 'col-md-12'">
                 <div class="card bg-light p-2">
@@ -1055,7 +1074,8 @@
 
                   <!-- Tombol Download -->
                   <button
-                    class="btn btn-gradient rounded-pill px-4 mt-2 fw-semibold"
+                    style="background-color: #0d8cff;"
+                    class="btn btn-primary rounded-pill px-4 mt-2 fw-semibold"
                     @click="downloadRiwayat"
                   >
                     Download Riwayat
@@ -1075,7 +1095,7 @@
 
                   <!-- Header -->
                   <div class="bg-danger text-white p-4 text-center rounded-top">
-                    <h5 class="fw-bold mb-0">{{ selectedAnak.nama }}</h5>
+                    <h4 class="fw-bold mb-0">{{ selectedAnak.nama }}</h4>
                     <p class="text-white mb-0 small">
                       NIK: {{ selectedAnak.nik }} •
                       <span class="text-capitalize">
@@ -1165,7 +1185,7 @@
                         <div class="row g-3">
                           <div class="col-md-6">
                             <div class="card bg-light border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Identitas Anak</h6>
+                              <h6 class="tab-pane-sub-title mb-3 text-danger">Identitas Anak</h6>
                               <p class="mb-1"><strong>Nama:</strong> {{ selectedAnak.nama }}</p>
                               <p class="mb-1"><strong>NIK:</strong> {{ selectedAnak.nik }}</p>
                               <p class="mb-1">
@@ -1184,7 +1204,7 @@
                           </div>
                           <div class="col-md-6">
                             <div class="card bg-light border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Orang Tua</h6>
+                              <h6 class="tab-pane-sub-title mb-3 text-danger">Orang Tua</h6>
                               <p class="mb-1">
                                 <strong>Ayah:</strong> {{ selectedAnak.nama_ayah }}
                               </p>
@@ -1206,7 +1226,7 @@
                       <!-- Data Kelahiran -->
                       <div class="tab-pane fade" id="tab-pane-kelahiran" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Data Kelahiran</h6>
+                          <h6 class="tab-pane-sub-title mb-3 text-danger">Data Kelahiran</h6>
                           <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle">
                               <thead>
@@ -1240,7 +1260,7 @@
                       <!-- Data Kunjungan Posyandu -->
                       <div class="tab-pane fade" id="tab-pane-kunjungan" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Riwayat Penimbangan</h6>
+                          <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Penimbangan</h6>
                           <div class="table-responsive mb-4">
                             <table class="table table-sm table-hover align-middle">
                               <thead class="table-secondary">
@@ -1319,7 +1339,7 @@
                       <!-- Data Intervensi -->
                       <div class="tab-pane fade" id="tab-pane-intervensi" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Riwayat Intervensi</h6>
+                          <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Intervensi</h6>
                           <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle">
                               <thead class="table-secondary">
@@ -1347,7 +1367,7 @@
                       <!-- Data TPK -->
                       <div class="tab-pane fade" id="tab-pane-tpk" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Riwayat Intervensi</h6>
+                          <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Intervensi</h6>
                           <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle">
                               <thead class="table-secondary">
@@ -2498,6 +2518,11 @@ button {
   font-size: 0.9rem;
 }
 
+* {
+  word-wrap: break-word;
+  white-space: normal;
+}
+
 label {
   font-size: 0.9rem; /* label proporsional */
 }
@@ -2539,6 +2564,13 @@ label {
   border-radius: 50%;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
+
+.ringkasan-heade, .table-name{
+  font-family: 'Neuton', serif;
+  font-size: 20px;
+  font-weight: bold;
+}
 .table-modern {
   border: none !important;
   border-radius: 0.75rem;
@@ -2665,6 +2697,15 @@ label {
   opacity: 1;
   stroke-width: 3;
   transition: all 0.3s ease;
+}
+
+.tab-pane p{
+  font-size: 13px;
+}
+
+.tab-pane-sub-title{
+  font-size: 17px;
+  font-weight: 600;
 }
 
 @media (min-width: 992px) {
