@@ -6,30 +6,28 @@
         v-if="isLoading"
         class="spinner-overlay d-flex justify-content-center align-items-center"
       >
-        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem">
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
     </transition>
 
     <!-- Header -->
-    <HeaderAdmin/>
+    <HeaderAdmin />
 
     <div
       class="content flex-grow-1 d-flex flex-column flex-md-row"
       :class="{
         'sidebar-collapsed': isCollapsed,
-        'sidebar-expanded': !isCollapsed
+        'sidebar-expanded': !isCollapsed,
       }"
     >
-
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Content -->
-        <div class="py-4 container-fluid" >
-
+        <div class="py-4 container-fluid">
           <!-- Welcome Card -->
           <Welcome />
 
@@ -43,23 +41,22 @@
           </div>
 
           <!-- Filter Form -->
-          <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0">
+          <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-              <!-- === Filter Utama === -->
-              <div class="col-md-2 position-relative">
+              <!-- === BBU === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20 position-relative">
                 <label class="form-label text-primary">Filter Status Gizi:</label>
                 <div class="dropdown w-100">
-                  <button
-                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <span v-if="filters.bbu.length === 0" class="text-muted">Pilih Underweight</span>
-                    <span v-else class="selected-text">{{ underDisplayText }}</span>
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown">
+                    <span v-if="filters.bbu.length === 0" class="text-muted"
+                      >Pilih Underweight</span
+                    >
+                    <span v-else class="selected-text" :title="underDisplayText">{{
+                      underDisplayText
+                    }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
                     <li
                       v-for="item in bbuOptions"
                       :key="item"
@@ -68,20 +65,30 @@
                       <input
                         type="checkbox"
                         class="form-check-input me-2"
-                        :id="'chk-' + item"
+                        :id="'chk-bbu-' + item"
                         :value="item"
                         v-model="filters.bbu"
                       />
-                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-bbu-' + item"
+                        >{{ item }}</label
+                      >
                     </li>
-
-                    <li><hr class="dropdown-divider"></li>
-
+                    <li><hr class="dropdown-divider" /></li>
                     <li class="d-flex justify-content-between px-2">
-                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_bbu">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_bbu"
+                      >
                         Pilih Semua
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_bbu">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_bbu"
+                      >
                         Hapus Semua
                       </button>
                     </li>
@@ -89,19 +96,17 @@
                 </div>
               </div>
 
-              <div class="col-md-2">
+              <!-- === TBU === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button
-                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown">
                     <span v-if="filters.tbu.length === 0" class="text-muted">Pilih Stunting</span>
-                    <span v-else class="selected-text">{{ StuntingDisplayText }}</span>
+                    <span v-else class="selected-text" :title="StuntingDisplayText">{{
+                      StuntingDisplayText
+                    }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
                     <li
                       v-for="item in tbuOptions"
                       :key="item"
@@ -110,20 +115,30 @@
                       <input
                         type="checkbox"
                         class="form-check-input me-2"
-                        :id="'chk-' + item"
+                        :id="'chk-tbu-' + item"
                         :value="item"
                         v-model="filters.tbu"
                       />
-                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-tbu-' + item"
+                        >{{ item }}</label
+                      >
                     </li>
-
-                    <li><hr class="dropdown-divider"></li>
-
+                    <li><hr class="dropdown-divider" /></li>
                     <li class="d-flex justify-content-between px-2">
-                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_tbu">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_tbu"
+                      >
                         Pilih Semua
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_tbu">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_tbu"
+                      >
                         Hapus Semua
                       </button>
                     </li>
@@ -131,19 +146,17 @@
                 </div>
               </div>
 
-              <div class="col-md-2">
+              <!-- === BBTB === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button
-                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown">
                     <span v-if="filters.bbtb.length === 0" class="text-muted">Pilih Wasting</span>
-                    <span v-else class="selected-text">{{ WastingDisplayText }}</span>
+                    <span v-else class="selected-text" :title="WastingDisplayText">{{
+                      WastingDisplayText
+                    }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
                     <li
                       v-for="item in bbtbOptions"
                       :key="item"
@@ -152,20 +165,30 @@
                       <input
                         type="checkbox"
                         class="form-check-input me-2"
-                        :id="'chk-' + item"
+                        :id="'chk-bbtb-' + item"
                         :value="item"
                         v-model="filters.bbtb"
                       />
-                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-bbtb-' + item"
+                        >{{ item }}</label
+                      >
                     </li>
-
-                    <li><hr class="dropdown-divider"></li>
-
+                    <li><hr class="dropdown-divider" /></li>
                     <li class="d-flex justify-content-between px-2">
-                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_bbtb">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_bbtb"
+                      >
                         Pilih Semua
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_bbtb">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_bbtb"
+                      >
                         Hapus Semua
                       </button>
                     </li>
@@ -173,19 +196,19 @@
                 </div>
               </div>
 
-              <div class="col-md-3">
+              <!-- === STAGNAN === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button
-                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <span v-if="filters.stagnan.length === 0" class="text-muted">Pilih BB Stagnan</span>
-                    <span v-else class="selected-text">{{ stagnanDisplayText }}</span>
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown">
+                    <span v-if="filters.stagnan.length === 0" class="text-muted"
+                      >Pilih BB Stagnan</span
+                    >
+                    <span v-else class="selected-text" :title="stagnanDisplayText">{{
+                      stagnanDisplayText
+                    }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
                     <li
                       v-for="item in stagnanOptions"
                       :key="item"
@@ -194,20 +217,30 @@
                       <input
                         type="checkbox"
                         class="form-check-input me-2"
-                        :id="'chk-' + item"
+                        :id="'chk-stag-' + item"
                         :value="item"
                         v-model="filters.stagnan"
                       />
-                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-stag-' + item"
+                        >{{ item }}</label
+                      >
                     </li>
-
-                    <li><hr class="dropdown-divider"></li>
-
+                    <li><hr class="dropdown-divider" /></li>
                     <li class="d-flex justify-content-between px-2">
-                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_stagnan">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_stagnan"
+                      >
                         Pilih Semua
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_stagnan">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_stagnan"
+                      >
                         Hapus Semua
                       </button>
                     </li>
@@ -215,19 +248,19 @@
                 </div>
               </div>
 
-              <div class="col-md-3 position-relative">
+              <!-- === INTERVENSI === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <div class="dropdown w-100">
-                  <button
-                    class="form-select text-start overflow-hidden text-nowrap text-truncate d-flex align-items-center justify-content-between"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <span v-if="filters.intervensi.length === 0" class="text-muted">Pilih Intervensi</span>
-                    <span v-else class="selected-text">{{ intervesiDisplayText }}</span>
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown">
+                    <span v-if="filters.intervensi.length === 0" class="text-muted"
+                      >Pilih Intervensi</span
+                    >
+                    <span v-else class="selected-text" :title="intervesiDisplayText">{{
+                      intervesiDisplayText
+                    }}</span>
                   </button>
 
-                  <ul class="dropdown-menu w-100" style="max-height: 260px; overflow-y: auto;">
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
                     <li
                       v-for="item in intervensiOptions"
                       :key="item"
@@ -236,20 +269,30 @@
                       <input
                         type="checkbox"
                         class="form-check-input me-2"
-                        :id="'chk-' + item"
+                        :id="'chk-int-' + item"
                         :value="item"
                         v-model="filters.intervensi"
                       />
-                      <label class="form-check-label w-100" :for="'chk-' + item">{{ item }}</label>
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-int-' + item"
+                        >{{ item }}</label
+                      >
                     </li>
-
-                    <li><hr class="dropdown-divider"></li>
-
+                    <li><hr class="dropdown-divider" /></li>
                     <li class="d-flex justify-content-between px-2">
-                      <button class="btn btn-sm btn-outline-primary fw-semibold" type="button" @click="selectAll_intervensi">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_intervensi"
+                      >
                         Pilih Semua
                       </button>
-                      <button class="btn btn-sm btn-outline-secondary fw-semibold" type="button" @click="clearAll_intervensi">
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_intervensi"
+                      >
                         Hapus Semua
                       </button>
                     </li>
@@ -257,7 +300,8 @@
                 </div>
               </div>
 
-              <div class="col-md-2">
+              <!-- === POSYANDU === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label text-primary">Filter Lokasi</label>
                 <select
                   v-model="filters.posyandu"
@@ -271,40 +315,41 @@
                 </select>
               </div>
 
-              <div class="col-md-2">
+              <!-- === RW === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
                   <option value="">Pilih RW</option>
                   <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
                 </select>
               </div>
 
-              <div class="col-md-2">
+              <!-- === RT === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
                   <option value="">Pilih RT</option>
                   <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
                 </select>
               </div>
 
-              <div class="col-md-6 text-center">
+              <!-- === PERIODE === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label text-primary">Pilih Periode:</label>
-                <div class="d-flex justify-content-between gap-2">
-                  <select v-model="filters.periodeAwal" class="form-select text-muted">
-                    <option value="">Awal</option>
-                    <option v-for="periode in periodeOptions" :key="periode" :value="periode">
-                      {{ periode }}
-                    </option>
-                  </select>
-                  <select v-model="filters.periodeAkhir" class="form-select text-muted">
-                    <option value="">Akhir</option>
-                    <option v-for="periode in periodeOptions" :key="periode" :value="periode">
-                      {{ periode }}
-                    </option>
-                  </select>
-                </div>
+                <select v-model="filters.periodeAwal" class="form-select text-muted">
+                  <option value="">Awal</option>
+                  <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
+                </select>
               </div>
 
-              <!-- === Tombol Aksi === -->
-              <div class="col-md-12 d-flex justify-content-end mt-3">
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <label class="form-label">&nbsp;</label>
+                <select v-model="filters.periodeAkhir" class="form-select text-muted">
+                  <option value="">Akhir</option>
+                  <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
+                </select>
+              </div>
+
+              <!-- === BUTTONS === -->
+              <div class="col-12 d-flex justify-content-end mt-3">
                 <button type="submit" class="btn btn-gradient fw-semibold me-2">
                   <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
@@ -315,13 +360,348 @@
             </form>
           </div>
 
+          <!-- Mobile Filter -->
+          <!-- Floating Button -->
+          <button
+            class="btn btn-primary filter-float-btn rounded-pill shadow-lg px-4 py-2"
+            @click="mobileFilterOpen = true"
+          >
+            <i class="bi bi-funnel"></i> Filter
+          </button>
+
+          <!-- FILTER MOBILE SLIDE PANEL -->
+          <div class="filter-mobile-panel d-md-none" :class="{ open: mobileFilterOpen }">
+            <!-- HEADER -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold">Filter</h5>
+              <button class="btn btn-light" @click="mobileFilterOpen = false">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <!-- === FORM FILTER MOBILE === -->
+            <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
+              <!-- === BBU === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20 position-relative">
+                <label class="form-label text-primary">Filter Status Gizi:</label>
+                <div class="dropdown w-100">
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                    <span v-if="filters.bbu.length === 0" class="text-muted"
+                      >Pilih Underweight</span
+                    >
+                    <span v-else class="selected-text" :title="underDisplayText">{{
+                      underDisplayText
+                    }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
+                    <li
+                      v-for="item in bbuOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-bbu-' + item"
+                        :value="item"
+                        v-model="filters.bbu"
+                      />
+                      <label class="form-check-label w-100 text-truncate" :for="'chk-bbu-' + item">
+                        {{ item }}
+                      </label>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="d-flex justify-content-between px-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_bbu"
+                      >
+                        Pilih Semua
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_bbu"
+                      >
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- === TBU === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <div class="dropdown w-100">
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                    <span v-if="filters.tbu.length === 0" class="text-muted">Pilih Stunting</span>
+                    <span v-else class="selected-text" :title="StuntingDisplayText">{{
+                      StuntingDisplayText
+                    }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
+                    <li
+                      v-for="item in tbuOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-tbu-' + item"
+                        :value="item"
+                        v-model="filters.tbu"
+                      />
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-tbu-' + item"
+                        >{{ item }}</label
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="d-flex justify-content-between px-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_tbu"
+                      >
+                        Pilih Semua
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_tbu"
+                      >
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- === BBTB === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <div class="dropdown w-100">
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                    <span v-if="filters.bbtb.length === 0" class="text-muted">Pilih Wasting</span>
+                    <span v-else class="selected-text" :title="WastingDisplayText">{{
+                      WastingDisplayText
+                    }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
+                    <li
+                      v-for="item in bbtbOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-bbtb-' + item"
+                        :value="item"
+                        v-model="filters.bbtb"
+                      />
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-bbtb-' + item"
+                        >{{ item }}</label
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="d-flex justify-content-between px-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_bbtb"
+                      >
+                        Pilih Semua
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_bbtb"
+                      >
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- === STAGNAN === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <div class="dropdown w-100">
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                    <span v-if="filters.stagnan.length === 0" class="text-muted"
+                      >Pilih BB Stagnan</span
+                    >
+                    <span v-else class="selected-text" :title="stagnanDisplayText">{{
+                      stagnanDisplayText
+                    }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
+                    <li
+                      v-for="item in stagnanOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-stag-' + item"
+                        :value="item"
+                        v-model="filters.stagnan"
+                      />
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-stag-' + item"
+                        >{{ item }}</label
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="d-flex justify-content-between px-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_stagnan"
+                      >
+                        Pilih Semua
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_stagnan"
+                      >
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- === INTERVENSI === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <div class="dropdown w-100">
+                  <button class="form-select text-start text-truncate" data-bs-toggle="dropdown" data-bs-display="static">
+                    <span v-if="filters.intervensi.length === 0" class="text-muted"
+                      >Pilih Intervensi</span
+                    >
+                    <span v-else class="selected-text" :title="intervesiDisplayText">{{
+                      intervesiDisplayText
+                    }}</span>
+                  </button>
+
+                  <ul class="dropdown-menu" style="max-height: 260px; overflow-y: auto">
+                    <li
+                      v-for="item in intervensiOptions"
+                      :key="item"
+                      class="dropdown-item d-flex align-items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        :id="'chk-int-' + item"
+                        :value="item"
+                        v-model="filters.intervensi"
+                      />
+                      <label
+                        class="form-check-label w-100 text-truncate"
+                        :for="'chk-int-' + item"
+                        >{{ item }}</label
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="d-flex justify-content-between px-2">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        type="button"
+                        @click="selectAll_intervensi"
+                      >
+                        Pilih Semua
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        @click="clearAll_intervensi"
+                      >
+                        Hapus Semua
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- === POSYANDU === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <label class="form-label text-primary">Filter Lokasi</label>
+                <select
+                  v-model="filters.posyandu"
+                  class="form-select text-muted"
+                  @change="handlePosyanduChange"
+                >
+                  <option value="">Pilih Posyandu</option>
+                  <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
+                    {{ item.nama_posyandu }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- === RW === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
+                  <option value="">Pilih RW</option>
+                  <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                </select>
+              </div>
+
+              <!-- === RT === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
+                  <option value="">Pilih RT</option>
+                  <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
+                </select>
+              </div>
+
+              <!-- === PERIODE === -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <label class="form-label text-primary">Pilih Periode:</label>
+                <select v-model="filters.periodeAwal" class="form-select text-muted">
+                  <option value="">Awal</option>
+                  <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+                <label class="form-label">&nbsp;</label>
+                <select v-model="filters.periodeAkhir" class="form-select text-muted">
+                  <option value="">Akhir</option>
+                  <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
+                </select>
+              </div>
+
+              <!-- BUTTONS -->
+              <div class="col-12 d-flex justify-content-end mt-3">
+                <button type="submit" class="btn btn-gradient fw-semibold me-2">
+                  <i class="bi bi-filter me-1"></i> Terapkan
+                </button>
+                <button type="button" class="btn btn-secondary fw-semibold" @click="resetFilter">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                </button>
+              </div>
+            </form>
+          </div> 
+
           <div class="text-center mt-3">
-            <h5 class="fw-bold text-success mb-3">Ringkasan Statistik</h5>
+            <h5 class="fw-bold text-success mb-3" style="font-size: 20px;">Ringkasan Statistik</h5>
           </div>
 
           <!-- Ringkasan Statistik-->
           <div class="container-fluid my-4">
-
             <div class="row">
               <div class="col-xl-10 col-sm-12">
                 <div class="row justify-content-center">
@@ -341,7 +721,6 @@
                         <h2 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h2>
                         <h4 class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</h4>
                       </div>
-
                     </div>
                   </div>
                 </div>
@@ -349,10 +728,12 @@
 
               <!-- TOTAL ANAK -->
               <div class="col-xl-2 col-sm-12">
-                <div class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center">
+                <div
+                  class="card text-center shadow-sm border p-2 h-100 d-flex flex-column justify-content-center"
+                >
                   <h3 class="text-muted fw-bold">Total Anak Balita</h3>
                   <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                    <h1 class="fw-bold text-success mb-0">{{totalAnak}}</h1>
+                    <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
                   </div>
                 </div>
               </div>
@@ -369,43 +750,87 @@
                     <table class="table table-bordered table-hover align-middle text-center">
                       <thead class="table-success small">
                         <tr>
-                          <th @click="sortBy('nama')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            @click="sortBy('nama')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             Nama <SortIcon :field="'nama'" />
                           </th>
-                          <th @click="sortBy('posyandu')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            @click="sortBy('posyandu')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             Posyandu <SortIcon :field="'posyandu'" />
                           </th>
-                          <th style="width:100px" @click="sortBy('usia')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            style="width: 100px"
+                            @click="sortBy('usia')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             Usia (bln) <SortIcon :field="'usia'" />
                           </th>
-                          <th style="width:60px" @click="sortBy('gender')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            style="width: 60px"
+                            @click="sortBy('gender')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             JK <SortIcon :field="'gender'" />
                           </th>
-                          <th @click="sortBy('tgl_ukur')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            @click="sortBy('tgl_ukur')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             Tgl Ukur Terakhir <SortIcon :field="'tgl_ukur'" />
                           </th>
-                          <th @click="sortBy('intervensi')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            @click="sortBy('intervensi')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             Intervensi <SortIcon :field="'intervensi'" />
                           </th>
                           <th colspan="3" class="text-center">Status</th>
-                          <th @click="sortBy('rw')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            @click="sortBy('rw')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             RW <SortIcon :field="'rw'" />
                           </th>
-                          <th @click="sortBy('rt')" class="cursor-pointer align-middle text-center" rowspan="2">
+                          <th
+                            @click="sortBy('rt')"
+                            class="cursor-pointer align-middle text-center"
+                            rowspan="2"
+                          >
                             RT <SortIcon :field="'rt'" />
                           </th>
                         </tr>
                         <tr>
-                          <th @click="sortBy('tbu')" class="cursor-pointer text-center">TB/U <SortIcon :field="'tbu'" /></th>
-                          <th @click="sortBy('bbu')" class="cursor-pointer text-center">BB/U <SortIcon :field="'bbu'" /></th>
-                          <th @click="sortBy('bbtb')" class="cursor-pointer text-center">BB/TB <SortIcon :field="'bbtb'" /></th>
+                          <th @click="sortBy('tbu')" class="cursor-pointer text-center">
+                            TB/U <SortIcon :field="'tbu'" />
+                          </th>
+                          <th @click="sortBy('bbu')" class="cursor-pointer text-center">
+                            BB/U <SortIcon :field="'bbu'" />
+                          </th>
+                          <th @click="sortBy('bbtb')" class="cursor-pointer text-center">
+                            BB/TB <SortIcon :field="'bbtb'" />
+                          </th>
                         </tr>
                       </thead>
 
                       <tbody>
                         <tr v-for="anak in paginatedData" :key="anak.id" class="small">
                           <td class="text-start">
-                            <a href="#" @click.prevent="showDetail(anak)" class="fw-semibold text-decoration-none text-primary">
+                            <a
+                              href="#"
+                              @click.prevent="showDetail(anak)"
+                              class="fw-semibold text-decoration-underline text-primary"
+                            >
                               {{ anak.nama }}
                             </a>
                           </td>
@@ -419,7 +844,7 @@
                               :class="{
                                 'badge px-3 py-2 bg-danger': anak.tbu === 'Severely Stunted',
                                 'badge px-3 py-2 bg-warning text-dark': anak.tbu === 'Stunted',
-                                'text-dark': anak.tbu === 'Normal'
+                                'text-dark': anak.tbu === 'Normal',
                               }"
                             >
                               {{ anak.tbu }}
@@ -430,7 +855,7 @@
                               :class="{
                                 'badge px-3 py-2 bg-danger': anak.bbu === 'Severely Underweight',
                                 'badge px-3 py-2 bg-warning text-dark': anak.bbu === 'Underweight',
-                                'text-dark': anak.bbu === 'Normal'
+                                'text-dark': anak.bbu === 'Normal',
                               }"
                             >
                               {{ anak.bbu }}
@@ -441,7 +866,7 @@
                               :class="{
                                 'badge px-3 py-2 bg-danger': anak.bbtb === 'Severely Wasted',
                                 'badge px-3 py-2 bg-warning text-dark': anak.bbtb === 'Wasted',
-                                'text-dark': anak.bbtb === 'Normal'
+                                'text-dark': anak.bbtb === 'Normal',
                               }"
                             >
                               {{ anak.bbtb }}
@@ -458,7 +883,9 @@
                   <nav>
                     <ul class="pagination justify-content-center">
                       <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)"
+                          >Prev</a
+                        >
                       </li>
 
                       <li
@@ -472,23 +899,27 @@
                           class="page-link"
                           href="#"
                           @click.prevent="changePage(page)"
-                        >{{ page }}</a>
+                          >{{ page }}</a
+                        >
                         <span v-else class="page-link">...</span>
                       </li>
 
                       <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)"
+                          >Next</a
+                        >
                       </li>
                     </ul>
                   </nav>
-
                 </div>
               </div>
 
               <!-- DETAIL DATA -->
               <div class="col-md-4" v-if="selectedAnak">
-                <div v-if="selectedAnak" class="card shadow-sm p-4 text-center small position-relative">
-
+                <div
+                  v-if="selectedAnak"
+                  class="card shadow-sm p-4 text-center small position-relative"
+                >
                   <!-- Tombol Close -->
                   <button
                     type="button"
@@ -500,10 +931,18 @@
                   <!-- Nama dan Identitas -->
                   <h5 class="fw-bold text-dark mb-1">{{ selectedAnak.nama }}</h5>
                   <p class="text-muted mb-0">
-                    {{ selectedAnak.gender === 'L' ? 'Laki-laki' : selectedAnak.gender === 'P' ? 'Perempuan' : selectedAnak.gender }}
+                    {{
+                      selectedAnak.gender === 'L'
+                        ? 'Laki-laki'
+                        : selectedAnak.gender === 'P'
+                          ? 'Perempuan'
+                          : selectedAnak.gender
+                    }}
                   </p>
 
-                  <p class="text-muted mb-0 text-capitalize">{{ selectedAnak.alamat || 'Desa Wonosari, Kec. Bojong Gede' }}</p>
+                  <p class="text-muted mb-0 text-capitalize">
+                    {{ selectedAnak.alamat || 'Desa Wonosari, Kec. Bojong Gede' }}
+                  </p>
                   <p class="text-muted">{{ selectedAnak.posyandu || 'Posyandu Mawar' }}</p>
 
                   <!-- Badge Status Gizi -->
@@ -511,9 +950,15 @@
                     <span
                       class="badge px-3 py-2 small"
                       :class="{
-                        'bg-danger': ['Severely Wasted','Obesitas'].includes(selectedAnak.status_gizi),
-                        'bg-warning text-dark': ['Wasted','Possible risk of Overweight','Overweight'].includes(selectedAnak.status_gizi),
-                        'bg-success': selectedAnak.status_gizi === 'Normal'
+                        'bg-danger': ['Severely Wasted', 'Obesitas'].includes(
+                          selectedAnak.status_gizi,
+                        ),
+                        'bg-warning text-dark': [
+                          'Wasted',
+                          'Possible risk of Overweight',
+                          'Overweight',
+                        ].includes(selectedAnak.status_gizi),
+                        'bg-success': selectedAnak.status_gizi === 'Normal',
                       }"
                     >
                       {{ selectedAnak.status_gizi }}
@@ -543,8 +988,10 @@
                               class="badge"
                               :class="{
                                 'bg-danger': r.bbu === 'Severely Underweight',
-                                'bg-warning text-dark': ['Risiko BB Lebih', 'Underweight'].includes(r.bbu),
-                                'bg-success': r.bbu === 'Normal'
+                                'bg-warning text-dark': ['Risiko BB Lebih', 'Underweight'].includes(
+                                  r.bbu,
+                                ),
+                                'bg-success': r.bbu === 'Normal',
                               }"
                             >
                               {{ r.bbu }}
@@ -556,7 +1003,7 @@
                               :class="{
                                 'bg-danger': r.tbu === 'Severely Stunted',
                                 'bg-warning text-dark': r.tbu === 'Stunted',
-                                'bg-success': r.tbu === 'Normal'
+                                'bg-success': r.tbu === 'Normal',
                               }"
                             >
                               {{ r.tbu }}
@@ -567,21 +1014,26 @@
                               class="badge"
                               :class="{
                                 'bg-danger': r.bbtb === 'Severely Wasted',
-                                'bg-warning text-dark': ['Wasted', 'Possible risk of Overweight', 'Overweight'].includes(r.bbtb),
-                                'bg-success': r.bbtb === 'Normal'
+                                'bg-warning text-dark': [
+                                  'Wasted',
+                                  'Possible risk of Overweight',
+                                  'Overweight',
+                                ].includes(r.bbtb),
+                                'bg-success': r.bbtb === 'Normal',
                               }"
                             >
                               {{ r.bbtb }}
                             </span>
                           </td>
                         </tr>
-
                       </tbody>
                     </table>
                   </div>
 
                   <!-- Riwayat Intervensi -->
-                  <h6 class="fw-bold text-start text-secondary mt-3">Riwayat Intervensi / Bantuan</h6>
+                  <h6 class="fw-bold text-start text-secondary mt-3">
+                    Riwayat Intervensi / Bantuan
+                  </h6>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -622,7 +1074,7 @@
                   ></button>
 
                   <!-- Header -->
-                  <div class="bg-primary text-white p-4 text-center rounded-top">
+                  <div class="bg-danger text-white p-4 text-center rounded-top">
                     <h5 class="fw-bold mb-0">{{ selectedAnak.nama }}</h5>
                     <p class="text-white mb-0 small">
                       NIK: {{ selectedAnak.nik }} •
@@ -720,7 +1172,9 @@
                                 <strong>Jenis Kelamin:</strong>
                                 {{ selectedAnak.gender === 'L' ? 'Laki-laki' : 'Perempuan' }}
                               </p>
-                              <p class="mb-1"><strong>Usia:</strong> {{ selectedAnak.usia }} bulan</p>
+                              <p class="mb-1">
+                                <strong>Usia:</strong> {{ selectedAnak.usia }} bulan
+                              </p>
                               <p class="mb-1"><strong>Alamat:</strong> {{ selectedAnak.alamat }}</p>
                               <p class="mb-1">
                                 <strong>Desa/Kecamatan:</strong>
@@ -731,11 +1185,19 @@
                           <div class="col-md-6">
                             <div class="card bg-light border-0 shadow-sm p-3 h-100">
                               <h6 class="fw-bold mb-3 text-danger">Orang Tua</h6>
-                              <p class="mb-1"><strong>Ayah:</strong> {{ selectedAnak.nama_ayah }}</p>
-                              <p class="mb-1"><strong>NIK Ayah:</strong> {{ selectedAnak.nik_ayah }}</p>
+                              <p class="mb-1">
+                                <strong>Ayah:</strong> {{ selectedAnak.nama_ayah }}
+                              </p>
+                              <p class="mb-1">
+                                <strong>NIK Ayah:</strong> {{ selectedAnak.nik_ayah }}
+                              </p>
                               <p class="mb-1"><strong>Ibu:</strong> {{ selectedAnak.nama_ibu }}</p>
-                              <p class="mb-1"><strong>NIK Ibu:</strong> {{ selectedAnak.nik_ibu }}</p>
-                              <p class="mb-1"><strong>No. Telp:</strong> {{ selectedAnak.no_telp }}</p>
+                              <p class="mb-1">
+                                <strong>NIK Ibu:</strong> {{ selectedAnak.nik_ibu }}
+                              </p>
+                              <p class="mb-1">
+                                <strong>No. Telp:</strong> {{ selectedAnak.no_telp }}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -790,7 +1252,10 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr v-for="(riwayat, i) in selectedAnak.riwayat_penimbangan" :key="'penimbangan-' + i">
+                                <tr
+                                  v-for="(riwayat, i) in selectedAnak.riwayat_penimbangan"
+                                  :key="'penimbangan-' + i"
+                                >
                                   <td>{{ riwayat.tanggal }}</td>
                                   <td>{{ riwayat.bb }}</td>
                                   <td>{{ riwayat.tb }}</td>
@@ -798,7 +1263,7 @@
                                     :class="{
                                       'text-danger fw-bold': riwayat.bbtb === 'Stunting',
                                       'text-warning fw-bold': riwayat.bbtb === 'Underweight',
-                                      'text-success fw-bold': riwayat.bbtb === 'Normal'
+                                      'text-success fw-bold': riwayat.bbtb === 'Normal',
                                     }"
                                   >
                                     {{ riwayat.bbtb }}
@@ -814,10 +1279,9 @@
                               <div class="card border-0 shadow-sm h-100">
                                 <div class="card-body">
                                   <h6 class="mb-2">BB/U (0–60 bln)</h6>
-                                  <div style="height: 200px;">
+                                  <div style="height: 200px">
                                     <canvas ref="chartBB"></canvas>
                                   </div>
-
                                 </div>
                               </div>
                             </div>
@@ -827,7 +1291,7 @@
                               <div class="card border-0 shadow-sm h-100">
                                 <div class="card-body">
                                   <h6 class="mb-2">TB/U (0–60 bln)</h6>
-                                  <div style="height: 200px;">
+                                  <div style="height: 200px">
                                     <canvas ref="chartTB"></canvas>
                                   </div>
                                 </div>
@@ -849,7 +1313,6 @@
                               </div>
                             </div> -->
                           </div>
-
                         </div>
                       </div>
 
@@ -948,7 +1411,7 @@ import {
   CategoryScale,
   Legend,
   Tooltip,
-  Filler
+  Filler,
 } from 'chart.js'
 
 Chart.register(
@@ -960,22 +1423,22 @@ Chart.register(
   CategoryScale,
   Legend,
   Tooltip,
-  Filler
+  Filler,
 )
 
 // Simple sort icon component
 const SortIcon = {
   props: ['field'],
-  template: `<span v-if="$parent.sortKey === field">{{ $parent.sortDir === 'asc' ? '▲' : '▼' }}</span>`
+  template: `<span v-if="$parent.sortKey === field">{{ $parent.sortDir === 'asc' ? '▲' : '▼' }}</span>`,
 }
 
 // PORT backend kamu
-const API_PORT = 8000;
+const API_PORT = 8000
 
 // Bangun base URL dari window.location
-const { protocol, hostname } = window.location;
+const { protocol, hostname } = window.location
 // contoh hasil: "http://192.168.0.5:8000"
-const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -1000,36 +1463,60 @@ export default {
         bottom: '#DCBF1E',
       },
       wfaBoys: [
-        { m: 0, median: 3.3, sd: 0.3 }, { m: 1, median: 4.5, sd: 0.35 },
-        { m: 2, median: 5.6, sd: 0.4 }, { m: 3, median: 6.4, sd: 0.45 },
-        { m: 4, median: 7.0, sd: 0.5 }, { m: 5, median: 7.5, sd: 0.55 },
-        { m: 6, median: 7.9, sd: 0.6 }, { m: 12, median: 9.6, sd: 0.8 },
-        { m: 24, median: 12.2, sd: 1.1 }, { m: 36, median: 14.3, sd: 1.4 },
-        { m: 48, median: 16.3, sd: 1.6 }, { m: 60, median: 18.3, sd: 1.8 }
+        { m: 0, median: 3.3, sd: 0.3 },
+        { m: 1, median: 4.5, sd: 0.35 },
+        { m: 2, median: 5.6, sd: 0.4 },
+        { m: 3, median: 6.4, sd: 0.45 },
+        { m: 4, median: 7.0, sd: 0.5 },
+        { m: 5, median: 7.5, sd: 0.55 },
+        { m: 6, median: 7.9, sd: 0.6 },
+        { m: 12, median: 9.6, sd: 0.8 },
+        { m: 24, median: 12.2, sd: 1.1 },
+        { m: 36, median: 14.3, sd: 1.4 },
+        { m: 48, median: 16.3, sd: 1.6 },
+        { m: 60, median: 18.3, sd: 1.8 },
       ],
       wfaGirls: [
-        { m: 0, median: 3.2, sd: 0.3 }, { m: 1, median: 4.2, sd: 0.35 },
-        { m: 2, median: 5.1, sd: 0.4 }, { m: 3, median: 5.8, sd: 0.45 },
-        { m: 4, median: 6.4, sd: 0.5 }, { m: 5, median: 6.9, sd: 0.55 },
-        { m: 6, median: 7.3, sd: 0.6 }, { m: 12, median: 8.9, sd: 0.8 },
-        { m: 24, median: 11.5, sd: 1.1 }, { m: 36, median: 13.9, sd: 1.4 },
-        { m: 48, median: 16.0, sd: 1.6 }, { m: 60, median: 18.2, sd: 1.8 }
+        { m: 0, median: 3.2, sd: 0.3 },
+        { m: 1, median: 4.2, sd: 0.35 },
+        { m: 2, median: 5.1, sd: 0.4 },
+        { m: 3, median: 5.8, sd: 0.45 },
+        { m: 4, median: 6.4, sd: 0.5 },
+        { m: 5, median: 6.9, sd: 0.55 },
+        { m: 6, median: 7.3, sd: 0.6 },
+        { m: 12, median: 8.9, sd: 0.8 },
+        { m: 24, median: 11.5, sd: 1.1 },
+        { m: 36, median: 13.9, sd: 1.4 },
+        { m: 48, median: 16.0, sd: 1.6 },
+        { m: 60, median: 18.2, sd: 1.8 },
       ],
       hfaBoys: [
-        { m: 0, median: 49.9, sd: 1.9 }, { m: 1, median: 54.7, sd: 2.0 },
-        { m: 2, median: 58.4, sd: 2.1 }, { m: 3, median: 61.4, sd: 2.2 },
-        { m: 4, median: 63.9, sd: 2.3 }, { m: 5, median: 65.9, sd: 2.4 },
-        { m: 6, median: 67.6, sd: 2.5 }, { m: 12, median: 75.7, sd: 2.9 },
-        { m: 24, median: 87.8, sd: 3.2 }, { m: 36, median: 96.1, sd: 3.4 },
-        { m: 48, median: 103.3, sd: 3.6 }, { m: 60, median: 110.0, sd: 3.8 }
+        { m: 0, median: 49.9, sd: 1.9 },
+        { m: 1, median: 54.7, sd: 2.0 },
+        { m: 2, median: 58.4, sd: 2.1 },
+        { m: 3, median: 61.4, sd: 2.2 },
+        { m: 4, median: 63.9, sd: 2.3 },
+        { m: 5, median: 65.9, sd: 2.4 },
+        { m: 6, median: 67.6, sd: 2.5 },
+        { m: 12, median: 75.7, sd: 2.9 },
+        { m: 24, median: 87.8, sd: 3.2 },
+        { m: 36, median: 96.1, sd: 3.4 },
+        { m: 48, median: 103.3, sd: 3.6 },
+        { m: 60, median: 110.0, sd: 3.8 },
       ],
       hfaGirls: [
-        { m: 0, median: 49.1, sd: 1.9 }, { m: 1, median: 53.7, sd: 2.0 },
-        { m: 2, median: 57.1, sd: 2.1 }, { m: 3, median: 59.8, sd: 2.2 },
-        { m: 4, median: 62.1, sd: 2.3 }, { m: 5, median: 64.0, sd: 2.4 },
-        { m: 6, median: 65.7, sd: 2.5 }, { m: 12, median: 74.0, sd: 2.8 },
-        { m: 24, median: 86.4, sd: 3.2 }, { m: 36, median: 95.1, sd: 3.4 },
-        { m: 48, median: 102.7, sd: 3.6 }, { m: 60, median: 109.4, sd: 3.8 }
+        { m: 0, median: 49.1, sd: 1.9 },
+        { m: 1, median: 53.7, sd: 2.0 },
+        { m: 2, median: 57.1, sd: 2.1 },
+        { m: 3, median: 59.8, sd: 2.2 },
+        { m: 4, median: 62.1, sd: 2.3 },
+        { m: 5, median: 64.0, sd: 2.4 },
+        { m: 6, median: 65.7, sd: 2.5 },
+        { m: 12, median: 74.0, sd: 2.8 },
+        { m: 24, median: 86.4, sd: 3.2 },
+        { m: 36, median: 95.1, sd: 3.4 },
+        { m: 48, median: 102.7, sd: 3.6 },
+        { m: 60, median: 109.4, sd: 3.8 },
       ],
 
       /* Wajib ada */
@@ -1045,27 +1532,27 @@ export default {
       isCollapsed: false,
       username: '',
       today: '',
-      thisMonth:'',
+      thisMonth: '',
       kelurahan: '',
       logoSrc: null,
       logoLoaded: true,
       totalKasus: 37,
       windowWidth: window.innerWidth,
-      isFormOpen:false,
-      isDataDrag:false,
+      isFormOpen: false,
+      isDataDrag: false,
       showAdvanced: false,
       totalAnak: 0,
       filters: {
-        bbu:[],
-        tbu:[],
-        bbtb:[],
-        stagnan:[],
+        bbu: [],
+        tbu: [],
+        bbtb: [],
+        stagnan: [],
         intervensi: [],
         posyandu: '',
         rw: '',
         rt: '',
         periodeAwal: '',
-        periodeAkhir:''
+        periodeAkhir: '',
       },
       posyanduList: [],
       rwList: [],
@@ -1074,48 +1561,35 @@ export default {
       rwReadonly: true,
       rtReadonly: true,
       intervensiOptions: [
-        "MBG",
-        "KIE",
-        "Bansos",
-        "PMT",
-        "Bantuan Lainnya",
-        "Belum mendapatkan intervensi"
+        'MBG',
+        'KIE',
+        'Bansos',
+        'PMT',
+        'Bantuan Lainnya',
+        'Belum mendapatkan intervensi',
       ],
-      bbuOptions: [
-        "Severely Underweight",
-        "Underweight",
-        "Normal",
-        "Risiko BB Lebih",
-      ],
-      tbuOptions: [
-        "Severely Stunted",
-        "Stunted",
-        "Normal",
-        "Tinggi",
-      ],
+      bbuOptions: ['Severely Underweight', 'Underweight', 'Normal', 'Risiko BB Lebih'],
+      tbuOptions: ['Severely Stunted', 'Stunted', 'Normal', 'Tinggi'],
       bbtbOptions: [
-        "Severely Wasted",
-        "Wasted",
-        "Normal",
-        "Possible risk of Overweight",
-        "Overweight",
-        "Obesitas"
+        'Severely Wasted',
+        'Wasted',
+        'Normal',
+        'Possible risk of Overweight',
+        'Overweight',
+        'Obesitas',
       ],
-      stagnanOptions: [
-        "1 T",
-        "2 T",
-        "> 2 T",
-      ],
+      stagnanOptions: ['1 T', '2 T', '> 2 T'],
       // config
       ACCEPTED_EXT: ['csv'],
       ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
       MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
 
       /* Just for som pages */
-      gizi:[],
-      selectedAnak:'',
+      gizi: [],
+      selectedAnak: '',
       children: [],
-      filteredData: [],        // data hasil filter
+      filteredData: [], // data hasil filter
+      mobileFilterOpen: false,
     }
   },
   setup() {
@@ -1129,7 +1603,7 @@ export default {
     const applySearch = () => {
       const query = searchQuery.value.toLowerCase()
       filteredData.value = window.children.filter((c) =>
-        Object.values(c).some((v) => String(v).toLowerCase().includes(query))
+        Object.values(c).some((v) => String(v).toLowerCase().includes(query)),
       )
       currentPage.value = 1
     }
@@ -1148,9 +1622,7 @@ export default {
       })
     }
 
-    const totalPages = computed(() =>
-      Math.ceil(filteredData.value.length / perPage.value)
-    )
+    const totalPages = computed(() => Math.ceil(filteredData.value.length / perPage.value))
 
     const paginatedData = computed(() => {
       const start = (currentPage.value - 1) * perPage.value
@@ -1179,7 +1651,6 @@ export default {
       return pages
     })
 
-
     const changePage = (page) => {
       if (page < 1 || page > totalPages.value || page === '...') return
       currentPage.value = page
@@ -1198,7 +1669,7 @@ export default {
       applySearch,
       sortBy,
       changePage,
-      visiblePages
+      visiblePages,
     }
   },
   methods: {
@@ -1222,7 +1693,7 @@ export default {
       // Riwayat penimbangan (jika ada)
       if (anak.riwayat_penimbangan && anak.riwayat_penimbangan.length) {
         csvContent += `Riwayat Penimbangan\nTanggal,Status BB/U,Status TB/U,Status BB/TB\n`
-        anak.riwayat_penimbangan.forEach(r => {
+        anak.riwayat_penimbangan.forEach((r) => {
           csvContent += `${r.tanggal},${r.bb},${r.tb},${r.bb_tb}\n`
         })
         csvContent += `\n`
@@ -1231,7 +1702,7 @@ export default {
       // Riwayat intervensi/bantuan (jika ada)
       if (anak.riwayat_intervensi && anak.riwayat_intervensi.length) {
         csvContent += `Riwayat Intervensi / Bantuan\nTanggal,Kader,Intervensi\n`
-        anak.riwayat_intervensi.forEach(r => {
+        anak.riwayat_intervensi.forEach((r) => {
           csvContent += `${r.tanggal},${r.kader},${r.intervensi}\n`
         })
         csvContent += `\n`
@@ -1255,27 +1726,30 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
           params: this.filters, // 🔹 kirim semua filter ke backend
-        });
+        })
 
-        const items = res.data.data_anak || [];
+        console.log(this.filters);
+
+        const items = res.data.data_anak || []
 
         // 🔹 Ambil semua nama posyandu unik
-        const allPosyandu = items
-          .flatMap(item => item.posyandu?.map(p => p.posyandu).filter(Boolean) || [])
-        const uniquePosyandu = [...new Set(allPosyandu)];
+        const allPosyandu = items.flatMap(
+          (item) => item.posyandu?.map((p) => p.posyandu).filter(Boolean) || [],
+        )
+        const uniquePosyandu = [...new Set(allPosyandu)]
 
         this.posyanduList = uniquePosyandu.map((nama, idx) => ({
           id: idx + 1,
           nama_posyandu: nama,
-        }));
+        }))
 
         // 🔹 Format data anak
         this.children = items.map((item) => {
-          const kelahiran = item.kelahiran?.[0] || {};
-          const keluarga = item.keluarga?.[0] || {};
-          const pendamping = item.pendampingan?.at(-1) || {};
-          const posyandu = item.posyandu?.at(-1) || {};
-          const intervensi = item.intervensi?.at(-1);
+          const kelahiran = item.kelahiran?.[0] || {}
+          const keluarga = item.keluarga?.[0] || {}
+          const pendamping = item.pendampingan?.at(-1) || {}
+          const posyandu = item.posyandu?.at(-1) || {}
+          const intervensi = item.intervensi?.at(-1)
 
           return {
             id: item.id,
@@ -1317,19 +1791,18 @@ export default {
               keluarga: item.keluarga || [],
               pendampingan: item.pendampingan || [],
               posyandu: item.posyandu || [],
-              intervensi: item.intervensi || []
-            }
+              intervensi: item.intervensi || [],
+            },
           }
-        });
+        })
 
         // ✅ simpan hasilnya
-        this.filteredData = [...this.children];
+        this.filteredData = [...this.children]
 
         // 🔹 (opsional) sekalian update ringkasan status gizi
-        await this.hitungStatusGizi();
-
+        await this.hitungStatusGizi()
       } catch (e) {
-        console.error(e);
+        console.error(e)
 
         //this.showError('Error Ambil Data Anak', e);
       }
@@ -1337,53 +1810,51 @@ export default {
     async applyFilter() {
       this.isLoading = true
       try {
-        await this.loadChildren(),
-        await this.hitungStatusGizi()
-      }catch(e){
-        console.error(e);
-      }finally{
+        ;(await this.loadChildren(), await this.hitungStatusGizi())
+      } catch (e) {
+        console.error(e)
+      } finally {
         this.isLoading = false
       }
     },
     async hitungStatusGizi() {
       try {
         const params = {
-          posyandu: this.filters.posyandu|| '',
-          rw: this.filters.rw|| '',
-          rt: this.filters.rt|| '',
-          usia: this.filters.usia|| '',
-          bbu: this.filters.bbu|| '',
-          tbu: this.filters.tbu|| '',
-          bbtb: this.filters.bbtb|| '',
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          usia: this.filters.usia || '',
+          bbu: this.filters.bbu || '',
+          tbu: this.filters.tbu || '',
+          bbtb: this.filters.bbtb || '',
           intervensi: this.filters.intervensi || [],
           periodeAwal: this.filters.periodeAwal || '',
           periodeAkhir: this.filters.periodeAkhir || '',
-        };
+        }
 
         const res = await axios.get(`${baseURL}/api/children/status`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           params,
-        });
+        })
 
-        const { total, counts, kelurahan } = res.data;
+        const { total, counts, kelurahan } = res.data
 
         // ✅ Bind langsung ke data komponen
-        this.gizi = counts || [];
-        this.totalAnak = total || 0;
-        this.kelurahan = kelurahan || '-';
-
+        this.gizi = counts || []
+        this.totalAnak = total || 0
+        this.kelurahan = kelurahan || '-'
       } catch (error) {
-        console.error('❌ hitungStatusGizi error:', error);
+        console.error('❌ hitungStatusGizi error:', error)
       }
     },
     handlePosyanduChange() {
       const pos = this.filters.posyandu
 
       if (pos) {
-        const filteredChildren = this.children.filter(c => c.posyandu === pos)
+        const filteredChildren = this.children.filter((c) => c.posyandu === pos)
 
-        const rwSet = new Set(filteredChildren.map(c => c.rw).filter(Boolean))
-        const rtSet = new Set(filteredChildren.map(c => c.rt).filter(Boolean))
+        const rwSet = new Set(filteredChildren.map((c) => c.rw).filter(Boolean))
+        const rtSet = new Set(filteredChildren.map((c) => c.rt).filter(Boolean))
 
         this.rwList = Array.from(rwSet)
         this.rtList = Array.from(rtSet)
@@ -1391,8 +1862,8 @@ export default {
         this.rtReadonly = false
       } else {
         // reset kalau posyandu dikosongin
-        const rwSet = new Set(this.children.map(c => c.rw).filter(Boolean))
-        const rtSet = new Set(this.children.map(c => c.rt).filter(Boolean))
+        const rwSet = new Set(this.children.map((c) => c.rw).filter(Boolean))
+        const rtSet = new Set(this.children.map((c) => c.rt).filter(Boolean))
         this.rwList = Array.from(rwSet)
         this.rtList = Array.from(rtSet)
         this.rwReadonly = true
@@ -1412,7 +1883,7 @@ export default {
         rw: '',
         rt: '',
         periodeAwal: '',
-        periodeAkhir: ''
+        periodeAkhir: '',
       }
 
       this.rwList = []
@@ -1463,7 +1934,7 @@ export default {
           this.logoSrc = parsed.logo || null
           return
         }
-         // kalau belum ada cache, fetch dari API
+        // kalau belum ada cache, fetch dari API
         const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
@@ -1477,7 +1948,7 @@ export default {
           // simpan di localStorage untuk load cepat di page berikutnya
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-      }catch (error) {
+      } catch (error) {
         console.warn('Gagal load config:', error)
         this.logoLoaded = false
       }
@@ -1504,9 +1975,18 @@ export default {
     },
     generatePeriodeOptions() {
       const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
       ]
 
       const now = new Date()
@@ -1524,23 +2004,38 @@ export default {
       this.isCollapsed = !this.isCollapsed
     },
     getTodayDate() {
-      const hari = [
-        'Minggu', 'Senin', 'Selasa', 'Rabu',
-        'Kamis', 'Jumat', 'Sabtu'
-      ]
+      const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
       const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
       ]
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
     getThisMonth() {
       const bulan = [
-        'Januari', 'Februari', 'Maret', 'April',
-        'Mei', 'Juni', 'Juli', 'Agustus',
-        'September', 'Oktober', 'November', 'Desember'
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
       ]
 
       const now = new Date()
@@ -1590,7 +2085,7 @@ export default {
         kecamatan: props.kecamatan || '-',
         provinsi: props.provinsi || '-',
         kota: props.kota || '-',
-        status_gizi:props.bbtb || '-',
+        status_gizi: props.bbtb || '-',
 
         // --- Orang Tua (keluarga[0]) ---
         nama_ayah: keluargaList[0]?.nama_ayah || '-',
@@ -1600,7 +2095,7 @@ export default {
         no_telp: keluargaList[0]?.no_telp || '-',
 
         // --- Data Kelahiran ---
-        kelahiran: kelahiranList.map(k => ({
+        kelahiran: kelahiranList.map((k) => ({
           no_kia: k.no_kia || '-',
           tmpt_dilahirkan: k.tmpt_dilahirkan || '-',
           tgl_lahir: k.tgl_lahir || '-',
@@ -1610,7 +2105,7 @@ export default {
         })),
 
         // --- Riwayat Penimbangan (Posyandu) ---
-        riwayat_penimbangan: posyanduList.map(p => ({
+        riwayat_penimbangan: posyanduList.map((p) => ({
           tanggal: p.tgl_ukur || '-',
           bb: p.bb || '-',
           tb: p.tb || '-',
@@ -1619,7 +2114,7 @@ export default {
           bbtb: p.bbtb || '-',
         })),
 
-         // ambil status terakhir
+        // ambil status terakhir
         status_terakhir: {
           bbu: lastPosyandu.bbu || '-',
           tbu: lastPosyandu.tbu || '-',
@@ -1627,14 +2122,14 @@ export default {
         },
 
         // --- Riwayat Intervensi ---
-        riwayat_intervensi: intervensiList.map(i => ({
+        riwayat_intervensi: intervensiList.map((i) => ({
           tanggal: i.tanggal || '-',
           kader: i.kader || '-',
           intervensi: i.jenis || '-',
         })),
 
         // --- Riwayat Pendampingan (TPK) ---
-        riwayat_pendampingan: pendampinganList.map(p => ({
+        riwayat_pendampingan: pendampinganList.map((p) => ({
           tgl_pendampingan: p.tanggal || '-',
           petugas: p.kader || '-',
           usia: p.usia || '-',
@@ -1642,55 +2137,56 @@ export default {
           rw: props.rw || '-',
           bb_lahir: kelahiranList[0]?.bb_lahir || '-',
           pb_lahir: kelahiranList[0]?.pb_lahir || '-',
-          bb: p.bb || '-'
+          bb: p.bb || '-',
         })),
-
       }
 
-      this.renderKMSChart();
+      this.renderKMSChart()
       //console.log('selectedAnak detail:', this.selectedAnak)
     },
     // KMS Chart (BB/U & TB/U)
     renderKMSChart() {
-      if (!this.selectedAnak?.riwayat_penimbangan?.length) return;
+      if (!this.selectedAnak?.riwayat_penimbangan?.length) return
 
       this.$nextTick(() => {
-        const riwayat = this.selectedAnak.riwayat_penimbangan.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
-        if (!riwayat.length) return;
+        const riwayat = this.selectedAnak.riwayat_penimbangan.sort((a, b) =>
+          a.tanggal.localeCompare(b.tanggal),
+        )
+        if (!riwayat.length) return
 
-        const gender = this.selectedAnak.gender;
-        const lastRecord = riwayat[riwayat.length - 1];
-        const usiaAnak = Number(this.selectedAnak.usia);
-        const bbAnak = Number(lastRecord.bb);
-        const tbAnak = Number(lastRecord.tb);
+        const gender = this.selectedAnak.gender
+        const lastRecord = riwayat[riwayat.length - 1]
+        const usiaAnak = Number(this.selectedAnak.usia)
+        const bbAnak = Number(lastRecord.bb)
+        const tbAnak = Number(lastRecord.tb)
 
-        const wfa = gender === 'L' ? this.wfaBoys : this.wfaGirls;
-        const hfa = gender === 'L' ? this.hfaBoys : this.hfaGirls;
-        const C = this.kmsColors;
+        const wfa = gender === 'L' ? this.wfaBoys : this.wfaGirls
+        const hfa = gender === 'L' ? this.hfaBoys : this.hfaGirls
+        const C = this.kmsColors
 
         // === Utility warna → RGBA ===
         this.hexA = (hex, alpha) => {
-          const bigint = parseInt(hex.replace('#', ''), 16);
-          const r = (bigint >> 16) & 255;
-          const g = (bigint >> 8) & 255;
-          const b = bigint & 255;
-          return `rgba(${r},${g},${b},${alpha})`;
-        };
+          const bigint = parseInt(hex.replace('#', ''), 16)
+          const r = (bigint >> 16) & 255
+          const g = (bigint >> 8) & 255
+          const b = bigint & 255
+          return `rgba(${r},${g},${b},${alpha})`
+        }
 
         // === Ekspansi WHO dataset ===
         const expandWHO = (arr) => ({
-          usia: arr.map(d => d.m),
-          median: arr.map(d => d.median),
-          sd1: arr.map(d => d.median + 1 * d.sd),
-          sd2: arr.map(d => d.median + 2 * d.sd),
-          sd3: arr.map(d => d.median + 3 * d.sd),
-          sd_1: arr.map(d => d.median - 1 * d.sd),
-          sd_2: arr.map(d => d.median - 2 * d.sd),
-          sd_3: arr.map(d => d.median - 3 * d.sd),
-        });
+          usia: arr.map((d) => d.m),
+          median: arr.map((d) => d.median),
+          sd1: arr.map((d) => d.median + 1 * d.sd),
+          sd2: arr.map((d) => d.median + 2 * d.sd),
+          sd3: arr.map((d) => d.median + 3 * d.sd),
+          sd_1: arr.map((d) => d.median - 1 * d.sd),
+          sd_2: arr.map((d) => d.median - 2 * d.sd),
+          sd_3: arr.map((d) => d.median - 3 * d.sd),
+        })
 
-        const bbData = expandWHO(wfa);
-        const tbData = expandWHO(hfa);
+        const bbData = expandWHO(wfa)
+        const tbData = expandWHO(hfa)
 
         // === Kurva area (dengan warna) ===
         const makeDatasets = (D, C) => [
@@ -1764,25 +2260,25 @@ export default {
             pointRadius: 0,
             order: 7,
           },
-        ];
+        ]
 
         // === Titik anak ===
         // eslint-disable-next-line no-unused-vars
         const makePoint = (D, usiaAnak, nilai, labelY) => {
           // Cari usia terdekat
-          let nearestIndex = 0;
-          let minDiff = Infinity;
+          let nearestIndex = 0
+          let minDiff = Infinity
           D.usia.forEach((u, i) => {
-            const diff = Math.abs(u - usiaAnak);
+            const diff = Math.abs(u - usiaAnak)
             if (diff < minDiff) {
-              minDiff = diff;
-              nearestIndex = i;
+              minDiff = diff
+              nearestIndex = i
             }
-          });
+          })
 
           // Data titik tunggal
-          const pointData = Array(D.usia.length).fill(null);
-          pointData[nearestIndex] = nilai;
+          const pointData = Array(D.usia.length).fill(null)
+          pointData[nearestIndex] = nilai
 
           return {
             label: 'Anak',
@@ -1796,8 +2292,8 @@ export default {
             clip: false, // penting biar tidak terpotong oleh area
             order: 9999, // paling depan
             z: 9999,
-          };
-        };
+          }
+        }
 
         // === Chart Builder ===
         const buildChart = (ctx, dataObj, labelY, nilaiAnak, usiaAnak, minY, maxY) => {
@@ -1852,25 +2348,24 @@ export default {
                 },
               },
             },
-          });
-        };
+          })
+        }
 
         // === BB/U Chart ===
-        const ctxBB = this.$refs.chartBB?.getContext('2d');
+        const ctxBB = this.$refs.chartBB?.getContext('2d')
         if (ctxBB) {
-          if (this.chartBB) this.chartBB.destroy();
-          this.chartBB = buildChart(ctxBB, bbData, 'Berat Badan (kg)', bbAnak, usiaAnak, 0, 25);
+          if (this.chartBB) this.chartBB.destroy()
+          this.chartBB = buildChart(ctxBB, bbData, 'Berat Badan (kg)', bbAnak, usiaAnak, 0, 25)
         }
 
         // === TB/U Chart ===
-        const ctxTB = this.$refs.chartTB?.getContext('2d');
+        const ctxTB = this.$refs.chartTB?.getContext('2d')
         if (ctxTB) {
-          if (this.chartTB) this.chartTB.destroy();
-          this.chartTB = buildChart(ctxTB, tbData, 'Tinggi Badan (cm)', tbAnak, usiaAnak, 45, 120);
+          if (this.chartTB) this.chartTB.destroy()
+          this.chartTB = buildChart(ctxTB, tbData, 'Tinggi Badan (cm)', tbAnak, usiaAnak, 45, 120)
         }
-      });
+      })
     },
-
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1879,7 +2374,7 @@ export default {
       namePart = namePart.replace(/[._]/g, ' ')
       this.username = namePart
         .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ')
     } else {
       this.username = 'User'
@@ -1887,56 +2382,56 @@ export default {
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
-  computed:{
+  computed: {
     periodeLabel() {
       // Jika user pilih ALL → tampilkan bulan berjalan
       if (!this.filters.periode) {
-        return new Date().toLocaleString("id-ID", { month: "long", year: "numeric" })
+        return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })
       }
 
-      const [year, month] = this.filters.periode.split("-")
+      const [year, month] = this.filters.periode.split('-')
       const date = new Date(year, month - 1, 1)
-      return date.toLocaleString("id-ID", { month: "long", year: "numeric" })
+      return date.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
     },
     underDisplayText() {
-      const total = this.filters.bbu.length;
-      const allSelected = total === this.bbuOptions.length;
+      const total = this.filters.bbu.length
+      const allSelected = total === this.bbuOptions.length
 
-      if (allSelected) return 'All';
-      if (total === 1) return this.filters.bbu[0];
-      return `${total} Selected`;
+      if (allSelected) return 'All'
+      if (total === 1) return this.filters.bbu[0]
+      return `${total} Selected`
     },
     StuntingDisplayText() {
-      const total = this.filters.tbu.length;
-      const allSelected = total === this.tbuOptions.length;
+      const total = this.filters.tbu.length
+      const allSelected = total === this.tbuOptions.length
 
-      if (allSelected) return 'All';
-      if (total === 1) return this.filters.tbu[0];
-      return `${total} Selected`;
+      if (allSelected) return 'All'
+      if (total === 1) return this.filters.tbu[0]
+      return `${total} Selected`
     },
     WastingDisplayText() {
-      const total = this.filters.bbtb.length;
-      const allSelected = total === this.bbtbOptions.length;
+      const total = this.filters.bbtb.length
+      const allSelected = total === this.bbtbOptions.length
 
-      if (allSelected) return 'All';
-      if (total === 1) return this.filters.bbtb[0];
-      return `${total} Selected`;
+      if (allSelected) return 'All'
+      if (total === 1) return this.filters.bbtb[0]
+      return `${total} Selected`
     },
     stagnanDisplayText() {
-      const total = this.filters.stagnan.length;
-      const allSelected = total === this.stagnanOptions.length;
+      const total = this.filters.stagnan.length
+      const allSelected = total === this.stagnanOptions.length
 
-      if (allSelected) return 'All';
-      if (total === 1) return this.filters.stagnan[0];
-      return `${total} Selected`;
+      if (allSelected) return 'All'
+      if (total === 1) return this.filters.stagnan[0]
+      return `${total} Selected`
     },
     intervesiDisplayText() {
-      const total = this.filters.intervensi.length;
-      const allSelected = total === this.intervensiOptions.length;
+      const total = this.filters.intervensi.length
+      const allSelected = total === this.intervensiOptions.length
 
-      if (allSelected) return 'All';
-      if (total === 1) return this.filters.intervensi[0];
-      return `${total} Selected`;
+      if (allSelected) return 'All'
+      if (total === 1) return this.filters.intervensi[0]
+      return `${total} Selected`
     },
   },
   async mounted() {
@@ -1952,7 +2447,6 @@ export default {
 
       // Ambil query param
       const { tipe, status } = this.$route.query
-      console.log('data dari dashboard:', tipe, status)
 
       // Copy semua children
       this.filteredData = [...this.children]
@@ -1974,7 +2468,6 @@ export default {
           this.applyFilter()
         }
       }
-
 
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
@@ -2006,165 +2499,297 @@ button {
 }
 
 label {
-  font-size: 0.9rem;   /* label proporsional */
+  font-size: 0.9rem; /* label proporsional */
 }
-  .dropdown-menu .form-check-label {
-    white-space: normal !important;
-    word-break: break-word;
+.dropdown-menu .form-check-label {
+  white-space: normal !important;
+  word-break: break-word;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  max-height: 1000px; /* cukup besar agar muat konten */
+  opacity: 1;
+}
+/* Timeline Style */
+.timeline li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+.timeline .dot {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.table-modern {
+  border: none !important;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Header */
+.table-modern th {
+  background-color: var(--bs-primary) !important; /* primary */
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+/* Cell */
+.table-modern td {
+  vertical-align: middle;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+/* Row hover */
+.table-modern tr:hover {
+  background-color: rgba(13, 110, 253, 0.08) !important;
+  transition: background 0.2s ease-in-out;
+}
+
+/* Pagination & footer */
+.table-modern .pagination {
+  margin-top: 1rem;
+}
+
+.table-modern .pagination .page-link {
+  border-radius: 0.5rem;
+  color: var(--bs-primary);
+}
+
+.table-modern .pagination .active .page-link {
+  background-color: #6c757d; /* secondary */
+  border-color: #6c757d;
+  color: #fff;
+}
+
+.progress-bar {
+  transition: width 0.4s ease-in-out;
+}
+.progress-bar[data-progress='low'] {
+  background-color: var(--bs-primary); /* biru awal */
+}
+.progress-bar[data-progress='mid'] {
+  background-color: #ffc107; /* kuning tengah */
+}
+.progress-bar[data-progress='high'] {
+  background-color: #198754; /* hijau akhir */
+}
+/* di <style scoped> */
+.my-striped tr:nth-child(even) {
+  background-color: #f8f9fa !important;
+}
+.my-striped tr:nth-child(odd) {
+  background-color: #ffffff !important;
+}
+.dropzone-full {
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropzone-full.border-primary {
+  border-width: 2px !important;
+}
+
+.dropzone-full .bi {
+  opacity: 0.9;
+}
+
+/* state ketika drag */
+.dropzone-full.bg-light {
+  background-color: #f8fafc !important;
+}
+
+/* optional: fokus keyboard */
+.dropzone-full:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+}
+
+.border-violet {
+  border-color: #4f0891 !important;
+} /* Overweight - Hitam */
+.text-violet {
+  color: #4f0891 !important;
+}
+
+/* === Warna garis sesuai item.color === */
+.stroke-danger polyline {
+  stroke: #dc3545;
+}
+.stroke-warning polyline {
+  stroke: #ffc107;
+}
+.stroke-success polyline {
+  stroke: #198754;
+}
+.stroke-info polyline {
+  stroke: #0dcaf0;
+}
+.stroke-dark polyline {
+  stroke: #343a40;
+}
+.stroke-violet polyline {
+  stroke: #4f0891;
+}
+/* Hover efek */
+.card:hover .svg-line polyline {
+  opacity: 1;
+  stroke-width: 3;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 992px) {
+  .custom-20 {
+    width: 20% !important;
+    flex: 0 0 20% !important;
+    max-width: 20% !important;
+  }
+}
+
+/* Dropdown full width */
+.dropdown,
+.dropdown > button.form-select {
+  width: 100% !important;
+  display: block !important;
+}
+
+.dropdown-menu {
+  width: 100% !important;
+}
+
+/* Truncate */
+.selected-text,
+.form-select.text-truncate {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-item label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tombol floating filter (mobile only) */
+.filter-float-btn {
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  z-index: 2000;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .filter-float-btn {
+    display: block;
   }
 
-  .collapse-enter-active,
-  .collapse-leave-active {
-    transition: all 0.3s ease;
-    overflow: hidden;
-  }
-
-  .collapse-enter-from,
-  .collapse-leave-to {
-    max-height: 0;
-    opacity: 0;
-  }
-
-  .collapse-enter-to,
-  .collapse-leave-from {
-    max-height: 1000px; /* cukup besar agar muat konten */
-    opacity: 1;
-  }
-  /* Timeline Style */
-  .timeline li {
-    position: relative;
-    padding-left: 20px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-  }
-  .timeline .dot {
-    position: absolute;
+  /* Panel filter mobile */
+  .filter-mobile-panel {
+    position: fixed;
     left: 0;
-    top: 4px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+    right: 0;
+    bottom: -100%;
+    height: 85%;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2001;
+    padding: 15px;
+    overflow-y: auto;
+    transition: bottom 0.35s ease;
   }
 
-  .table-modern {
-    border: none !important;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  .filter-mobile-panel.open {
+    bottom: 0;
+  }
+}
+
+/* ===== Pagination Responsive All Devices ===== */
+
+/* MOBILE SMALL (≤576px) */
+@media (max-width: 576px) {
+  .pagination {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    padding-bottom: 6px;
   }
 
-  /* Header */
-  .table-modern th {
-    background-color: var(--bs-primary) !important; /* primary */
-    color: #fff !important;
-    font-weight: 600;
-    padding: 0.75rem;
-    text-align: left;
+  .pagination .page-link {
+    padding: 4px 8px;
+    font-size: 0.65rem;
+    min-width: 30px;
   }
 
-  /* Cell */
-  .table-modern td {
-    vertical-align: middle;
-    padding: 0.65rem 0.75rem;
-    border-bottom: 1px solid #f1f1f1;
+  .pagination .page-item {
+    flex-shrink: 0;
+  }
+}
+
+/* TABLET (576px–768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
-  /* Row hover */
-  .table-modern tr:hover {
-    background-color: rgba(13, 110, 253, 0.08) !important;
-    transition: background 0.2s ease-in-out;
+  .pagination .page-link {
+    padding: 6px 12px;
+    font-size: 0.65rem;
+  }
+}
+
+/* SMALL DESKTOP (768px–1200px) */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .pagination {
+    gap: 8px;
   }
 
-  /* Pagination & footer */
-  .table-modern .pagination {
-    margin-top: 1rem;
+  .pagination .page-link {
+    padding: 7px 14px;
+    font-size: 0.65rem;
   }
+}
 
-  .table-modern .pagination .page-link {
-    border-radius: 0.5rem;
-    color: var(--bs-primary);
+/* LARGE DESKTOP (≥1200px) */
+@media (min-width: 1201px) {
+  .pagination .page-link {
+    padding: 8px 16px;
+    font-size: 0.65rem;
   }
+}
 
-  .table-modern .pagination .active .page-link {
-    background-color: #6c757d; /* secondary */
-    border-color: #6c757d;
-    color: #fff;
-  }
-
-  .progress-bar {
-    transition: width 0.4s ease-in-out;
-  }
-  .progress-bar[data-progress='low'] {
-    background-color: var(--bs-primary); /* biru awal */
-  }
-  .progress-bar[data-progress='mid'] {
-    background-color: #ffc107; /* kuning tengah */
-  }
-  .progress-bar[data-progress='high'] {
-    background-color: #198754; /* hijau akhir */
-  }
-  /* di <style scoped> */
-  .my-striped tr:nth-child(even) {
-    background-color: #f8f9fa !important;
-  }
-  .my-striped tr:nth-child(odd) {
-    background-color: #ffffff !important;
-  }
-  .dropzone-full {
-    cursor: pointer;
-    transition: background-color .15s ease, border-color .15s ease;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .dropzone-full.border-primary {
-    border-width: 2px !important;
-  }
-
-  .dropzone-full .bi {
-    opacity: 0.9;
-  }
-
-  /* state ketika drag */
-  .dropzone-full.bg-light {
-    background-color: #f8fafc !important;
-  }
-
-  /* optional: fokus keyboard */
-  .dropzone-full:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(13,110,253,0.12);
-  }
-
-  .border-violet { border-color: #4f0891 !important; } /* Overweight - Hitam */
-  .text-violet {color: #4f0891 !important;}
-
-  /* === Warna garis sesuai item.color === */
-  .stroke-danger polyline {
-    stroke: #dc3545;
-  }
-  .stroke-warning polyline {
-    stroke: #ffc107;
-  }
-  .stroke-success polyline {
-    stroke: #198754;
-  }
-  .stroke-info polyline {
-    stroke: #0dcaf0;
-  }
-  .stroke-dark polyline {
-    stroke: #343a40;
-  }
-  .stroke-violet polyline {
-    stroke: #4f0891;
-  }
-  /* Hover efek */
-  .card:hover .svg-line polyline {
-    opacity: 1;
-    stroke-width: 3;
-    transition: all 0.3s ease;
-  }
 </style>
