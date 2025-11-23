@@ -2001,10 +2001,10 @@ export default {
 
       const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
 
-      console.log("Catin Chart → Ref:", refName, ref);
+      /* console.log("Catin Chart → Ref:", refName, ref);
       console.log("Labels:", labels);
       console.log("Values:", values);
-      console.log("DataTable:", dataTable);
+      console.log("DataTable:", dataTable); */
 
       this[refName + 'Instance'] = new Chart(ctx, {
         type: 'line',
@@ -2249,7 +2249,7 @@ export default {
         this.totalSudah = res.data.grouping.punya_keduanya || 0;
         this.totalBelum = res.data.grouping.hanya_kunjungan || 0;
 
-        this
+        //this
 
         // 💚 anak
         if (this.activeMenu === 'anak') {
@@ -2259,6 +2259,8 @@ export default {
 
         // 💚 bumil
         if (this.activeMenu === 'bumil') {
+          console.log(res.data);
+
           const punya = res.data.detail.punya_keduanya.map(item => this.mapToBumil(item));
           const intervensiAja = res.data.detail.hanya_intervensi.map(item => this.mapToBumil(item));
 
@@ -3036,13 +3038,14 @@ export default {
 
         const ctx = canvas.getContext('2d');
         //const data = this.dataLoad || [];
-        const data = this.dataLoad_belum || [];
+        const data = this.dataLoad || [];
+        /* console.log('data: ', data); */
 
         // 🛑 Jika data kosong sama sekali
-        if (!data.length) {
+        /* if (!data.length) {
           this.noIntervensiMessage = "Tidak ada data untuk 3 bulan terakhir";
           return;
-        }
+        } */
 
         const now = new Date();
         const startDate = new Date();
@@ -3064,10 +3067,10 @@ export default {
         );
 
         // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
-        if (!recentIntervensi.length) {
+        /* if (!recentIntervensi.length) {
           this.noIntervensiMessage = "Tidak ada data untuk 3 bulan terakhir";
           return;
-        }
+        } */
 
         // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = "";
@@ -3152,8 +3155,8 @@ export default {
         this.bulanLabels = labels;
         this.indikatorCatin = indikator;
 
-        console.log("📌 Labels Catin:", this.bulanLabels);
-        console.log("📌 Indikator Catin:", this.indikatorCatin);
+        /* console.log("📌 Labels Catin:", this.bulanLabels);
+        console.log("📌 Indikator Catin:", this.indikatorCatin); */
 
       } catch (err) {
         console.error('❌ Gagal memuat indikator catin bulanan:', err);
@@ -3548,7 +3551,7 @@ export default {
       await this.generateInfoBoxes() ;
       await this.generateDataTable();
       await this.masalahGanda();
-      await this.hitungIntervensi();
+      //await this.hitungIntervensi();
       await this.generateInfoBoxes();
 
       this.renderLineChart();

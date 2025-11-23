@@ -147,11 +147,11 @@
                 <label for="filter" class="text-primary"> Filter Periode:</label>
                 <div class="d-flex justify-content-between gap-2">
                   <select v-model="filters.periodeAwal" class="form-select text-muted">
-                    <option value="awal">Awal</option>
+                    <option value=" ">Awal</option>
                     <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
                   </select>
                   <select v-model="filters.periodeAkhir" class="form-select text-muted">
-                    <option value="akhir">Akhir</option>
+                    <option value=" ">Akhir</option>
                     <option v-for="p in periodeOptions" :key="p" :value="p">{{ p }}</option>
                   </select>
                 </div>
@@ -1011,7 +1011,7 @@ export default {
           periodeAkhir: this.filters.periodeAkhir || '',
 
         };
-        console.log(params);
+        //console.log(params);
 
         // Status bisa multiple (checkbox)
         if (this.filters.status && this.filters.status.length > 0) {

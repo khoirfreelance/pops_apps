@@ -61,7 +61,7 @@ class CatinController extends Controller
 
         // --- Ambil semua record dulu ---
         $all = $query->orderBy('tanggal_pemeriksaan')->get();
-        $all = $all->groupBy('nik_perempuan')->map(function ($items) {  
+        $all = $all->groupBy('nik_perempuan')->map(function ($items) {
             return $items->first();
         })->values();
         //dd($all->count());
@@ -469,32 +469,61 @@ class CatinController extends Controller
                 $query->where('rt', $request->rt);
 
             // 5️⃣ Filter periode
-            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+            if ($request->filled('periode')) {
 
-                $periodeAwal = $this->parseBulanTahun($request->periodeAwal, false);
-                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
+                $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+                $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
 
-                $query->whereBetween('tanggal_pendampingan', [
-                    $periodeAwal,
-                    $periodeAkhir
-                ]);
+            } elseif ($request->has('periodeAwal') && $request->has('periodeAkhir')) {
 
+                // Jika kiriman page adalah " " (spasi tunggal)
+                if (trim($request->periodeAwal) === '' && trim($request->periodeAkhir) === '') {
+
+                    // ➤ DEFAULT 1 TAHUN KE BELAKANG
+                    $tanggalMulai = now()->subYear()->startOfMonth();
+                    $tanggalAkhir = now()->endOfMonth();
+
+                    $filters['periodeAwal']  = $tanggalMulai->format('Y-m-d');
+                    $filters['periodeAkhir'] = $tanggalAkhir->format('Y-m-d');
+
+                } else {
+                    // ➤ FORMAT: Jan 2024 atau Jan+2024
+                    $parseBulanTahun = function ($str) {
+                        $str = str_replace('+', ' ', $str);
+                        [$bulan, $tahun] = explode(' ', trim($str));
+
+                        $bulanIndex = array_search($bulan, self::bulan);
+                        if ($bulanIndex === false) {
+                            throw new Exception("Format bulan tidak valid: $bulan");
+                        }
+
+                        return Carbon::createFromFormat('Y-m', $tahun . '-' . $bulanIndex);
+                    };
+
+                    $awal  = $parseBulanTahun($request->periodeAwal);
+                    $akhir = $parseBulanTahun($request->periodeAkhir);
+
+                    $filters['periodeAwal']  = $awal->copy()->startOfMonth()->format('Y-m-d');
+                    $filters['periodeAkhir'] = $akhir->copy()->endOfMonth()->format('Y-m-d');
+                }
             } else {
-
-                // DEFAULT 1 TAHUN TERAKHIR
-                $tanggalAkhir = Carbon::now()->endOfMonth();
-                $tanggalAwal = Carbon::now()->subYear()->startOfMonth();
-
-                $query->whereBetween('tanggal_pendampingan', [
-                    $tanggalAwal,
-                    $tanggalAkhir
-                ]);
+                $tanggal = now()->subMonth();
+                $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             }
 
+            // 👉 WAJIB: Terapkan filter periode ke query
+            $query->whereBetween('tanggal_pemeriksaan', [
+                $filters['periodeAwal'],
+                $filters['periodeAkhir']
+            ]);
+
+            //dd($request->ref);
 
             // --- Ambil semua record dulu ---
             $all = $query->orderBy('tanggal_pemeriksaan')->get();
-            $all = $all->groupBy('nik_perempuan')->map(function ($items) {  
+            $all = $all->groupBy('nik_perempuan')->map(function ($items) {
                 return $items->first();
             })->values();
             //dd($all->count());
@@ -631,7 +660,7 @@ class CatinController extends Controller
 
             })->values();
 
-            dd(
+            /* dd(
                 $groupedData
                     ->filter(fn($i) => str_contains(strtolower($i['status_kek'] ?? ''), 'kek'))
                     ->map(fn($i) => [
@@ -639,7 +668,7 @@ class CatinController extends Controller
                         'status_kek' => $i['status_kek'],
                         'nik_perempuan' => $i['nik_perempuan'],
                     ])
-            );
+            ); */
 
 
             // 1️⃣0️⃣ Hitung status utama
