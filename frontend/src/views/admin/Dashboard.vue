@@ -212,6 +212,7 @@
           <div class="tab-content" id="myTabContent">
             <!-- Tab Anak -->
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
+              <div id="giziAnakExport">
               <div class="container-fluid px-0 my-3">
                 <!-- Row utama tanpa gutter -->
                 <div class="row gx-2">
@@ -581,7 +582,14 @@
                           </div>
                         </div>
 
-                        <div class="col-12 mt-3">
+                       
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 mt-3">
                           <div class="card shadow-sm border-0 h-100 p-3">
                             <div class="table-responsive">
                               <table class="table table-striped table-sm align-middle">
@@ -618,10 +626,10 @@
                                     <td colspan="100%" class="text-end">
                                       <button
                                         class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportCSV(true)"
+                                        @click="exportDashboardPdf('giziAnakExport')"
                                       >
                                         <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                        Export CSV
+                                        Export
                                       </button>
                                     </td>
                                   </tr>
@@ -671,68 +679,65 @@
                             </nav>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
+             
+
             <!-- Tab Bumil -->
-            <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
-              <!-- Issue and Stat Card -->
-              <div class="container-fluid my-4">
-                <div class="row justify-content-center">
-                  <div
-                    v-for="(item, index) in kesehatanData.bumil"
-                    :key="index"
-                    class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
-                  >
-                    <div
-                      class="card shadow-sm border-0 rounded-2"
-                      :class="`border-start border-4 border-${item.color}`"
-                    >
-                      <div class="card-header">
-                        <h2 class="fw-bold mb-1">{{ item.title }}</h2>
-                      </div>
+            <div class="tab-pane fade mt-3" id="bumil-tab-pane" role="tabpanel" tabindex="0">
+              <!-- card bumil -->
+             <div class="col-12">
+  <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
 
-                      <div class="card-body d-flex justify-content-between align-items-center">
-                        <!-- 👇 Jika bukan card terakhir: tampilkan persentase -->
-                        <h5
-                          v-if="index !== kesehatanData.bumil.length - 1"
-                          class="mb-0"
-                          :class="`text-${item.color}`"
-                        >
-                          {{ item.percent }}
-                        </h5>
+    <div
+      v-for="(item, index) in kesehatanData.bumil"
+      :key="index"
+      class="col"
+    >
+      <div
+        class="card h-100 shadow-sm border-0 d-flex flex-column"
+        :class="`border-start border-4 border-${item.color}`"
+      >
+        <!-- BODY -->
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                        <!-- 👇 Card terakhir: icon -->
-                        <h3 v-else class="my-auto">
-                          <i class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
-                        </h3>
+            <p
+              v-if="index !== kesehatanData.bumil.length - 1"
+              class="mb-0 small"
+              :class="`text-${item.color}`"
+            >
+              {{ item.percent }}
+            </p>
 
-                        <!-- Value -->
-                        <h1 class="fw-bold mb-0" :class="`text-${item.color}`">
-                          {{ item.value }}
-                        </h1>
-                      </div>
+            <i
+              v-else
+              class="bi bi-people fs-1"
+              :class="`text-${item.color}`"
+            ></i>
+          </div>
 
-                      <!-- FOOTER: chart atau spacer -->
-                      <div class="card-footer bg-transparent border-0 pt-0">
-                        <!-- Chart hanya untuk card selain terakhir -->
-                        <canvas
-                          v-if="index !== kesehatanData.bumil.length - 1"
-                          :ref="'chart-bumil-' + index"
-                          height="50"
-                        ></canvas>
+          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
+            {{ item.value }}
+          </h2>
+        </div>
 
-                        <!-- Spacer untuk Total Bumil agar tinggi sama -->
-                        <div v-else style="height: 50px; visibility: hidden"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <!-- FOOTER -->
+        <div class="card-footer bg-transparent border-0 p-0">
+          <canvas
+            v-if="index !== kesehatanData.bumil.length - 1"
+            :ref="'chart-bumil-' + index"
+            style="height:120px; width:100%;"
+          ></canvas>
+
+          <div v-else style="height:120px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
               <!-- Tren -->
               <div class="container-fluid">
@@ -972,7 +977,7 @@
                                       @click="exportToCSV(true)"
                                     >
                                       <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Export CSV
+                                      Expor
                                     </button>
                                   </td>
                                 </tr>
@@ -1052,7 +1057,7 @@
                                       @click="exportToCSV(false)"
                                     >
                                       <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Export CSV
+                                      Export
                                     </button>
                                   </td>
                                 </tr>
@@ -1086,55 +1091,54 @@
               <!-- Issue and Stat Card -->
               <div class="container-fluid my-4">
                 <div class="row">
-                  <div class="row justify-content-center">
-                    <div
-                      v-for="(item, index) in kesehatanData.catin"
-                      :key="index"
-                      class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3"
-                    >
-                      <div
-                        class="card shadow-sm border-0 rounded-2 overflow-hidden"
-                        :class="`border-start border-4 border-${item.color}`"
-                      >
-                        <!-- Judul -->
-                        <div class="card-header">
-                          <h2 class="fw-bold mb-1">{{ item.title }}</h2>
-                        </div>
+                   <div class="col-12">
+  <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
 
-                        <!-- Body -->
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                          <!-- Persen utk semua kecuali card terakhir -->
-                          <p
-                            v-if="index !== kesehatanData.catin.length - 1"
-                            class="mb-0"
-                            :class="`text-${item.color}`"
-                          >
-                            {{ item.percent }}
-                          </p>
+    <div
+      v-for="(item, index) in kesehatanData.catin"
+      :key="index"
+      class="col"
+    >
+      <div
+        class="card h-100 shadow-sm border-0 d-flex flex-column"
+        :class="`border-start border-4 border-${item.color}`"
+      >
+        <!-- BODY -->
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                          <!-- Ikon utk card terakhir -->
-                          <h3 v-else class="my-auto">
-                            <i class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
-                          </h3>
+            <p
+              v-if="index !== kesehatanData.catin.length - 1"
+              class="mb-0 small"
+              :class="`text-${item.color}`"
+            >
+              {{ item.percent }}
+            </p>
 
-                          <!-- Value -->
-                          <h1 class="fw-bold mb-0" :class="`text-${item.color}`">
-                            {{ item.value }}
-                          </h1>
-                        </div>
+            <i
+              v-else
+              class="bi bi-people fs-1"
+              :class="`text-${item.color}`"
+            ></i>
+          </div>
 
-                        <!-- Chart: Hanya utk kecuali card terakhir -->
-                        <div
-                          class="card-footer bg-transparent border-0 pt-0"
-                          
-                        >
-                          <canvas v-if="index !== kesehatanData.catin.length - 1" :ref="'chart-catin-' + index" height="50"></canvas>
+          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
+            {{ item.value }}
+          </h2>
+        </div>
 
-                          <div v-else style="height: 58px; visibility: hidden"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+        <!-- FOOTER -->
+        <div class="card-footer bg-transparent border-0 p-0">
+          <canvas v-if="index !== kesehatanData.catin.length - 1" :ref="'chart-catin-' + index" height="120"></canvas>
+          <div v-else style="height:120px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+                  
                 </div>
               </div>
 
@@ -1183,20 +1187,20 @@
                   <div class="col-12">
                     <div class="card border border-primary shadow p-3">
                       <div class="table-responsive">
-                        <table class="table table-bordered table-sm align-middle text-center mb-0">
-                          <thead class="table-primary">
+                       <table class="table table-bordered table-sm align-middle text-center mb-0">
+                          <thead class="table-light">
                             <tr>
-                              <th class="py-3 fw-semibold">Indikator</th>
-                              <th v-for="(bulan, idx) in bulanLabels" :key="idx" class="py-3">{{ bulan }}</th>
+                              <th>Indikator</th>
+                              <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr v-for="(values, indikator) in indikatorCatin" :key="indikator">
-                              <td class="fw-medium">{{ indikator }}</td>
+                              <td class="fw-bold">{{ indikator }}</td>
                               <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
                             </tr>
                           </tbody>
-                        </table>
+                        </table>
                       </div>
                     </div>
                   </div>
@@ -1613,6 +1617,11 @@ label {
   font-size: 14px;
 }
 
+.hide-for-pdf {
+  display: none !important;
+}
+
+
 </style>
 
 <script>
@@ -1750,9 +1759,9 @@ export default {
   methods: {
       async exportDashboardPdf(tagId) {
 
-  const infoBoxes = document.querySelector('#giziAnakExport .col-md-4.mt-2.small');
-  if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
-  const element = document.getElementById(tagId);
+  // const infoBoxes = document.querySelector('#giziAnakExport .col-md-4.mt-2.small');
+  // if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
+  const element = document.getElementById("giziAnakExport");
 
   // Loading overlay
   const loading = document.createElement("div");
@@ -2116,7 +2125,7 @@ export default {
           this.hitungStatistik(),
           this.generateDataTable(),
           this.masalahGanda(),
-          this.hitungIntervensi(),
+          // this.hitungIntervensi(),
           this.generateInfoBoxes(),
           this.generateIndikatorBumilBulanan()
         ])
@@ -2124,7 +2133,7 @@ export default {
         this.renderBarChart()
         this.renderLineChart()
         this.renderFunnelChart()
-        this.renderBumilChart()
+        this.renderBumilChart("ini apply filter")
       } catch (e) {
         this.showError('Gagal menerapkan filter', e)
       } finally {
@@ -2142,15 +2151,15 @@ export default {
           kelurahan: this.filters.kelurahan || '',
         };
 
-        const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
-        let res = null;
+        // const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+        // let res = null;
 
-        switch (this.activeMenu) {
-          case 'anak': res = await axios.get(`${baseURL}/api/children/status`, { headers, params }); break;
-          case 'bumil': res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params }); break;
-          case 'catin': res = await axios.get(`${baseURL}/api/bride/status`, { headers, params }); break;
-          default: return;
-        }
+        // switch (this.activeMenu) {
+        //   case 'anak': res = await axios.get(`${baseURL}/api/children/status`, { headers, params }); break;
+        //   case 'bumil': res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params }); break;
+        //   case 'catin': res = await axios.get(`${baseURL}/api/bride/status`, { headers, params }); break;
+        //   default: return;
+        // }
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
         let res = null
@@ -2221,6 +2230,8 @@ export default {
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName];
       if (!ref) return;
+
+      console.log("Rendering chart for ref:", dataTable);
 
   const canvas = Array.isArray(ref) ? ref[0] : ref;
   if (!canvas) return;
@@ -2319,153 +2330,204 @@ export default {
   });
 },
     rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName]
-      if (!ref) return
+     let ref = this.$refs[refName];
+      if (!ref) return;
 
-      const canvas = Array.isArray(ref) ? ref[0] : ref
-      if (!canvas) return
+  const canvas = Array.isArray(ref) ? ref[0] : ref;
+  if (!canvas) return;
 
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
 
-      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
-      if (!Array.isArray(dataTable) || !dataTable.length) return
+  // Destroy instance sebelumnya jika ada
+  if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
+  if (!Array.isArray(dataTable) || !dataTable.length) return;
 
-      const labels = dataTable.map((row) => row[labelKey])
-      const values = dataTable.map((row) => parseFloat(row[valueKey]) || 0)
+  // Extract label dan nilai
+  const labels = dataTable.map(row => row[labelKey]);
+  const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
 
-      // MAP BOOTSTRAP COLOR → HEX
-      const colorMap = {
-        primary: '#0d6efd',
-        violet: '#4f0891',
-        secondary: '#6c757d',
-        success: '#198754',
-        danger: '#dc3545',
-        warning: '#ffc107',
-        info: '#0dcaf0',
-        dark: '#212529',
+  // AUTO SCALE: Buat grafik tidak datar
+  let minValue = Math.min(...values);
+  let maxValue = Math.max(...values);
+
+  const gap = maxValue - minValue;
+
+  // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+  const padding = gap === 0 ? 5 : gap * 0.3;
+
+  const yMin = minValue - padding;
+  const yMax = maxValue + padding;
+
+  // MAP BOOTSTRAP COLOR → HEX
+  const colorMap = {
+    primary: "#0d6efd",
+    violet: "#4f0891",
+    secondary: "#6c757d",
+    success: "#198754",
+    danger: "#dc3545",
+    warning: "#ffc107",
+    info: "#0dcaf0",
+    dark: "#212529",
+  };
+
+  const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+
+  // OPTIONAL: Gradient lembut biar grafik cantik
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, borderColor + "33"); // 20% opacity
+  gradient.addColorStop(1, borderColor + "00"); // transparent
+
+  this[refName + 'Instance'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor,
+        backgroundColor: gradient,
+        borderWidth: 3,
+        tension: 0.4,      // ✔ lebih smooth & terlihat perubahan
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: true         // ✔ ada gradasi lembut
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+      },
+
+      scales: {
+        x: {
+          display: false,
+          grid: { display: false },
+        },
+        y: {
+          display: false,
+          grid: { display: false },
+          min: yMin,
+          max: yMax,
+        }
+      },
+
+      elements: {
+        line: {
+          borderCapStyle: 'round',
+          borderJoinStyle: 'round',
+        }
+      },
+
+      animation: {
+        duration: 600,
+        easing: 'easeOutCubic'
       }
-      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
-
-      this[refName + 'Instance'] = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: values,
-              borderColor,
-              borderWidth: 3,
-              tension: 0,
-              pointRadius: 0.1, // ❌ no dots
-              pointHoverRadius: 0.1, // ❌ no hover dots
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            //tooltip: { enabled: false }, // ❌ no tooltip
-            datalabels: { display: false },
-          },
-          scales: {
-            x: {
-              display: false, // ❌ hide x axis
-              grid: { display: false }, // ❌ remove grid
-            },
-            y: {
-              display: false, // ❌ hide y axis
-              grid: { display: false }, // ❌ remove grid
-              beginAtZero: true,
-              max: 100,
-            },
-          },
-          elements: {
-            line: {
-              borderCapStyle: 'round', // ✔ smooth edges
-              borderJoinStyle: 'round',
-            },
-          },
-        },
-      })
+    },
+  });
     },
     rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName]
-      if (!ref) return
+      let ref = this.$refs[refName];
+      if (!ref) return;
 
-      const canvas = Array.isArray(ref) ? ref[0] : ref
-      if (!canvas) return
+  const canvas = Array.isArray(ref) ? ref[0] : ref;
+  if (!canvas) return;
 
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
 
-      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
-      if (!Array.isArray(dataTable) || !dataTable.length) return
+  // Destroy instance sebelumnya jika ada
+  if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
+  if (!Array.isArray(dataTable) || !dataTable.length) return;
 
-      const labels = dataTable.map(row => row[labelKey]);
+  // Extract label dan nilai
+  const labels = dataTable.map(row => row[labelKey]);
+  const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
 
-      const values = dataTable.map(row => {
-        const val = row[valueKey];
+  // AUTO SCALE: Buat grafik tidak datar
+  let minValue = Math.min(...values);
+  let maxValue = Math.max(...values);
 
-        if (typeof val === 'object' && val !== null) {
-          // ambil angka dari objek persen
-          return Object.values(val)[0] || 0;
+  const gap = maxValue - minValue;
+
+  // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+  const padding = gap === 0 ? 5 : gap * 0.3;
+
+  const yMin = minValue - padding;
+  const yMax = maxValue + padding;
+
+  // MAP BOOTSTRAP COLOR → HEX
+  const colorMap = {
+    primary: "#0d6efd",
+    violet: "#4f0891",
+    secondary: "#6c757d",
+    success: "#198754",
+    danger: "#dc3545",
+    warning: "#ffc107",
+    info: "#0dcaf0",
+    dark: "#212529",
+  };
+
+  const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+
+  // OPTIONAL: Gradient lembut biar grafik cantik
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, borderColor + "33"); // 20% opacity
+  gradient.addColorStop(1, borderColor + "00"); // transparent
+
+  this[refName + 'Instance'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor,
+        backgroundColor: gradient,
+        borderWidth: 3,
+        tension: 0.4,      // ✔ lebih smooth & terlihat perubahan
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: true         // ✔ ada gradasi lembut
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+      },
+
+      scales: {
+        x: {
+          display: false,
+          grid: { display: false },
+        },
+        y: {
+          display: false,
+          grid: { display: false },
+          min: yMin,
+          max: yMax,
         }
+      },
 
-        return parseFloat(val) || 0;
-      });
+      elements: {
+        line: {
+          borderCapStyle: 'round',
+          borderJoinStyle: 'round',
+        }
+      },
 
-      const colorMap = {
-        primary: "#0d6efd",
-        violet:"#4f0891",
-        secondary: "#6c757d",
-        success: "#198754",
-        danger: "#dc3545",
-        warning: "#ffc107",
-        info: "#0dcaf0",
-        dark: "#212529",
-      };
-
-      const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
-
-      console.log("Catin Chart → Ref:", refName, ref);
-      console.log("Labels:", labels);
-      console.log("Values:", values);
-      console.log("DataTable:", dataTable);
-
-      this[refName + 'Instance'] = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            data: values,
-            borderColor,
-            borderWidth: 3,
-            tension: 0,
-            pointRadius: 0.1,
-            pointHoverRadius: 0.1,
-            fill: false,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            datalabels: { display: false },
-          },
-          scales: {
-            x: { display: false, grid: { display: false } },
-            y: { display: false, grid: { display: false }, beginAtZero: true, max: 100 }
-          },
-          elements: {
-            line: { borderCapStyle: 'round', borderJoinStyle: 'round' }
-          }
-        },
-      })
+      animation: {
+        duration: 600,
+        easing: 'easeOutCubic'
+      }
+    },
+  });
     },
     async generateDataTable() {
       try {
@@ -3388,7 +3450,7 @@ export default {
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
-          periode: this.filters.periode || '', // contoh: 'Agu 2025'
+          periode: this.filters.periode || getNowYearMonth(), // contoh: 'Agu 2025'
         }
 
         const res = await axios.get(`${baseURL}/api/pregnancy/indikator-bulanan`, {
@@ -3486,8 +3548,10 @@ export default {
 
       return summary;
     },
-    async renderBumilChart() {
-      console.log('--- Memulai renderBumilChart ---');
+    async renderBumilChart(checkApplyFilter) {
+    
+
+      
       let apiDataBumil = [];
       
       // 1. Ambil Data dari API
@@ -3502,6 +3566,7 @@ export default {
 
           // Log parameter filter
           console.log('🔍 Parameter Filter:', params); 
+          console.log(checkApplyFilter ?? "mout");
 
           const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
               params,
@@ -3700,10 +3765,10 @@ export default {
         const data = this.dataLoad_belum || []
 
         // 🛑 Jika data kosong sama sekali
-        if (data.length == 0) {
-          this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
-          return
-        }
+        // if (data.length == 0) {
+        //   this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
+        //   return
+        // }
 
         const now = new Date()
         const startDate = new Date()
