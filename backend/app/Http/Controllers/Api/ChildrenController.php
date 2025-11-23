@@ -1709,8 +1709,13 @@ class ChildrenController extends Controller
         if ($request->filled('rt'))
             $qKunjungan->where('rt', $request->rt);
 
-        $qKunjungan->whereYear('tgl_pengukuran', $tanggal->year)
-                ->whereMonth('tgl_pengukuran', $tanggal->month);
+        // $qKunjungan->whereYear('tgl_pengukuran', $tanggal->year)
+        //         ->whereMonth('tgl_pengukuran', $tanggal->month);
+
+        $startDate = $tanggal->copy()->subMonths(3)->startOfMonth();
+        $endDate   = $tanggal->copy()->endOfMonth();
+
+        $qKunjungan->whereBetween('tgl_pengukuran', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
 
         $kunjungan = $qKunjungan->get();
 
