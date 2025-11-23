@@ -1345,6 +1345,9 @@ export default {
           params: this.filters, // 🔹 kirim semua filter ke backend
         });
 
+        // Simpan data status gizi
+        this.statusGiziSummary = res.data.status || [];
+
         const items = res.data.data_anak || [];
 
         // 🔹 Ambil semua nama posyandu unik
@@ -1422,6 +1425,26 @@ export default {
         //this.showError('Error Ambil Data Anak', e);
       }
     },
+    async hitungStatusGizi() {
+      try {
+        // Backend sudah kirim array status
+        const status = this.statusGiziSummary || [];
+
+        console.log("STATUS GIZI:", status);
+
+        // isi status ke komponen
+        this.gizi = status;
+
+        // total anak = dari filteredData
+        this.totalAnak = this.filteredData.length;
+
+        // kelurahan dari filter (atau API kalo ada)
+        this.kelurahan = this.filters.kelurahan || '-';
+
+      } catch (error) {
+        console.error('❌ hitungStatusGizi error:', error);
+      }
+    },
     async applyFilter() {
       this.isLoading = true
       try {
@@ -1431,50 +1454,6 @@ export default {
         console.error(e);
       }finally{
         this.isLoading = false
-      }
-    },
-    async hitungStatusGizi() {
-      try {
-        const params = {
-          posyandu: this.filters.posyandu|| '',
-          rw: this.filters.rw|| '',
-          rt: this.filters.rt|| '',
-          usia: this.filters.usia|| '',
-          bbu: this.filters.bbu|| '',
-          tbu: this.filters.tbu|| '',
-          bbtb: this.filters.bbtb|| '',
-          intervensi: this.filters.intervensi || [],
-          periodeAwal: this.filters.periodeAwal || '',
-          periodeAkhir: this.filters.periodeAkhir || '',
-        };
-
-        let { periodeAwal, periodeAkhir } = params;
-        // Jika salah satu kosong, kita treat sama: reset *keduanya*
-        if (!periodeAwal || !periodeAkhir) {
-          const now = new Date();
-          // Periode akhir = akhir bulan ini
-          const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          // Periode awal = 12 bulan lalu, awal bulan
-          const startDate = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1);
-          params.periodeAwal = bulan[startDate.getMonth()] + "+" + startDate.getFullYear();
-          params.periodeAkhir = bulan[endDate.getMonth()] + "+" + endDate.getFullYear();
-          console.log("Set default periode:", params.periodeAwal, params.periodeAkhir);
-        }
-
-        const res = await axios.get(`${baseURL}/api/children/status`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          params,
-        });
-
-        const { total, counts, kelurahan } = res.data;
-
-        // ✅ Bind langsung ke data komponen
-        this.gizi = counts || [];
-        this.totalAnak = total || 0;
-        this.kelurahan = kelurahan || '-';
-
-      } catch (error) {
-        console.error('❌ hitungStatusGizi error:', error);
       }
     },
     handlePosyanduChange() {
@@ -2047,7 +2026,7 @@ export default {
       await this.loadConfigWithCache()
       this.generatePeriodeOptions()
 
-      
+
       // 🔥 Load children dulu
       await this.loadChildren()
 

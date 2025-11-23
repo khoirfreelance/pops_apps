@@ -89,46 +89,15 @@ class ChildrenController extends Controller
         // ✅ 3. Dapatkan kelurahan user
         $filterKelurahan = $wilayah->kelurahan ?? null;
 
+        // DEFAULT: 1 tahun terakhir kalau user tidak apply periode
+        if (empty($filters['periodeAwal']) && empty($filters['periodeAkhir'])) {
+            $filters['periodeAwal'] = now()->subYear()->startOfDay()->format('Y-m-d');
+            $filters['periodeAkhir'] = now()->endOfDay()->format('Y-m-d');
+        }
 
-        // ✅ 5. KUNJUNGAN (utama)
-        $kunjungan = Kunjungan::query()
-            ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pengukuran', '<=', $val))
-            ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
-            ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
-            ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
-            ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-            ->get();
-
-
-        // ✅ 6. PENDAMPINGAN
-        $pendampingan = Child::query()
-            ->when($filterKelurahan, fn($q) => $q->where('kelurahan', $filterKelurahan))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_pendampingan', '<=', $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['bbu'] ?? null, fn($q, $val) => $q->whereIn('bb_u', (array) $val))
-            ->when($filters['tbu'] ?? null, fn($q, $val) => $q->whereIn('tb_u', (array) $val))
-            ->when($filters['bbtb'] ?? null, fn($q, $val) => $q->whereIn('bb_tb', (array) $val))
-            ->when(isset($filters['stagnan']), fn($q) => $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1))
-            ->get();
-
-        // ✅ 7. INTERVENSI
-        $intervensi = Intervensi::query()
-            ->when($filterKelurahan, fn($q) => $q->where('desa', $filterKelurahan))
-            ->when($filters['posyandu'] ?? null, fn($q, $val) => $q->whereIn('posyandu', (array) $val))
-            ->when($filters['rw'] ?? null, fn($q, $val) => $q->whereIn('rw', (array) $val))
-            ->when($filters['rt'] ?? null, fn($q, $val) => $q->whereIn('rt', (array) $val))
-            ->when($filters['periodeAwal'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '>=', $val))
-            ->when($filters['periodeAkhir'] ?? null, fn($q, $val) => $q->whereDate('tgl_intervensi', '<=', $val))
-            ->when($filters['intervensi'] ?? null, fn($q, $val) => $q->whereIn('kategori', (array) $val))
-            ->get();
-
+        $kunjungan = Kunjungan::where('kelurahan', $filterKelurahan)->get();
+        $pendampingan = Child::where('kelurahan', $filterKelurahan)->get();
+        $intervensi = Intervensi::where('desa', $filterKelurahan)->get();
         $grouped = [];
 
         // 1️⃣ KUNJUNGAN — sumber utama data anak
@@ -267,13 +236,162 @@ class ChildrenController extends Controller
             ];
         }
 
-        $data_anak = array_values($grouped);
+        $filtered = collect($grouped)->filter(function ($anak) use ($filters) {
+
+            // Filter Posyandu
+            if (!empty($filters['posyandu'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['posyandu'], (array) $filters['posyandu'])
+                );
+                if (!$match) return false;
+            }
+
+            // Filter RW
+            if (!empty($filters['rw']) && !in_array($anak['rw'], (array) $filters['rw'])) {
+                return false;
+            }
+
+            // Filter RT
+            if (!empty($filters['rt']) && !in_array($anak['rt'], (array) $filters['rt'])) {
+                return false;
+            }
+
+            // Filter STATUS GIZI
+            if (!empty($filters['bbu'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['bbu'], (array) $filters['bbu'])
+                );
+                if (!$match) return false;
+            }
+
+            if (!empty($filters['tbu'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['tbu'], (array) $filters['tbu'])
+                );
+                if (!$match) return false;
+            }
+
+            if (!empty($filters['bbtb'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['bbtb'], (array) $filters['bbtb'])
+                );
+                if (!$match) return false;
+            }
+
+            // Filter PENDAMPINGAN periode
+            if (!empty($filters['periodeAwal']) || !empty($filters['periodeAkhir'])) {
+                $match = collect($anak['posyandu'])->contains(function($p) use ($filters) {
+                    $tgl = $p['tgl_ukur'];
+                    return (!$filters['periodeAwal'] || $tgl >= $filters['periodeAwal']) &&
+                        (!$filters['periodeAkhir'] || $tgl <= $filters['periodeAkhir']);
+                });
+
+                if (!$match) return false;
+            }
+
+            // Filter intervensi
+            if (!empty($filters['intervensi'])) {
+                $match = collect($anak['intervensi'])->contains(fn($i) =>
+                    in_array($i['jenis'], (array) $filters['intervensi'])
+                );
+                if (!$match) return false;
+            }
+
+            return true;
+        });
+
+        $filteredData = $filtered->map(function ($anak) {
+            return $anak;
+        })->values();
+
+        $latestData = $filteredData->map(function ($anak) {
+            // kalau tidak ada pengukuran → skip
+            if (empty($anak['posyandu'])) return null;
+
+            // Ambil tgl terbaru
+            $latest = collect($anak['posyandu'])->sortByDesc('tgl_ukur')->first();
+
+            return [
+                'bbu'   => strtolower($latest['bbu'] ?? ''),
+                'tbu'   => strtolower($latest['tbu'] ?? ''),
+                'bbtb'  => strtolower($latest['bbtb'] ?? ''),
+                'naikBB' => $latest['bb_naik'] ?? null,
+            ];
+        })->filter(); // buang null
+
+        $data = $latestData;
+        $total = $data->count();
+
+        $count = [
+            'Stunting' => 0,
+            'Wasting' => 0,
+            'Underweight' => 0,
+            'Normal' => 0,
+            'Overweight' => 0,
+            'BB Stagnan' => 0,
+        ];
+
+        foreach ($data as $a) {
+
+            if (str_contains($a['tbu'], 'stunted')) {
+                $count['Stunting']++;
+            }
+
+            if (str_contains($a['bbtb'], 'wasted')) {
+                $count['Wasting']++;
+            }
+
+            if (str_contains($a['bbu'], 'underweight')) {
+                $count['Underweight']++;
+            }
+
+            if (
+                ($a['bbu'] === 'normal') &&
+                ($a['tbu'] === 'normal') &&
+                ($a['bbtb'] === 'normal')
+            ) {
+                $count['Normal']++;
+            }
+
+            if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obes')) {
+                $count['Overweight']++;
+            }
+
+            if (is_null($a['naikBB']) || $a['naikBB'] == 0) {
+                $count['BB Stagnan']++;
+            }
+        }
+
+        $result = [];
+        foreach ($count as $title => $value) {
+
+            $color = match($title) {
+                'Stunting' => 'danger',
+                'Wasting' => 'warning',
+                'Underweight' => 'violet',
+                'Normal' => 'success',
+                'BB Stagnan' => 'info',
+                'Overweight' => 'dark',
+            };
+
+            $percent = $total ? round(($value / $total) * 100, 1) : 0;
+
+            $result[] = [
+                'title'   => $title,
+                'value'   => $value,
+                'percent' => "{$percent}%",
+                'color'   => $color,
+                //'trend'   => $trendCount[$title] ?? [],
+            ];
+        }
 
         return response()->json([
             'status' => 'success',
             'message' => 'Data anak berhasil dimuat',
-            'data_anak' => $data_anak
+            'data_anak' => $filteredData,
+            'status' => $result
         ]);
+
     }
 
     public function status(Request $request)

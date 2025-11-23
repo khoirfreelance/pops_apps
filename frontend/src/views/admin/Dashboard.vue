@@ -990,7 +990,7 @@
                           class="card-footer bg-transparent border-0 pt-0"
                           v-if="index !== kesehatanData.catin.length - 1"
                         >
-                          <canvas :ref="'chart-catin-' + index" height="50"></canvas>
+                          <canvas :ref="'chart-catin-' + index" style="height: 60px !important; width: 100%"></canvas>
                         </div>
 
                       </div>
@@ -1785,16 +1785,36 @@ export default {
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
         this.$nextTick(() => {
+
           this.kesehatanData[this.activeMenu].forEach((item, index) => {
             this.rendersvgChart(`chart-${index}`, item.trend, [item.color]);
             this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color]);
+            item.trend = this.normalizeCatinTrend(item.trend);
             this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color]);
           });
         });
+        //console.log("Refs available:", this.$refs);
 
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error);
       }
+    },
+    normalizeCatinTrend(trend) {
+      if (!trend) return [];
+
+      // Jika sudah array (seperti menu anak), langsung kembalikan
+      if (Array.isArray(trend)) return trend;
+
+      // Jika format catin: { months:[], data:[], total:{} }
+      if (trend.months && trend.data) {
+        return trend.months.map((bulan, i) => ({
+          bulan,
+          persen: trend.data[i] ?? 0,
+        }));
+      }
+
+      // Jika object lain, fallback ke Object.values()
+      return Object.values(trend);
     },
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName];
@@ -1954,9 +1974,18 @@ export default {
       if (!Array.isArray(dataTable) || !dataTable.length) return;
 
       const labels = dataTable.map(row => row[labelKey]);
-      const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
 
-      // MAP BOOTSTRAP COLOR → HEX
+      const values = dataTable.map(row => {
+        const val = row[valueKey];
+
+        if (typeof val === 'object' && val !== null) {
+          // ambil angka dari objek persen
+          return Object.values(val)[0] || 0;
+        }
+
+        return parseFloat(val) || 0;
+      });
+
       const colorMap = {
         primary: "#0d6efd",
         violet:"#4f0891",
@@ -1967,7 +1996,13 @@ export default {
         info: "#0dcaf0",
         dark: "#212529",
       };
+
       const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+
+      console.log("Catin Chart → Ref:", refName, ref);
+      console.log("Labels:", labels);
+      console.log("Values:", values);
+      console.log("DataTable:", dataTable);
 
       this[refName + 'Instance'] = new Chart(ctx, {
         type: 'line',
@@ -1978,8 +2013,8 @@ export default {
             borderColor,
             borderWidth: 3,
             tension: 0,
-            pointRadius: 0.1,           // ❌ no dots
-            pointHoverRadius: 0.1,      // ❌ no hover dots
+            pointRadius: 0.1,
+            pointHoverRadius: 0.1,
             fill: false,
           }],
         },
@@ -1988,26 +2023,14 @@ export default {
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            //tooltip: { enabled: false }, // ❌ no tooltip
             datalabels: { display: false },
           },
           scales: {
-            x: {
-              display: false, // ❌ hide x axis
-              grid: { display: false }, // ❌ remove grid
-            },
-            y: {
-              display: false, // ❌ hide y axis
-              grid: { display: false }, // ❌ remove grid
-              beginAtZero: true,
-              max: 100,
-            }
+            x: { display: false, grid: { display: false } },
+            y: { display: false, grid: { display: false }, beginAtZero: true, max: 100 }
           },
           elements: {
-            line: {
-              borderCapStyle: 'round',   // ✔ smooth edges
-              borderJoinStyle: 'round',
-            }
+            line: { borderCapStyle: 'round', borderJoinStyle: 'round' }
           }
         },
       });
@@ -3090,40 +3113,55 @@ export default {
     },
 
     // only Catin
-    async generateIndikatorCatinBulanan() {
-      try {
-        const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        const { labels, indikator } = res.data || {};
+  async generateIndikatorCatinBulanan() {
+    try {
+      const params = {
+        kelurahan: this.filters.kelurahan || '',
+        posyandu: this.filters.posyandu || '',
+        rw: this.filters.rw || '',
+        rt: this.filters.rt || '',
+      };
 
-        // kalau backend kirim kosong, tetap buat struktur default
-        if (!labels?.length || !indikator) {
-          this.bulanLabels = this.getLast12Months();
-          this.indikatorCatin = {
-            KEK: Array(12).fill(0),
-            Anemia: Array(12).fill(0),
-            Berisiko: Array(12).fill(0),
-          };
-          return;
-        }
+      const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
+        params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
-        this.bulanLabels = labels;
-        this.indikatorCatin = indikator;
+      const { labels, indikator } = res.data || {};
 
-        //console.log('✅ indikatorData:', this.indikatorData);
-      } catch (err) {
-        console.error('❌ Gagal memuat indikator bumil bulanan:', err);
+      // 📌 Jika backend kirim kosong, buat struktur default 12 bulan
+      if (!labels?.length || !indikator) {
         this.bulanLabels = this.getLast12Months();
         this.indikatorCatin = {
           KEK: Array(12).fill(0),
           Anemia: Array(12).fill(0),
           Berisiko: Array(12).fill(0),
         };
+        return;
       }
-    },
+
+      // ✔ Jika data ada, langsung assign
+      this.bulanLabels = labels;
+      this.indikatorCatin = indikator;
+
+      console.log("📌 Labels Catin:", this.bulanLabels);
+      console.log("📌 Indikator Catin:", this.indikatorCatin);
+
+    } catch (err) {
+      console.error('❌ Gagal memuat indikator catin bulanan:', err);
+
+      // fallback default
+      this.bulanLabels = this.getLast12Months();
+      this.indikatorCatin = {
+        KEK: Array(12).fill(0),
+        Anemia: Array(12).fill(0),
+        Berisiko: Array(12).fill(0),
+      };
+    }
+  }
+
 
   },
   computed: {
@@ -3516,6 +3554,7 @@ export default {
       this.rendersvgChart();
       this.rendersvgChart_Bumil();
       this.rendersvgChart_Catin();
+      //this.generateIndikatorCatinBulanan();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
 
@@ -3560,15 +3599,6 @@ export default {
       this.generateIndikatorBumilBulanan()
       this.generateIndikatorCatinBulanan()
     },
-    /* isSudah(newVal) {
-      this.$nextTick(() => {
-        if (newVal) {
-          this.renderSudahChart()
-        } else {
-          this.renderFunnelChart()
-        }
-      })
-    } */
   }
 }
 </script>

@@ -783,9 +783,12 @@ class CatinController extends Controller
 
     private function catinTrend($key, $kelurahan)
     {
-        // Ambil 2 bulan terakhir
-        $currentMonth = now()->format('Y-m');
-        $previousMonth = now()->subMonth()->format('Y-m');
+        // Ambil 6 bulan terakhir
+        $months = [];
+        for ($i = 0; $i < 6; $i++) {
+            $months[] = now()->subMonths($i)->format('Y-m');
+        }
+        $months = array_reverse($months); // supaya urut dari paling lama → terbaru
 
         // Ambil data catin berdasarkan kelurahan
         $data = Catin::query()
@@ -794,34 +797,27 @@ class CatinController extends Controller
 
         if ($data->isEmpty()) {
             return [
-                "month" => [
-                    "current" => $currentMonth,
-                    "previous" => $previousMonth,
-                ],
-                "data" => [
-                    "current" => [$key => 0],
-                    "previous" => [$key => 0],
-                ],
-                "total" => [
-                    "current" => 0,
-                    "previous" => 0,
+                "months" => $months,
+                "data"   => array_fill(0, 6, [$key => 0]),
+                "total"  => [
+                    "values" => array_fill(0, 6, 0),
                     "diff_percent" => 0
                 ]
             ];
         }
 
         // ===========================
-        // KATEGORI TREND CATIN
+        // KATEGORI CATIN
         // ===========================
         $categories = [
             "Anemia" => ["anemia", "anemia ringan", "anemia sedang", "anemia berat"],
             "KEK" => ["kek", "kurang energi kronis"],
-            "Risiko Usia" => ["berisiko"], // pokoknya bukan normal
-            "Total Berisiko" => ["*"], // akan dihitung terpisah
+            "Risiko Usia" => ["berisiko"],
+            "Total Berisiko" => ["*"],
             "Total Catin" => ["*"],
         ];
 
-        // Ambil kategori values
+        // Field untuk masing-masing kategori
         $field = match ($key) {
             "Anemia" => "status_hb",
             "KEK" => "status_kek",
@@ -829,8 +825,73 @@ class CatinController extends Controller
             default => null
         };
 
-        // Gunakan handler buildTrend
-        return $this->buildCatinTrend($data, $key, $categories, $field, $currentMonth, $previousMonth);
+        // ===========================
+        // HITUNG per bulan
+        // ===========================
+        $trendValues = [];
+        $totalValues = [];
+
+        foreach ($months as $m) {
+            $start = Carbon::createFromFormat('Y-m', $m)->startOfMonth();
+            $end   = Carbon::createFromFormat('Y-m', $m)->endOfMonth();
+
+            // Filter data bulan ini
+            $bulanData = $data->filter(function ($item) use ($start, $end) {
+                return Carbon::parse($item->tanggal_pendampingan)->between($start, $end);
+            });
+
+            // Grouping LAST record per NIK per bulan
+            $grouped = $bulanData->groupBy('nik_perempuan')->map(
+                fn($g) => $g->sortByDesc('tanggal_pendampingan')->first()
+            );
+
+            $grouped = $grouped->values();
+
+            // TOTAL CATIN bulan ini
+            $total = $grouped->count();
+
+            // Hitung kategori utama
+            if ($key === "Total Catin") {
+                $count = $total;
+            } elseif ($key === "Total Berisiko") {
+                $count = $grouped->filter(function ($i) {
+                    return
+                        str_contains(strtolower($i->status_risiko ?? ''), 'berisiko') ||
+                        str_contains(strtolower($i->status_kek ?? ''), 'kek') ||
+                        str_contains(strtolower($i->status_hb ?? ''), 'anemia');
+                })->count();
+            } else {
+                $keywordList = $categories[$key];
+
+                $count = $grouped->filter(function ($i) use ($field, $keywordList) {
+                    $val = strtolower($i->{$field} ?? '');
+                    foreach ($keywordList as $kw) {
+                        if ($kw !== '*' && str_contains($val, $kw)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })->count();
+            }
+
+            $trendValues[] = [$key => $count];
+            $totalValues[] = $total;
+        }
+
+        // Hitung perubahan % (bulan terakhir vs bulan sebelum)
+        $last = end($trendValues)[$key] ?? 0;
+        $prev = $trendValues[count($trendValues) - 2][$key] ?? 0;
+
+        $diffPercent = $prev > 0 ? round((($last - $prev) / $prev) * 100, 1) : 0;
+
+        return [
+            "months" => $months,
+            "data" => $trendValues,
+            "total" => [
+                "values" => $totalValues,
+                "diff_percent" => $diffPercent
+            ]
+        ];
     }
 
     private function buildCatinTrend($data, $key, $categories, $field, $currentMonth, $previousMonth)
@@ -940,22 +1001,10 @@ class CatinController extends Controller
     public function indikatorBulanan(Request $request)
     {
         try {
-            $user = Auth::user();
-
-            // ✅ Wilayah user
-            $wilayah = [
-                'kelurahan' => $user->kelurahan ?? null,
-                'kecamatan' => $user->kecamatan ?? null,
-                'kota' => $user->kota ?? null,
-                'provinsi' => $user->provinsi ?? null,
-            ];
-
             $query = Catin::query();
 
             // ✅ Filter wilayah user
-            if (!empty($wilayah['kelurahan'])) {
-                $query->where('kelurahan', $wilayah['kelurahan']);
-            }
+            $query->where('kelurahan', $request->kelurahan);
 
             // ✅ Filter tambahan dari frontend
             foreach (['posyandu', 'rw', 'rt'] as $f) {
@@ -1013,11 +1062,11 @@ class CatinController extends Controller
                 $rows = $rows->values();
 
                 $result['KEK'][$idx] = $rows->filter(fn($i) =>
-                    str_contains(strtolower($i->status_kek ?? ''), 'KEK')
+                    str_contains(strtolower($i->status_kek ?? ''), 'kek')
                 )->count();
 
                 $result['Anemia'][$idx] = $rows->filter(fn($i) =>
-                    str_contains(strtolower($i->status_hb ?? ''), 'Anemia')
+                    str_contains(strtolower($i->status_hb ?? ''), 'anemia')
                 )->count();
 
                 $result['Berisiko'][$idx] = $rows->filter(fn($i) =>
