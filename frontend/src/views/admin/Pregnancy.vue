@@ -1375,6 +1375,7 @@ export default {
         const wilayah = res.data
         //console.log('✅ getWilayahUser ->', wilayah)
         this.kelurahan = wilayah.kelurahan || '-'
+        this.filters.kelurahan = this.kelurahan
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'

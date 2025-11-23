@@ -740,7 +740,7 @@
                 </div>
               </div>
 
-              
+
             </div>
 
             <!-- Tab Bumil -->
@@ -1280,7 +1280,6 @@
                               <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
                             </tr>
                           </tbody>
-                                  
                         </table>
                       </div>
                     </div>
@@ -3539,7 +3538,8 @@ export default {
     },
 
     // only Bumil
-    async generateIndikatorBumilBulanan() {
+    // eslint-disable-next-line vue/no-dupe-keys
+    /* async generateIndikatorBumilBulanan() {
       try {
         //this.isLoading = true;
 
@@ -3591,7 +3591,7 @@ export default {
       } finally {
         //this.isLoading = false;
       }
-    },
+    }, */
     mapToBumil(item) {
       return {
         nik: item.nik,
@@ -3886,10 +3886,10 @@ export default {
         )
 
         // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
-        if (!recentIntervensi.length) {
+        /* if (!recentIntervensi.length) {
           this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
           return
-        }
+        } */
 
         // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = ''
