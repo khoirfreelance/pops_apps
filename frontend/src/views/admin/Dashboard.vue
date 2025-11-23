@@ -1764,7 +1764,7 @@ export default {
 
   const infoBoxes = document.querySelector('#infoBoxes');
   if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
-  const element = document.getElementById("tagId");
+  const element = document.getElementById(tagId);
 
   // Loading overlay
   const loading = document.createElement("div");
