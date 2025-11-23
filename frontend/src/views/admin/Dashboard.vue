@@ -686,6 +686,7 @@
 
             <!-- Tab Bumil -->
             <div class="tab-pane fade mt-3" id="bumil-tab-pane" role="tabpanel" tabindex="0">
+              <div id="kesehatanBumilExport">
               <!-- card bumil -->
              <div class="col-12">
   <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
@@ -921,7 +922,7 @@
                         </div>
 
                         <!-- BAWAH: TABEL -->
-                        <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
+                        <div id="bumilTableDashboard" class="card shadow-sm border-0 h-100 p-3 table-responsive">
                           <div v-if="isSudah">
                             <table class="table table-striped table-sm align-middle p-2">
                               <thead class="table-success">
@@ -975,7 +976,7 @@
                                   <td colspan="100%" class="text-end">
                                     <button
                                       class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportToCSV(true)"
+                                      @click="exportDashboardPdf('kesehatanBumilExport')"
                                     >
                                       <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                                       Expor
@@ -1084,6 +1085,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -1764,6 +1766,9 @@ export default {
 
   const infoBoxes = document.querySelector('#infoBoxes');
   if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
+
+  const bumilTable = document.querySelector('#bumilTableDashboard');
+  if (bumilTable) bumilTable.classList.add('hide-for-pdf');
   const element = document.getElementById(tagId);
 
   // Loading overlay
@@ -2235,8 +2240,6 @@ setTimeout(() => {
       let ref = this.$refs[refName];
       if (!ref) return;
 
-      console.log("Rendering chart for ref:", dataTable);
-
   const canvas = Array.isArray(ref) ? ref[0] : ref;
   if (!canvas) return;
 
@@ -2526,10 +2529,11 @@ setTimeout(() => {
         }
       },
 
-      animation: {
-        duration: 600,
-        easing: 'easeOutCubic'
-      }
+      interaction: {
+    mode: 'nearest', // Coba ubah mode interaksi
+    intersect: false,
+  },
+    animation: false,
     },
   });
     },
