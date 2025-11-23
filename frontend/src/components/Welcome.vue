@@ -3,8 +3,8 @@
     <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
       <!-- Kiri -->
       <div class="text-start my-2">
-        <small class="mb-0">Selamat datang,</small>
-        <h5 class="mt-0">{{ username }}</h5>
+        <div class="mb-0" style="font-size: 12;">Selamat datang,</div>
+        <h2 class="mt-0">{{ username }}</h2>
         <!-- Logo / fallback -->
         <img
           v-if="logoLoaded"
@@ -17,7 +17,7 @@
           {{ kelurahan || 'Wilayah' }}
         </span>
 
-        <p class="small d-flex align-items-center mt-1">
+        <p class="small d-flex align-items-center mt-1" style="font-size: 8;">
           Data terakhir diperbarui pada&nbsp;<strong>{{ today }}</strong>
         </p>
       </div>
