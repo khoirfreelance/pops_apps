@@ -273,7 +273,7 @@
                   </div>
 
                   <!-- INFO BOXES -->
-                  <div class="col-md-4 mt-2 small">
+                  <div id="infoBoxes" class="infoBoxes col-md-4 mt-2 small">
                     <div
                       v-for="(box, idx) in infoBoxes"
                       :key="idx"
@@ -588,7 +588,8 @@
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            
             <div class="col-12 mt-3">
                           <div class="card shadow-sm border-0 h-100 p-3">
                             <div class="table-responsive">
@@ -1089,8 +1090,8 @@
             <!-- Tab Catin -->
             <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
               <!-- Issue and Stat Card -->
-              <div class="container-fluid my-4">
-                <div class="row">
+              <!-- <div class="container-fluid my-4">
+                <div class="row"> -->
                    <div class="col-12">
   <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
 
@@ -1133,8 +1134,8 @@
           <canvas v-if="index !== kesehatanData.catin.length - 1" :ref="'chart-catin-' + index" height="120"></canvas>
           <div v-else style="height:120px;"></div>
         </div>
-      </div>
-    </div>
+      <!-- </div>
+    </div> -->
 
   </div>
 </div>
@@ -1625,6 +1626,8 @@ label {
 </style>
 
 <script>
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
@@ -1759,9 +1762,9 @@ export default {
   methods: {
       async exportDashboardPdf(tagId) {
 
-  // const infoBoxes = document.querySelector('#giziAnakExport .col-md-4.mt-2.small');
-  // if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
-  const element = document.getElementById("giziAnakExport");
+  const infoBoxes = document.querySelector('#infoBoxes');
+  if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
+  const element = document.getElementById("tagId");
 
   // Loading overlay
   const loading = document.createElement("div");
@@ -2196,13 +2199,14 @@ export default {
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
         this.$nextTick(() => {
-
+setTimeout(() => {
           this.kesehatanData[this.activeMenu].forEach((item, index) => {
             this.rendersvgChart(`chart-${index}`, item.trend, [item.color]);
             this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color]);
             item.trend = this.normalizeCatinTrend(item.trend);
             this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color]);
           });
+          }, 80);
         });
         //console.log("Refs available:", this.$refs);
 
@@ -3744,7 +3748,7 @@ export default {
           scales: {
             y: {
               beginAtZero: true,
-              suggestedMax: 60,
+              // suggestedMax: 60,
               ticks: { stepSize: 10 },
               grid: { color: '#eee' },
             },
