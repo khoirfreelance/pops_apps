@@ -2888,7 +2888,7 @@ export default {
         this.totalSudah = res.data.grouping.punya_keduanya || 0
         this.totalBelum = res.data.grouping.hanya_kunjungan || 0
 
-        this
+        //this
 
         // 💚 anak
         if (this.activeMenu === 'anak') {
