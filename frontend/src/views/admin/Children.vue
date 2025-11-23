@@ -34,9 +34,9 @@
           <!-- Judul Laporan -->
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
-              <h1 class="title mb-0 text-capitalize fw-bold">
+              <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
                 Laporan Status Gizi {{ kelurahan }} Bulan {{ periodeLabel }}
-              </h1>
+              </div>
             </div>
           </div>
 
@@ -717,9 +717,9 @@
           </div>
 
           <div class="text-center mt-3">
-            <h5 class="ringkasan-header fw-bold text-success mb-3" style="font-size: 20px">
+            <div class="ringkasan-header fw-bold text-success mb-3">
               Ringkasan Statistik
-            </h5>
+            </div>
           </div>
 
           <!-- Ringkasan Statistik-->
@@ -730,10 +730,10 @@
                   <div
                     v-for="(item, index) in gizi"
                     :key="index"
-                    class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
+                    class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3 no-col-padding"
                   >
                     <div
-                      class="card border-0 rounded-3 overflow-hidden shadow"
+                      class="card border-0 rounded-3 overflow-hidden custom-card-size shadow"
                       :class="`border-start border-4 border-${item.color}`"
                       style="width: 108%"
                     >
@@ -782,7 +782,7 @@
                 <div class="card bg-light p-2">
                   <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-success small">
+                      <thead class="table-success">
                         <tr>
                           <th
                             @click="sortBy('nama')"
@@ -858,7 +858,7 @@
                       </thead>
 
                       <tbody>
-                        <tr v-for="anak in paginatedData" :key="anak.id" class="small">
+                        <tr v-for="anak in paginatedData" :key="anak.id">
                           <td class="text-start">
                             <a
                               href="#"
@@ -952,7 +952,7 @@
               <div class="col-md-4" v-if="selectedAnak">
                 <div
                   v-if="selectedAnak"
-                  class="card shadow-sm p-4 text-center small position-relative"
+                  class="card shadow-sm p-4 text-center position-relative"
                 >
                   <!-- Tombol Close -->
                   <button
@@ -963,8 +963,8 @@
                   ></button>
 
                   <!-- Nama dan Identitas -->
-                  <h5 class="fw-bold text-dark mb-1">{{ selectedAnak.nama }}</h5>
-                  <p class="text-muted mb-0">
+                  <h2 class="fw-bold text-dark mb-1">{{ selectedAnak.nama }}</h2>
+                  <p class="text-muted mb-0" style="font-size: 14px">
                     {{
                       selectedAnak.gender === 'L'
                         ? 'Laki-laki'
@@ -974,10 +974,10 @@
                     }}
                   </p>
 
-                  <p class="text-muted mb-0 text-capitalize">
+                  <p class="text-muted mb-0 text-capitalize" style="font-size: 14px">
                     {{ selectedAnak.alamat || 'Desa Wonosari, Kec. Bojong Gede' }}
                   </p>
-                  <p class="text-muted">{{ selectedAnak.posyandu || 'Posyandu Mawar' }}</p>
+                  <p class="text-muted" style="font-size: 14px">{{ selectedAnak.posyandu || 'Posyandu Mawar' }}</p>
 
                   <!-- Badge Status Gizi -->
                   <div class="mb-3">
@@ -1000,7 +1000,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Penimbangan</h6>
+                  <h2 class="fw-bold text-start text-secondary mt-2">Riwayat Penimbangan</h2>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -1065,9 +1065,9 @@
                   </div>
 
                   <!-- Riwayat Intervensi -->
-                  <h6 class="fw-bold text-start text-secondary mt-3">
+                  <h2 class="fw-bold text-start text-secondary mt-3">
                     Riwayat Intervensi / Bantuan
-                  </h6>
+                  </h2>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -2583,7 +2583,7 @@ label {
 .ringkasan-header,
 .table-name {
   font-family: 'Neuton', serif;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
 }
 .table-modern {
@@ -2791,6 +2791,18 @@ label {
   .filter-mobile-panel.open {
     bottom: 0;
   }
+}
+
+.custom-card-size {
+  height: 109px !important;
+  width: 98% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.no-col-padding {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 /* ===== Pagination Responsive All Devices ===== */

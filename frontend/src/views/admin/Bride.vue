@@ -34,12 +34,9 @@
           <!-- Judul Laporan -->
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
-              <h5 class="mb-0">
-                Laporan Status Kesehatan Calon Pengantin Desa
-                <span class="text-capitalize fw-bold">{{ kelurahan }}</span>
-                Periode
-                <span class="fw-bold">{{ thisMonth }}</span>
-              </h5>
+              <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
+                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} Periode {{ thisMonth }}
+              </div>
             </div>
           </div>
 
@@ -76,7 +73,7 @@
                         :value="item"
                         v-model="filters[key]"
                       />
-                      <label class="form-check-label w-100" :for="`${key}-${item}`">{{
+                      <label class="form-check-label w-100 text-truncate" :for="`${key}-${item}`">{{
                         item
                       }}</label>
                     </li>
@@ -312,9 +309,9 @@
           </div>
 
           <div class="text-center mt-3">
-            <h5 class="ringkasan-header fw-bold text-success mb-3" style="font-size: 20px">
+            <div class="ringkasan-header fw-bold text-success mb-3">
               Ringkasan Statistik
-            </h5>
+            </div>
           </div>
 
           <!-- Ringkasan Statistik -->
@@ -324,10 +321,10 @@
                 <div
                   v-for="(item, index) in kesehatan"
                   :key="index"
-                  class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3"
+                  class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-12 mb-3 no-col-padding justify-content-center align-items-center"
                 >
                   <div
-                    class="card border-0 rounded-3 overflow-hidden shadow"
+                    class="card border-0 rounded-3 overflow-hidden custom-card-size shadow"
                     :class="`border-start border-4 border-${item.color}`"
                     style="width: 108%"
                   >
@@ -367,7 +364,7 @@
                 <div class="card bg-light p-2">
                   <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-primary small">
+                      <thead class="table-primary">
                         <tr>
                           <th colspan="2">Nama Pasangan</th>
                           <th colspan="3">Catatan Berisiko</th>
@@ -385,16 +382,16 @@
                             Tanggal Menikah
                           </th>
                           <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            BB <span class="fw-normal small">(Perempuan)</span>
+                            BB <span class="fw-normal">(Perempuan)</span>
                           </th>
                           <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            TB <span class="fw-normal small">(Perempuan)</span>
+                            TB <span class="fw-normal">(Perempuan)</span>
                           </th>
                           <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Lila <span class="fw-normal small">(Perempuan)</span>
+                            Lila <span class="fw-normal">(Perempuan)</span>
                           </th>
                           <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Hb <span class="fw-normal small">(Perempuan)</span>
+                            Hb <span class="fw-normal">(Perempuan)</span>
                           </th>
                           <th class="cursor-pointer align-middle text-center" rowspan="2">
                             Riwayat Penyakit
@@ -410,69 +407,69 @@
                           <th
                             style="width: 100px"
                             @click="sortBy('nama_perempuan')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal"
                           >
                             Perempuan <SortIcon :field="'nama_perempuan'" />
                           </th>
                           <th
                             style="width: 100px"
                             @click="sortBy('nama_laki')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Laki-laki <SortIcon :field="'nama_laki'" />
                           </th>
                           <th
                             @click="sortBy('anemia')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Anemia <SortIcon :field="'anemia'" />
                           </th>
                           <th
                             style="width: 60px"
                             @click="sortBy('kek')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             KEK <SortIcon :field="'kek'" />
                           </th>
                           <th
                             style="width: 100px"
                             @click="sortBy('berisiko')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Risiko Usia <SortIcon :field="'berisiko'" />
                           </th>
                           <th
                             style="width: 100px"
                             @click="sortBy('usia_perempuan')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Perempuan <SortIcon :field="'usia_perempuan'" />
                           </th>
                           <th
                             style="width: 100px"
                             @click="sortBy('usia_laki')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Laki-laki <SortIcon :field="'usia_laki'" />
                           </th>
                           <th
                             style="width: 100px"
                             @click="sortBy('pekerjaan_perempuan')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Perempuan <SortIcon :field="'pekerjaan_perempuan'" />
                           </th>
                           <th
                             style="width: 100px"
                             @click="sortBy('pekerjaan_laki')"
-                            class="cursor-pointer align-middle text-center fw-normal small"
+                            class="cursor-pointer align-middle text-center fw-normal "
                           >
                             Laki-laki <SortIcon :field="'pekerjaan_laki'" />
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="catin in paginatedData" :key="catin.id" class="small">
+                        <tr v-for="catin in paginatedData" :key="catin.id" class="">
                           <td class="text-start">
                             <a
                               href="#"
@@ -574,7 +571,7 @@
               <div class="col-md-4" v-if="selectedCatin">
                 <div
                   v-if="selectedCatin"
-                  class="card shadow-sm p-4 text-center small position-relative"
+                  class="card shadow-sm p-4 text-center position-relative"
                 >
                   <!-- Tombol Close -->
                   <button
@@ -585,18 +582,18 @@
                   ></button>
 
                   <!-- Nama dan Identitas -->
-                  <h5 class="fw-bold text-dark mb-1">
+                  <h2 class="fw-bold text-dark mb-1">
                     {{ selectedCatin.nama_perempuan }} / {{ selectedCatin.nama_laki }}
-                  </h5>
-                  <p class="text-muted mb-0 text-capitalize">
+                  </h2>
+                  <p style="font-size: 14px" class="text-muted mb-0 text-capitalize">
                     {{ selectedCatin.kelurahan || '-' }}
                   </p>
-                  <p class="text-muted">{{ selectedCatin.kecamatan || '-' }}</p>
+                  <p style="font-size: 14px" class="text-muted">{{ selectedCatin.kecamatan || '-' }}</p>
 
                   <!-- Badge Status Gizi -->
                   <div class="mb-3">
                     <span
-                      class="badge px-3 py-2 small"
+                      class="badge px-3 py-2"
                       :class="{
                         'bg-danger text-white': ['Berisiko'].includes(
                           selectedCatin.pemeriksaan_terakhir.status_risiko,
@@ -609,7 +606,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Pemeriksaan</h6>
+                  <h2 class="fw-bold text-start text-secondary mt-2">Riwayat Pemeriksaan</h2>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -657,7 +654,8 @@
 
                   <!-- Tombol Download -->
                   <button
-                    class="btn btn-gradient rounded-pill px-4 mt-2 fw-semibold"
+                  style="background-color: #0d8cff"
+                    class="btn btn-primary rounded-pill px-4 mt-2 fw-semibold"
                     @click="downloadRiwayat"
                   >
                     Download Riwayat
@@ -676,10 +674,10 @@
                   ></button>
 
                   <!-- Header -->
-                  <div class="bg-primary text-white p-4 text-center rounded-top">
-                    <h5 class="fw-bold mb-0">
+                  <div class="bg-danger text-white p-4 text-center rounded-top">
+                    <h4 class="fw-bold mb-0">
                       {{ selectedCatin.nama_perempuan }} / {{ selectedCatin.nama_laki }}
-                    </h5>
+                    </h4>
                     <p class="text-white mb-0 small">
                       {{ selectedCatin.usia_perempuan }} Tahun -
                       {{ selectedCatin.pemeriksaan_terakhir.status_risiko }}
@@ -730,7 +728,7 @@
                         <div class="row g-3">
                           <div class="col-md-6">
                             <div class="card border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Identitas Pasangan</h6>
+                              <h6 class="tab-pane-sub-title mb-3 text-danger">Identitas Pasangan</h6>
                               <table class="table table-borderless mb-0">
                                 <tbody>
                                   <tr>
@@ -763,7 +761,7 @@
                           </div>
                           <div class="col-md-6">
                             <div class="card border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Alamat</h6>
+                              <h6 class="tab-pane-sub-title mb-3 text-danger">Alamat</h6>
                               <table class="table table-borderless mb-0">
                                 <tbody>
                                   <tr>
@@ -799,11 +797,11 @@
                       <!-- Data Pemeriksaan -->
                       <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Riwayat Pemeriksaan</h6>
+                          <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Pemeriksaan</h6>
                           <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle">
                               <thead class="table-success">
-                                <tr class="small text-center align-middle">
+                                <tr class="text-center align-middle">
                                   <th style="width: 150px">Tanggal</th>
                                   <th>Kader</th>
                                   <th>Risiko</th>
@@ -823,7 +821,7 @@
                                 <tr
                                   v-for="(item, i) in selectedCatin.riwayat"
                                   :key="'kehamilan-' + i"
-                                  class="small text-center"
+                                  class="text-center"
                                 >
                                   <td>{{ this.formatDate(item.tanggal_pendampingan) }}</td>
                                   <td>{{ item.nama_petugas }}</td>
@@ -1150,6 +1148,7 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
+       console.log('Applying filters:');
       await this.loadBride()
       await this.hitungStatusKesehatan()
     },
@@ -1412,11 +1411,32 @@ export default {
   display: none;
 }
 
+.selected-text,
+.form-select.text-truncate {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .ringkasan-header,
 .table-name {
   font-family: 'Neuton', serif;
-  font-size: 20px;
   font-weight: bold;
+  font-size: 24px;
+}
+
+.custom-card-size {
+  height: 109px !important;
+  width: 98% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.no-col-padding {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 @media (max-width: 768px) {
@@ -1509,5 +1529,10 @@ export default {
 .flex-grow-1 {
   border-left: none !important;
   background-color: #f9f9fb;
+}
+
+.tab-pane-sub-title {
+  font-size: 17px;
+  font-weight: 600;
 }
 </style>
