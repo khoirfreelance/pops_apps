@@ -1366,6 +1366,7 @@ export default {
           const keluarga = item.keluarga?.[0] || {};
           const pendamping = item.pendampingan?.at(-1) || {};
           const posyandu = item.posyandu?.at(-1) || {};
+          // eslint-disable-next-line no-unused-vars
           const intervensi = item.intervensi?.at(-1);
 
           return {
@@ -1388,7 +1389,7 @@ export default {
             bb: posyandu.bb || '-',
             tb: posyandu.tb || '-',
             bb_naik: posyandu.bb_naik || false,
-            intervensi: intervensi ? intervensi.jenis : 'Belum mendapatkan intervensi',
+            intervensi: item.intervensi?.length ? item.intervensi.map(i => i.jenis).join(', ') : 'Belum mendapatkan intervensi',
             tmpt_dilahirkan: kelahiran.tmpt_dilahirkan || '-',
             tgl_lahir: kelahiran.tgl_lahir || '-',
             bb_lahir: kelahiran.bb_lahir || '-',
