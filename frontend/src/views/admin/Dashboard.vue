@@ -1575,6 +1575,7 @@ export default {
 
         const wilayah = res.data
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.filters.kelurahan = this.kelurahan
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu
@@ -1759,6 +1760,7 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          kelurahan: this.filters.kelurahan || '',
         };
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
@@ -2043,6 +2045,7 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          kelurahan: this.filters.kelurahan ||''
         };
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };

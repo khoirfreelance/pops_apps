@@ -99,7 +99,7 @@
               <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
                 <label for="filter" class="text-primary">Filter Lokasi:</label>
                 <select v-model="kelurahan" class="form-select text-muted" disabled>
-                  <option :value="kelurahan">{{ kelurahan }}</option>
+                  <option :value="kelurahan">{{ this.filters.kelurahan }}</option>
                 </select>
               </div>
 
@@ -374,11 +374,11 @@
                     <span
                       class="badge px-3 py-2 small"
                       :class="{
-                        'bg-danger text-white': ['Berisiko'].includes(selectedCatin.pemeriksaan_terakhir.status_risiko),
-                        'bg-success': selectedCatin.pemeriksaan_terakhir.status_risiko === 'Normal'
+                        'bg-danger text-white': ['Berisiko'].includes(selectedCatin.status_risiko),
+                        'bg-success': selectedCatin.status_risiko === 'Normal'
                       }"
                     >
-                      {{ selectedCatin.pemeriksaan_terakhir.status_risiko }}
+                      {{ selectedCatin.status_risiko }}
                     </span>
                   </div>
 
@@ -399,10 +399,10 @@
                       </thead>
                       <tbody>
                         <tr
-                          v-for="(r, i) in (selectedCatin.riwayat || []).slice(-3)"
+                          v-for="(r, i) in (selectedCatin.pemeriksaan_terakhir || []).slice(-3)"
                           :key="i"
                         >
-                          <td>{{ this.formatDate(r.tanggal_pendampingan) }}</td>
+                          <td>{{ this.formatDate(r.tanggal_pemeriksaan) }}</td>
                           <td>
                             <span
                               class="badge"
@@ -422,9 +422,9 @@
                           <td>
                             <span
                               class="badge"
-                              :class="r.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
+                              :class="selectedCatin.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
                             >
-                              {{ r.status_risiko }}
+                              {{ selectedCatin.status_risiko }}
                             </span>
                           </td>
                         </tr>
@@ -457,7 +457,7 @@
                   <div class="bg-primary text-white p-4 text-center rounded-top">
                     <h5 class="fw-bold mb-0">{{ selectedCatin.nama_perempuan }} / {{ selectedCatin.nama_laki }}</h5>
                     <p class="text-white mb-0 small">
-                      {{ selectedCatin.usia_perempuan }} Tahun - {{ selectedCatin.pemeriksaan_terakhir.status_risiko }}
+                      {{ selectedCatin.usia_perempuan }} Tahun - {{ selectedCatin.status_risiko }}
                     </p>
                   </div>
 
@@ -589,7 +589,7 @@
                                   :key="'kehamilan-' + i"
                                   class="small text-center"
                                 >
-                                  <td>{{ this.formatDate(item.tanggal_pendampingan) }}</td>
+                                  <td>{{ this.formatDate(item.tanggal_pemeriksaan) }}</td>
                                   <td>{{ item.nama_petugas }}</td>
                                   <td>
                                     <span
@@ -703,7 +703,6 @@ export default {
         rw:'',
         status: [],
         usia: [],
-        intervensi: [],
         periodeAwal: '',
         periodeAkhir: '',
       },
@@ -806,7 +805,7 @@ export default {
     showDetail(props) {
       //console.log(props);
       this.selectedCatin = props
-      //console.log(this.selectedCatin);
+      console.log(this.selectedCatin);
     },
     downloadRiwayat() {
       if (!this.selectedCatin) {
@@ -924,7 +923,7 @@ export default {
         })
         const wilayah = res.data
         //console.log('✅ getWilayahUser ->', wilayah)
-        this.kelurahan = wilayah.kelurahan || '-'
+        this.filters.kelurahan = wilayah.kelurahan || '-'
         this.kecamatan = wilayah.kecamatan || '-'
         this.kota = wilayah.kota || '-'
         this.provinsi = wilayah.provinsi || '-'
@@ -1006,9 +1005,10 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           usia: this.filters.usia || [],            // tambahan
-          intervensi: this.filters.intervensi || [],// tambahan
+          kelurahan: this.filters.kelurahan || '',// tambahan
           periodeAwal: this.filters.periodeAwal || '',
           periodeAkhir: this.filters.periodeAkhir || '',
+
         };
 
         // Status bisa multiple (checkbox)
@@ -1042,7 +1042,7 @@ export default {
           params: this.filters,
         });
 
-        console.log('data: ', res.data);
+        console.log('data: ', this.filters);
 
         // ✅ Ubah data object jadi array
         const rawData = res.data?.data || {};
@@ -1100,11 +1100,11 @@ export default {
     this.isLoading = true
     try {
       await Promise.all([
-        this.hitungStatusKesehatan(),
         //this.loadConfigWithCache(),
-        this.loadBride(),
         //this.getPendingData(),
         this.getWilayahUser(),
+        this.hitungStatusKesehatan(),
+        this.loadBride(),
         this.handleResize(),
         this.generatePeriodeOptions(),
 

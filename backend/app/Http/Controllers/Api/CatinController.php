@@ -55,6 +55,7 @@ class CatinController extends Controller
             ]);
         }
 
+        //dd($query->toSQL(), $query->getBindings());
         // --- Ambil semua record dulu ---
         $all = $query->orderBy('tanggal_pemeriksaan')->get();
 
@@ -456,7 +457,8 @@ class CatinController extends Controller
 
                     $periodeAwal  = $this->parseBulanTahun($request->periodeAwal, false);
                     $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
-
+                    /* dd($periodeAwal,
+                        $periodeAkhir); */
                     $query->whereBetween('tanggal_pendampingan', [
                         $periodeAwal,
                         $periodeAkhir
@@ -497,7 +499,6 @@ class CatinController extends Controller
                     ]);
                 }
             }
-
 
             // 6️⃣ Ambil data
             $data = $query->get();
@@ -669,29 +670,30 @@ class CatinController extends Controller
             // Tentukan periode berdasarkan filter
             if ($request->filled('periode')) {
 
-            $periodeRaw = $request->periode;
+                $periodeRaw = $request->periode;
 
-            // Jika format "2025-03"
-            if (preg_match('/^\d{4}-\d{2}$/', $periodeRaw)) {
-                // parse manual
-                $periode = Carbon::createFromFormat('Y-m-d', $periodeRaw . '-01');
-            } else {
-                // format "November 2025"
-                $periode = Carbon::parse('01 ' . $periodeRaw);
-            }
+                // Jika format "2025-03"
+                if (preg_match('/^\d{4}-\d{2}$/', $periodeRaw)) {
+                    // parse manual
+                    $periode = Carbon::createFromFormat('Y-m-d', $periodeRaw . '-01');
+                } else {
+                    // format "November 2025"
+                    $periode = Carbon::parse('01 ' . $periodeRaw);
+                }
 
                 $awal = $periode->copy()->startOfMonth();
                 $akhir = $periode->copy()->endOfMonth();
 
             } else {
-                $awal = Carbon::now()->startOfMonth();
-                $akhir = Carbon::now()->endOfMonth();
+                $awal = Carbon::now()->subMonth()->startOfMonth();
+                $akhir = Carbon::now()->subMonth()->endOfMonth();
             }
 
             // periode pembanding (bulan sebelumnya)
             $awalPrev = $awal->copy()->subMonth()->startOfMonth();
             $akhirPrev = $awal->copy()->subMonth()->endOfMonth();
 
+            //dd($query->whereBetween('tanggal_pendampingan', [$awal, $akhir])->toSQL(),[$awal->format('Y-m-d'), $akhir->format('Y-m-d')]);
             // ambil data untuk periode utama dan sebelumnya
             $current = (clone $query)
                 ->whereBetween('tanggal_pendampingan', [$awal, $akhir])
@@ -1017,6 +1019,7 @@ class CatinController extends Controller
 
             $query->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
 
+
             $data = $query->get([
                 'nik_perempuan',
                 'tanggal_pendampingan',
@@ -1044,22 +1047,17 @@ class CatinController extends Controller
                 $result[$indikator] = array_fill(0, 12, 0);
             }
 
-            // ✅ Grouping by bulan dan nik_perempuan → ambil record terakhir per orang per bulan
+            // Group per bulan, ambil semua record
             $groupedByMonth = $data->groupBy(function ($item) {
                 return \Carbon\Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
-            })->map(function ($rows) {
-                return $rows->groupBy('nik_perempuan')->map(fn($g) =>
-                    $g->sortByDesc('tanggal_pendampingan')->first()
-                );
             });
 
-            // ✅ Hitung total per bulan
+            // Hitung
             foreach ($groupedByMonth as $monthKey => $rows) {
+
                 $label = \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
                 $idx = $months->search($label);
                 if ($idx === false) continue;
-
-                $rows = $rows->values();
 
                 $result['KEK'][$idx] = $rows->filter(fn($i) =>
                     str_contains(strtolower($i->status_kek ?? ''), 'kek')
