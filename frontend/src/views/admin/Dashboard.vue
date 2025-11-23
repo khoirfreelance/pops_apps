@@ -57,7 +57,7 @@
 
           <!-- Judul Laporan -->
 
-           <div class="text-center mt-4">
+          <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
                 Laporan Status Gizi {{ kelurahan }} Periode {{ periodeLabel }}
@@ -80,11 +80,14 @@
             v-show="!isMobile || showFilterMobile"
           >
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-              
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
                 <label class="form-label fs-md-1">Kel/Desa</label>
-                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
+                <select
+                  v-model="filters.kelurahan"
+                  class="form-select text-muted small uniform-input"
+                  disabled
+                >
                   <option :value="kelurahan" class="small">{{ kelurahan }}</option>
                 </select>
               </div>
@@ -148,7 +151,6 @@
                   <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
               </div>
-
             </form>
           </div>
 
@@ -213,413 +215,913 @@
             <!-- Tab Anak -->
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
               <div id="giziAnakExport">
-              <div class="container-fluid px-0 my-3">
-                <!-- Row utama tanpa gutter -->
-                <div class="row gx-2">
-                  <!-- RINGKASAN STATUS GIZI -->
-                  <div class="col-md-8 d-flex flex-column">
-                    <!-- Judul -->
-                    <h2 class="ringkasan-header text-success mb-4">
-                      Ringkasan Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
-                    </h2>
+                <div class="container-fluid px-0 my-3">
+                  <!-- Row utama tanpa gutter -->
+                  <div class="row gx-2">
+                    <!-- RINGKASAN STATUS GIZI -->
+                    <div class="col-md-8 d-flex flex-column">
+                      <!-- Judul -->
+                      <h2 class="ringkasan-header text-success mb-4">
+                        Ringkasan Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
+                      </h2>
 
-                    <!-- Row isi -->
-                    <div class="row g-2">
-                      <!-- g-2 lebih kecil daripada gx-3 gy-3 -->
+                      <!-- Row isi -->
+                      <div class="row g-2">
+                        <!-- g-2 lebih kecil daripada gx-3 gy-3 -->
 
-                      <!-- GIZI CARDS -->
-                       <div class="col-12 col-md-10">
-                        <div class="row g-2">
-                          <div
-                            v-for="(item, index) in kesehatanData.anak"
-                            :key="index"
-                            class="col-6 col-lg-4"
-                          >
+                        <!-- GIZI CARDS -->
+                        <div class="col-12 col-md-10">
+                          <div class="row g-2">
                             <div
-                              class="card shadow-sm border-0 h-100"
-                              :class="`border-start border-4 border-${item.color}`"
+                              v-for="(item, index) in kesehatanData.anak"
+                              :key="index"
+                              class="col-6 col-lg-4"
                             >
-                              <div class="card-body py-2 d-flex justify-content-between align-items-center">
-                                <div>
-                                  <h2 class="fw-bold mb-1">{{ item.title }}</h2>
-                                  <h3 class="mb-0" :class="`text-${item.color}`">{{ item.percent }}</h3>
+                              <div
+                                class="card shadow-sm border-0 h-100"
+                                :class="`border-start border-4 border-${item.color}`"
+                              >
+                                <div
+                                  class="card-body py-2 d-flex justify-content-between align-items-center"
+                                >
+                                  <div>
+                                    <h2 class="fw-bold mb-1">{{ item.title }}</h2>
+                                    <h3 class="mb-0" :class="`text-${item.color}`">
+                                      {{ item.percent }}
+                                    </h3>
+                                  </div>
+                                  <h3 class="fw-bold mb-0" :class="`text-${item.color}`">
+                                    {{ item.value }}
+                                  </h3>
                                 </div>
-                                <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
+                                <div class="card-footer bg-transparent border-0 pt-0">
+                                  <canvas :ref="'chart-' + index" height="120"></canvas>
+                                </div>
                               </div>
-                              <div class="card-footer bg-transparent border-0 pt-0">
-                                <canvas :ref="'chart-' + index" height="120"></canvas>
-                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <!-- TOTAL ANAK -->
-                      <div class="col-12 col-md-2 d-flex">
-                        <div
-                          class="card text-center shadow-sm border p-3 w-100 d-flex flex-column justify-content-between"
-                        >
-                          <!-- Judul selalu di atas -->
-                          <h5 class="text-muted fw-bold mb-2">Total Anak Balita</h5>
-
-                          <!-- Angka di tengah secara vertikal -->
-                          <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
-
-                          <!-- Icon di bawah -->
-                          <i class="bi bi-people fs-2 text-dark mt-2"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- INFO BOXES -->
-                  <div id="infoBoxes" class="infoBoxes col-md-4 mt-2 small">
-                    <div
-                      v-for="(box, idx) in infoBoxes"
-                      :key="idx"
-                      class="alert py-2 mb-2"
-                      :class="`alert-${box.type}`"
-                    >
-                      <strong class="color-black">{{ box.title }}</strong
-                      ><br />
-                      <span v-html="box.desc"></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Pie Chart-->
-              <div class="container-fluid">
-                <!-- Row utama -->
-                <div class="row g-3 align-items-start">
-                  <!-- Judul -->
-                  <h2 class="ringkasan-header text-success">
-                    Komposisi Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
-                  </h2>
-                  <!-- Kolom Kiri: BB/U & TB/U -->
-                  <div class="col-12 col-xl-8 d-flex flex-column gap-3">
-                    <!-- Card BB/U -->
-                    <div class="card border-primary shadow-sm h-100 d-flex flex-column">
-                      <div class="card-body p-3 d-flex flex-column">
-                        <h5 class="fw-bold text-primary mb-3" id="text-title-table-piechart">Berat Badan / Usia</h5>
-                        <div class="row g-3 flex-grow-1 align-items-stretch">
-                          <div class="col-12 col-xl-7 table-responsive">
-                            <table class="table table-borderless align-middle mb-0">
-                              <thead>
-                                <tr class="fw-semibold h5 text-additional">
-                                  <th class="text-primary">Ket</th>
-                                  <th class="text-primary">Status</th>
-                                  <th class="text-primary">Jumlah</th>
-                                  <th class="text-primary">Persen</th>
-                                  <th class="text-primary">Tren</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(row, index) in dataTable_bb" :key="index">
-                                  <td>
-                                    <i
-                                      class="fa-solid fa-circle fs-6"
-                                      :style="{ color: row.color }"
-                                    ></i>
-                                  </td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.status }}</td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.jumlah }}</td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.persen }} %</td>
-                                  <td class="small" id="text-diagram-table-piechart" :class="row.trenClass">
-                                    <span v-if="row.tren !== '-'"
-                                      ><i :class="row.trenIcon"></i> {{ row.tren }}</span
-                                    >
-                                    <span v-else>-</span>
-                                  </td>
-                                </tr>
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <td colspan="4" class="small pt-2">
-                                    <a
-                                      href="/admin/dashboard/detail?tipe=bbu"
-                                      class="color-blue text-decoration-none"
-                                      >Lihat Grafik Selengkapnya</a
-                                    >
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                          </div>
+                        <!-- TOTAL ANAK -->
+                        <div class="col-12 col-md-2 d-flex">
                           <div
-                            class="col-12 col-xl-5 d-flex justify-content-center align-items-center"
+                            class="card text-center shadow-sm border p-3 w-100 d-flex flex-column justify-content-between"
                           >
-                            <div style="max-width: 75%; height: auto">
-                              <canvas ref="pieChart_bb" class="mx-auto"></canvas>
-                            </div>
+                            <!-- Judul selalu di atas -->
+                            <h5 class="text-muted fw-bold mb-2">Total Anak Balita</h5>
+
+                            <!-- Angka di tengah secara vertikal -->
+                            <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
+
+                            <!-- Icon di bawah -->
+                            <i class="bi bi-people fs-2 text-dark mt-2"></i>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <!-- Card TB/U -->
-                    <div class="card border-primary shadow-sm h-100 d-flex flex-column mt-5">
-                      <div class="card-body p-3 d-flex flex-column">
-                        <h5 class="fw-bold text-primary mb-3" id="text-title-table-piechart">Tinggi Badan / Usia</h5>
-                        <div class="row g-3 flex-grow-1 align-items-stretch">
-                          <div class="col-12 col-xl-7 table-responsive">
-                            <table class="table table-borderless align-middle mb-0">
-                              <thead>
-                                <tr class="fw-semibold h5 text-additional">
-                                  <th class="text-primary">Ket</th>
-                                  <th class="text-primary">Status</th>
-                                  <th class="text-primary">Jumlah</th>
-                                  <th class="text-primary">Persen</th>
-                                  <th class="text-primary">Tren</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(row, index) in dataTable_tb" :key="index">
-                                  <td>
-                                    <i
-                                      class="fa-solid fa-circle fs-6"
-                                      :style="{ color: row.color }"
-                                    ></i>
-                                  </td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.status }}</td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.jumlah }}</td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.persen }} %</td>
-                                  <td class="small" id="text-diagram-table-piechart" :class="row.trenClass">
-                                    <span v-if="row.tren !== '-'"
-                                      ><i :class="row.trenIcon"></i> {{ row.tren }}</span
-                                    >
-                                    <span v-else>-</span>
-                                  </td>
-                                </tr>
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <td colspan="4" class="small pt-2">
-                                    <a
-                                      href="/admin/dashboard/detail?tipe=tbu"
-                                      class="color-blue text-decoration-none"
-                                      >Lihat Grafik Selengkapnya</a
-                                    >
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                          </div>
-                          <div
-                            class="col-12 col-xl-5 d-flex justify-content-center align-items-center"
-                          >
-                            <div style="max-width: 75%; height: auto">
-                              <canvas ref="pieChart_tb" class="mx-auto"></canvas>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Kolom Kanan: BB/TB -->
-                  <div class="col-12 col-xl-4 h-100 d-flex flex-column">
-                    <div class="card border-primary shadow-sm h-100 d-flex flex-column">
-                      <div class="card-body p-3 d-flex flex-column">
-                        <h5 class="fw-bold text-primary mb-3" id="text-title-table-piechart">Berat Badan / Tinggi Badan</h5>
-                        <div class="row g-3 flex-grow-1 align-items-stretch">
-                          <div class="col-12 table-responsive">
-                            <table class="table table-borderless align-middle mb-0">
-                              <thead>
-                                <tr class="fw-semibold h5 text-additional">
-                                  <th class="text-primary">Ket</th>
-                                  <th class="text-primary">Status</th>
-                                  <th class="text-primary">Jumlah</th>
-                                  <th class="text-primary">Persen</th>
-                                  <th class="text-primary">Tren</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(row, index) in dataTable_bbtb" :key="index">
-                                  <td>
-                                    <i
-                                      class="fa-solid fa-circle fs-6"
-                                      :style="{ color: row.color }"
-                                    ></i>
-                                  </td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.status }}</td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">{{ row.jumlah ?? 0 }}</td>
-                                  <td class="text-additional small" id="text-diagram-table-piechart">
-                                    {{ row.persen ? row.persen + ' %' : '0 %' }}
-                                  </td>
-                                  <td class="small" id="text-diagram-table-piechart" :class="row.trenClass">
-                                    <span v-if="row.tren && row.tren !== '-'"
-                                      ><i :class="row.trenIcon"></i> {{ row.tren }}</span
-                                    >
-                                    <span v-else>-</span>
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div
-                            class="col-12 d-flex justify-content-center align-items-center flex-column"
-                          >
-                            <div style="max-width: 65%; height: auto">
-                              <canvas ref="pieChart_status" class="mx-auto"></canvas>
-                            </div>
-                          </div>
-                          <div class="mt-2 text-center small">
-                            <a
-                              href="/admin/dashboard/detail?tipe=bbtb"
-                              class="color-blue text-decoration-none"
-                              >Lihat Grafik Selengkapnya</a
-                            >
-                          </div>
-                        </div>
+                    <!-- INFO BOXES -->
+                    <div id="infoBoxes" class="infoBoxes col-md-4 mt-2 small">
+                      <div
+                        v-for="(box, idx) in infoBoxes"
+                        :key="idx"
+                        class="alert py-2 mb-2"
+                        :class="`alert-${box.type}`"
+                      >
+                        <strong class="color-black">{{ box.title }}</strong
+                        ><br />
+                        <span v-html="box.desc"></span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Ringkasan -->
-              <div class="container-fluid mt-3">
-                <div class="row">
-                  <div class="col-12 d-flex justify-content-between mb-2">
-                    <h2 class="ringkasan-header text-primary">Anak Dengan Masalah Gizi Ganda</h2>
-                  </div>
-
-                  <!-- CARD UTAMA -->
-                  <div class="col-12">
-                    <div class="card shadow-sm border-0 rounded-4">
-                      <!-- HEADER -->
-                      <div class="text-center position-relative mb-0">
-                        <h1
-                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
-                          style="width: 55% !important"
-                          id="text-title-card-header-h1"
-                        >
-                          {{ totalKasus }} dengan Masalah Gizi Ganda
-                        </h1>
-
-                        <!-- TAB NAV -->
-                        <div class="container position-relative" style="margin-top: -2.5rem">
-                          <div
-                            class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
-                          >
-                            <button
-                              class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                              style="border-bottom-width: 5px !important"
+                <!-- Pie Chart-->
+                <div class="container-fluid">
+                  <!-- Row utama -->
+                  <div class="row g-3 align-items-start">
+                    <!-- Judul -->
+                    <h2 class="ringkasan-header text-success">
+                      Komposisi Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
+                    </h2>
+                    <!-- Kolom Kiri: BB/U & TB/U -->
+                    <div class="col-12 col-xl-8 d-flex flex-column gap-3">
+                      <!-- Card BB/U -->
+                      <div class="card border-primary shadow-sm h-100 d-flex flex-column">
+                        <div class="card-body p-3 d-flex flex-column">
+                          <h5 class="fw-bold text-primary mb-3" id="text-title-table-piechart">
+                            Berat Badan / Usia
+                          </h5>
+                          <div class="row g-3 flex-grow-1 align-items-stretch">
+                            <div class="col-12 col-xl-7 table-responsive">
+                              <table class="table table-borderless align-middle mb-0">
+                                <thead>
+                                  <tr class="fw-semibold h5 text-additional">
+                                    <th class="text-primary">Ket</th>
+                                    <th class="text-primary">Status</th>
+                                    <th class="text-primary">Jumlah</th>
+                                    <th class="text-primary">Persen</th>
+                                    <th class="text-primary">Tren</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(row, index) in dataTable_bb" :key="index">
+                                    <td>
+                                      <i
+                                        class="fa-solid fa-circle fs-6"
+                                        :style="{ color: row.color }"
+                                      ></i>
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.status }}
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.jumlah }}
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.persen }} %
+                                    </td>
+                                    <td
+                                      class="small"
+                                      id="text-diagram-table-piechart"
+                                      :class="row.trenClass"
+                                    >
+                                      <span v-if="row.tren !== '-'"
+                                        ><i :class="row.trenIcon"></i> {{ row.tren }}</span
+                                      >
+                                      <span v-else>-</span>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                                <tfoot>
+                                  <tr>
+                                    <td colspan="4" class="small pt-2">
+                                      <a
+                                        href="/admin/dashboard/detail?tipe=bbu"
+                                        class="color-blue text-decoration-none"
+                                        >Lihat Grafik Selengkapnya</a
+                                      >
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </table>
+                            </div>
+                            <div
+                              class="col-12 col-xl-5 d-flex justify-content-center align-items-center"
                             >
-                              <span class="small text-danger" id="text-title-card-span"
-                                >Anak belum dapat Intervensi <br />
-                                {{ totalBelum }}</span
-                              >
-                            </button>
-
-                            <button
-                              class="small fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                              style="border-bottom-width: 5px !important"
-                            >
-                              <span class="small text-success" id="text-title-card-span"
-                                >Anak sudah dapat Intervensi <br />
-                                {{ totalSudah }}</span
-                              >
-                            </button>
+                              <div style="max-width: 75%; height: auto">
+                                <canvas ref="pieChart_bb" class="mx-auto"></canvas>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div class="row g-3 mt-3">
-                        <div class="col-12 col-md-12 col-lg-4">
-                          <div
-                            class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
+                      <!-- Card TB/U -->
+                      <div class="card border-primary shadow-sm h-100 d-flex flex-column mt-5">
+                        <div class="card-body p-3 d-flex flex-column">
+                          <h5 class="fw-bold text-primary mb-3" id="text-title-table-piechart">
+                            Tinggi Badan / Usia
+                          </h5>
+                          <div class="row g-3 flex-grow-1 align-items-stretch">
+                            <div class="col-12 col-xl-7 table-responsive">
+                              <table class="table table-borderless align-middle mb-0">
+                                <thead>
+                                  <tr class="fw-semibold h5 text-additional">
+                                    <th class="text-primary">Ket</th>
+                                    <th class="text-primary">Status</th>
+                                    <th class="text-primary">Jumlah</th>
+                                    <th class="text-primary">Persen</th>
+                                    <th class="text-primary">Tren</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(row, index) in dataTable_tb" :key="index">
+                                    <td>
+                                      <i
+                                        class="fa-solid fa-circle fs-6"
+                                        :style="{ color: row.color }"
+                                      ></i>
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.status }}
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.jumlah }}
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.persen }} %
+                                    </td>
+                                    <td
+                                      class="small"
+                                      id="text-diagram-table-piechart"
+                                      :class="row.trenClass"
+                                    >
+                                      <span v-if="row.tren !== '-'"
+                                        ><i :class="row.trenIcon"></i> {{ row.tren }}</span
+                                      >
+                                      <span v-else>-</span>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                                <tfoot>
+                                  <tr>
+                                    <td colspan="4" class="small pt-2">
+                                      <a
+                                        href="/admin/dashboard/detail?tipe=tbu"
+                                        class="color-blue text-decoration-none"
+                                        >Lihat Grafik Selengkapnya</a
+                                      >
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </table>
+                            </div>
+                            <div
+                              class="col-12 col-xl-5 d-flex justify-content-center align-items-center"
+                            >
+                              <div style="max-width: 75%; height: auto">
+                                <canvas ref="pieChart_tb" class="mx-auto"></canvas>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Kolom Kanan: BB/TB -->
+                    <div class="col-12 col-xl-4 h-100 d-flex flex-column">
+                      <div class="card border-primary shadow-sm h-100 d-flex flex-column">
+                        <div class="card-body p-3 d-flex flex-column">
+                          <h5 class="fw-bold text-primary mb-3" id="text-title-table-piechart">
+                            Berat Badan / Tinggi Badan
+                          </h5>
+                          <div class="row g-3 flex-grow-1 align-items-stretch">
+                            <div class="col-12 table-responsive">
+                              <table class="table table-borderless align-middle mb-0">
+                                <thead>
+                                  <tr class="fw-semibold h5 text-additional">
+                                    <th class="text-primary">Ket</th>
+                                    <th class="text-primary">Status</th>
+                                    <th class="text-primary">Jumlah</th>
+                                    <th class="text-primary">Persen</th>
+                                    <th class="text-primary">Tren</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(row, index) in dataTable_bbtb" :key="index">
+                                    <td>
+                                      <i
+                                        class="fa-solid fa-circle fs-6"
+                                        :style="{ color: row.color }"
+                                      ></i>
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.status }}
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.jumlah ?? 0 }}
+                                    </td>
+                                    <td
+                                      class="text-additional small"
+                                      id="text-diagram-table-piechart"
+                                    >
+                                      {{ row.persen ? row.persen + ' %' : '0 %' }}
+                                    </td>
+                                    <td
+                                      class="small"
+                                      id="text-diagram-table-piechart"
+                                      :class="row.trenClass"
+                                    >
+                                      <span v-if="row.tren && row.tren !== '-'"
+                                        ><i :class="row.trenIcon"></i> {{ row.tren }}</span
+                                      >
+                                      <span v-else>-</span>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                            <div
+                              class="col-12 d-flex justify-content-center align-items-center flex-column"
+                            >
+                              <div style="max-width: 65%; height: auto">
+                                <canvas ref="pieChart_status" class="mx-auto"></canvas>
+                              </div>
+                            </div>
+                            <div class="mt-2 text-center small">
+                              <a
+                                href="/admin/dashboard/detail?tipe=bbtb"
+                                class="color-blue text-decoration-none"
+                                >Lihat Grafik Selengkapnya</a
+                              >
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Ringkasan -->
+                <div class="container-fluid mt-3">
+                  <div class="row">
+                    <div class="col-12 d-flex justify-content-between mb-2">
+                      <h2 class="ringkasan-header text-primary">Anak Dengan Masalah Gizi Ganda</h2>
+                    </div>
+
+                    <!-- CARD UTAMA -->
+                    <div class="col-12">
+                      <div class="card shadow-sm border-0 rounded-4">
+                        <!-- HEADER -->
+                        <div class="text-center position-relative mb-0">
+                          <h1
+                            class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
+                            style="width: 55% !important"
+                            id="text-title-card-header-h1"
                           >
-                            <div>
+                            {{ totalKasus }} dengan Masalah Gizi Ganda
+                          </h1>
+
+                          <!-- TAB NAV -->
+                          <div class="container position-relative" style="margin-top: -2.5rem">
+                            <div
+                              class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
+                            >
+                              <button
+                                class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                                style="border-bottom-width: 5px !important"
+                              >
+                                <span class="small text-danger" id="text-title-card-span"
+                                  >Anak belum dapat Intervensi <br />
+                                  {{ totalBelum }}</span
+                                >
+                              </button>
+
+                              <button
+                                class="small fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                                style="border-bottom-width: 5px !important"
+                              >
+                                <span class="small text-success" id="text-title-card-span"
+                                  >Anak sudah dapat Intervensi <br />
+                                  {{ totalSudah }}</span
+                                >
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row g-3 mt-3">
+                          <div class="col-12 col-md-12 col-lg-4">
+                            <div
+                              class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
+                            >
+                              <div>
+                                <h3 class="text-center text-success mb-2">
+                                  Jumlah anak tidak membaik<br />
+                                  <span class="fw-semibold"
+                                    >dalam {{ filterPeriode }} bulan terakhir</span
+                                  >
+                                </h3>
+                              </div>
+                              <div
+                                id="responsive-chart-container"
+                                class="chart-placeholder text-muted text-center mt-auto flex-grow-1"
+                              >
+                                <canvas ref="lineChart" class="w-100"></canvas>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="col-12 col-md-12 col-lg-4">
+                            <div
+                              class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
+                            >
+                              <h3 class="text-center text-success mb-2">Diagram Intervensi</h3>
+                              <div
+                                id="responsive-chart-container"
+                                class="chart-placeholder text-muted text-center flex-grow-1"
+                              >
+                                <canvas ref="funnelChart" class="w-100"></canvas>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="col-12 col-md-12 col-lg-4">
+                            <div
+                              class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
+                            >
                               <h3 class="text-center text-success mb-2">
-                                Jumlah anak tidak membaik<br />
+                                Top 5 Posyandu<br />
                                 <span class="fw-semibold"
-                                  >dalam {{ filterPeriode }} bulan terakhir</span
+                                  >dengan anak tidak membaik dalam {{ filterPeriode }} bulan
+                                  terakhir</span
                                 >
                               </h3>
-                            </div>
-                            <div
-                              id="responsive-chart-container"
-                              class="chart-placeholder text-muted text-center mt-auto flex-grow-1"
-                            >
-                              <canvas ref="lineChart" class="w-100"></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="col-12 col-md-12 col-lg-4">
-                          <div
-                            class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
-                          >
-                            <h3 class="text-center text-success mb-2">Diagram Intervensi</h3>
-                            <div
-                              id="responsive-chart-container"
-                              class="chart-placeholder text-muted text-center flex-grow-1"
-                            >
-                              <canvas ref="funnelChart" class="w-100"></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div class="col-12 col-md-12 col-lg-4">
-                          <div
-                            class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
-                          >
-                            <h3 class="text-center text-success mb-2">
-                              Top 5 Posyandu<br />
-                              <span class="fw-semibold"
-                                >dengan anak tidak membaik dalam {{ filterPeriode }} bulan
-                                terakhir</span
+                              <div
+                                id="responsive-chart-container"
+                                class="chart-placeholder text-muted text-center flex-grow-1"
                               >
-                            </h3>
-                            <div
-                              id="responsive-chart-container"
-                              class="chart-placeholder text-muted text-center flex-grow-1"
-                            >
-                              <canvas ref="barChart" class="w-100"></canvas>
+                                <canvas ref="barChart" class="w-100"></canvas>
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                       
+
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 mt-3">
+                <div class="card shadow-sm border-0 h-100 p-3">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-sm align-middle">
+                      <thead class="table-success">
+                        <tr>
+                          <th class="h4 text-center">No</th>
+                          <th class="h4 text-center" width="300">Nama</th>
+                          <th class="h4 text-center">Jenis Intervensi</th>
+                          <th class="h4 text-center">Stunting</th>
+                          <th class="h4 text-center">Wasting</th>
+                          <th class="h4 text-center">Underweight</th>
+                          <th class="h4 text-center">BB Sangat</th>
+                          <th class="h4 text-center">Overweight</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(anak, i) in paginatedAnakGabungan"
+                          :key="i"
+                          class="small text-center"
+                        >
+                          <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
+                          <td>{{ anak.nama }}</td>
+                          <td class="text-center">{{ anak.rumusan || '' }}</td>
+                          <td><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                          <td><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                          <td><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                          <td><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                          <td><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="100%" class="text-end">
+                            <button
+                              class="btn btn-sm btn-outline-primary p-2 mt-2"
+                              @click="exportDashboardPdf('giziAnakExport')"
+                            >
+                              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                              Export
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <nav id="responsive-pagination">
+                    <ul class="pagination justify-content-end">
+                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <button class="page-link" @click="currentPage > 1 && currentPage--">
+                          <span aria-hidden="true">&laquo;</span>
+                        </button>
+                      </li>
+
+                      <li
+                        v-for="(page, i) in paginationNumbersAnakGabungan"
+                        :key="i"
+                        class="page-item"
+                        :class="{
+                          active: currentPage === page,
+                          disabled: page === '...',
+                        }"
+                      >
+                        <button class="page-link" @click="page !== '...' && (currentPage = page)">
+                          {{ page }}
+                        </button>
+                      </li>
+
+                      <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
+                        <button
+                          class="page-link"
+                          @click="currentPage < totalPagesAnak && currentPage++"
+                        >
+                          <span aria-hidden="true">&raquo;</span>
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+                </div>
+              </div>
+
+              
+            </div>
+
+            <!-- Tab Bumil -->
+            <div class="tab-pane fade mt-3" id="bumil-tab-pane" role="tabpanel" tabindex="0">
+              <div id="kesehatanBumilExport">
+                <!-- card bumil -->
+                <div class="col-12">
+                  <div
+                    class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3"
+                  >
+                    <div v-for="(item, index) in kesehatanData.bumil" :key="index" class="col">
+                      <div
+                        class="card h-100 shadow-sm border-0 d-flex flex-column"
+                        :class="`border-start border-4 border-${item.color}`"
+                      >
+                        <!-- BODY -->
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                          <div>
+                            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+
+                            <p
+                              v-if="index !== kesehatanData.bumil.length - 1"
+                              class="mb-0 small"
+                              :class="`text-${item.color}`"
+                            >
+                              {{ item.percent }}
+                            </p>
+
+                            <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
+                          </div>
+
+                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
+                            {{ item.value }}
+                          </h2>
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div class="card-footer bg-transparent border-0 p-0">
+                          <canvas
+                            v-if="index !== kesehatanData.bumil.length - 1"
+                            :ref="'chart-bumil-' + index"
+                            style="height: 120px; width: 100%"
+                          ></canvas>
+
+                          <div v-else style="height: 120px"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              </div>
-            
-            <div class="col-12 mt-3">
-                          <div class="card shadow-sm border-0 h-100 p-3">
-                            <div class="table-responsive">
-                              <table class="table table-striped table-sm align-middle">
+
+                <!-- Tren -->
+                <div class="container-fluid">
+                  <h2 class="ringkasan-header text-primary mb-3">Status Kesehatan Ibu Hamil</h2>
+
+                  <!-- Row utama: tabel & chart berdampingan -->
+                  <div class="row g-3">
+                    <!-- Table -->
+                    <div class="col-12 col-xl-8">
+                      <div class="card border border-primary shadow p-3 h-100">
+                        <div class="table-responsive">
+                          <table class="table table-borderless align-middle">
+                            <thead>
+                              <tr class="fw-semibold text-additional">
+                                <th class="text-additional">Status</th>
+                                <th class="text-additional">Jumlah</th>
+                                <th class="text-additional">Persen</th>
+                                <th class="text-additional">Tren</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(row, index) in dataTable_bumil" :key="index">
+                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                  {{ row.status }}
+                                </td>
+                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                  {{ row.jumlah ?? 0 }}
+                                </td>
+                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
+                                </td>
+                                <td
+                                  id="text-diagram-table-piechart"
+                                  class="small"
+                                  :class="row.trenClass"
+                                >
+                                  <span v-if="row.tren && row.tren !== '-'">
+                                    <i :class="row.trenIcon"></i> {{ row.tren }}
+                                  </span>
+                                  <span v-else>-</span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Canvas Chart -->
+                    <div class="col-12 col-xl-4">
+                      <div
+                        class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center"
+                      >
+                        <canvas ref="bumilChart" class="w-100"></canvas>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tabel tambahan bawah -->
+                  <div class="row mt-4">
+                    <div class="col-12">
+                      <div class="card border border-primary shadow p-3">
+                        <div class="table-responsive">
+                          <table
+                            class="table table-bordered table-sm align-middle text-center mb-0"
+                          >
+                            <thead class="table-primary">
+                              <tr>
+                                <th class="py-3 fw-semibold">Indikator</th>
+                                <th v-for="(bulan, idx) in bulanLabels" :key="idx" class="py-3">
+                                  {{ bulan }}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(values, indikator) in indikatorData" :key="indikator">
+                                <td class="fw-medium">{{ indikator }}</td>
+                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Ringkasan -->
+                <div class="container-fluid mt-3">
+                  <div class="row">
+                    <div class="col-12 d-flex justify-content-start mb-2">
+                      <h2 class="ringkasan-header text-primary">
+                        Ibu Hamil dengan masalah Kesehatan Ganda
+                      </h2>
+                    </div>
+
+                    <!-- CARD UTAMA -->
+                    <div class="col-12">
+                      <div class="card shadow-sm border-0 rounded-4">
+                        <!-- HEADER -->
+                        <div class="text-center position-relative mb-0">
+                          <h2
+                            class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
+                            style="width: 55% !important"
+                          >
+                            {{ totalKasus }} dengan Masalah Gizi Ganda
+                          </h2>
+
+                          <!-- TAB NAV -->
+                          <div class="container position-relative" style="margin-top: -2.5rem">
+                            <div
+                              class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
+                            >
+                              <button
+                                class="fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                                style="border-bottom-width: 5px !important"
+                                @click="toggleSudahBumil(false)"
+                              >
+                                Ibu Hamil belum dapat Intervensi <br />
+                                {{ totalBelum }}
+                              </button>
+
+                              <button
+                                class="fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                                style="border-bottom-width: 5px !important"
+                                @click="toggleSudahBumil(true)"
+                              >
+                                Ibu Hamil sudah dapat Intervensi <br />
+                                {{ totalSudah }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- ISI GRID -->
+                        <div class="row g-2 mt-3">
+                          <!-- KIRI ATAS -->
+                          <div class="col-md-6 col-sm-12">
+                            <div
+                              class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between"
+                            >
+                              <div>
+                                <h2 class="text-center text-success mb-2">Grafik tren Ibu Hamil</h2>
+                              </div>
+                              <div class="chart-placeholder text-muted text-center mt-auto">
+                                <canvas
+                                  ref="bumilTrendChart"
+                                  style="
+                                    max-height: 280px;
+                                    min-height: 200px !important;
+                                    height: 100% !important;
+                                    width: 100% !important;
+                                  "
+                                ></canvas>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- TENGAH ATAS -->
+                          <div class="col-md-6 col-sm-12">
+                            <div
+                              class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between"
+                            >
+                              <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
+                              <div class="chart-placeholder text-muted text-center py-4">
+                                <div class="text-center text-muted" v-if="noIntervensiMessage">
+                                  {{ noIntervensiMessage }}
+                                </div>
+                                <canvas
+                                  v-show="!noIntervensiMessage"
+                                  ref="sudahBumilChart"
+                                ></canvas>
+                                <canvas
+                                  v-if="isSudahBumil"
+                                  ref="sudahBumilChart"
+                                  style="
+                                    max-height: 280px;
+                                    min-height: 200px !important;
+                                    height: 100% !important;
+                                    width: 100% !important;
+                                  "
+                                ></canvas>
+                                <canvas
+                                  v-else
+                                  ref="belumBumilChart"
+                                  style="
+                                    max-height: 280px;
+                                    min-height: 200px !important;
+                                    height: 100% !important;
+                                    width: 100% !important;
+                                  "
+                                ></canvas>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- BAWAH: TABEL -->
+                          <div
+                            id="bumilTableDashboard"
+                            class="card shadow-sm border-0 h-100 p-3 table-responsive"
+                          >
+                            <div v-if="isSudah">
+                              <table class="table table-striped table-sm align-middle p-2">
                                 <thead class="table-success">
                                   <tr>
-                                    <th class="h4 text-center">No</th>
-                                    <th class="h4 text-center" width="300">Nama</th>
-                                    <th class="h4 text-center">Jenis Intervensi</th>
-                                    <th class="h4 text-center">Stunting</th>
-                                    <th class="h4 text-center">Wasting</th>
-                                    <th class="h4 text-center">Underweight</th>
-                                    <th class="h4 text-center">BB Sangat</th>
-                                    <th class="h4 text-center">Overweight</th>
+                                    <th class="text-center p-2">No</th>
+                                    <th class="text-center p-2" width="300">Nama</th>
+                                    <th class="text-center p-2">Anemia</th>
+                                    <th class="text-center p-2">Kehamilan Berisiko</th>
+                                    <th class="text-center p-2">KEK</th>
+                                    <th class="text-center p-2">Intervensi</th>
+                                    <th class="text-center p-2">RT</th>
+                                    <th class="text-center p-2">RW</th>
+                                    <th class="text-center p-2">Usia (Tahun)</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   <tr
-                                    v-for="(anak, i) in paginatedAnakGabungan"
+                                    v-for="(ibu, i) in paginatedBumil"
                                     :key="i"
-                                    class="small text-center"
+                                    v-if="paginatedBumil.length"
                                   >
-                                    <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                    <td>{{ anak.nama }}</td>
-                                    <td class="text-center">{{ anak.rumusan || '' }}</td>
-                                    <td><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                    <td><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                    <td><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                    <td><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                    <td><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                                    <td class="text-center">
+                                      {{ (currentPage - 1) * perPage + i + 1 }}
+                                    </td>
+                                    <td>{{ ibu.nama }}</td>
+                                    <td class="text-center">
+                                      <i v-if="ibu.anemia" class="bi bi-check2"></i>
+                                    </td>
+                                    <td class="text-center">
+                                      <i v-if="ibu.berisiko" class="bi bi-check2"></i>
+                                    </td>
+                                    <td class="text-center">
+                                      <i v-if="ibu.kek" class="bi bi-check2"></i>
+                                    </td>
+                                    <td class="text-center">{{ ibu.intervensi }}</td>
+                                    <td class="text-center">{{ ibu.rt }}</td>
+                                    <td class="text-center">{{ ibu.rw }}</td>
+                                    <td class="text-center">{{ ibu.usia }}</td>
+                                  </tr>
+
+                                  <!-- Fallback bila kosong -->
+                                  <tr v-else>
+                                    <td colspan="100%" class="text-center text-muted p-3">
+                                      Tidak ada data untuk 3 bulan terakhir
+                                    </td>
+                                  </tr>
+                                </tbody>
+
+                                <tfoot>
+                                  <tr>
+                                    <td colspan="100%" class="text-end">
+                                      <button
+                                        class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                        @click="exportDashboardPdf('kesehatanBumilExport')"
+                                      >
+                                        <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                        Expor
+                                      </button>
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </table>
+                              <!-- Pagination -->
+                              <nav id="responsive-pagination">
+                                <ul class="pagination justify-content-center">
+                                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                    <button class="page-link" @click="currentPage--">
+                                      <span aria-hidden="true">&laquo;</span>
+                                    </button>
+                                  </li>
+                                  <li
+                                    class="page-item"
+                                    v-for="page in totalPages"
+                                    :key="page"
+                                    :class="{ active: currentPage === page }"
+                                  >
+                                    <button class="page-link" @click="currentPage = page">
+                                      {{ page }}
+                                    </button>
+                                  </li>
+                                  <li
+                                    class="page-item"
+                                    :class="{ disabled: currentPage === totalPages }"
+                                  >
+                                    <button class="page-link" @click="currentPage++">
+                                      <span aria-hidden="true">&raquo;</span>
+                                    </button>
+                                  </li>
+                                </ul>
+                              </nav>
+                            </div>
+                            <div v-else>
+                              <table class="table table-striped table-sm align-middle p-2">
+                                <thead class="table-success">
+                                  <tr>
+                                    <th class="text-center p-2">No</th>
+                                    <th class="text-center p-2" width="300">Nama</th>
+                                    <th class="text-center p-2">Jenis Intervensi</th>
+                                    <th class="text-center p-2">Anemia</th>
+                                    <th class="text-center p-2">Kehamilan Berisiko</th>
+                                    <th class="text-center p-2">KEK</th>
+                                    <th class="text-center p-2">RT</th>
+                                    <th class="text-center p-2">RW</th>
+                                    <th class="text-center p-2">
+                                      Usia <span class="fw-normal">(Tahun)</span>
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr v-for="(bumil, i) in paginatedBumil" :key="i">
+                                    <td class="text-center">
+                                      {{ (currentPage - 1) * perPage + i + 1 }}
+                                    </td>
+                                    <td>{{ bumil.nama }}</td>
+                                    <td class="text-center">{{ bumil.intervensi }}</td>
+                                    <td class="text-center">
+                                      <i v-if="bumil.anemia" class="bi bi-check2"></i
+                                      ><span v-else>-</span>
+                                    </td>
+                                    <td class="text-center">
+                                      <i v-if="bumil.risiko" class="bi bi-check2"></i
+                                      ><span v-else>-</span>
+                                    </td>
+                                    <td class="text-center">
+                                      <i v-if="bumil.kek" class="bi bi-check2"></i
+                                      ><span v-else>-</span>
+                                    </td>
+                                    <td class="text-center">{{ bumil.rt }}</td>
+                                    <td class="text-center">{{ bumil.rw }}</td>
+                                    <td class="text-center">{{ bumil.usia }}</td>
                                   </tr>
                                 </tbody>
                                 <tfoot>
@@ -627,7 +1129,7 @@
                                     <td colspan="100%" class="text-end">
                                       <button
                                         class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportDashboardPdf('giziAnakExport')"
+                                        @click="exportDashboardPdf('kesehatanBumilExport')"
                                       >
                                         <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                                         Export
@@ -636,438 +1138,9 @@
                                   </tr>
                                 </tfoot>
                               </table>
-                            </div>
-                            <nav id="responsive-pagination">
-                              <ul class="pagination justify-content-end ">
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button
-                                    class="page-link"
-                                    @click="currentPage > 1 && currentPage--"
-                                  >
-                                    <span aria-hidden="true">&laquo;</span>
-                                  </button>
-                                </li>
-
-                                <li
-                                  v-for="(page, i) in paginationNumbersAnakGabungan"
-                                  :key="i"
-                                  class="page-item"
-                                  :class="{
-                                    active: currentPage === page,
-                                    disabled: page === '...',
-                                  }"
-                                >
-                                  <button
-                                    class="page-link"
-                                    @click="page !== '...' && (currentPage = page)"
-                                  >
-                                    {{ page }}
-                                  </button>
-                                </li>
-
-                                <li
-                                  class="page-item"
-                                  :class="{ disabled: currentPage === totalPagesAnak }"
-                                >
-                                  <button
-                                    class="page-link"
-                                    @click="currentPage < totalPagesAnak && currentPage++"
-                                  >
-                                    <span aria-hidden="true">&raquo;</span>
-                                  </button>
-                                </li>
-                              </ul>
-                            </nav>
-                          </div>
-                        </div>
-            </div>
-
-             
-
-            <!-- Tab Bumil -->
-            <div class="tab-pane fade mt-3" id="bumil-tab-pane" role="tabpanel" tabindex="0">
-              <div id="kesehatanBumilExport">
-              <!-- card bumil -->
-             <div class="col-12">
-  <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
-
-    <div
-      v-for="(item, index) in kesehatanData.bumil"
-      :key="index"
-      class="col"
-    >
-      <div
-        class="card h-100 shadow-sm border-0 d-flex flex-column"
-        :class="`border-start border-4 border-${item.color}`"
-      >
-        <!-- BODY -->
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-
-            <p
-              v-if="index !== kesehatanData.bumil.length - 1"
-              class="mb-0 small"
-              :class="`text-${item.color}`"
-            >
-              {{ item.percent }}
-            </p>
-
-            <i
-              v-else
-              class="bi bi-people fs-1"
-              :class="`text-${item.color}`"
-            ></i>
-          </div>
-
-          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
-            {{ item.value }}
-          </h2>
-        </div>
-
-        <!-- FOOTER -->
-        <div class="card-footer bg-transparent border-0 p-0">
-          <canvas
-            v-if="index !== kesehatanData.bumil.length - 1"
-            :ref="'chart-bumil-' + index"
-            style="height:120px; width:100%;"
-          ></canvas>
-
-          <div v-else style="height:120px;"></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-              <!-- Tren -->
-              <div class="container-fluid">
-                <h2 class="ringkasan-header text-primary mb-3">Status Kesehatan Ibu Hamil</h2>
-
-                <!-- Row utama: tabel & chart berdampingan -->
-                <div class="row g-3">
-                  <!-- Table -->
-                  <div class="col-12 col-xl-8">
-                    <div class="card border border-primary shadow p-3 h-100">
-                      <div class="table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <thead>
-                            <tr class="fw-semibold text-additional">
-                              <th class="text-additional">Status</th>
-                              <th class="text-additional">Jumlah</th>
-                              <th class="text-additional">Persen</th>
-                              <th class="text-additional">Tren</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(row, index) in dataTable_bumil" :key="index">
-                              <td id="text-diagram-table-piechart" class="text-additional small">{{ row.status }}</td>
-                              <td id="text-diagram-table-piechart" class="text-additional small">{{ row.jumlah ?? 0 }}</td>
-                              <td id="text-diagram-table-piechart" class="text-additional small">
-                                {{ row.persen ? row.persen + ' %' : '0 %' }}
-                              </td>
-                              <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
-                                <span v-if="row.tren && row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Canvas Chart -->
-                  <div class="col-12 col-xl-4">
-                    <div
-                      class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center"
-                    >
-                      <canvas
-                        ref="bumilChart" class="w-100"
-                      ></canvas>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Tabel tambahan bawah -->
-                <div class="row mt-4">
-                  <div class="col-12">
-                    <div class="card border border-primary shadow p-3">
-                      <div class="table-responsive">
-                        <table class="table table-bordered table-sm align-middle text-center mb-0">
-                          <thead class="table-primary">
-                            <tr>
-                              <th class="py-3 fw-semibold">Indikator</th>
-                              <th v-for="(bulan, idx) in bulanLabels" :key="idx" class="py-3">{{ bulan }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(values, indikator) in indikatorData" :key="indikator">
-                              <td class="fw-medium">{{ indikator }}</td>
-                              <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Ringkasan -->
-              <div class="container-fluid mt-3">
-                <div class="row">
-                  <div class="col-12 d-flex justify-content-start mb-2">
-                    <h2 class="ringkasan-header text-primary">Ibu Hamil dengan masalah Kesehatan Ganda</h2>
-                  </div>
-
-                  <!-- CARD UTAMA -->
-                  <div class="col-12">
-                    <div class="card shadow-sm border-0 rounded-4">
-                      <!-- HEADER -->
-                      <div class="text-center position-relative mb-0">
-                        <h2
-                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
-                          style="width: 55% !important"
-                        >
-                          {{ totalKasus }} dengan Masalah Gizi Ganda
-                        </h2>
-
-                        <!-- TAB NAV -->
-                        <div class="container position-relative" style="margin-top: -2.5rem">
-                          <div
-                            class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
-                          >
-                            <button
-                              class="fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                              style="border-bottom-width: 5px !important"
-                              @click="toggleSudahBumil(false)"
-                            >
-                              Ibu Hamil belum dapat Intervensi <br />
-                              {{ totalBelum }}
-                            </button>
-
-                            <button
-                              class="fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                              style="border-bottom-width: 5px !important"
-                              @click="toggleSudahBumil(true)"
-                            >
-                              Ibu Hamil sudah dapat Intervensi <br />
-                              {{ totalSudah }}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- ISI GRID -->
-                      <div class="row g-2 mt-3">
-                        <!-- KIRI ATAS -->
-                        <div class="col-md-6 col-sm-12">
-                          <div
-                            class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between"
-                          >
-                            <div>
-                              <h2 class="text-center text-success mb-2">Grafik tren Ibu Hamil</h2>
-                            </div>
-                            <div class="chart-placeholder text-muted text-center mt-auto">
-                              <canvas
-                                ref="bumilTrendChart"
-                                style="
-                                  max-height: 280px;
-                                  min-height: 200px !important;
-                                  height: 100% !important;
-                                  width: 100% !important;
-                                "
-                              ></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- TENGAH ATAS -->
-                        <div class="col-md-6 col-sm-12">
-                          <div
-                            class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between"
-                          >
-                            <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
-                            <div class="chart-placeholder text-muted text-center py-4">
-                              <div class="text-center text-muted" v-if="noIntervensiMessage">
-                                {{ noIntervensiMessage }}
-                              </div>
-                              <canvas v-show="!noIntervensiMessage" ref="sudahBumilChart"></canvas>
-                              <canvas
-                                v-if="isSudahBumil"
-                                ref="sudahBumilChart"
-                                style="
-                                  max-height: 280px;
-                                  min-height: 200px !important;
-                                  height: 100% !important;
-                                  width: 100% !important;
-                                "
-                              ></canvas>
-                              <canvas
-                                v-else
-                                ref="belumBumilChart"
-                                style="
-                                  max-height: 280px;
-                                  min-height: 200px !important;
-                                  height: 100% !important;
-                                  width: 100% !important;
-                                "
-                              ></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- BAWAH: TABEL -->
-                        <div id="bumilTableDashboard" class="card shadow-sm border-0 h-100 p-3 table-responsive">
-                          <div v-if="isSudah">
-                            <table class="table table-striped table-sm align-middle p-2">
-                              <thead class="table-success">
-                                <tr>
-                                  <th class="text-center p-2">No</th>
-                                  <th class="text-center p-2" width="300">Nama</th>
-                                  <th class="text-center p-2">Anemia</th>
-                                  <th class="text-center p-2">Kehamilan Berisiko</th>
-                                  <th class="text-center p-2">KEK</th>
-                                  <th class="text-center p-2">Intervensi</th>
-                                  <th class="text-center p-2">RT</th>
-                                  <th class="text-center p-2">RW</th>
-                                  <th class="text-center p-2">Usia (Tahun)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr
-                                  v-for="(ibu, i) in paginatedBumil"
-                                  :key="i"
-                                  v-if="paginatedBumil.length"
-                                >
-                                  <td class="text-center">
-                                    {{ (currentPage - 1) * perPage + i + 1 }}
-                                  </td>
-                                  <td>{{ ibu.nama }}</td>
-                                  <td class="text-center">
-                                    <i v-if="ibu.anemia" class="bi bi-check2"></i>
-                                  </td>
-                                  <td class="text-center">
-                                    <i v-if="ibu.berisiko" class="bi bi-check2"></i>
-                                  </td>
-                                  <td class="text-center">
-                                    <i v-if="ibu.kek" class="bi bi-check2"></i>
-                                  </td>
-                                  <td class="text-center">{{ ibu.intervensi }}</td>
-                                  <td class="text-center">{{ ibu.rt }}</td>
-                                  <td class="text-center">{{ ibu.rw }}</td>
-                                  <td class="text-center">{{ ibu.usia }}</td>
-                                </tr>
-
-                                <!-- Fallback bila kosong -->
-                                <tr v-else>
-                                  <td colspan="100%" class="text-center text-muted p-3">
-                                    Tidak ada data untuk 3 bulan terakhir
-                                  </td>
-                                </tr>
-                              </tbody>
-
-                              <tfoot>
-                                <tr>
-                                  <td colspan="100%" class="text-end">
-                                    <button
-                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportDashboardPdf('kesehatanBumilExport')"
-                                    >
-                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Expor
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                            <!-- Pagination -->
-                            <nav id="responsive-pagination">
-                              <ul class="pagination justify-content-center">
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button class="page-link" @click="currentPage--"><span aria-hidden="true">&laquo;</span></button>
-                                </li>
-                                <li
-                                  class="page-item"
-                                  v-for="page in totalPages"
-                                  :key="page"
-                                  :class="{ active: currentPage === page }"
-                                >
-                                  <button class="page-link" @click="currentPage = page">
-                                    {{ page }}
-                                  </button>
-                                </li>
-                                <li
-                                  class="page-item"
-                                  :class="{ disabled: currentPage === totalPages }"
-                                >
-                                  <button class="page-link" @click="currentPage++"><span aria-hidden="true">&raquo;</span></button>
-                                </li>
-                              </ul>
-                            </nav>
-                          </div>
-                          <div v-else>
-                            <table class="table table-striped table-sm align-middle p-2">
-                              <thead class="table-success">
-                                <tr>
-                                  <th class="text-center p-2">No</th>
-                                  <th class="text-center p-2" width="300">Nama</th>
-                                  <th class="text-center p-2">Jenis Intervensi</th>
-                                  <th class="text-center p-2">Anemia</th>
-                                  <th class="text-center p-2">Kehamilan Berisiko</th>
-                                  <th class="text-center p-2">KEK</th>
-                                  <th class="text-center p-2">RT</th>
-                                  <th class="text-center p-2">RW</th>
-                                  <th class="text-center p-2">
-                                    Usia <span class="fw-normal">(Tahun)</span>
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(bumil, i) in paginatedBumil" :key="i">
-                                  <td class="text-center">
-                                    {{ (currentPage - 1) * perPage + i + 1 }}
-                                  </td>
-                                  <td>{{ bumil.nama }}</td>
-                                  <td class="text-center">{{ bumil.intervensi }}</td>
-                                  <td class="text-center">
-                                    <i v-if="bumil.anemia" class="bi bi-check2"></i
-                                    ><span v-else>-</span>
-                                  </td>
-                                  <td class="text-center">
-                                    <i v-if="bumil.risiko" class="bi bi-check2"></i
-                                    ><span v-else>-</span>
-                                  </td>
-                                  <td class="text-center">
-                                    <i v-if="bumil.kek" class="bi bi-check2"></i
-                                    ><span v-else>-</span>
-                                  </td>
-                                  <td class="text-center">{{ bumil.rt }}</td>
-                                  <td class="text-center">{{ bumil.rw }}</td>
-                                  <td class="text-center">{{ bumil.usia }}</td>
-                                </tr>
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <td colspan="100%" class="text-end">
-                                    <button
-                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportToCSV(false)"
-                                    >
-                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Export
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                            <!-- Pagination -->
-                            <nav>
-                              <!-- <ul class="pagination justify-content-center">
+                              <!-- Pagination -->
+                              <nav>
+                                <!-- <ul class="pagination justify-content-center">
                                 <li class="page-item" :class="{ disabled: currentPage === 1 }">
                                   <button class="page-link" @click="currentPage--">Previous</button>
                                 </li>
@@ -1078,14 +1151,14 @@
                                   <button class="page-link" @click="currentPage++">Next</button>
                                 </li>
                               </ul> -->
-                            </nav>
+                              </nav>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
 
@@ -1094,54 +1167,50 @@
               <!-- Issue and Stat Card -->
               <!-- <div class="container-fluid my-4">
                 <div class="row"> -->
-                   <div class="col-12">
-  <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+                <div id="catinExport">
+              <div class="col-12">
+                <div
+                  class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3"
+                >
+                  <div v-for="(item, index) in kesehatanData.catin" :key="index" class="col">
+                    <div
+                      class="card h-100 shadow-sm border-0 d-flex flex-column"
+                      :class="`border-start border-4 border-${item.color}`"
+                    >
+                      <!-- BODY -->
+                      <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-    <div
-      v-for="(item, index) in kesehatanData.catin"
-      :key="index"
-      class="col"
-    >
-      <div
-        class="card h-100 shadow-sm border-0 d-flex flex-column"
-        :class="`border-start border-4 border-${item.color}`"
-      >
-        <!-- BODY -->
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                          <p
+                            v-if="index !== kesehatanData.catin.length - 1"
+                            class="mb-0 small"
+                            :class="`text-${item.color}`"
+                          >
+                            {{ item.percent }}
+                          </p>
 
-            <p
-              v-if="index !== kesehatanData.catin.length - 1"
-              class="mb-0 small"
-              :class="`text-${item.color}`"
-            >
-              {{ item.percent }}
-            </p>
+                          <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
+                        </div>
 
-            <i
-              v-else
-              class="bi bi-people fs-1"
-              :class="`text-${item.color}`"
-            ></i>
-          </div>
+                        <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
+                          {{ item.value }}
+                        </h2>
+                      </div>
 
-          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
-            {{ item.value }}
-          </h2>
-        </div>
-
-        <!-- FOOTER -->
-        <div class="card-footer bg-transparent border-0 p-0">
-          <canvas v-if="index !== kesehatanData.catin.length - 1" :ref="'chart-catin-' + index" height="120"></canvas>
-          <div v-else style="height:120px;"></div>
-        </div>
-      <!-- </div>
+                      <!-- FOOTER -->
+                      <div class="card-footer bg-transparent border-0 p-0">
+                        <canvas
+                          v-if="index !== kesehatanData.catin.length - 1"
+                          :ref="'chart-catin-' + index"
+                          height="120"
+                        ></canvas>
+                        <div v-else style="height: 120px"></div>
+                      </div>
+                      <!-- </div>
     </div> -->
-
-  </div>
-</div>
-                  
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1166,12 +1235,20 @@
                           </thead>
                           <tbody>
                             <tr v-for="(row, index) in dataTable_catin" :key="index">
-                              <td id="text-diagram-table-piechart" class="text-additional small">{{ row.status }}</td>
-                              <td id="text-diagram-table-piechart" class="text-additional small">{{ row.jumlah ?? 0 }}</td>
+                              <td id="text-diagram-table-piechart" class="text-additional small">
+                                {{ row.status }}
+                              </td>
+                              <td id="text-diagram-table-piechart" class="text-additional small">
+                                {{ row.jumlah ?? 0 }}
+                              </td>
                               <td id="text-diagram-table-piechart" class="text-additional small">
                                 {{ row.persen ? row.persen + ' %' : '0 %' }}
                               </td>
-                              <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
+                              <td
+                                id="text-diagram-table-piechart"
+                                class="small"
+                                :class="row.trenClass"
+                              >
                                 <span v-if="row.tren && row.tren !== '-'">
                                   <i :class="row.trenIcon"></i> {{ row.tren }}
                                 </span>
@@ -1190,7 +1267,7 @@
                   <div class="col-12">
                     <div class="card border border-primary shadow p-3">
                       <div class="table-responsive">
-                       <table class="table table-bordered table-sm align-middle text-center mb-0">
+                        <table class="table table-bordered table-sm align-middle text-center mb-0">
                           <thead class="table-light">
                             <tr>
                               <th>Indikator</th>
@@ -1203,11 +1280,20 @@
                               <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
                             </tr>
                           </tbody>
-                        </table>
+                                  
+                        </table>
                       </div>
                     </div>
                   </div>
                 </div>
+                <button
+                  class="btn btn-sm btn-outline-primary p-2 mt-2"
+                  @click="exportDashboardPdf('catinExport')"
+                >
+                  <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                  Export
+                </button>
+              </div>
               </div>
             </div>
           </div>
@@ -1221,7 +1307,6 @@
 </template>
 
 <style scoped>
-
 @import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
 /* ============================= */
 /* DEFAULT UNTUK LAYAR ≥ 1300px */
@@ -1246,8 +1331,6 @@ label {
   font-weight: bold;
   font-size: 24px;
 }
-
-
 
 @media (min-width: 576px) {
   #responsive-chart-container {
@@ -1623,13 +1706,11 @@ label {
 .hide-for-pdf {
   display: none !important;
 }
-
-
 </style>
 
 <script>
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 import CopyRight from '@/components/CopyRight.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
@@ -1673,12 +1754,12 @@ Chart.register(
   Filler,
 )
 
- function getNowYearMonth() {
-		  const d = new Date();
-		  const year = d.getFullYear();
-		  const month = String(d.getMonth() + 1).padStart(2, '0');
-		  return `${year}-${month}`;
-		}
+function getNowYearMonth() {
+  const d = new Date()
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Dashboard',
@@ -1740,7 +1821,7 @@ export default {
       children: [],
       bride: [],
       filters: {
-        ref:'d',
+        ref: 'd',
         kelurahan: '',
         posyandu: '',
         rw: '',
@@ -1758,126 +1839,128 @@ export default {
       kesehatan_bumil: [],
       intervensi_bumil: [],
       showFilterMobile: false,
-      isMobile: false
+      isMobile: false,
     }
   },
   methods: {
-      async exportDashboardPdf(tagId) {
+    async exportDashboardPdf(tagId) {
+      const infoBoxes = document.querySelector('#infoBoxes')
+      if (infoBoxes) infoBoxes.classList.add('hide-for-pdf')
 
-  const infoBoxes = document.querySelector('#infoBoxes');
-  if (infoBoxes) infoBoxes.classList.add('hide-for-pdf');
+      // const bumilTable = document.querySelector('#bumilTableDashboard')
+      // if (bumilTable) bumilTable.classList.add('hide-for-pdf')
+      const element = document.getElementById(tagId)
 
-  const bumilTable = document.querySelector('#bumilTableDashboard');
-  if (bumilTable) bumilTable.classList.add('hide-for-pdf');
-  const element = document.getElementById(tagId);
-
-  // Loading overlay
-  const loading = document.createElement("div");
-  loading.innerHTML = "Generating PDF...";
-  loading.style = `
+      // Loading overlay
+      const loading = document.createElement('div')
+      loading.innerHTML = 'Generating PDF...'
+      loading.style = `
     position:fixed; top:0; left:0; width:100%; height:100%;
     background:rgba(255,255,255,0.9); font-size:30px;
     display:flex; align-items:center; justify-content:center;
     z-index:9999
-  `;
-  document.body.appendChild(loading);
+  `
+      document.body.appendChild(loading)
 
-  await new Promise(r => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 400))
 
-  // 🚀 Pastikan elemen tidak terpotong scroll
-  const originalOverflow = element.style.overflow;
-  element.style.overflow = 'visible';
+      // 🚀 Pastikan elemen tidak terpotong scroll
+      const originalOverflow = element.style.overflow
+      element.style.overflow = 'visible'
 
-  const margin = 10; // margin PDF dalam mm
+      const margin = 10 // margin PDF dalam mm
 
-  html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    allowTaint: true,
-    windowWidth: element.scrollWidth,
-    windowHeight: element.scrollHeight
-  }).then(canvas => {
-    const imgData = canvas.toDataURL("image/png");
+      html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+      }).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png')
 
-    const pxWidth = canvas.width;
-    const pxHeight = canvas.height;
+        const pxWidth = canvas.width
+        const pxHeight = canvas.height
 
-    const mmWidth = pxWidth * 0.264583;
-    const mmHeight = pxHeight * 0.264583;
+        const mmWidth = pxWidth * 0.264583
+        const mmHeight = pxHeight * 0.264583
 
-    // 🚀 Tambahkan margin di PDF
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: [mmWidth + margin * 2, mmHeight + margin * 2]
-    });
+        // 🚀 Tambahkan margin di PDF
+        const pdf = new jsPDF({
+          orientation: 'p',
+          unit: 'mm',
+          format: [mmWidth + margin * 2, mmHeight + margin * 2],
+        })
 
-    pdf.addImage(imgData, "PNG", margin, margin, mmWidth, mmHeight);
-    pdf.save(tagId + ".pdf");
+        pdf.addImage(imgData, 'PNG', margin, margin, mmWidth, mmHeight)
+        pdf.save(tagId + '.pdf')
 
-    element.style.overflow = originalOverflow;
-    document.body.removeChild(loading);
-  });
-},
-   async generateIndikatorBumilBulanan() {
-		  try {
-			//this.isLoading = true;
+        element.style.overflow = originalOverflow
+        document.body.removeChild(loading)
 
-			const params = {
-			  kelurahan: this.filters.kelurahan || '',
-			  posyandu: this.filters.posyandu || '',
-			  rw: this.filters.rw || '',
-			  rt: this.filters.rt || '',
-			  periode: this.filters.periode || getNowYearMonth(),
-			}
+        infoBoxes.classList.remove('hide-for-pdf')
+        // bumilTable.classList.remove('hide-for-pdf')
+      })
+    },
+    async generateIndikatorBumilBulanan() {
+      try {
+        //this.isLoading = true;
 
-			Object.keys(params).forEach(key => {
-			  if (params[key] === '' || params[key] === null || params[key] === undefined) {
-				delete params[key];
-			  }
-			});
+        const params = {
+          kelurahan: this.filters.kelurahan || '',
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || getNowYearMonth(),
+        }
 
-			const res = await axios.get(`${baseURL}/api/pregnancy/indikator-bulanan`, {
-			  params,
-			  headers: {
-				Authorization: `Bearer ${localStorage.getItem('token')}`,
-			  },
-			})
-			const { labels, indikator } = res.data || {}
+        Object.keys(params).forEach((key) => {
+          if (params[key] === '' || params[key] === null || params[key] === undefined) {
+            delete params[key]
+          }
+        })
 
-			// kalau backend kirim kosong, tetap buat struktur default
-			if (!labels?.length || !indikator) {
-			  this.bulanLabels = this.getLast12Months()
-			  this.indikatorData = {
-				KEK: Array(12).fill(0),
-				Anemia: Array(12).fill(0),
-				Berisiko: Array(12).fill(0),
-				Normal: Array(12).fill(0),
-			  }
-			  return
-			}
+        const res = await axios.get(`${baseURL}/api/pregnancy/indikator-bulanan`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        const { labels, indikator } = res.data || {}
 
-			this.bulanLabels = labels
-			this.indikatorData = indikator
+        // kalau backend kirim kosong, tetap buat struktur default
+        if (!labels?.length || !indikator) {
+          this.bulanLabels = this.getLast12Months()
+          this.indikatorData = {
+            KEK: Array(12).fill(0),
+            Anemia: Array(12).fill(0),
+            Berisiko: Array(12).fill(0),
+            Normal: Array(12).fill(0),
+          }
+          return
+        }
 
-			// render chart
-			this.$nextTick(() => {
-			  this.renderBumilTrendChart()
-			})
-			//console.log('✅ indikatorData:', this.indikatorData);
-		  } catch (err) {
-			console.error('❌ Gagal memuat indikator bumil bulanan:', err)
-			this.bulanLabels = this.getLast12Months()
-			this.indikatorData = {
-			  KEK: Array(12).fill(0),
-			  Anemia: Array(12).fill(0),
-			  Berisiko: Array(12).fill(0),
-			  Normal: Array(12).fill(0),
-			}
-		  } finally {
-			//this.isLoading = false;
-		  }
-		},
+        this.bulanLabels = labels
+        this.indikatorData = indikator
+
+        // render chart
+        this.$nextTick(() => {
+          this.renderBumilTrendChart()
+        })
+        //console.log('✅ indikatorData:', this.indikatorData);
+      } catch (err) {
+        console.error('❌ Gagal memuat indikator bumil bulanan:', err)
+        this.bulanLabels = this.getLast12Months()
+        this.indikatorData = {
+          KEK: Array(12).fill(0),
+          Anemia: Array(12).fill(0),
+          Berisiko: Array(12).fill(0),
+          Normal: Array(12).fill(0),
+        }
+      } finally {
+        //this.isLoading = false;
+      }
+    },
     // Mandatory
     exportCSV() {
       // ambil data gabungan filtered
@@ -2125,7 +2208,7 @@ export default {
     },
     async applyFilter() {
       if (this.isMobile) {
-        this.showFilterMobile = false; // auto sembunyikan setelah apply
+        this.showFilterMobile = false // auto sembunyikan setelah apply
       }
       this.isLoading = true
       try {
@@ -2135,13 +2218,13 @@ export default {
           this.masalahGanda(),
           // this.hitungIntervensi(),
           this.generateInfoBoxes(),
-          this.generateIndikatorBumilBulanan()
+          this.generateIndikatorBumilBulanan(),
         ])
 
         this.renderBarChart()
         this.renderLineChart()
         this.renderFunnelChart()
-        this.renderBumilChart("ini apply filter")
+        this.renderBumilChart('ini apply filter')
       } catch (e) {
         this.showError('Gagal menerapkan filter', e)
       } finally {
@@ -2157,7 +2240,7 @@ export default {
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
           kelurahan: this.filters.kelurahan || '',
-        };
+        }
 
         // const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
         // let res = null;
@@ -2177,8 +2260,8 @@ export default {
             res = await axios.get(`${baseURL}/api/children/status`, { headers, params })
             break
           case 'bumil':
-            console.log(`${baseURL}/api/pregnancy/status`, { headers, params });
-            
+            console.log(`${baseURL}/api/pregnancy/status`, { headers, params })
+
             res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params })
             break
           case 'catin':
@@ -2187,10 +2270,10 @@ export default {
           default:
             return
         }
- 
+
         const data = res.data
-        console.log("data", data);
-        
+        console.log('data', data)
+
         const total = data.total || 0
         this.totalAnak = total
 
@@ -2204,338 +2287,343 @@ export default {
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
         this.$nextTick(() => {
-setTimeout(() => {
-          this.kesehatanData[this.activeMenu].forEach((item, index) => {
-            this.rendersvgChart(`chart-${index}`, item.trend, [item.color]);
-            this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color]);
-            item.trend = this.normalizeCatinTrend(item.trend);
-            this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color]);
-          });
-          }, 80);
-        });
+          setTimeout(() => {
+            this.kesehatanData[this.activeMenu].forEach((item, index) => {
+              this.rendersvgChart(`chart-${index}`, item.trend, [item.color])
+              this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color])
+              item.trend = this.normalizeCatinTrend(item.trend)
+              this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color])
+            })
+          }, 80)
+        })
         //console.log("Refs available:", this.$refs);
-
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error)
       }
     },
     normalizeCatinTrend(trend) {
-      if (!trend) return [];
+      if (!trend) return []
 
       // Jika sudah array (seperti menu anak), langsung kembalikan
-      if (Array.isArray(trend)) return trend;
+      if (Array.isArray(trend)) return trend
 
       // Jika format catin: { months:[], data:[], total:{} }
       if (trend.months && trend.data) {
         return trend.months.map((bulan, i) => ({
           bulan,
           persen: trend.data[i] ?? 0,
-        }));
+        }))
       }
 
       // Jika object lain, fallback ke Object.values()
-      return Object.values(trend);
+      return Object.values(trend)
     },
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName];
-      if (!ref) return;
+      let ref = this.$refs[refName]
+      if (!ref) return
 
-  const canvas = Array.isArray(ref) ? ref[0] : ref;
-  if (!canvas) return;
+      const canvas = Array.isArray(ref) ? ref[0] : ref
+      if (!canvas) return
 
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-  // Destroy instance sebelumnya jika ada
-  if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
-  if (!Array.isArray(dataTable) || !dataTable.length) return;
+      // Destroy instance sebelumnya jika ada
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
+      if (!Array.isArray(dataTable) || !dataTable.length) return
 
-  // Extract label dan nilai
-  const labels = dataTable.map(row => row[labelKey]);
-  const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+      // Extract label dan nilai
+      const labels = dataTable.map((row) => row[labelKey])
+      const values = dataTable.map((row) => parseFloat(row[valueKey]) || 0)
 
-  // AUTO SCALE: Buat grafik tidak datar
-  let minValue = Math.min(...values);
-  let maxValue = Math.max(...values);
+      // AUTO SCALE: Buat grafik tidak datar
+      let minValue = Math.min(...values)
+      let maxValue = Math.max(...values)
 
-  const gap = maxValue - minValue;
+      const gap = maxValue - minValue
 
-  // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
-  const padding = gap === 0 ? 5 : gap * 0.3;
+      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+      const padding = gap === 0 ? 5 : gap * 0.3
 
-  const yMin = minValue - padding;
-  const yMax = maxValue + padding;
+      const yMin = minValue - padding
+      const yMax = maxValue + padding
 
-  // MAP BOOTSTRAP COLOR → HEX
-  const colorMap = {
-    primary: "#0d6efd",
-    violet: "#4f0891",
-    secondary: "#6c757d",
-    success: "#198754",
-    danger: "#dc3545",
-    warning: "#ffc107",
-    info: "#0dcaf0",
-    dark: "#212529",
-  };
-
-  const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
-
-  // OPTIONAL: Gradient lembut biar grafik cantik
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, borderColor + "33"); // 20% opacity
-  gradient.addColorStop(1, borderColor + "00"); // transparent
-
-  this[refName + 'Instance'] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        borderColor,
-        backgroundColor: gradient,
-        borderWidth: 3,
-        tension: 0.4,      // ✔ lebih smooth & terlihat perubahan
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        fill: true         // ✔ ada gradasi lembut
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-
-      plugins: {
-        legend: { display: false },
-        datalabels: { display: false },
-      },
-
-      scales: {
-        x: {
-          display: false,
-          grid: { display: false },
-        },
-        y: {
-          display: false,
-          grid: { display: false },
-          min: yMin,
-          max: yMax,
-        }
-      },
-
-      elements: {
-        line: {
-          borderCapStyle: 'round',
-          borderJoinStyle: 'round',
-        }
-      },
-
-      animation: {
-        duration: 600,
-        easing: 'easeOutCubic'
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: '#0d6efd',
+        violet: '#4f0891',
+        secondary: '#6c757d',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        dark: '#212529',
       }
+
+      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
+
+      // OPTIONAL: Gradient lembut biar grafik cantik
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, borderColor + '33') // 20% opacity
+      gradient.addColorStop(1, borderColor + '00') // transparent
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor,
+              backgroundColor: gradient,
+              borderWidth: 3,
+              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: true, // ✔ ada gradasi lembut
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+          },
+
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
+          },
+
+          elements: {
+            line: {
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+            },
+          },
+
+          animation: {
+            duration: 600,
+            easing: 'easeOutCubic',
+          },
+        },
+      })
     },
-  });
-},
     rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-     let ref = this.$refs[refName];
-      if (!ref) return;
+      let ref = this.$refs[refName]
+      if (!ref) return
 
-  const canvas = Array.isArray(ref) ? ref[0] : ref;
-  if (!canvas) return;
+      const canvas = Array.isArray(ref) ? ref[0] : ref
+      if (!canvas) return
 
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-  // Destroy instance sebelumnya jika ada
-  if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
-  if (!Array.isArray(dataTable) || !dataTable.length) return;
+      // Destroy instance sebelumnya jika ada
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
+      if (!Array.isArray(dataTable) || !dataTable.length) return
 
-  // Extract label dan nilai
-  const labels = dataTable.map(row => row[labelKey]);
-  const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+      // Extract label dan nilai
+      const labels = dataTable.map((row) => row[labelKey])
+      const values = dataTable.map((row) => parseFloat(row[valueKey]) || 0)
 
-  // AUTO SCALE: Buat grafik tidak datar
-  let minValue = Math.min(...values);
-  let maxValue = Math.max(...values);
+      // AUTO SCALE: Buat grafik tidak datar
+      let minValue = Math.min(...values)
+      let maxValue = Math.max(...values)
 
-  const gap = maxValue - minValue;
+      const gap = maxValue - minValue
 
-  // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
-  const padding = gap === 0 ? 5 : gap * 0.3;
+      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+      const padding = gap === 0 ? 5 : gap * 0.3
 
-  const yMin = minValue - padding;
-  const yMax = maxValue + padding;
+      const yMin = minValue - padding
+      const yMax = maxValue + padding
 
-  // MAP BOOTSTRAP COLOR → HEX
-  const colorMap = {
-    primary: "#0d6efd",
-    violet: "#4f0891",
-    secondary: "#6c757d",
-    success: "#198754",
-    danger: "#dc3545",
-    warning: "#ffc107",
-    info: "#0dcaf0",
-    dark: "#212529",
-  };
-
-  const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
-
-  // OPTIONAL: Gradient lembut biar grafik cantik
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, borderColor + "33"); // 20% opacity
-  gradient.addColorStop(1, borderColor + "00"); // transparent
-
-  this[refName + 'Instance'] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        borderColor,
-        backgroundColor: gradient,
-        borderWidth: 3,
-        tension: 0.4,      // ✔ lebih smooth & terlihat perubahan
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        fill: true         // ✔ ada gradasi lembut
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-
-      plugins: {
-        legend: { display: false },
-        datalabels: { display: false },
-      },
-
-      scales: {
-        x: {
-          display: false,
-          grid: { display: false },
-        },
-        y: {
-          display: false,
-          grid: { display: false },
-          min: yMin,
-          max: yMax,
-        }
-      },
-
-      elements: {
-        line: {
-          borderCapStyle: 'round',
-          borderJoinStyle: 'round',
-        }
-      },
-
-      animation: {
-        duration: 600,
-        easing: 'easeOutCubic'
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: '#0d6efd',
+        violet: '#4f0891',
+        secondary: '#6c757d',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        dark: '#212529',
       }
-    },
-  });
+
+      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
+
+      // OPTIONAL: Gradient lembut biar grafik cantik
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, borderColor + '33') // 20% opacity
+      gradient.addColorStop(1, borderColor + '00') // transparent
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor,
+              backgroundColor: gradient,
+              borderWidth: 3,
+              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: true, // ✔ ada gradasi lembut
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+          },
+
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
+          },
+
+          elements: {
+            line: {
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+            },
+          },
+
+          animation: {
+            duration: 600,
+            easing: 'easeOutCubic',
+          },
+        },
+      })
     },
     rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName];
-      if (!ref) return;
+      let ref = this.$refs[refName]
+      if (!ref) return
 
-  const canvas = Array.isArray(ref) ? ref[0] : ref;
-  if (!canvas) return;
+      const canvas = Array.isArray(ref) ? ref[0] : ref
+      if (!canvas) return
 
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-  // Destroy instance sebelumnya jika ada
-  if (this[refName + 'Instance']) this[refName + 'Instance'].destroy();
-  if (!Array.isArray(dataTable) || !dataTable.length) return;
+      // Destroy instance sebelumnya jika ada
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
+      if (!Array.isArray(dataTable) || !dataTable.length) return
 
-  // Extract label dan nilai
-  const labels = dataTable.map(row => row[labelKey]);
-  const values = dataTable.map(row => parseFloat(row[valueKey]) || 0);
+      // Extract label dan nilai
+      const labels = dataTable.map((row) => row[labelKey])
+      const values = dataTable.map((row) => parseFloat(row[valueKey]) || 0)
 
-  // AUTO SCALE: Buat grafik tidak datar
-  let minValue = Math.min(...values);
-  let maxValue = Math.max(...values);
+      // AUTO SCALE: Buat grafik tidak datar
+      let minValue = Math.min(...values)
+      let maxValue = Math.max(...values)
 
-  const gap = maxValue - minValue;
+      const gap = maxValue - minValue
 
-  // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
-  const padding = gap === 0 ? 5 : gap * 0.3;
+      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+      const padding = gap === 0 ? 5 : gap * 0.3
 
-  const yMin = minValue - padding;
-  const yMax = maxValue + padding;
+      const yMin = minValue - padding
+      const yMax = maxValue + padding
 
-  // MAP BOOTSTRAP COLOR → HEX
-  const colorMap = {
-    primary: "#0d6efd",
-    violet: "#4f0891",
-    secondary: "#6c757d",
-    success: "#198754",
-    danger: "#dc3545",
-    warning: "#ffc107",
-    info: "#0dcaf0",
-    dark: "#212529",
-  };
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: '#0d6efd',
+        violet: '#4f0891',
+        secondary: '#6c757d',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        dark: '#212529',
+      }
 
-  const borderColor = colorMap[colors[0]] || colors[0] || "#0d6efd";
+      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
 
-  // OPTIONAL: Gradient lembut biar grafik cantik
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, borderColor + "33"); // 20% opacity
-  gradient.addColorStop(1, borderColor + "00"); // transparent
+      // OPTIONAL: Gradient lembut biar grafik cantik
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, borderColor + '33') // 20% opacity
+      gradient.addColorStop(1, borderColor + '00') // transparent
 
-  this[refName + 'Instance'] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        borderColor,
-        backgroundColor: gradient,
-        borderWidth: 3,
-        tension: 0.4,      // ✔ lebih smooth & terlihat perubahan
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        fill: true         // ✔ ada gradasi lembut
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-
-      plugins: {
-        legend: { display: false },
-        datalabels: { display: false },
-      },
-
-      scales: {
-        x: {
-          display: false,
-          grid: { display: false },
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor,
+              backgroundColor: gradient,
+              borderWidth: 3,
+              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: true, // ✔ ada gradasi lembut
+            },
+          ],
         },
-        y: {
-          display: false,
-          grid: { display: false },
-          min: yMin,
-          max: yMax,
-        }
-      },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
 
-      elements: {
-        line: {
-          borderCapStyle: 'round',
-          borderJoinStyle: 'round',
-        }
-      },
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+          },
 
-      interaction: {
-    mode: 'nearest', // Coba ubah mode interaksi
-    intersect: false,
-  },
-    animation: false,
-    },
-  });
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
+          },
+
+          elements: {
+            line: {
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+            },
+          },
+
+          interaction: {
+            mode: 'nearest', // Coba ubah mode interaksi
+            intersect: false,
+          },
+          animation: false,
+        },
+      })
     },
     async generateDataTable() {
       try {
@@ -2545,8 +2633,8 @@ setTimeout(() => {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
-          kelurahan: this.filters.kelurahan ||''
-        };
+          kelurahan: this.filters.kelurahan || '',
+        }
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
         let res = null
@@ -2556,8 +2644,8 @@ setTimeout(() => {
             res = await axios.get(`${baseURL}/api/children/tren`, { headers, params })
             break
           case 'bumil':
-            console.log(`${baseURL}/api/pregnancy/tren`, { headers, params });
-            
+            console.log(`${baseURL}/api/pregnancy/tren`, { headers, params })
+
             res = await axios.get(`${baseURL}/api/pregnancy/tren`, { headers, params })
             break
           case 'catin':
@@ -2746,8 +2834,8 @@ setTimeout(() => {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
-          kelurahan:this.filters.kelurahan || '',
-        };
+          kelurahan: this.filters.kelurahan || '',
+        }
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
 
@@ -2758,8 +2846,8 @@ setTimeout(() => {
             await axios.get(`${baseURL}/api/children/case`, { headers, params })
             break
           case 'bumil':
-            console.log(`${baseURL}/api/pregnancy/case`, { headers, params });
-            
+            console.log(`${baseURL}/api/pregnancy/case`, { headers, params })
+
             await axios.get(`${baseURL}/api/pregnancy/case`, { headers, params })
             break
           default:
@@ -2780,7 +2868,7 @@ setTimeout(() => {
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
           kelurahan: this.filters.kelurahan || '',
-        };
+        }
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
 
@@ -3172,22 +3260,24 @@ setTimeout(() => {
           responsive: true,
           plugins: { legend: { display: false } },
           scales: {
-            y: { 
+            y: {
               beginAtZero: true,
-              ticks: { // Ticks untuk Sumbu Y (Angka)
+              ticks: {
+                // Ticks untuk Sumbu Y (Angka)
                 font: {
-                    size: 10, // Menyesuaikan dengan sumbu Y Line Chart
-                    weight: 'normal',
+                  size: 10, // Menyesuaikan dengan sumbu Y Line Chart
+                  weight: 'normal',
                 },
               },
             },
-            x: { 
+            x: {
               title: { display: false },
-              ticks: { // Ticks untuk Sumbu X (Label)
+              ticks: {
+                // Ticks untuk Sumbu X (Label)
                 autoSkip: false,
                 font: {
-                    size: 14, // Menyesuaikan dengan sumbu X Line Chart
-                    weight: 'normal',
+                  size: 14, // Menyesuaikan dengan sumbu X Line Chart
+                  weight: 'normal',
                 },
               },
             },
@@ -3378,73 +3468,73 @@ setTimeout(() => {
         this.funnelChart = new Chart(ctx, {
           type: 'bar',
           data: {
-              labels: jenisListDisplay, // Menggunakan array untuk teks wrap
-              datasets: [
-                  {
-                      data: counts,
-                      backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b', '#ea7f7f'],
-                  },
-              ],
+            labels: jenisListDisplay, // Menggunakan array untuk teks wrap
+            datasets: [
+              {
+                data: counts,
+                backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b', '#ea7f7f'],
+              },
+            ],
           },
           options: {
-              indexAxis: 'y',
-              scales: {
-                  y: {
-                      // 🚀 SOLUSI: TAMBAHKAN PADDING UNTUK MEMBERI RUANG LEBIH DI KIRI
-                      padding: {
-                          left: 100 // Sesuaikan nilai ini (100px adalah nilai awal yang bagus)
-                      },
-                      // Kontrol lebar bar dan jarak antar bar
-                      barPercentage: 0.5,
-                      categoryPercentage: 5,
+            indexAxis: 'y',
+            scales: {
+              y: {
+                // 🚀 SOLUSI: TAMBAHKAN PADDING UNTUK MEMBERI RUANG LEBIH DI KIRI
+                padding: {
+                  left: 100, // Sesuaikan nilai ini (100px adalah nilai awal yang bagus)
+                },
+                // Kontrol lebar bar dan jarak antar bar
+                barPercentage: 0.5,
+                categoryPercentage: 5,
 
-                      ticks: {
-                          autoSkip: false,
-                          maxRotation: 0,
-                          minRotation: 0,
-                          font: {
-                              size: 10,
-                          },
-                          color: '#333333',
-                          
-                          // ❌ HILANGKAN padding: 5, karena sudah diatasi oleh padding scale di atas
-                          // mirror: false, // mirror: false adalah default dan bisa dihilangkan
-                      },
+                ticks: {
+                  autoSkip: false,
+                  maxRotation: 0,
+                  minRotation: 0,
+                  font: {
+                    size: 10,
                   },
-                  x: {
-                      beginAtZero: true,
-                      // Konfigurasi Grid Vertikal Putus-Putus
-                      grid: {
-                          display: true,
-                          drawOnChartArea: true,
-                          color: 'rgba(0, 0, 0, 0.1)',
-                          borderDash: [4, 4],
-                          drawBorder: false,
-                      },
-                      ticks: {
-                          font: {
-                              size: 10,
-                              weight: 'bold',
-                          },
-                          color: '#333333',
-                      },
-                  },
+                  color: '#333333',
+
+                  // ❌ HILANGKAN padding: 5, karena sudah diatasi oleh padding scale di atas
+                  // mirror: false, // mirror: false adalah default dan bisa dihilangkan
+                },
               },
-              plugins: {
-                  legend: { display: false },
-                  datalabels: {
-                      color: '#fff',
-                      anchor: 'center',
-                      align: 'center',
-                      font: { 
-                          weight: 'bold',
-                          size: 10,
-                      },
-                      formatter: (v) => v || '0',
+              x: {
+                beginAtZero: true,
+                // Konfigurasi Grid Vertikal Putus-Putus
+                grid: {
+                  display: true,
+                  drawOnChartArea: true,
+                  color: 'rgba(0, 0, 0, 0.1)',
+                  borderDash: [4, 4],
+                  drawBorder: false,
+                },
+                ticks: {
+                  font: {
+                    size: 10,
+                    weight: 'bold',
                   },
+                  color: '#333333',
+                },
               },
-          }
-        })
+            },
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                color: '#fff',
+                anchor: 'center',
+                align: 'center',
+                font: {
+                  weight: 'bold',
+                  size: 10,
+                },
+                formatter: (v) => v || '0',
+              },
+            },
+          },
+        })
       })
     },
 
@@ -3519,173 +3609,171 @@ setTimeout(() => {
         KEK: { sudahBumil: 0, belumBumil: 0 },
         ANEMIA: { sudahBumil: 0, belumBumil: 0 },
         'Risiko Tinggi': { sudahBumil: 0, belumBumil: 0 }, // Mengganti 'BERISIKO'
-      };
-
-      if (!dataTableBumil || dataTableBumil.length === 0) {
-        return summary;
       }
 
-      dataTableBumil.forEach(ibu => {
+      if (!dataTableBumil || dataTableBumil.length === 0) {
+        return summary
+      }
+
+      dataTableBumil.forEach((ibu) => {
         // KEK
         if (ibu.kek === 'Ya') {
           if (ibu.kek_intervensi === 'Ya') {
-            summary.KEK.sudahBumil++;
+            summary.KEK.sudahBumil++
           } else if (ibu.kek_intervensi === 'Tidak') {
-            summary.KEK.belumBumil++;
+            summary.KEK.belumBumil++
           }
         }
 
         // ANEMIA
         if (ibu.anemia === 'Ya') {
           if (ibu.anemia_intervensi === 'Ya') {
-            summary.ANEMIA.sudahBumil++;
+            summary.ANEMIA.sudahBumil++
           } else if (ibu.anemia_intervensi === 'Tidak') {
-            summary.ANEMIA.belumBumil++;
+            summary.ANEMIA.belumBumil++
           }
         }
 
         // BERISIKO (Risti)
         if (ibu.risti === 'Ya') {
           if (ibu.risti_intervensi === 'Ya') {
-            summary['Risiko Tinggi'].sudahBumil++;
+            summary['Risiko Tinggi'].sudahBumil++
           } else if (ibu.risti_intervensi === 'Tidak') {
-            summary['Risiko Tinggi'].belumBumil++;
+            summary['Risiko Tinggi'].belumBumil++
           }
         }
-      });
+      })
 
-      return summary;
+      return summary
     },
     async renderBumilChart(checkApplyFilter) {
-    
+      let apiDataBumil = []
 
-      
-      let apiDataBumil = [];
-      
       // 1. Ambil Data dari API
       try {
-          const params = {
-              kelurahan: this.filters.kelurahan || '',
-              posyandu: this.filters.posyandu || '',
-              rw: this.filters.rw || '',
-              rt: this.filters.rt || '',
-              periode: this.filters.periode || '',
-          };
+        const params = {
+          kelurahan: this.filters.kelurahan || '',
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+          periode: this.filters.periode || '',
+        }
 
-          // Log parameter filter
-          console.log('🔍 Parameter Filter:', params); 
-          console.log(checkApplyFilter ?? "mout");
+        // Log parameter filter
+        console.log('🔍 Parameter Filter:', params)
+        console.log(checkApplyFilter ?? 'mout')
 
-          const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
-              params,
-              headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-              },
-          });
-          
-          apiDataBumil = res.data.dataTable_bumil || []; 
-          
-          // Log data mentah dari API (hanya beberapa item untuk menghindari output yang terlalu panjang)
-          console.log(`✅ Data Ibu Hamil Diterima (Total: ${apiDataBumil.length})`);
-          if (apiDataBumil.length > 0) {
-              console.log('   Contoh data pertama:', apiDataBumil[0]);
-          }
-          
+        const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        apiDataBumil = res.data.dataTable_bumil || []
+
+        // Log data mentah dari API (hanya beberapa item untuk menghindari output yang terlalu panjang)
+        console.log(`✅ Data Ibu Hamil Diterima (Total: ${apiDataBumil.length})`)
+        if (apiDataBumil.length > 0) {
+          console.log('   Contoh data pertama:', apiDataBumil[0])
+        }
       } catch (error) {
-          console.error("❌ Gagal mengambil data intervensi ibu hamil:", error);
-          apiDataBumil = [];
+        console.error('❌ Gagal mengambil data intervensi ibu hamil:', error)
+        apiDataBumil = []
       }
 
       // 2. Olah Data menjadi Summary (KEK, ANEMIA, BERISIKO)
-      const summary = this.generateBumilSummary(apiDataBumil);
-      
+      const summary = this.generateBumilSummary(apiDataBumil)
+
       // Log hasil pengolahan data
-      console.log('📊 Summary Hasil Pengolahan:', summary);
+      console.log('📊 Summary Hasil Pengolahan:', summary)
 
       // 3. Setup Chart
-      const ctx = this.$refs.bumilChart?.getContext('2d');
+      const ctx = this.$refs.bumilChart?.getContext('2d')
       if (!ctx) {
-          console.error('⚠️ Canvas element (ref="bumilChart") tidak ditemukan atau tidak memiliki konteks 2D.');
-          return;
+        console.error(
+          '⚠️ Canvas element (ref="bumilChart") tidak ditemukan atau tidak memiliki konteks 2D.',
+        )
+        return
       }
-      if (this.bumilChart) this.bumilChart.destroy();
-      
+      if (this.bumilChart) this.bumilChart.destroy()
+
       // Pengecekan data aman dan persiapan data untuk Chart.js
       const safeSummary =
-          summary && Object.keys(summary).length
-              ? summary
-              : {
-                    KEK: { sudahBumil: 0, belumBumil: 0 },
-                    ANEMIA: { sudahBumil: 0, belumBumil: 0 },
-                    BERISIKO: { sudahBumil: 0, belumBumil: 0 },
-                };
+        summary && Object.keys(summary).length
+          ? summary
+          : {
+              KEK: { sudahBumil: 0, belumBumil: 0 },
+              ANEMIA: { sudahBumil: 0, belumBumil: 0 },
+              BERISIKO: { sudahBumil: 0, belumBumil: 0 },
+            }
 
-      const labels = Object.keys(safeSummary);
-      const sudahBumil = labels.map((key) => safeSummary[key].sudahBumil);
-      const belumBumil = labels.map((key) => safeSummary[key].belumBumil);
-      
+      const labels = Object.keys(safeSummary)
+      const sudahBumil = labels.map((key) => safeSummary[key].sudahBumil)
+      const belumBumil = labels.map((key) => safeSummary[key].belumBumil)
+
       // Log data akhir yang masuk ke Chart.js
-      console.log('   Data Final Chart.js:');
-      console.log('   Labels:', labels);
-      console.log('   Sudah Intervensi:', sudahBumil);
-      console.log('   Belum Intervensi:', belumBumil);
+      console.log('   Data Final Chart.js:')
+      console.log('   Labels:', labels)
+      console.log('   Sudah Intervensi:', sudahBumil)
+      console.log('   Belum Intervensi:', belumBumil)
 
       // 4. Inisialisasi Chart
       this.bumilChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels,
-              datasets: [
-                 { 
-                   label: 'Belum Dapat Intervensi',
-                   data: belumBumil,
-                   backgroundColor: '#C62828',
-                   borderRadius: 8,
-                   borderSkipped: false,
-                   datalabels: { color: '#fff' }
-                 },
-                 { 
-                   label: 'Sudah Dapat Intervensi',
-                   data: sudahBumil,
-                   backgroundColor: '#1B5E20',
-                   borderRadius: 8,
-                   borderSkipped: false,
-                   datalabels: { color: '#fff' }
-                 },
-             ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            scales: {
-                x: {
-                    stacked: true,
-                    beginAtZero: true,
-                    ticks: { precision: 0 },
-                },
-                y: {
-                    stacked: true,
-                    barPercentage: 0.8, 
-                    categoryPercentage: 0.6, // 👈 Diubah dari 0.7 menjadi 0.6 (Jarak lebih besar)
-                },
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Belum Dapat Intervensi',
+              data: belumBumil,
+              backgroundColor: '#C62828',
+              borderRadius: 8,
+              borderSkipped: false,
+              datalabels: { color: '#fff' },
             },
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { boxWidth: 14, padding: 16 },
-                },
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.x}`,
-                    },
-                },
+            {
+              label: 'Sudah Dapat Intervensi',
+              data: sudahBumil,
+              backgroundColor: '#1B5E20',
+              borderRadius: 8,
+              borderSkipped: false,
+              datalabels: { color: '#fff' },
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          scales: {
+            x: {
+              stacked: true,
+              beginAtZero: true,
+              ticks: { precision: 0 },
+            },
+            y: {
+              stacked: true,
+              barPercentage: 0.8,
+              categoryPercentage: 0.6, // 👈 Diubah dari 0.7 menjadi 0.6 (Jarak lebih besar)
             },
           },
-      });
-      
-      console.log('--- renderBumilChart Selesai ---');
-  },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 14, padding: 16 },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.x}`,
+              },
+            },
+          },
+        },
+      })
+
+      console.log('--- renderBumilChart Selesai ---')
+    },
     toggleSudahBumil(val) {
       this.isSudahBumil = val
     },
@@ -3854,16 +3942,16 @@ setTimeout(() => {
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
-        };
+        }
 
         const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
           params,
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        });
+        })
 
-        const { labels, indikator } = res.data || {};
+        const { labels, indikator } = res.data || {}
 
         // 📌 Jika backend kirim kosong, buat struktur default 12 bulan
         if (!labels?.length || !indikator) {
@@ -3877,24 +3965,23 @@ setTimeout(() => {
         }
 
         // ✔ Jika data ada, langsung assign
-        this.bulanLabels = labels;
-        this.indikatorCatin = indikator;
+        this.bulanLabels = labels
+        this.indikatorCatin = indikator
 
-        console.log("📌 Labels Catin:", this.bulanLabels);
-        console.log("📌 Indikator Catin:", this.indikatorCatin);
-
+        console.log('📌 Labels Catin:', this.bulanLabels)
+        console.log('📌 Indikator Catin:', this.indikatorCatin)
       } catch (err) {
-        console.error('❌ Gagal memuat indikator catin bulanan:', err);
+        console.error('❌ Gagal memuat indikator catin bulanan:', err)
 
         // fallback default
-        this.bulanLabels = this.getLast12Months();
+        this.bulanLabels = this.getLast12Months()
         this.indikatorCatin = {
           KEK: Array(12).fill(0),
           Anemia: Array(12).fill(0),
           Berisiko: Array(12).fill(0),
         }
       }
-    }
+    },
   },
   computed: {
     // Sudah
@@ -4223,11 +4310,11 @@ setTimeout(() => {
   },
   async mounted() {
     this.isLoading = true
-    this.isMobile = window.innerWidth < 768;
+    this.isMobile = window.innerWidth < 768
 
-    window.addEventListener("resize", () => {
-      this.isMobile = window.innerWidth < 768;
-    });
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth < 768
+    })
 
     try {
       await this.$nextTick()
@@ -4252,16 +4339,16 @@ setTimeout(() => {
       await this.hitungIntervensi()
       await this.generateInfoBoxes()
 
-      this.generateIndikatorBumilBulanan();
+      this.generateIndikatorBumilBulanan()
 
       this.renderLineChart()
       this.renderBarChart()
       this.renderFunnelChart()
       //this.renderSudahChart();
-      this.renderBumilChart();
-      this.rendersvgChart();
-      this.rendersvgChart_Bumil();
-      this.rendersvgChart_Catin();
+      this.renderBumilChart()
+      this.rendersvgChart()
+      this.rendersvgChart_Bumil()
+      this.rendersvgChart_Catin()
       //this.generateIndikatorCatinBulanan();
       // 6️⃣ Generate data table sesuai tipe menu
       //this.generateDataTableCatin();
@@ -4306,6 +4393,6 @@ setTimeout(() => {
       this.generateIndikatorBumilBulanan()
       this.generateIndikatorCatinBulanan()
     },
-  }
+  },
 }
 </script>
