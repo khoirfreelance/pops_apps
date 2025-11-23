@@ -346,7 +346,7 @@
                           <th>L/P</th>
                           <th>Nama Orang Tua</th>
                           <th class="cursor-pointer align-middle text-center" rowspan="2">Tanggal Lahir</th>
-                          <!-- <th class="cursor-pointer align-middle text-center" rowspan="2">Kelola</th> -->
+                          <th class="cursor-pointer align-middle text-center" rowspan="2">Kelola</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -359,14 +359,14 @@
                           <td>{{ item.jk === 'L'?'Laki-laki':'Perempuan'}}</td>
                           <td>{{ item.keluarga.nama_ibu? item.keluarga.nama_ibu:item.keluarga.nama_ayah }}</td>
                           <td>{{ formatDate(item.kelahiran.tgl_lahir) }}</td>
-                          <!-- <td class="d-flex justify-content-center gap-2">
+                          <td class="d-flex justify-content-center gap-2">
                             <button class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Data" @click="Update(dataLoad.nik_perempuan)">
                               <i class="bi bi-pencil-square"></i>
                             </button>
                             <button class="btn btn-outline-secondary" @click="del(dataLoad.nik_perempuan)" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Data">
                               <i class="bi bi-x-square"></i>
                             </button>
-                          </td> -->
+                          </td>
                         </tr>
 
                         <tr v-if="dataLoad.length === 0">

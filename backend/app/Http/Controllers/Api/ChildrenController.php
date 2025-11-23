@@ -353,7 +353,7 @@ class ChildrenController extends Controller
                 $count['Normal']++;
             }
 
-            if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obes')) {
+            if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obesitas')) {
                 $count['Overweight']++;
             }
 
@@ -398,7 +398,7 @@ class ChildrenController extends Controller
     {
         try {
 
-            $user = Auth::user();
+            /* $user = Auth::user();
 
             // ================================
             // 1. Ambil wilayah user
@@ -414,9 +414,9 @@ class ChildrenController extends Controller
 
             if (!$wilayah) {
                 return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-            }
+            } */
 
-            $filterKelurahan = $wilayah->kelurahan;
+            $filterKelurahan = $request->kelurahan;
 
             // ================================
             // 2. Tentukan periode
@@ -582,7 +582,6 @@ class ChildrenController extends Controller
 
                 $trendCount[$status] = $trend;
             }
-
 
             // ================================
             // 7. Format output + TREND
@@ -1627,6 +1626,7 @@ class ChildrenController extends Controller
                 ->whereMonth('tgl_pengukuran', now()->subMonth()->month);
         }
 
+        //dd($query->toSQL(), $request->periode);
         // 6. Ambil seluruh data Kunjungan yg relevan
         $data = $query->get();
 

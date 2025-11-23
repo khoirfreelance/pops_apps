@@ -2196,6 +2196,7 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          kelurahan:this.filters.kelurahan || '',
         };
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
@@ -2227,6 +2228,7 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          kelurahan: this.filters.kelurahan || '',
         };
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
@@ -2294,6 +2296,7 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          kelurahan: this.filters.kelurahan || '',
         }
         const res = await axios.get(`${baseURL}/api/children/info-boxes`, {
           params,
@@ -3116,55 +3119,54 @@ export default {
     },
 
     // only Catin
-  async generateIndikatorCatinBulanan() {
-    try {
-      const params = {
-        kelurahan: this.filters.kelurahan || '',
-        posyandu: this.filters.posyandu || '',
-        rw: this.filters.rw || '',
-        rt: this.filters.rt || '',
-      };
+    async generateIndikatorCatinBulanan() {
+      try {
+        const params = {
+          kelurahan: this.filters.kelurahan || '',
+          posyandu: this.filters.posyandu || '',
+          rw: this.filters.rw || '',
+          rt: this.filters.rt || '',
+        };
 
-      const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
-        params,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+        const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
+          params,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
 
-      const { labels, indikator } = res.data || {};
+        const { labels, indikator } = res.data || {};
 
-      // 📌 Jika backend kirim kosong, buat struktur default 12 bulan
-      if (!labels?.length || !indikator) {
+        // 📌 Jika backend kirim kosong, buat struktur default 12 bulan
+        if (!labels?.length || !indikator) {
+          this.bulanLabels = this.getLast12Months();
+          this.indikatorCatin = {
+            KEK: Array(12).fill(0),
+            Anemia: Array(12).fill(0),
+            Berisiko: Array(12).fill(0),
+          };
+          return;
+        }
+
+        // ✔ Jika data ada, langsung assign
+        this.bulanLabels = labels;
+        this.indikatorCatin = indikator;
+
+        console.log("📌 Labels Catin:", this.bulanLabels);
+        console.log("📌 Indikator Catin:", this.indikatorCatin);
+
+      } catch (err) {
+        console.error('❌ Gagal memuat indikator catin bulanan:', err);
+
+        // fallback default
         this.bulanLabels = this.getLast12Months();
         this.indikatorCatin = {
           KEK: Array(12).fill(0),
           Anemia: Array(12).fill(0),
           Berisiko: Array(12).fill(0),
         };
-        return;
       }
-
-      // ✔ Jika data ada, langsung assign
-      this.bulanLabels = labels;
-      this.indikatorCatin = indikator;
-
-      console.log("📌 Labels Catin:", this.bulanLabels);
-      console.log("📌 Indikator Catin:", this.indikatorCatin);
-
-    } catch (err) {
-      console.error('❌ Gagal memuat indikator catin bulanan:', err);
-
-      // fallback default
-      this.bulanLabels = this.getLast12Months();
-      this.indikatorCatin = {
-        KEK: Array(12).fill(0),
-        Anemia: Array(12).fill(0),
-        Berisiko: Array(12).fill(0),
-      };
     }
-  }
-
 
   },
   computed: {

@@ -1226,7 +1226,6 @@ class PregnancyController extends Controller
             $tanggal = now()->subMonth(); // default bulan berjalan -1
         }
 
-
         // ==========================
         // A. QUERY KUNJUNGAN BUMIL
         // ==========================
@@ -1247,28 +1246,25 @@ class PregnancyController extends Controller
 
         $bumil = $qBumil->get();
 
-
         // ==========================
         // 🔥 STATUS GANDA BUMIL (KEK, Anemia, Berisiko)
         // ==========================
         $nik_case = $bumil->filter(function ($item) {
 
             $ganda = 0;
-
-            if ($item->status_gizi_lila && $item->status_gizi_lila !== 'Normal') $ganda++;   // KEK
-            if ($item->status_gizi_hb && $item->status_gizi_hb !== 'Normal') $ganda++;       // Anemia
-            if ($item->status_risiko_usia && $item->status_risiko_usia !== 'Normal') $ganda++; // Berisiko
-
+            if ($item->status_gizi_lila !== 'Normal') $ganda++;   // KEK
+            if ($item->status_gizi_hb !== 'Normal') $ganda++;       // Anemia
+            if ($item->status_risiko_usia !== 'Normal') $ganda++; // Berisiko
             return $ganda >= 2; // minimal 2 parameter bermasalah → status ganda
         })->pluck('nik_ibu')->unique();
-
 
         // ==========================
         // B. QUERY INTERVENSI BUMIL
         // ==========================
         $qIntervensi = Intervensi::query();
         $qIntervensi->where('status_subjek', 'bumil');
-        if ($filterKelurahan)
+        $qIntervensi->whereIn('nik_subjek', $nik_case);
+        /* if ($filterKelurahan)
             $qIntervensi->where('desa', $filterKelurahan);
         if ($request->filled('posyandu'))
             $qIntervensi->where('posyandu', $request->posyandu);
@@ -1276,7 +1272,7 @@ class PregnancyController extends Controller
             $qIntervensi->where('rw', $request->rw);
         if ($request->filled('rt'))
             $qIntervensi->where('rt', $request->rt);
-
+ */
         // Filter periode
         $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
                     ->whereMonth('tgl_intervensi', $tanggal->month);
@@ -1287,19 +1283,20 @@ class PregnancyController extends Controller
         // ==========================
         // C. GROUPING NIK
         // ==========================
-        $nikKunjungan   = $nik_case;
-        $nikIntervensi  = $intervensi->pluck('nik_ibu')->unique();
+        /* $nikKunjungan   = $nik_case;
+        $nikIntervensi  = $intervensi->pluck('nik_ibu')->unique(); */
 
-        $punya_keduanya   = $nikKunjungan->intersect($nikIntervensi);
-        $hanya_kunjungan  = $nikKunjungan->diff($nikIntervensi);
-        $hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
-
+        $punya_keduanya   = $nik_case;
+        $hanya_kunjungan = $bumil->filter(function ($item) use ($nik_case) {
+            return !in_array($item->nik_ibu, $nik_case->toArray());
+        });
+        //$hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
 
         // ==========================
         // D. BUILD DETAIL
         // ==========================
         $mapKunjungan   = $bumil->keyBy('nik_ibu');
-        $mapIntervensi  = $intervensi->groupBy('nik_ibu');
+        $mapIntervensi  = $intervensi->groupBy('nik_subjek');
 
         // punya keduanya
         $detail_keduanya = $punya_keduanya->map(function ($nik) use ($mapKunjungan, $mapIntervensi) {
@@ -1314,10 +1311,11 @@ class PregnancyController extends Controller
         });
 
         // hanya kunjungan
-        $detail_hanya_kunjungan = $hanya_kunjungan->map(function ($nik) use ($mapKunjungan) {
-            $row = $mapKunjungan[$nik];
+        $detail_hanya_kunjungan = $hanya_kunjungan->map(function ($row) use ($mapKunjungan) {
+            //$row = $mapKunjungan[$nik];
+            //dd($nik);
             return [
-                'nik_ibu'        => $nik,
+                'nik_ibu'        => $row->nik_ibu,
                 'nama_ibu'       => $row->nama_ibu ?? null,
                 'kelurahan'      => $row->kelurahan ?? null,
                 'posyandu'       => $row->posyandu ?? null,
@@ -1326,7 +1324,7 @@ class PregnancyController extends Controller
         });
 
         // hanya intervensi
-        $detail_hanya_intervensi = $hanya_intervensi->map(function ($nik) use ($mapIntervensi) {
+        /* $detail_hanya_intervensi = $hanya_intervensi->map(function ($nik) use ($mapIntervensi) {
             $first = $mapIntervensi[$nik]->first();
             return [
                 'nik_ibu'        => $nik,
@@ -1335,23 +1333,23 @@ class PregnancyController extends Controller
                 'posyandu'       => $first->posyandu ?? null,
                 'data_intervensi'=> $mapIntervensi[$nik] ?? [],
             ];
-        });
+        }); */
 
         return response()->json([
             'status'  => 'success',
             'message' => 'Data intervensi & kunjungan bumil berhasil dimuat',
 
             'grouping' => [
-                'total_case'        => $nikKunjungan->count(),
+                'total_case'        => $bumil->count(),
                 'punya_keduanya'    => $punya_keduanya->count(),
                 'hanya_kunjungan'   => $hanya_kunjungan->count(),
-                'hanya_intervensi'  => $hanya_intervensi->count(),
+                //'hanya_intervensi'  => $hanya_intervensi->count(),
             ],
 
             'detail' => [
                 'punya_keduanya'    => $detail_keduanya->values(),
                 'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
-                'hanya_intervensi'  => $detail_hanya_intervensi->values(),
+                //'hanya_intervensi'  => $detail_hanya_intervensi->values(),
             ],
         ]);
     }
@@ -1402,9 +1400,8 @@ class PregnancyController extends Controller
                 if ($idx === false) continue;
 
                 $isKEK = str_contains(strtolower(trim($item->status_gizi_lila ?? '')), 'kek');
-                $isAnemia = str_contains(strtolower(trim($item->status_gizi_hb ?? '')), 'ya');
+                $isAnemia = str_contains(strtolower(trim($item->status_gizi_hb ?? '')), 'anemia');
                 $isBerisiko = str_contains(strtolower(trim($item->status_risiko_usia ?? '')), 'berisiko');
-
 
                 if ($isKEK) {
                     $result['KEK'][$idx]++;
