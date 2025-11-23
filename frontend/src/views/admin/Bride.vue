@@ -896,7 +896,8 @@ export default {
       this.rwReadonly = true,
       this.rtReadonly = true,
       Object.keys(this.filters).forEach(k => {
-        if (Array.isArray(this.filters[k])) this.filters[k] = []
+        if (k=='kelurahan') this.filters[k]
+        else if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
       }),
       await this.loadBride(),
@@ -1010,6 +1011,7 @@ export default {
           periodeAkhir: this.filters.periodeAkhir || '',
 
         };
+        console.log(params);
 
         // Status bisa multiple (checkbox)
         if (this.filters.status && this.filters.status.length > 0) {
@@ -1031,6 +1033,7 @@ export default {
           percent: total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%',
           color: item.color,
         }));
+
       } catch (e) {
         console.error('❌ hitungStatusKesehatan error:', e);
       }
@@ -1102,7 +1105,7 @@ export default {
       await Promise.all([
         //this.loadConfigWithCache(),
         //this.getPendingData(),
-        this.getWilayahUser(),
+        await this.getWilayahUser(),
         this.hitungStatusKesehatan(),
         this.loadBride(),
         this.handleResize(),

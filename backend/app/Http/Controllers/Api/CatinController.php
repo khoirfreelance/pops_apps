@@ -55,10 +55,10 @@ class CatinController extends Controller
             ]);
         }
 
-        //dd($query->toSQL(), $query->getBindings());
+
         // --- Ambil semua record dulu ---
         $all = $query->orderBy('tanggal_pemeriksaan')->get();
-
+        //dd($all->count());
         /*
         |--------------------------------------------------------------------------
         | FILTER USIA
@@ -436,174 +436,186 @@ class CatinController extends Controller
     public function status(Request $request)
     {
         try {
-            $filterKelurahan = $request->kelurahan ?? null;
+            $filterKelurahan = $request->kelurahan;
+
             $query = Catin::query();
 
-            // 3️⃣ Filter wilayah default
             if ($filterKelurahan) {
                 $query->where('kelurahan', $filterKelurahan);
             }
-
-            // 4️⃣ Filter tambahan
             if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
             if ($request->filled('rw')) $query->where('rw', $request->rw);
             if ($request->filled('rt')) $query->where('rt', $request->rt);
 
             // 5️⃣ Filter periode
-            if ($request->ref === 'p') {
+            if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
 
-                // MODE RANGE (periodeAwal + periodeAkhir)
-                if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+                $periodeAwal  = $this->parseBulanTahun($request->periodeAwal, false);
+                $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
 
-                    $periodeAwal  = $this->parseBulanTahun($request->periodeAwal, false);
-                    $periodeAkhir = $this->parseBulanTahun($request->periodeAkhir, true);
-                    /* dd($periodeAwal,
-                        $periodeAkhir); */
-                    $query->whereBetween('tanggal_pendampingan', [
-                        $periodeAwal,
-                        $periodeAkhir
-                    ]);
-
-                } else {
-
-                    // DEFAULT 1 TAHUN TERAKHIR
-                    $tanggalAkhir = Carbon::now()->endOfMonth();
-                    $tanggalAwal  = Carbon::now()->subYear()->startOfMonth();
-
-                    $query->whereBetween('tanggal_pendampingan', [
-                        $tanggalAwal,
-                        $tanggalAkhir
-                    ]);
-                }
+                $query->whereBetween('tanggal_pendampingan', [
+                    $periodeAwal,
+                    $periodeAkhir
+                ]);
 
             } else {
 
-                // FILTER PER BULAN (dropdown)
-                if ($request->filled('periode')) {
+                // DEFAULT 1 TAHUN TERAKHIR
+                $tanggalAkhir = Carbon::now()->endOfMonth();
+                $tanggalAwal  = Carbon::now()->subYear()->startOfMonth();
 
-                    $periode = $this->parseBulanTahun($request->periode);
-
-                    $query->whereBetween('tanggal_pendampingan', [
-                        $periode->copy()->startOfMonth(),
-                        $periode->copy()->endOfMonth()
-                    ]);
-
-                } else {
-
-                    // DEFAULT BULAN BERJALAN - 1
-                    $periodeDefault = Carbon::now()->subMonthNoOverflow();
-
-                    $query->whereBetween('tanggal_pendampingan', [
-                        $periodeDefault->copy()->startOfMonth(),
-                        $periodeDefault->copy()->endOfMonth()
-                    ]);
-                }
-            }
-
-            // 6️⃣ Ambil data
-            $data = $query->get();
-
-            // ======================================================
-            // 0️⃣ JIKA KOSONG
-            // ======================================================
-            if ($data->isEmpty()) {
-
-                $keys = [
-                    'Anemia',
-                    'KEK',
-                    'Risiko Usia',
-                    'Total Berisiko',
-                    'Total Catin'
-                ];
-
-                $result = [];
-                foreach ($keys as $key) {
-                    $result[] = [
-                        'title' => $key,
-                        'value' => 0,
-                        'percent' => 0,
-                        'color' => match ($key) {
-                            'KEK' => 'danger',
-                            'Anemia' => 'warning',
-                            'Risiko Usia' => 'violet',
-                            'Total Berisiko' => 'dark',
-                            default => 'secondary'
-                        },
-                        'trend' => $this->catinTrend($key, $filterKelurahan) // 🔥 tetap ada tren walaupun kosong
-                    ];
-                }
-
-                return response()->json([
-                    'total' => 0,
-                    'counts' => $result,
-                    'kelurahan' => $wilayah->kelurahan ?? '-',
+                $query->whereBetween('tanggal_pendampingan', [
+                    $tanggalAwal,
+                    $tanggalAkhir
                 ]);
             }
 
-            // 7️⃣ Ambil data terakhir per NIK
-            $grouped = $data->groupBy('nik_perempuan')->map(fn($g) =>
-                $g->sortByDesc('tanggal_pendampingan')->first()
-            );
 
-            $groupedData = $grouped->values();
-            $total = $groupedData->count();
-
-            // 8️⃣ Filter usia
+            // --- Ambil semua record dulu ---
+            $all = $query->orderBy('tanggal_pemeriksaan')->get();
+            //dd($all->count());
+            /*
+            |--------------------------------------------------------------------------
+            | FILTER USIA
+            |--------------------------------------------------------------------------
+            */
             if ($request->filled('usia') && is_array($request->usia)) {
-                $groupedData = $groupedData->filter(function ($item) use ($request) {
+                $all = $all->filter(function ($item) use ($request) {
+
+                    $usia = $item->usia_perempuan ?? null;
+                    if (!$usia) return false;
+
                     foreach ($request->usia as $range) {
-                        if ($range === '<20' && $item->usia_perempuan < 20) return true;
-                        if ($range === '>40' && $item->usia_perempuan > 40) return true;
+                        $range = trim($range);
+
+                        if ($range === '<20' && $usia < 20) return true;
+                        if ($range === '>40' && $usia > 40) return true;
 
                         if (str_contains($range, '-')) {
                             [$min, $max] = explode('-', $range);
-                            if ($item->usia_perempuan >= $min && $item->usia_perempuan <= $max) return true;
+                            if ($usia >= (int)$min && $usia <= (int)$max) return true;
                         }
                     }
+
                     return false;
                 });
             }
 
-            // 9️⃣ Filter status
-            if ($request->filled('status')) {
-                $statuses = (array)$request->status;
+            /*
+            |--------------------------------------------------------------------------
+            | FILTER STATUS (KEK, Anemia, Risiko ≠ Normal)
+            |--------------------------------------------------------------------------
+            */
+            if ($request->filled('status') && is_array($request->status)) {
 
-                $groupedData = $groupedData->filter(function ($item) use ($statuses) {
+                $statuses = array_map('strtolower', $request->status);
+
+                $all = $all->filter(function ($item) use ($statuses) {
+
                     foreach ($statuses as $status) {
-                        $s = strtolower($status);
 
-                        // "risiko" = selain normal
-                        if ($s === 'Berisiko') {
-                            return !str_contains(strtolower($item->status_risiko ?? ''), 'normal');
+                        if (str_contains($status, 'kek')) {
+                            if (stripos($item->status_kek, 'kek') !== false) return true;
                         }
 
-                        if (
-                            str_contains(strtolower($item->status_risiko ?? ''), $s) ||
-                            str_contains(strtolower($item->status_hb ?? ''), $s) ||
-                            str_contains(strtolower($item->status_kek ?? ''), $s)
-                        ) {
-                            return true;
+                        if (str_contains($status, 'anemia')) {
+                            if (stripos($item->status_hb, 'anemia') !== false) return true;
+                        }
+
+                        if (str_contains($status, 'risiko')) {
+                            if (
+                                empty($item->status_risiko) ||
+                                stripos($item->status_risiko, 'normal') === false
+                            ) {
+                                return true;
+                            }
                         }
                     }
+
                     return false;
                 });
-
-                $total = $groupedData->count();
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | GROUP BY NIK PEREMPUAN
+            |--------------------------------------------------------------------------
+            */
+            $groupedData = $all->groupBy('nik_perempuan')->map(function ($items) {
+
+                $main = $items->first();
+
+                return [
+                    // informasi utama
+                    'nama_perempuan'  => $main->nama_perempuan,
+                    'nik_perempuan'   => $main->nik_perempuan,
+                    'usia_perempuan'  => $main->usia_perempuan,
+                    'hp_perempuan'    => $main->hp_perempuan,
+                    'kerja_perempuan' => $main->pekerjaan_perempuan,
+
+                    'nama_laki'       => $main->nama_laki,
+                    'nik_laki'        => $main->nik_laki,
+                    'usia_laki'       => $main->usia_laki,
+                    'hp_laki'         => $main->hp_laki,
+                    'kerja_laki'      => $main->pekerjaan_laki,
+
+                    'status_risiko'   => $main->status_risiko,
+                    'provinsi'        => $main->provinsi,
+                    'kota'            => $main->kota,
+                    'kecamatan'       => $main->kecamatan,
+                    'kelurahan'       => $main->kelurahan,
+                    'rw'              => $main->rw,
+                    'rt'              => $main->rt,
+                    'posyandu'        => $main->posyandu,
+                    'status_hb'       => $main->status_hb,
+                    'status_kek'      => $main->status_kek,
+                    'tgl_pernikahan'  => $main->tanggal_rencana_menikah,
+                    'tgl_kunjungan'   => $main->tanggal_pendampingan,
+                    'status_risiko'=>$main->status_risiko,
+
+                    // RIWAYAT PEMERIKSAAN
+                    'riwayat_pemeriksaan' => $items->map(function ($d) {
+                        return [
+                            'tanggal_pemeriksaan' => $d->tanggal_pemeriksaan,
+                            'berat_perempuan'     => $d->berat_perempuan,
+                            'tinggi_perempuan'    => $d->tinggi_perempuan,
+                            'imt_perempuan'       => $d->imt_perempuan,
+                            'hb_perempuan'        => $d->hb_perempuan,
+                            'status_hb'           => $d->status_hb,
+                            'lila_perempuan'      => $d->lila_perempuan,
+                            'status_kek'          => $d->status_kek,
+                            'riwayat_penyakit'    => $d->riwayat_penyakit,
+                            'terpapar_rokok'      => $d->terpapar_rokok,
+                            'menggunakan_jamban'  => $d->menggunakan_jamban,
+                            'sumber_air_bersih'   => $d->sumber_air_bersih
+                        ];
+                    })->values(),
+
+                    // RIWAYAT PENDAMPINGAN
+                    'riwayat_pendampingan' => $items->whereNotNull('tanggal_pendampingan')->map(function ($d) {
+                        return [
+                            'tanggal_pendampingan' => $d->tanggal_pendampingan,
+                            'nama_petugas'          => $d->nama_petugas,
+                        ];
+                    })->values(),
+                ];
+
+            })->values();
 
             // 1️⃣0️⃣ Hitung status utama
             $count = [
-                'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_hb ?? ''), 'anemia'))->count(),
-                'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_kek ?? ''), 'kek'))->count(),
-                'Risiko Usia' => $groupedData->filter(fn($i) => str_contains(strtolower($i->status_risiko ?? ''), 'berisiko'))->count(),
+                'Anemia' => $groupedData->filter(fn($i) => str_contains(strtolower($i['status_hb'] ?? ''), 'anemia'))->count(),
+                'KEK' => $groupedData->filter(fn($i) => str_contains(strtolower($i['status_kek'] ?? ''), 'kek'))->count(),
+                'Risiko Usia' => $groupedData->filter(fn($i) => str_contains(strtolower($i['status_risiko'] ?? ''), 'berisiko'))->count(),
                 'Total Berisiko' => $groupedData->filter(fn($i) =>
-                    str_contains(strtolower($i->status_risiko ?? ''), 'berisiko')
-                    || str_contains(strtolower($i->status_kek ?? ''), 'kek')
-                    || str_contains(strtolower($i->status_hb ?? ''), 'anemia')
+                    str_contains(strtolower($i['status_risiko'] ?? ''), 'berisiko')
+                    || str_contains(strtolower($i['status_kek'] ?? ''), 'kek')
+                    || str_contains(strtolower($i['status_hb'] ?? ''), 'anemia')
                 )->count(),
-                'Total Catin' => $total,
+                'Total Catin' => $groupedData->count(),
             ];
 
+            $total = $groupedData->count();
             // 1️⃣1️⃣ Format hasil + TREND
             $result = [];
             foreach ($count as $key => $val) {

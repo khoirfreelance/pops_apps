@@ -1717,9 +1717,9 @@ class ChildrenController extends Controller
         // 🔥 Filter anak dengan **masalah gizi ganda**
         $nik_case = $kunjungan->filter(function ($item) {
             $gizi_ganda = 0;
-            if ($item->bb_u !== 'Normal') $gizi_ganda++;
-            if ($item->tb_u !== 'Normal') $gizi_ganda++;
-            if ($item->bb_tb !== 'Normal') $gizi_ganda++;
+            if ($item->bb_u != null && $item->bb_u !== 'Normal') $gizi_ganda++;
+            if ($item->tb_u != null && $item->tb_u !== 'Normal') $gizi_ganda++;
+            if ($item->bb_tb != null && $item->bb_tb !== 'Normal') $gizi_ganda++;
             return $gizi_ganda >= 2; // minimal 2 parameter bermasalah → gizi ganda
         })->pluck('nik')->unique();
 
