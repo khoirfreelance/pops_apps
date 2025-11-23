@@ -1246,6 +1246,7 @@ export default {
             anemia: lastCheck?.status_gizi_hb || '-',
             kek: lastCheck?.status_gizi_lila || '-',
             nama_posyandu: lastCheck?.posyandu || '-',
+            intervensi: item.intervensi?.kategori || '-',
           }
         })
 
