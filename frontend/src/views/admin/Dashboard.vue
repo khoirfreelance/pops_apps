@@ -65,20 +65,115 @@
             </div>
           </div>
 
-          <div class="d-md-none mt-2 sticky-filter">
+          <!-- <div class="d-md-none mt-2 sticky-filter">
             <button
               class="btn btn-success filter-floating-btn d-md-none"
               @click="showFilterMobile = !showFilterMobile"
             >
               <i class="bi bi-funnel"></i>
             </button>
-          </div>
+          </div> -->
 
           <!-- Filter Form -->
           <div
-            class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 sticky-filter"
+            class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block"
             v-show="!isMobile || showFilterMobile"
           >
+            <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
+              <!-- Kelurahan/Desa -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                <label class="form-label fs-md-1">Kel/Desa</label>
+                <select
+                  v-model="filters.kelurahan"
+                  class="form-select text-muted small uniform-input"
+                  disabled
+                >
+                  <option :value="kelurahan" class="small">{{ kelurahan }}</option>
+                </select>
+              </div>
+
+              <!-- Posyandu -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                <label class="form-label">Posyandu</label>
+                <select
+                  v-model="filters.posyandu"
+                  class="form-select text-muted uniform-input"
+                  @change="handlePosyanduChange"
+                >
+                  <option value="">All</option>
+                  <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
+                    {{ item.nama_posyandu }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- RW -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                <label class="form-label">RW</label>
+                <select
+                  v-model="filters.rw"
+                  class="form-select text-muted uniform-input"
+                  @change="handleRWChange"
+                  :disabled="rwReadonly"
+                >
+                  <option value="">All</option>
+                  <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                </select>
+              </div>
+
+              <!-- RT -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                <label class="form-label">RT</label>
+                <select
+                  v-model="filters.rt"
+                  class="form-select text-muted uniform-input"
+                  :disabled="rtReadonly"
+                >
+                  <option value="">All</option>
+                  <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
+                </select>
+              </div>
+
+              <!-- Periode -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                <label class="form-label">Periode</label>
+                <select v-model="filters.periode" class="form-select uniform-input">
+                  <option value="">All</option>
+                  <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
+                    {{ p.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Tombol Cari -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2 d-grid">
+                <button type="submit" class="btn btn-gradient fw-semibold uniform-input">
+                  <i class="bi bi-filter me-1"></i> Terapkan
+                </button>
+              </div>
+            </form>
+          </div>
+
+            <!-- Mobile Filter -->
+          <!-- Floating Button -->
+          <button
+            class="btn btn-primary filter-float-btn rounded-pill shadow-lg px-4 py-2"
+            @click="mobileFilterOpen = true"
+          >
+            <i class="bi bi-funnel"></i> Filter
+          </button>
+
+          <!-- FILTER MOBILE SLIDE PANEL -->
+          <div class="filter-mobile-panel d-md-none" :class="{ open: mobileFilterOpen }">
+            <!-- HEADER -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold">Filter</h5>
+              <button class="btn btn-light" @click="mobileFilterOpen = false">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <!-- === FORM FILTER MOBILE === -->
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
@@ -1332,6 +1427,41 @@ label {
   font-size: 24px;
 }
 
+
+.filter-float-btn {
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  z-index: 2000;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .filter-float-btn {
+    display: block;
+  }
+
+  /* Panel filter mobile */
+  .filter-mobile-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: -100%;
+    height: 85%;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2001;
+    padding: 15px;
+    overflow-y: auto;
+    transition: bottom 0.35s ease;
+  }
+
+  .filter-mobile-panel.open {
+    bottom: 0;
+  }
+}
+
 @media (min-width: 576px) {
   #responsive-chart-container {
     height: 210px; /* Tinggi untuk Tablet */
@@ -1840,6 +1970,7 @@ export default {
       intervensi_bumil: [],
       showFilterMobile: false,
       isMobile: false,
+      mobileFilterOpen: false,
     }
   },
   methods: {
@@ -2305,48 +2436,23 @@ export default {
       }
     },
     
-   normalizeCatinTrend(trend) {
-  if (!trend) return []
+    normalizeCatinTrend(trend) {
+      if (!trend) return []
 
-  // Jika array biasa, tetap proses — tapi pastikan persen convert
-  if (Array.isArray(trend)) {
-    return trend.map(row => ({
-      bulan: row.bulan,
-      persen: this.extractNumber(row.persen)
-    }))
-  }
+      // Jika sudah array (seperti menu anak), langsung kembalikan
+      if (Array.isArray(trend)) return trend
 
-  
-  // Format khusus CATIN: { months:[], data:[], total:{} }
-  if (months && trend.data) {
-    console.log('normalizeCatinTrend - trend:', months, trend.data  )
-    return trend.months.map((bulan, i) => ({
-      bulan,
-      persen: this.extractNumber(trend.data[i])
-    }))
-  }
+      // Jika format catin: { months:[], data:[], total:{} }
+      if (trend.months && trend.data) {
+        return trend.months.map((bulan, i) => ({
+          bulan,
+          persen: trend.data[i] ?? 0,
+        }))
+      }
 
-  // Fallback: object → values
-  return Object.values(trend).map(item => ({
-    bulan: item.bulan,
-    persen: this.extractNumber(item.persen)
-  }))
-},
-    extractNumber(value) {
-  // Jika Proxy Vue → value.value atau value._value
-  if (typeof value === 'object' && value !== null) {
-    value = value.value ?? value._value ?? 0
-  }
-
-  // Jika "28.6%" → buang %
-  if (typeof value === 'string') {
-    value = value.replace('%', '')
-  }
-
-  // Convert final ke float
-  const num = parseFloat(value)
-  return isNaN(num) ? 0 : num
-},
+      // Jika object lain, fallback ke Object.values()
+      return Object.values(trend)
+    },
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName]
       if (!ref) return
