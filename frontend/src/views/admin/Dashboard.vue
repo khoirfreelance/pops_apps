@@ -154,7 +154,7 @@
             </form>
           </div>
 
-            <!-- Mobile Filter -->
+          <!-- Mobile Filter -->
           <!-- Floating Button -->
           <button
             class="btn btn-primary filter-float-btn rounded-pill shadow-lg px-4 py-2"
@@ -746,96 +746,98 @@
                             </div>
                           </div>
                         </div>
-
-
                       </div>
                     </div>
                   </div>
                   <div class="col-12 mt-3">
-                <div class="card shadow-sm border-0 h-100 p-3">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-sm align-middle">
-                      <thead class="table-success">
-                        <tr>
-                          <th class="h4 text-center">No</th>
-                          <th class="h4 text-center" width="300">Nama</th>
-                          <th class="h4 text-center">Jenis Intervensi</th>
-                          <th class="h4 text-center">Stunting</th>
-                          <th class="h4 text-center">Wasting</th>
-                          <th class="h4 text-center">Underweight</th>
-                          <th class="h4 text-center">BB Sangat</th>
-                          <th class="h4 text-center">Overweight</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(anak, i) in paginatedAnakGabungan"
-                          :key="i"
-                          class="small text-center"
-                        >
-                          <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                          <td>{{ anak.nama }}</td>
-                          <td class="text-center">{{ anak.rumusan || '' }}</td>
-                          <td><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                          <td><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                          <td><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                          <td><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                          <td><i v-if="anak.overweight" class="bi bi-check2"></i></td>
-                        </tr>
-                      </tbody>
-                      <tfoot>
-                        <tr>
-                          <td colspan="100%" class="text-end">
-                            <button
-                              class="btn btn-sm btn-outline-primary p-2 mt-2"
-                              @click="exportDashboardPdf('giziAnakExport')"
+                    <div class="card shadow-sm border-0 h-100 p-3">
+                      <div class="table-responsive">
+                        <table class="table table-striped table-sm align-middle">
+                          <thead class="table-success">
+                            <tr>
+                              <th class="text-center">No</th>
+                              <th class="text-center" width="300">Nama</th>
+                              <th class="text-center">Jenis Intervensi</th>
+                              <th class="text-center">Stunting</th>
+                              <th class="text-center">Wasting</th>
+                              <th class="text-center">Underweight</th>
+                              <th class="text-center">BB Sangat</th>
+                              <th class="text-center">Overweight</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr
+                              v-for="(anak, i) in paginatedAnakGabungan"
+                              :key="i"
+                              class="text-center"
                             >
-                              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                              Export
+                              <td class="row-data-font-size">{{ (currentPage - 1) * perPage + i + 1 }}</td>
+                              <td class="row-data-font-size">{{ anak.nama }}</td>
+                              <td class="text-center row-data-font-size">{{ anak.rumusan || '' }}</td>
+                              <td class="row-data-font-size"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
+                              <td class="row-data-font-size"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
+                              <td class="row-data-font-size"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
+                              <td class="row-data-font-size"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                              <td class="row-data-font-size"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
+                            </tr>
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colspan="100%" class="text-end">
+                                <button
+                                  class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                  @click="exportDashboardPdf('giziAnakExport')"
+                                >
+                                  <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                  Export
+                                </button>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                      <nav id="responsive-pagination">
+                        <ul class="pagination justify-content-end">
+                          <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                            <button class="page-link" @click="currentPage > 1 && currentPage--">
+                              <span aria-hidden="true">&laquo;</span>
                             </button>
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                          </li>
+
+                          <li
+                            v-for="(page, i) in paginationNumbersAnakGabungan"
+                            :key="i"
+                            class="page-item"
+                            :class="{
+                              active: currentPage === page,
+                              disabled: page === '...',
+                            }"
+                          >
+                            <button
+                              class="page-link"
+                              @click="page !== '...' && (currentPage = page)"
+                            >
+                              {{ page }}
+                            </button>
+                          </li>
+
+                          <li
+                            class="page-item"
+                            :class="{ disabled: currentPage === totalPagesAnak }"
+                          >
+                            <button
+                              class="page-link"
+                              @click="currentPage < totalPagesAnak && currentPage++"
+                            >
+                              <span aria-hidden="true">&raquo;</span>
+                            </button>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
                   </div>
-                  <nav id="responsive-pagination">
-                    <ul class="pagination justify-content-end">
-                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <button class="page-link" @click="currentPage > 1 && currentPage--">
-                          <span aria-hidden="true">&laquo;</span>
-                        </button>
-                      </li>
-
-                      <li
-                        v-for="(page, i) in paginationNumbersAnakGabungan"
-                        :key="i"
-                        class="page-item"
-                        :class="{
-                          active: currentPage === page,
-                          disabled: page === '...',
-                        }"
-                      >
-                        <button class="page-link" @click="page !== '...' && (currentPage = page)">
-                          {{ page }}
-                        </button>
-                      </li>
-
-                      <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
-                        <button
-                          class="page-link"
-                          @click="currentPage < totalPagesAnak && currentPage++"
-                        >
-                          <span aria-hidden="true">&raquo;</span>
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
                 </div>
               </div>
-                </div>
-              </div>
-
-
             </div>
 
             <!-- Tab Bumil -->
@@ -858,7 +860,7 @@
 
                             <p
                               v-if="index !== kesehatanData.bumil.length - 1"
-                              class="mb-0 "
+                              class="mb-0"
                               :class="`text-${item.color}`"
                             >
                               {{ item.percent }}
@@ -867,7 +869,11 @@
                             <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
                           </div>
 
-                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`" style="font-size: 1rem">
+                          <h2
+                            class="fw-bold mb-0"
+                            :class="`text-${item.color}`"
+                            style="font-size: 1rem"
+                          >
                             {{ item.value }}
                           </h2>
                         </div>
@@ -999,21 +1005,23 @@
                             <div
                               class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
                             >
-                              <div
+                              <button
                                 class="fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
                                 style="border-bottom-width: 5px !important"
+                                @click="toggleSudahBumil(false)"
                               >
                                 Ibu Hamil belum dapat Intervensi <br />
                                 {{ totalBelum }}
-                              </div>
+                              </button>
 
-                              <div
+                              <button
                                 class="fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
                                 style="border-bottom-width: 5px !important"
+                                @click="toggleSudahBumil(true)"
                               >
                                 Ibu Hamil sudah dapat Intervensi <br />
                                 {{ totalSudah }}
-                              </div>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1049,7 +1057,25 @@
                             >
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
+                                <div class="text-center text-muted" v-if="noIntervensiMessage">
+                                  {{ noIntervensiMessage }}
+                                </div>
                                 <canvas
+                                  v-show="!noIntervensiMessage"
+                                  ref="sudahBumilChart"
+                                ></canvas>
+                                <canvas
+                                  v-if="isSudahBumil"
+                                  ref="sudahBumilChart"
+                                  style="
+                                    max-height: 280px;
+                                    min-height: 200px !important;
+                                    height: 100% !important;
+                                    width: 100% !important;
+                                  "
+                                ></canvas>
+                                <canvas
+                                  v-else
                                   ref="belumBumilChart"
                                   style="
                                     max-height: 280px;
@@ -1242,132 +1268,136 @@
               <!-- Issue and Stat Card -->
               <!-- <div class="container-fluid my-4">
                 <div class="row"> -->
-                <div id="catinExport">
-              <div class="col-12">
-                <div
-                  class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3"
-                >
-                  <div v-for="(item, index) in kesehatanData.catin" :key="index" class="col">
-                    <div
-                      class="card h-100 shadow-sm border-0 d-flex flex-column"
-                      :class="`border-start border-4 border-${item.color}`"
-                    >
-                      <!-- BODY -->
-                      <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                          <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+              <div id="catinExport">
+                <div class="col-12">
+                  <div
+                    class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3"
+                  >
+                    <div v-for="(item, index) in kesehatanData.catin" :key="index" class="col">
+                      <div
+                        class="card h-100 shadow-sm border-0 d-flex flex-column"
+                        :class="`border-start border-4 border-${item.color}`"
+                      >
+                        <!-- BODY -->
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                          <div>
+                            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                          <p
-                            v-if="index !== kesehatanData.catin.length - 1"
-                            class="mb-0"
-                            :class="`text-${item.color}`"
-                          >
-                            {{ item.percent }}
-                          </p>
+                            <p
+                              v-if="index !== kesehatanData.catin.length - 1"
+                              class="mb-0"
+                              :class="`text-${item.color}`"
+                            >
+                              {{ item.percent }}
+                            </p>
 
-                          <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
+                            <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
+                          </div>
+
+                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
+                            {{ item.value }}
+                          </h2>
                         </div>
 
-                        <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
-                          {{ item.value }}
-                        </h2>
-                      </div>
-
-                      <!-- FOOTER -->
-                      <div class="card-footer bg-transparent border-0 p-0">
-                        <canvas
-                          v-if="index !== kesehatanData.catin.length - 1"
-                          :ref="'chart-catin-' + index"
-                          height="120"
-                        ></canvas>
-                        <div v-else style="height: 120px"></div>
-                      </div>
-                      <!-- </div>
+                        <!-- FOOTER -->
+                        <div class="card-footer bg-transparent border-0 p-0">
+                          <canvas
+                            v-if="index !== kesehatanData.catin.length - 1"
+                            :ref="'chart-catin-' + index"
+                            height="120"
+                          ></canvas>
+                          <div v-else style="height: 120px"></div>
+                        </div>
+                        <!-- </div>
     </div> -->
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TREN -->
-              <div class="container-fluid">
-                <h2 class="ringkasan-header text-primary mb-3">Status Kesehatan Calon Pengantin</h2>
-
-                <!-- Row utama: tabel-->
-                <div class="row g-3">
-                  <!-- Table -->
-                  <div class="col-12">
-                    <div class="card border border-primary shadow p-3 h-100">
-                      <div class="table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <thead>
-                            <tr class="fw-semibold text-additional">
-                              <th class="text-additional">Status</th>
-                              <th class="text-additional">Jumlah</th>
-                              <th class="text-additional">Persen</th>
-                              <th class="text-additional">Tren</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(row, index) in dataTable_catin" :key="index">
-                              <td id="text-diagram-table-piechart" class="text-additional small">
-                                {{ row.status }}
-                              </td>
-                              <td id="text-diagram-table-piechart" class="text-additional small">
-                                {{ row.jumlah ?? 0 }}
-                              </td>
-                              <td id="text-diagram-table-piechart" class="text-additional small">
-                                {{ row.persen ? row.persen + ' %' : '0 %' }}
-                              </td>
-                              <td
-                                id="text-diagram-table-piechart"
-                                class="small"
-                                :class="row.trenClass"
-                              >
-                                <span v-if="row.tren && row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Tabel tambahan bawah -->
-                <div class="row mt-4">
-                  <div class="col-12">
-                    <div class="card border border-primary shadow p-3">
-                      <div class="table-responsive">
-                        <table class="table table-bordered table-sm align-middle text-center mb-0">
-                          <thead class="table-light">
-                            <tr>
-                              <th>Indikator</th>
-                              <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(values, indikator) in indikatorCatin" :key="indikator">
-                              <td class="fw-bold">{{ indikator }}</td>
-                              <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                <!-- TREN -->
+                <div class="container-fluid">
+                  <h2 class="ringkasan-header text-primary mb-3">
+                    Status Kesehatan Calon Pengantin
+                  </h2>
+
+                  <!-- Row utama: tabel-->
+                  <div class="row g-3">
+                    <!-- Table -->
+                    <div class="col-12">
+                      <div class="card border border-primary shadow p-3 h-100">
+                        <div class="table-responsive">
+                          <table class="table table-borderless align-middle">
+                            <thead>
+                              <tr class="fw-semibold text-additional">
+                                <th class="text-additional">Status</th>
+                                <th class="text-additional">Jumlah</th>
+                                <th class="text-additional">Persen</th>
+                                <th class="text-additional">Tren</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(row, index) in dataTable_catin" :key="index">
+                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                  {{ row.status }}
+                                </td>
+                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                  {{ row.jumlah ?? 0 }}
+                                </td>
+                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
+                                </td>
+                                <td
+                                  id="text-diagram-table-piechart"
+                                  class="small"
+                                  :class="row.trenClass"
+                                >
+                                  <span v-if="row.tren && row.tren !== '-'">
+                                    <i :class="row.trenIcon"></i> {{ row.tren }}
+                                  </span>
+                                  <span v-else>-</span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  <!-- Tabel tambahan bawah -->
+                  <div class="row mt-4">
+                    <div class="col-12">
+                      <div class="card border border-primary shadow p-3">
+                        <div class="table-responsive">
+                          <table
+                            class="table table-bordered table-sm align-middle text-center mb-0"
+                          >
+                            <thead class="table-light">
+                              <tr>
+                                <th>Indikator</th>
+                                <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(values, indikator) in indikatorCatin" :key="indikator">
+                                <td class="fw-bold">{{ indikator }}</td>
+                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    class="btn btn-sm btn-outline-primary p-2 mt-2"
+                    @click="exportDashboardPdf('catinExport')"
+                  >
+                    <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                    Export
+                  </button>
                 </div>
-                <button
-                  class="btn btn-sm btn-outline-primary p-2 mt-2"
-                  @click="exportDashboardPdf('catinExport')"
-                >
-                  <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                  Export
-                </button>
-              </div>
               </div>
             </div>
           </div>
@@ -1391,6 +1421,10 @@ button {
   font-size: 0.9rem;
 }
 
+.row-data-font-size{
+  font-size: 14px;
+}
+
 label {
   font-size: 0.9rem; /* label proporsional */
 }
@@ -1405,7 +1439,6 @@ label {
   font-weight: bold;
   font-size: 24px;
 }
-
 
 .filter-float-btn {
   position: fixed;
@@ -2015,6 +2048,7 @@ export default {
     async generateIndikatorBumilBulanan() {
       try {
         //this.isLoading = true;
+
         const params = {
           kelurahan: this.filters.kelurahan || '',
           posyandu: this.filters.posyandu || '',
@@ -2351,6 +2385,16 @@ export default {
           kelurahan: this.filters.kelurahan || '',
         }
 
+        // const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
+        // let res = null;
+
+        // switch (this.activeMenu) {
+        //   case 'anak': res = await axios.get(`${baseURL}/api/children/status`, { headers, params }); break;
+        //   case 'bumil': res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params }); break;
+        //   case 'catin': res = await axios.get(`${baseURL}/api/bride/status`, { headers, params }); break;
+        //   default: return;
+        // }
+
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
         let res = null
 
@@ -2371,7 +2415,7 @@ export default {
         }
 
         const data = res.data
-        //console.log('data', data)
+        console.log('menu', this.activeMenu)
 
         const total = data.total || 0
         this.totalAnak = total
@@ -2388,24 +2432,38 @@ export default {
 
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.kesehatanData[this.activeMenu].forEach((item, index) => {
-              item.trend = this.normalizeCatinTrend(item.trend)
-              this.rendersvgChart(`chart-${index}`, item.trend, [item.color])
-              this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color])
-              this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color])
-            })
-}, 80)
-        })
-        //console.log("Refs available:", this.$refs);
+       this.$nextTick(() => {
+  setTimeout(() => {
+    this.kesehatanData[this.activeMenu].forEach((item, index) => {
+
+      let trendFixed = [];
+
+      // Pilih normalize sesuai menu aktif
+      if (this.activeMenu === "anak") {
+        trendFixed = this.normalizeTrendNumber(item.trend);
+        this.rendersvgChart(`chart-${index}`, trendFixed, [item.color]);
+      }
+
+      else if (this.activeMenu === "bumil") {
+        trendFixed = this.normalizeTrendNumber(item.trend);
+        this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
+      }
+
+      else if (this.activeMenu === "catin") {
+        trendFixed = this.normalizeTrendObject(item.trend);
+        this.rendersvgChart_Catin(`chart-catin-${index}`, trendFixed, [item.color]);
+      }
+
+    });
+  }, 80)
+}) //console.log("Refs available:", this.$refs);
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error)
       }
     },
-    
-    normalizeCatinTrend(trend) {
-      if (!trend) return []
+
+normalizeTrendNumber(trend) {
+ if (!trend) return []
 
       // Jika sudah array (seperti menu anak), langsung kembalikan
       if (Array.isArray(trend)) return trend
@@ -2420,7 +2478,20 @@ export default {
 
       // Jika object lain, fallback ke Object.values()
       return Object.values(trend)
-    },
+}, 
+normalizeTrendObject(trend) {
+  if (!trend || !trend.months || !trend.data) return [];
+
+  return trend.months.map((bulan, i) => {
+    const raw = trend.data[i];
+    const val = raw && typeof raw === "object" ? Object.values(raw)[0] : 0;
+
+    return {
+      bulan,
+      persen: Number(val) || 0,
+    };
+  });
+},
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName]
       if (!ref) return
@@ -3001,16 +3072,15 @@ export default {
         // 💚 bumil
         if (this.activeMenu === 'bumil') {
           const punya = res.data.detail.punya_keduanya.map((item) => this.mapToBumil(item))
-          /* const intervensiAja = res.data.detail.hanya_intervensi.map((item) =>
+          const intervensiAja = res.data.detail.hanya_intervensi.map((item) =>
             this.mapToBumil(item),
-          ) */
+          )
 
-          this.dataLoad = [...punya] // 🔥 chart ambil dari sini
+          this.dataLoad = [...punya, ...intervensiAja] // 🔥 chart ambil dari sini
           this.dataLoad_belum = res.data.detail.hanya_kunjungan.map((item) => this.mapToBumil(item))
         }
       } catch (e) {
-        console.log(e);
-        //this.showError('Error Ambil Data', e)
+        this.showError('Error Ambil Data', e)
       }
     },
     parseDate(str) {
@@ -3642,8 +3712,7 @@ export default {
     },
 
     // only Bumil
-    // eslint-disable-next-line vue/no-dupe-keys
-    /* async generateIndikatorBumilBulanan() {
+    async generateIndikatorBumilBulanan() {
       try {
         //this.isLoading = true;
 
@@ -3695,7 +3764,7 @@ export default {
       } finally {
         //this.isLoading = false;
       }
-    }, */
+    },
     mapToBumil(item) {
       return {
         nik: item.nik,
@@ -3764,7 +3833,7 @@ export default {
         }
 
         // Log parameter filter
-        //console.log('🔍 Parameter Filter:', params)
+        console.log('🔍 Parameter Filter:', params)
         console.log(checkApplyFilter ?? 'mout')
 
         const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
@@ -3779,7 +3848,7 @@ export default {
         // Log data mentah dari API (hanya beberapa item untuk menghindari output yang terlalu panjang)
         console.log(`✅ Data Ibu Hamil Diterima (Total: ${apiDataBumil.length})`)
         if (apiDataBumil.length > 0) {
-          //console.log('   Contoh data pertama:', apiDataBumil[0])
+          console.log('   Contoh data pertama:', apiDataBumil[0])
         }
       } catch (error) {
         console.error('❌ Gagal mengambil data intervensi ibu hamil:', error)
@@ -3790,7 +3859,7 @@ export default {
       const summary = this.generateBumilSummary(apiDataBumil)
 
       // Log hasil pengolahan data
-      //console.log('📊 Summary Hasil Pengolahan:', summary)
+      console.log('📊 Summary Hasil Pengolahan:', summary)
 
       // 3. Setup Chart
       const ctx = this.$refs.bumilChart?.getContext('2d')
@@ -3957,45 +4026,58 @@ export default {
     },
     renderIntervensiBumilChart(periodeBulan = 3) {
       this.$nextTick(() => {
-
-        // 🔥 Harus sama dengan ref di template
-        const canvas = this.$refs.belumBumilChart
+        const canvas = this.$refs.sudahBumilChart
         if (!canvas) return
 
         const ctx = canvas.getContext('2d')
+        //const data = this.dataLoad || [];
+        const data = this.dataLoad_belum || []
 
-        const data = this.dataLoad || []
-        console.log('data:', data);
-
+        // 🛑 Jika data kosong sama sekali
+        // if (data.length == 0) {
+        //   this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
+        //   return
+        // }
 
         const now = new Date()
         const startDate = new Date()
         startDate.setMonth(now.getMonth() - periodeBulan)
 
+        // 🔹 Ambil data intervensi dari setiap BUMIL
         const allIntervensi = data.flatMap((bumil) =>
-          (bumil.raw.data_intervensi || [])
+          (bumil.data_intervensi || [])
             .filter((i) => i.kategori && i.kategori.trim() !== '')
             .map((i) => ({
               tanggal: new Date(i.tgl_intervensi),
               jenis: i.kategori,
-            }))
+            })),
         )
 
+        // 🔹 Filter periode
         const recentIntervensi = allIntervensi.filter(
-          (i) => i.tanggal >= startDate && i.tanggal <= now
+          (i) => i.tanggal >= startDate && i.tanggal <= now,
         )
-        console.log('reasen', recentIntervensi);
 
+        // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
+        if (!recentIntervensi.length) {
+          this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
+          return
+        }
+
+        // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = ''
 
+        // 🔹 Kategori tetap
         const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
         const counts = jenisList.map(
-          (jenis) => recentIntervensi.filter((i) => i.jenis === jenis).length
+          (jenis) => recentIntervensi.filter((i) => i.jenis === jenis).length,
         )
 
-        if (this.belumChart) this.belumChart.destroy()
+        // 🔹 Hapus chart lama
+        if (this.sudahChart) this.sudahChart.destroy()
 
-        this.belumChart = new Chart(ctx, {
+        // 🔹 Render chart
+        this.sudahChart = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: jenisList,
