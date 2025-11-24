@@ -1056,7 +1056,25 @@
                             >
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
+                                <div class="text-center text-muted" v-if="noIntervensiMessage">
+                                  {{ noIntervensiMessage }}
+                                </div>
                                 <canvas
+                                  v-show="!noIntervensiMessage"
+                                  ref="sudahBumilChart"
+                                ></canvas>
+                                <canvas
+                                  v-if="isSudahBumil"
+                                  ref="sudahBumilChart"
+                                  style="
+                                    max-height: 280px;
+                                    min-height: 200px !important;
+                                    height: 100% !important;
+                                    width: 100% !important;
+                                  "
+                                ></canvas>
+                                <canvas
+                                  v-else
                                   ref="belumBumilChart"
                                   style="
                                     max-height: 280px;
@@ -4015,6 +4033,8 @@ normalizeTrendObject(trend) {
         if (!canvas) return
 
         const ctx = canvas.getContext('2d')
+        //const data = this.dataLoad || [];
+        const data = this.dataLoad_belum || []
 
         const data = this.dataLoad || []
         // --- 1. Log Data Awal ---
@@ -4071,6 +4091,13 @@ normalizeTrendObject(trend) {
         // --- 4. Log Intervensi yang Masuk Filter Tanggal ---
         console.log('4. Intervensi yang Masuk Filter (RecentIntervensi):', recentIntervensi); 
 
+        // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
+        if (!recentIntervensi.length) {
+          this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
+          return
+        }
+
+        // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = ''
 
         // Hitung frekuensi setiap jenis intervensi
