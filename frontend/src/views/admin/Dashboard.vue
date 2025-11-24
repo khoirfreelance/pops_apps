@@ -76,7 +76,7 @@
 
           <!-- Filter Form -->
           <div
-            class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block"
+            class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block sticky-filter"
             v-show="!isMobile || showFilterMobile"
           >
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
@@ -2414,7 +2414,7 @@ export default {
         }
 
         const data = res.data
-        console.log('menu', this.activeMenu)
+        //console.log('menu', this.activeMenu)
 
         const total = data.total || 0
         this.totalAnak = total
@@ -2427,7 +2427,7 @@ export default {
           trend: item.trend,
         }))
 
-        console.log('✅ kesehatanData:', this.kesehatanData);
+        //console.log('✅ kesehatanData:', this.kesehatanData);
 
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
@@ -2467,10 +2467,12 @@ normalizeTrendNumber(trend) {
       // Jika sudah array (seperti menu anak), langsung kembalikan
       if (Array.isArray(trend)) return trend
 
-  
+
   // Format khusus CATIN: { months:[], data:[], total:{} }
+  // eslint-disable-next-line no-undef
   if (months && trend.data) {
-    console.log('normalizeCatinTrend - trend:', months, trend.data  )
+    // eslint-disable-next-line no-undef
+    //console.log('normalizeCatinTrend - trend:', months, trend.data  )
     return trend.months.map((bulan, i) => ({
       bulan,
       persen: this.extractNumber(trend.data[i])
@@ -2479,7 +2481,7 @@ normalizeTrendNumber(trend) {
 
       // Jika object lain, fallback ke Object.values()
       return Object.values(trend)
-}, 
+},
 normalizeTrendObject(trend) {
   if (!trend || !trend.months || !trend.data) return [];
 
@@ -3713,7 +3715,7 @@ normalizeTrendObject(trend) {
     },
 
     // only Bumil
-    async generateIndikatorBumilBulanan() {
+    /* async generateIndikatorBumilBulanan() {
       try {
         //this.isLoading = true;
 
@@ -3765,7 +3767,7 @@ normalizeTrendObject(trend) {
       } finally {
         //this.isLoading = false;
       }
-    },
+    }, */
     mapToBumil(item) {
       return {
         nik: item.nik,
@@ -3834,7 +3836,7 @@ normalizeTrendObject(trend) {
         }
 
         // Log parameter filter
-        console.log('🔍 Parameter Filter:', params)
+        //console.log('🔍 Parameter Filter:', params)
         console.log(checkApplyFilter ?? 'mout')
 
         const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
@@ -3849,7 +3851,7 @@ normalizeTrendObject(trend) {
         // Log data mentah dari API (hanya beberapa item untuk menghindari output yang terlalu panjang)
         console.log(`✅ Data Ibu Hamil Diterima (Total: ${apiDataBumil.length})`)
         if (apiDataBumil.length > 0) {
-          console.log('   Contoh data pertama:', apiDataBumil[0])
+          //console.log('   Contoh data pertama:', apiDataBumil[0])
         }
       } catch (error) {
         console.error('❌ Gagal mengambil data intervensi ibu hamil:', error)
@@ -3860,7 +3862,7 @@ normalizeTrendObject(trend) {
       const summary = this.generateBumilSummary(apiDataBumil)
 
       // Log hasil pengolahan data
-      console.log('📊 Summary Hasil Pengolahan:', summary)
+      //console.log('📊 Summary Hasil Pengolahan:', summary)
 
       // 3. Setup Chart
       const ctx = this.$refs.bumilChart?.getContext('2d')
@@ -3887,10 +3889,10 @@ normalizeTrendObject(trend) {
       const belumBumil = labels.map((key) => safeSummary[key].belumBumil)
 
       // Log data akhir yang masuk ke Chart.js
-      console.log('   Data Final Chart.js:')
+      /* console.log('   Data Final Chart.js:')
       console.log('   Labels:', labels)
       console.log('   Sudah Intervensi:', sudahBumil)
-      console.log('   Belum Intervensi:', belumBumil)
+      console.log('   Belum Intervensi:', belumBumil) */
 
       // 4. Inisialisasi Chart
       this.bumilChart = new Chart(ctx, {
@@ -3946,7 +3948,7 @@ normalizeTrendObject(trend) {
         },
       })
 
-      console.log('--- renderBumilChart Selesai ---')
+      //console.log('--- renderBumilChart Selesai ---')
     },
     toggleSudahBumil(val) {
       this.isSudahBumil = val
@@ -4034,18 +4036,18 @@ normalizeTrendObject(trend) {
 
         const ctx = canvas.getContext('2d')
         //const data = this.dataLoad || [];
-        const data = this.dataLoad_belum || []
+        const data = [...this.dataLoad_belum,...this.dataLoad]
 
-        const data = this.dataLoad || []
+        //const data =  || []
         // --- 1. Log Data Awal ---
-        const dataString = JSON.stringify(data, null, 2) 
+        const dataString = JSON.stringify(data, null, 2)
         console.log('1. Data Mentah (this.dataLoad):', dataString);
 
         // Menghitung tanggal awal periode
         const now = new Date()
         const startDate = new Date()
         // Menggunakan clone object 'now' untuk menghindari side effect pada 'now'
-        startDate.setMonth(now.getMonth() - periodeBulan) 
+        startDate.setMonth(now.getMonth() - periodeBulan)
 
         // --- 2. Log Rentang Tanggal ---
         console.log('2. Rentang Periode Intervensi:', {
@@ -4058,8 +4060,8 @@ normalizeTrendObject(trend) {
         // Proses Data Intervensi (Menyesuaikan Key dan Kategori)
         const allIntervensi = data.flatMap((subjek) => {
           // Gunakan 'data_intervensi' (Anak) atau 'intervensi' (Bumil)
-          const intervensiArray = subjek.raw.data_intervensi || subjek.raw.intervensi || []; 
-          
+          const intervensiArray = subjek.raw.data_intervensi || subjek.raw.intervensi || [];
+
           // --- 3. Log Intervensi per Subjek (Opsional, jika data terlalu besar) ---
           // console.log(3a. Intervensi mentah untuk subjek ${index}:, intervensiArray);
 
@@ -4089,7 +4091,7 @@ normalizeTrendObject(trend) {
         (i) => i.tanggal >= startDate && i.tanggal <= now
         )
         // --- 4. Log Intervensi yang Masuk Filter Tanggal ---
-        console.log('4. Intervensi yang Masuk Filter (RecentIntervensi):', recentIntervensi); 
+        console.log('4. Intervensi yang Masuk Filter (RecentIntervensi):', recentIntervensi);
 
         // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
         if (!recentIntervensi.length) {
