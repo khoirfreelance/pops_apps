@@ -2347,9 +2347,9 @@ export default {
           this.hitungStatistik(),
           this.generateDataTable(),
           this.masalahGanda(),
-          // this.hitungIntervensi(),
           this.generateInfoBoxes(),
           this.generateIndikatorBumilBulanan(),
+          this.hitungIntervensi(),
         ])
 
         this.renderBarChart()
