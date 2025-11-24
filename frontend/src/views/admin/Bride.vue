@@ -538,31 +538,35 @@
                   </div>
 
                   <!-- Pagination -->
-                  <nav>
-                    <ul class="pagination justify-content-center mt-1 mb-0">
-                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)"
-                          >Prev</a
-                        >
-                      </li>
-                      <li
-                        class="page-item"
-                        v-for="page in totalPages"
-                        :key="page"
-                        :class="{ active: currentPage === page }"
-                      >
-                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{
-                          page
-                        }}</a>
-                      </li>
+                 <nav>
+  <ul class="pagination justify-content-center mt-1 mb-0">
+    
+    <!-- Prev -->
+    <li class="page-item" :class="{ disabled: currentPage === 1 }">
+      <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
+    </li>
 
-                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)"
-                          >Next</a
-                        >
-                      </li>
-                    </ul>
-                  </nav>
+    <!-- Halaman -->
+    <li class="page-item"
+        v-for="page in visiblePages"
+        :key="page"
+        :class="{ active: currentPage === page, disabled: page === '...' }">
+
+      <a v-if="page !== '...'" class="page-link" href="#" @click.prevent="changePage(page)">
+        {{ page }}
+      </a>
+
+      <span v-else class="page-link">...</span>
+    </li>
+
+    <!-- Next -->
+    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+      <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
+    </li>
+
+  </ul>
+</nav>
+
                 </div>
               </div>
 
@@ -988,6 +992,8 @@ export default {
       })
     }
 
+    
+
     const totalPages = computed(() => Math.ceil(filteredCatin.value.length / perPage.value))
 
     const paginatedData = computed(() => {
@@ -1017,6 +1023,31 @@ export default {
     }
   },
   computed: {
+    visiblePages() {
+    const pages = [];
+    const maxVisible = 5; // jumlah maksimal tombol halaman yang muncul
+
+    if (this.totalPages <= maxVisible) {
+      // Jika halaman sedikit, tampilkan semua
+      for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    pages.push(1); // halaman pertama
+
+    if (this.currentPage > 3) pages.push("...");
+
+    let start = Math.max(2, this.currentPage - 1);
+    let end = Math.min(this.totalPages - 1, this.currentPage + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (this.currentPage < this.totalPages - 2) pages.push("...");
+
+    pages.push(this.totalPages); // halaman terakhir
+
+    return pages;
+  },
     filterOptions() {
       return {
         status: {
