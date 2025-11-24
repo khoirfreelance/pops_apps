@@ -2449,13 +2449,15 @@ normalizeTrendNumber(trend) {
       // Jika sudah array (seperti menu anak), langsung kembalikan
       if (Array.isArray(trend)) return trend
 
-      // Jika format catin: { months:[], data:[], total:{} }
-      if (trend.months && trend.data) {
-        return trend.months.map((bulan, i) => ({
-          bulan,
-          persen: trend.data[i] ?? 0,
-        }))
-      }
+  
+  // Format khusus CATIN: { months:[], data:[], total:{} }
+  if (months && trend.data) {
+    console.log('normalizeCatinTrend - trend:', months, trend.data  )
+    return trend.months.map((bulan, i) => ({
+      bulan,
+      persen: this.extractNumber(trend.data[i])
+    }))
+  }
 
       // Jika object lain, fallback ke Object.values()
       return Object.values(trend)
