@@ -763,7 +763,7 @@
 
                             <p
                               v-if="index !== kesehatanData.bumil.length - 1"
-                              class="mb-0 small"
+                              class="mb-0 "
                               :class="`text-${item.color}`"
                             >
                               {{ item.percent }}
@@ -772,7 +772,7 @@
                             <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
                           </div>
 
-                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
+                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`" style="font-size: 1rem">
                             {{ item.value }}
                           </h2>
                         </div>
@@ -1184,7 +1184,7 @@
 
                           <p
                             v-if="index !== kesehatanData.catin.length - 1"
-                            class="mb-0 small"
+                            class="mb-0"
                             :class="`text-${item.color}`"
                           >
                             {{ item.percent }}
@@ -2285,39 +2285,68 @@ export default {
           trend: item.trend,
         }))
 
+        console.log('✅ kesehatanData:', this.kesehatanData);
+
+
         // 🔥 render chart setelah semua elemen DOM selesai muncul
         this.$nextTick(() => {
           setTimeout(() => {
             this.kesehatanData[this.activeMenu].forEach((item, index) => {
+              item.trend = this.normalizeCatinTrend(item.trend)
               this.rendersvgChart(`chart-${index}`, item.trend, [item.color])
               this.rendersvgChart_Bumil(`chart-bumil-${index}`, item.trend, [item.color])
-              item.trend = this.normalizeCatinTrend(item.trend)
               this.rendersvgChart_Catin(`chart-catin-${index}`, item.trend, [item.color])
             })
-          }, 80)
+}, 80)
         })
         //console.log("Refs available:", this.$refs);
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error)
       }
     },
-    normalizeCatinTrend(trend) {
-      if (!trend) return []
+    
+   normalizeCatinTrend(trend) {
+  if (!trend) return []
 
-      // Jika sudah array (seperti menu anak), langsung kembalikan
-      if (Array.isArray(trend)) return trend
+  // Jika array biasa, tetap proses — tapi pastikan persen convert
+  if (Array.isArray(trend)) {
+    return trend.map(row => ({
+      bulan: row.bulan,
+      persen: this.extractNumber(row.persen)
+    }))
+  }
 
-      // Jika format catin: { months:[], data:[], total:{} }
-      if (trend.months && trend.data) {
-        return trend.months.map((bulan, i) => ({
-          bulan,
-          persen: trend.data[i] ?? 0,
-        }))
-      }
+  
+  // Format khusus CATIN: { months:[], data:[], total:{} }
+  if (months && trend.data) {
+    console.log('normalizeCatinTrend - trend:', months, trend.data  )
+    return trend.months.map((bulan, i) => ({
+      bulan,
+      persen: this.extractNumber(trend.data[i])
+    }))
+  }
 
-      // Jika object lain, fallback ke Object.values()
-      return Object.values(trend)
-    },
+  // Fallback: object → values
+  return Object.values(trend).map(item => ({
+    bulan: item.bulan,
+    persen: this.extractNumber(item.persen)
+  }))
+},
+    extractNumber(value) {
+  // Jika Proxy Vue → value.value atau value._value
+  if (typeof value === 'object' && value !== null) {
+    value = value.value ?? value._value ?? 0
+  }
+
+  // Jika "28.6%" → buang %
+  if (typeof value === 'string') {
+    value = value.replace('%', '')
+  }
+
+  // Convert final ke float
+  const num = parseFloat(value)
+  return isNaN(num) ? 0 : num
+},
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName]
       if (!ref) return
@@ -2523,7 +2552,7 @@ export default {
       })
     },
     rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName]
+     let ref = this.$refs[refName]
       if (!ref) return
 
       const canvas = Array.isArray(ref) ? ref[0] : ref
@@ -2617,11 +2646,10 @@ export default {
             },
           },
 
-          interaction: {
-            mode: 'nearest', // Coba ubah mode interaksi
-            intersect: false,
+          animation: {
+            duration: 600,
+            easing: 'easeOutCubic',
           },
-          animation: false,
         },
       })
     },
