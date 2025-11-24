@@ -14,8 +14,7 @@ use Illuminate\Support\Str;
 
 class PregnancyController extends Controller
 {
-
-    public function index(Request $request)
+    public function getData(Request $request)
     {
         try {
             $user = Auth::user();
@@ -27,14 +26,20 @@ class PregnancyController extends Controller
                 'provinsi' => $user->provinsi ?? null,
             ];
 
-            $query = Pregnancy::query();
+            $data = Pregnancy::get();
 
-            // ✅ Filter wilayah otomatis
+            $dataRaw = $data;
+
+            $data = $data->groupBy('nik_ibu')->map(function ($group) {
+                return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
+            });
+
             if (!empty($wilayah['kelurahan'])) {
-                $query->where('kelurahan', $wilayah['kelurahan']);
+                $data = $data->filter(function ($item) use ($wilayah) {
+                    return $item->kelurahan === $wilayah['kelurahan'];
+                });
             }
 
-            // ✅ Filter berdasarkan periode (format: "Juni 2025" dalam Bahasa Indonesia)
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
                 // Daftar bulan dalam Bahasa Indonesia
                 $bulanMap = [
@@ -60,55 +65,70 @@ class PregnancyController extends Controller
                         $tahun = (int) $parts[1];
                         return Carbon::createFromDate($tahun, $bulan, 1);
                     }
-                    // fallback: coba parse langsung
-                    return Carbon::createFromDate($tahun, $bulan, 1);
                 };
 
                 $start = $parsePeriode($request->periodeAwal)->startOfMonth()->format('Y-m-d');
                 $end = $parsePeriode($request->periodeAkhir)->endOfMonth()->format('Y-m-d');
-
-                $query->whereBetween('tanggal_pemeriksaan_terakhir', [$start, $end]);
+                // dd($start, $end);
+                $data = $data->filter(function ($item) use ($start, $end) {
+                    // dd($item->tanggal_pemeriksaan_terakhir >= $start && $item->tanggal_pemeriksaan_terakhir <= $end);
+                    return $item->tanggal_pemeriksaan_terakhir >= $start && $item->tanggal_pemeriksaan_terakhir <= $end;
+                });
             }
 
-            // ✅ Filter status (KEK, Anemia, Risiko ≠ Normal)
             if ($request->filled('status') && is_array($request->status)) {
-                $query->where(function ($q) use ($request) {
+                $data = $data->filter(function ($q) use ($request) {
                     foreach ($request->status as $status) {
                         $statusLower = strtolower($status);
                         if (str_contains($statusLower, 'kek')) {
-                            $q->orWhere('status_gizi_lila', 'like', '%kek%');
-                        } elseif (str_contains($statusLower, 'anemia')) {
-                            $q->orWhere('status_gizi_hb', 'like', '%anemia%');
-                        } elseif (str_contains($statusLower, 'risiko')) {
-                            $q->orWhere(function ($sub) {
-                                $sub->where('status_risiko_usia', 'not like', '%normal%')
-                                    ->orWhereNull('status_risiko_usia');
-                            });
+                            if (empty($q->status_gizi_lila)) {
+                                return false;
+                            }
+                            return $q->status_gizi_lila == 'KEK';
+                        } else if (str_contains($statusLower, 'anemia')) {
+                            if (empty($q->status_gizi_hb)) {
+                                return false;
+                            }
+                            return $q->status_gizi_hb == 'Anemia';
+                        } else if (str_contains($statusLower, 'risiko')) {
+                            if (empty($q->status_risiko_usia)) {
+                                return false;
+                            }
+                            return $q->status_risiko_usia == 'Berisiko';
                         }
                     }
                 });
             }
 
-            // ✅ Filter usia ibu
             if ($request->filled('usia') && is_array($request->usia)) {
-                $query->where(function ($q) use ($request) {
+                $data = $data->filter(function ($q) use ($request) {
                     foreach ($request->usia as $range) {
                         $range = trim($range);
+                        if (empty($q->usia_ibu)) {
+                            return false;
+                        }
                         if ($range === '<20') {
-                            $q->orWhere('usia_ibu', '<', 20);
+                            if ($q->usia_ibu < 20) {
+                                return true;
+                            }
                         } elseif ($range === '>40') {
-                            $q->orWhere('usia_ibu', '>', 40);
+                            if ($q->usia_ibu > 40) {
+                                return true;
+                            }
                         } elseif (str_contains($range, '-')) {
                             [$min, $max] = explode('-', $range);
-                            $q->orWhereBetween('usia_ibu', [(int) $min, (int) $max]);
+                            if ($q->usia_ibu >= (int) $min && $q->usia_ibu <= (int) $max) {
+                                return true;
+                            }
                         }
                     }
+                    return false;
                 });
             }
 
             // ✅ Filter intervensi
             if ($request->filled('intervensi') && is_array($request->intervensi)) {
-                $query->where(function ($q) use ($request) {
+                $data->where(function ($q) use ($request) {
                     foreach ($request->intervensi as $val) {
                         $q->orWhere('intervensi', 'like', "%{$val}%");
                     }
@@ -116,8 +136,6 @@ class PregnancyController extends Controller
             }
 
             // ✅ Ambil data
-            $data = $query->orderByDesc('tanggal_pemeriksaan_terakhir')->get();
-
             if ($data->isEmpty()) {
                 return response()->json([
                     'message' => 'Tidak ada data kehamilan ditemukan.',
@@ -125,15 +143,17 @@ class PregnancyController extends Controller
                 ], 200);
             }
             $intervensiList = Intervensi::where('status_subjek', 'bumil')->orderBy('tgl_intervensi')->get();
-            $intervensiList = $intervensiList->groupBy('nik_subjek')->map(function ($items) {
-                return $items->last();
-            })->values();
-
             // ✅ Group data per ibu
-            $grouped = $data->groupBy('nik_ibu')->map(function ($group) use ($intervensiList) {
-                $intervensi = $intervensiList->firstWhere('nik_subjek', $group->first()->nik_ibu);
-                $latest = $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
-                $riwayat = $group->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
+            $groupedData = $data->map(function ($group) use ($intervensiList, $dataRaw) {
+                $intervensi = $intervensiList->Where('nik_subjek', $group->nik_ibu)->map(function ($item) {
+                    return [
+                        'kader' => $item->petugas,
+                        'tanggal' => $item->tgl_intervensi,
+                        'intervensi' => $item->kategori,
+                    ];
+                })->values();
+
+                $riwayat = $dataRaw->Where('nik_ibu', $group->nik_ibu)->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
                     return [
                         'tanggal_pemeriksaan_terakhir' => $g->tanggal_pemeriksaan_terakhir,
                         'berat_badan' => $g->berat_badan,
@@ -150,38 +170,100 @@ class PregnancyController extends Controller
                 })->values();
 
                 return [
-                    'nama_ibu' => $latest->nama_ibu,
-                    'nik_ibu' => $latest->nik_ibu,
-                    'usia_ibu' => $latest->usia_ibu,
-                    'nama_suami' => $latest->nama_suami,
-                    'nik_suami' => $latest->nik_suami,
-                    'kehamilan_ke' => $latest->kehamilan_ke,
-                    'jumlah_anak' => $latest->jumlah_anak,
-                    'status_risiko_usia' => $latest->status_risiko_usia,
-                    'provinsi' => $latest->provinsi,
-                    'kota' => $latest->kota,
-                    'kecamatan' => $latest->kecamatan,
-                    'kelurahan' => $latest->kelurahan,
-                    'rt' => $latest->rt,
-                    'rw' => $latest->rw,
-                    'tanggal_pendampingan' => $latest->tanggal_pendampingan,
+                    'nama_ibu' => $group->nama_ibu,
+                    'nik_ibu' => $group->nik_ibu,
+                    'usia_ibu' => $group->usia_ibu,
+                    'nama_suami' => $group->nama_suami,
+                    'nik_suami' => $group->nik_suami,
+                    'kehamilan_ke' => $group->kehamilan_ke,
+                    'jumlah_anak' => $group->jumlah_anak,
+                    'status_risiko_usia' => $group->status_risiko_usia,
+                    'status_gizi_hb' => $group->status_gizi_hb,
+                    'status_gizi_lila' => $group->status_gizi_lila,
+                    'provinsi' => $group->provinsi,
+                    'kota' => $group->kota,
+                    'kecamatan' => $group->kecamatan,
+                    'kelurahan' => $group->kelurahan,
+                    'rt' => $group->rt,
+                    'rw' => $group->rw,
+                    'tanggal_pendampingan' => $group->tanggal_pendampingan,
                     'riwayat_pemeriksaan' => $riwayat,
-                    'hpl' => $latest->hpl,
+                    'hpl' => $group->first()->hpl,
                     'intervensi' => $intervensi ?? null,
                 ];
             });
-            //dd($grouped);
-            return response()->json([
-                'total' => $grouped->count(),
-                'data' => $grouped->values(),
-            ], 200);
-
+            return $groupedData;
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal mengambil data kehamilan',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function index(Request $request)
+    {
+        $data = $this->getData($request);
+
+        if ($data instanceof \Illuminate\Http\JsonResponse) {
+            return $data;
+        }
+
+        $total = $data->count();
+
+
+        $count = [
+            'Anemia' => 0,
+            'KEK' => 0,
+            'Berisiko' => 0,
+            'Normal' => 0,
+            'Total Bumil' => $data->count(),
+        ];
+
+        foreach ($data as $row) {
+            $hbStatus = strtoupper($row['status_gizi_hb'] ?? '');
+            $lilaStatus = strtoupper($row['status_gizi_lila'] ?? '');
+            $riskStatus = strtoupper($row['status_risiko_usia'] ?? '');
+
+            if ($hbStatus === 'ANEMIA')
+                $count['Anemia']++;
+            if ($lilaStatus === 'KEK')
+                $count['KEK']++;
+            if ($riskStatus === 'BERISIKO')
+                $count['Berisiko']++;
+
+            // Normal = semua normal
+            if ($hbStatus === 'NORMAL' && $lilaStatus === 'NORMAL' && $riskStatus === 'NORMAL') {
+                $count['Normal']++;
+            }
+        }
+
+
+        foreach ($count as $title => $value) {
+
+            $color = match ($title) {
+                'KEK' => 'danger',
+                'Anemia' => 'warning',
+                'Berisiko' => 'violet',
+                'Normal' => 'success',
+                'Total Bumil' => 'secondary'
+            };
+
+            $percent = $total ? round(($value / $total) * 100, 1) : 0;
+
+            $result[] = [
+                'title' => $title,
+                'value' => $value,
+                'percent' => "{$percent}%",
+                'color' => $color,
+            ];
+        }
+
+        return response()->json([
+            'total' => $total,
+            'data' => $data->values(),
+            'counts' => $result
+        ], 200);
     }
 
     public function import(Request $request)

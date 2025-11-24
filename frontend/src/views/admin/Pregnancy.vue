@@ -924,28 +924,6 @@ const API_PORT = 8000
 const { protocol, hostname } = window.location
 const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
-const monthNames = {
-  Januari: '01',
-  Februari: '02',
-  Maret: '03',
-  April: '04',
-  Mei: '05',
-  Juni: '06',
-  Juli: '07',
-  Agustus: '08',
-  September: '09',
-  Oktober: '10',
-  November: '11',
-  Desember: '12',
-}
-
-function formatYearMonth(input) {
-  if (!input) return ''
-  const [monthName, year] = input.split(' ')
-  const month = monthNames[monthName]
-  return month && year ? `${year}-${month}` : ''
-}
-
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Pregnancy',
@@ -962,6 +940,7 @@ export default {
       configCacheKey: 'site_config_cache',
       kesehatan: [],
       bumil: [],
+      dataRaw: [],
       filteredBumil: [],
       totalBumil: 0,
       selectedBumil: null,
@@ -1225,9 +1204,12 @@ export default {
           nama_posyandu: nama,
         }))
 
+        this.dataRaw = data;
+
         // ✅ Format data bumil
         this.bumil = data.map((item) => {
           const lastCheck = item.riwayat_pemeriksaan?.at(-1) // pemeriksaan terakhir
+          const intervensi = item.intervensi?.at(-1) // intervensi terakhir
           return {
             id: item.nik_ibu,
             nama: item.nama_ibu || '-',
@@ -1236,7 +1218,7 @@ export default {
             risiko: item.status_risiko_usia || '-',
             rw: item.rw || '-',
             rt: item.rt || '-',
-            // ambil nilai terakhir dari pemeriksaan
+
             tanggal_pemeriksaan_terakhir: lastCheck?.tanggal_pemeriksaan_terakhir || '-',
             berat_badan: lastCheck?.berat_badan || '-',
             tinggi_badan: lastCheck?.tinggi_badan || '-',
@@ -1246,7 +1228,7 @@ export default {
             anemia: lastCheck?.status_gizi_hb || '-',
             kek: lastCheck?.status_gizi_lila || '-',
             nama_posyandu: lastCheck?.posyandu || '-',
-            intervensi: item.intervensi?.kategori || '-',
+            intervensi: intervensi?.intervensi || '-',
           }
         })
 
@@ -1255,6 +1237,24 @@ export default {
         // ✅ Set filtered dan total
         this.filteredData = [...this.bumil]
         this.totalBumil = this.bumil.length
+
+        const total = res.data.total || 0
+
+        //this.totalBumil = total;
+        console.log('Total bumil:', res)
+        this.kesehatan = res.data.counts.map((item) => ({
+          title: item.title,
+          value: item.value,
+          percent:
+            item.title != 'Total Bumil'
+              ? total > 0
+                ? ((item.value / total) * 100).toFixed(1) + '%'
+                : '0%'
+              : '',
+          color: item.color,
+        }))
+
+        this.currentPage = 1
       } catch (e) {
         console.error('Gagal ambil data pregnancy:', e)
         this.bumil = []
@@ -1265,7 +1265,9 @@ export default {
     async showDetail(bumil) {
       try {
         this.isLoading = true
-        //console.log('detail:', bumil);
+
+        const dataRaw = this.dataRaw.find((item) => item.nik_ibu == bumil.id)
+        console.log('detail:', dataRaw, bumil.id);
 
         const nik = bumil.id
 
@@ -1284,7 +1286,7 @@ export default {
         this.selectedBumil = {
           ...data.ibu,
           riwayat_pemeriksaan: data.riwayat_pemeriksaan || [],
-          riwayat_intervensi: data.riwayat_intervensi || [],
+          riwayat_intervensi: dataRaw.intervensi || [],
           kehamilan: data.kehamilan || [],
           risiko: lastKehamilan.risiko || '-', // ← ini tambahan
         }
@@ -1319,14 +1321,14 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
-      ;(await this.loadPregnancy(), await this.hitungStatusKesehatan())
+      ;(await this.loadPregnancy())
     },
     async resetFilter() {
       Object.keys(this.filters).forEach((k) => {
         if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
       })
-      ;(await this.loadPregnancy(), await this.hitungStatusKesehatan())
+      ;(await this.loadPregnancy())
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
@@ -1427,47 +1429,6 @@ export default {
       this.rtList = Array.from(rtSet)
       this.rtReadonly = false
     },
-    async hitungStatusKesehatan() {
-      try {
-        const params = {
-          posyandu: this.filters.posyandu || '',
-          rw: this.filters.rw || '',
-          rt: this.filters.rt || '',
-          usia: this.filters.usia || [], // tambahan
-          intervensi: this.filters.intervensi || [], // tambahan
-          periodeAwal: formatYearMonth(this.filters.periodeAwal),
-          periodeAkhir: formatYearMonth(this.filters.periodeAkhir),
-        }
-
-        // Status bisa multiple (checkbox)
-        if (this.filters.status && this.filters.status.length > 0) {
-          params.status = this.filters.status
-        }
-
-        const res = await axios.get(`${baseURL}/api/pregnancy/status`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          params,
-        })
-
-        const data = res.data
-        const total = data.total || 0
-
-        //this.totalBumil = total;
-        this.kesehatan = data.counts.map((item) => ({
-          title: item.title,
-          value: item.value,
-          percent:
-            item.title != 'Total Bumil'
-              ? total > 0
-                ? ((item.value / total) * 100).toFixed(1) + '%'
-                : '0%'
-              : '',
-          color: item.color,
-        }))
-      } catch (e) {
-        console.error('❌ hitungStatusKesehatan error:', e)
-      }
-    },
     generatePeriodeOptions() {
       const bulan = [
         'Januari',
@@ -1515,7 +1476,6 @@ export default {
     try {
       await this.getWilayahUser()
       await this.loadPregnancy() // kasih await juga kalau ini async
-      await this.hitungStatusKesehatan()
       this.generatePeriodeOptions()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
