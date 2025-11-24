@@ -554,11 +554,15 @@ class PregnancyController extends Controller
             if ($request->filled('periode')) {
                 $periode = Carbon::createFromFormat('Y-m', $request->periode);
                 $periodeAkhir = $periode->copy()->endOfMonth();
-                $periodeAwal = $periode->copy()->subMonths(5)->startOfMonth();
+                $periodeAwal  = $periode->copy()->subMonths(5)->startOfMonth();
             } else {
                 $periode = now()->subMonth(); // default H-1
                 $periodeAkhir = $periode->copy()->endOfMonth();
+<<<<<<< .mine
                 $periodeAwal = $periode->copy()->subMonths(5)->startOfMonth();
+=======
+                $periodeAwal  = $periode->copy()->subMonths(5)->startOfMonth();
+>>>>>>> .theirs
             }
 
             // =====================================
@@ -1487,9 +1491,15 @@ class PregnancyController extends Controller
         ]);
     }
 
+<<<<<<< .mine
     /* public function indikatorBulanan(Request $request)
     {
+=======
+public function indikatorBulanan(Request $request)
+	{
+>>>>>>> .theirs
         try {
+<<<<<<< .mine
             $periode = $request->filled('periode') ? Carbon::createFromFormat('Y-m', $request->periode) : now();
 
             // ► Tiga bulan: Sep 2025, Oct 2025, Nov 2025
@@ -1501,24 +1511,38 @@ class PregnancyController extends Controller
 
             // Range tanggal (3 bulan)
             $start = $periode->copy()->subMonths(2)->startOfMonth();
-            $end = $periode->copy()->endOfMonth();
+=======
+			if (!$request->filled('periode')) {
+				return response()->json(['error' => 'Periode wajib diisi'], 422);
+			}
 
-            // Query dasar
-            $query = Pregnancy::query();
+			// Input: 2025-11
+			$periode = $request->filled('periode') ? Carbon::createFromFormat('Y-m', $request->periode) : now();
 
-            foreach (['kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
-                if ($request->filled($f)) {
-                    $query->where($f, $request->$f);
-                }
-            }
+			// ► Tiga bulan: Sep 2025, Oct 2025, Nov 2025
+			$months = collect([
+				$periode->copy()->subMonths(2)->format('M Y'),
+				$periode->copy()->subMonths(1)->format('M Y'),
+>>>>>>> .theirs
+				$periode->copy()->format('M Y'),
+			]);
 
-            // Filter tanggal 3 bulan
-            $query->whereBetween('tanggal_pemeriksaan_terakhir', [$start, $end]);
+			// Range tanggal (3 bulan)
+			$start = $periode->copy()->subMonths(2)->startOfMonth();
+			$end   = $periode->copy()->endOfMonth();
 
-            // Ambil data relevan
-            $data = $query->get([
-                'tanggal_pemeriksaan_terakhir',
-                'status_gizi_lila',
+			// Query dasar
+			$query = Pregnancy::query();
+
+			foreach (['kelurahan','posyandu','rw','rt'] as $f) {
+				if ($request->filled($f)) {
+					$query->where($f, $request->$f);
+				}
+			}
+
+			// Filter tanggal 3 bulan
+			$query->whereBetween('tanggal_pemeriksaan_terakhir', [$start, $end]);
+<<<<<<< .mine
                 'status_gizi_hb',
                 'status_risiko_usia'
             ]);
@@ -1659,11 +1683,77 @@ class PregnancyController extends Controller
     // }
 
     public function indikatorBulanan(Request $request)
+<<<<<<< Updated upstream
 	{
 		try {
 			if (!$request->filled('periode')) {
 				return response()->json(['error' => 'Periode wajib diisi'], 422);
 			}
+=======
+
+
+
+
+=======
+
+			// Ambil data relevan
+			$data = $query->get([
+				'tanggal_pemeriksaan_terakhir',
+				'status_gizi_lila',
+				'status_gizi_hb',
+				'status_risiko_usia'
+			]);
+
+			// Inisialisasi indikator
+			$indikatorList = ['KEK', 'Anemia', 'Berisiko', 'Normal'];
+			$result = [];
+			foreach ($indikatorList as $i) {
+				$result[$i] = [0, 0, 0];   // 3 slot
+			}
+
+			foreach ($data as $item) {
+				if (!$item->tanggal_pemeriksaan_terakhir) continue;
+
+				$monthKey = Carbon::parse($item->tanggal_pemeriksaan_terakhir)->format('M Y');
+				$idx = $months->search($monthKey);
+
+				if ($idx === false) continue;
+
+				$isKEK = str_contains(strtolower(trim($item->status_gizi_lila ?? '')), 'kek');
+				$isAnemia = str_contains(strtolower(trim($item->status_gizi_hb ?? '')), 'ya');
+				$isBerisiko = str_contains(strtolower(trim($item->status_risiko_usia ?? '')), 'berisiko');
+
+				if ($isKEK) {
+					$result['KEK'][$idx]++;
+				} elseif ($isAnemia) {
+					$result['Anemia'][$idx]++;
+				} elseif ($isBerisiko) {
+					$result['Berisiko'][$idx]++;
+				} else {
+					$result['Normal'][$idx]++;
+				}
+			}
+
+			return response()->json([
+				'labels' => $months,
+				'indikator' => $result,
+			]);
+
+		} catch (\Throwable $th) {
+			return response()->json([
+				'error' => 'Gagal memuat data indikator',
+				'message' => $th->getMessage(),
+			], 500);
+		}
+	}
+
+
+    public function indikatorBulanan_old(Request $request)
+>>>>>>> .theirs
+    {
+        try {
+            $query = Pregnancy::query();
+>>>>>>> Stashed changes
 
 			// Input: 2025-11
 			$periode = $request->filled('periode') ? Carbon::createFromFormat('Y-m', $request->periode) : now();

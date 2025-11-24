@@ -230,14 +230,6 @@
 
                         <!-- Search + Button -->
                         <div class="d-flex align-items-center gap-2">
-                          <input
-                            type="text"
-                            class="form-control"
-                            style="width: 220px;"
-                            placeholder="Ketik NIK atau Nama"
-                            v-model="searchQuery"
-                          >
-
                           <button
                             class="btn btn-primary"
                             type="button"
@@ -246,7 +238,6 @@
                             <i class="bi bi-filetype-csv me-1"></i> Unggah Data
                           </button>
                         </div>
-
                       </div>
                       <!-- Collapsible Dropzone -->
                       <transition name="slide">
@@ -338,71 +329,40 @@
                   </div>
 
                   <!-- Table -->
-                  <div class="table-responsive mt-3">
-                    <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-primary small">
-                        <tr>
-                          <th>Nama Anak</th>
-                          <th>L/P</th>
-                          <th>Nama Orang Tua</th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">Tanggal Lahir</th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">Kelola</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(item, i) in paginatedAnak"
-                          :key="'load-' + i"
-                          class="small text-center"
-                        >
-                          <td>{{ item.nama}}</td>
-                          <td>{{ item.jk === 'L'?'Laki-laki':'Perempuan'}}</td>
-                          <td>{{ item.keluarga.nama_ibu? item.keluarga.nama_ibu:item.keluarga.nama_ayah }}</td>
-                          <td>{{ formatDate(item.kelahiran.tgl_lahir) }}</td>
-                          <td class="d-flex justify-content-center gap-2">
-                            <button class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Update Data" @click="Update(dataLoad.nik_perempuan)">
-                              <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary" @click="del(dataLoad.nik_perempuan)" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Data">
-                              <i class="bi bi-x-square"></i>
-                            </button>
-                          </td>
-                        </tr>
+                  <div class="mt-3">
 
-                        <tr v-if="dataLoad.length === 0">
-                          <td colspan="4" class="text-center text-muted py-3">
-                            Tidak ada data yang tersedia
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <nav class="mt-3">
-                      <ul class="pagination justify-content-center">
+                    <!-- Search + Row Per Page -->
+                    <easy-data-table
+                      :headers="headers_kunAn"
+                      :items="items_kunAn"
+                      :search-value="searchQuery"
+                      :rows-per-page="perPage"
+                      :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'"
+                      show-index
+                      alternating
+                      border-cell
+                      class="border rounded"
+                    >
 
-                        <!-- Prev -->
-                        <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                          <a class="page-link" href="#" @click.prevent="currentPage--">&lt;</a>
-                        </li>
+                      <!-- ACTION -->
+                      <template #item-action="{ value }">
+                        <div class="d-flex justify-content-center gap-2">
+                          <button class="btn btn-outline-primary"
+                                  @click="Update(value)">
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
 
-                        <!-- Number Pages -->
-                        <li v-for="(p, i) in paginationNumbers" :key="i"
-                            class="page-item"
-                            :class="{ active: p === currentPage, disabled: p === '...' }">
+                          <button class="btn btn-outline-secondary"
+                                  @click="del(value)">
+                            <i class="bi bi-x-square"></i>
+                          </button>
+                        </div>
+                      </template>
 
-                          <a class="page-link" href="#" @click.prevent="goToPage(p)">
-                            {{ p }}
-                          </a>
-                        </li>
-
-                        <!-- Next -->
-                        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                          <a class="page-link" href="#" @click.prevent="currentPage++">&gt;</a>
-                        </li>
-
-                      </ul>
-                    </nav>
-
+                    </easy-data-table>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -812,6 +772,9 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
+
 //import { ref, computed } from 'vue'
 
 // PORT backend kamu
@@ -826,12 +789,24 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Import',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome},
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      headers_kunAn: [
+        { text: 'NIK', value: 'nik' },
+        { text: 'Nama Anak', value: 'nama_anak' },
+        { text: 'Nama Orang Tua', value: 'nama_ortu' },
+        { text: 'L/P', value: 'gender' },
+        { text: 'Tanggal Lahir', value: 'tgl_lahir' },
+        { text: 'BB', value: 'bb' },
+        { text: 'TB', value: 'tb' },
+        { text: 'Unit Posyandu', value: 'unit_posyandu' },
+        { text: 'Action', value: 'action' },
+      ],
       searchQuery: "",
       currentPage: 1,
       perPage: 10,
+      perPageOptions: [5, 10, 25, 50],
       isUploadOpen: false,
       columns: [
         { title: 'Nama Anak', data: 'nama_anak' },
@@ -1062,7 +1037,24 @@ export default {
         "...",
         total
       ];
-    }
+    },
+    items_kunAn() {
+      console.log('anak:',this.paginatedAnak.keluarga);
+
+      return this.paginatedAnak.map((item) => ({
+        nik: item.nik ?? "-",
+        nama_anak: item.nama,
+        nama_ortu: item.keluarga[0].nama_ibu
+          ? item.keluarga[0].nama_ibu
+          : item.keluarga[0].nama_ayah,
+        gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
+        tgl_lahir: this.formatDate(item.kelahiran.tgl_lahir),
+        bb: item.kelahiran.bb ?? "-",
+        tb: item.kelahiran.tb ?? "-",
+        unit_posyandu: item.unit_posyandu ?? "-",
+        action: item.nik,
+      }));
+    },
   },
   methods: {
     //Mandatory
