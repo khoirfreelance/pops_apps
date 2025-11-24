@@ -335,7 +335,7 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label text-primary">Pilih Periode:</label>
                 <select v-model="filters.periodeAwal" class="form-select text-muted">
-                  <option value="">Awal</option>
+                  <option value="">Start from</option>
                   <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
                 </select>
               </div>
@@ -343,7 +343,7 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label">&nbsp;</label>
                 <select v-model="filters.periodeAkhir" class="form-select text-muted">
-                  <option value="">Akhir</option>
+                  <option value="">To</option>
                   <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
                 </select>
               </div>
@@ -762,7 +762,7 @@
               <!-- TOTAL ANAK -->
               <div class="col-xl-2 col-sm-12">
                 <div
-                  class="card text-center border p-2 h-100 d-flex flex-column justify-content-center shadow"
+                  class="card border-0 rounded-3 overflow-hidden custom-card-size shadow text-center"
                   style="width: 108%"
                 >
                   <h3 class="text-muted fw-bold">Total Anak Balita</h3>
@@ -786,7 +786,7 @@
                         <tr>
                           <th
                             @click="sortBy('nama')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center frozen-column"
                             rowspan="2"
                           >
                             Nama <SortIcon :field="'nama'" />
@@ -859,7 +859,7 @@
 
                       <tbody>
                         <tr v-for="anak in paginatedData" :key="anak.id">
-                          <td class="text-start">
+                          <td class="text-start frozen-column">
                             <a
                               href="#"
                               @click.prevent="showDetail(anak)"
@@ -2885,6 +2885,34 @@ label {
 .no-col-padding {
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+
+.table-responsive {
+    /* Ini penting: mengatur konteks penumpukan (stacking context) */
+    overflow-x: auto;
+}
+
+/* Kolom yang ingin dibekukan (kolom Nama) */
+.frozen-column {
+    /* 1. Kunci posisi pada 0 dari kiri */
+    position: sticky !important; /* Gunakan !important untuk memastikan override */
+    left: 0;
+
+    /* 2. Pastikan kolom berada di lapisan terdepan saat di-scroll */
+    z-index: 10; 
+    
+    /* 3. Atur latar belakang agar kolom di belakangnya tidak terlihat */
+    /* Warna Putih untuk baris data biasa */
+    background-color: #fff !important; 
+}
+
+/* Khusus untuk Header (<thead>) */
+.table-responsive thead .frozen-column {
+    /* Warna Hijau Terang/Success untuk thead Anda */
+    background-color: #d1e7dd !important; 
+    
+    /* Beri z-index lebih tinggi agar header tetap di atas baris data saat scroll vertikal (jika ada) */
+    z-index: 11 !important; 
 }
 
 /* ===== Pagination Responsive All Devices ===== */

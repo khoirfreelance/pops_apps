@@ -41,7 +41,7 @@
                 class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-6 col-6"
               >
                 <div class="stat-card shadow-sm rounded h-100">
-                  <h6 class="text-muted pt-2 ps-2">{{ stat.title }}</h6>
+                  <h6 class="text-muted pt-2 ps-2" style="font-size: 16px;">{{ stat.title }}</h6>
                   <div class="card-body d-flex align-items-center justify-content-between px-2">
                     <!-- Text -->
                     <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
@@ -82,7 +82,7 @@
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label fs-md-1">Kel/Desa</label>
+                <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
                 <select
                   v-model="filters.kelurahan"
                   class="form-select text-muted small uniform-input"
@@ -94,7 +94,7 @@
 
               <!-- Posyandu -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">Posyandu</label>
+                <label class="form-label"  style="font-weight: 600;">Posyandu</label>
                 <select
                   v-model="filters.posyandu"
                   class="form-select text-muted uniform-input"
@@ -109,7 +109,7 @@
 
               <!-- RW -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">RW</label>
+                <label class="form-label"  style="font-weight: 600;">RW</label>
                 <select
                   v-model="filters.rw"
                   class="form-select text-muted uniform-input"
@@ -123,7 +123,7 @@
 
               <!-- RT -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">RT</label>
+                <label class="form-label"  style="font-weight: 600;">RT</label>
                 <select
                   v-model="filters.rt"
                   class="form-select text-muted uniform-input"
@@ -136,7 +136,7 @@
 
               <!-- Periode -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">Periode</label>
+                <label class="form-label"  style="font-weight: 600;">Periode</label>
                 <select v-model="filters.periode" class="form-select uniform-input">
                   <option value="">All</option>
                   <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
@@ -167,7 +167,7 @@
           <div class="filter-mobile-panel d-md-none" :class="{ open: mobileFilterOpen }">
             <!-- HEADER -->
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold">Filter</h5>
+              <h5 class="fw-bold" >Filter</h5>
               <button class="btn btn-light" @click="mobileFilterOpen = false">
                 <i class="bi bi-x-lg"></i>
               </button>
@@ -177,7 +177,7 @@
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label fs-md-1">Kel/Desa</label>
+                <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
                 <select
                   v-model="filters.kelurahan"
                   class="form-select text-muted small uniform-input"
@@ -189,7 +189,7 @@
 
               <!-- Posyandu -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">Posyandu</label>
+                <label class="form-label"  style="font-weight: 600;">Posyandu</label>
                 <select
                   v-model="filters.posyandu"
                   class="form-select text-muted uniform-input"
@@ -204,7 +204,7 @@
 
               <!-- RW -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">RW</label>
+                <label class="form-label"  style="font-weight: 600;">RW</label>
                 <select
                   v-model="filters.rw"
                   class="form-select text-muted uniform-input"
@@ -218,7 +218,7 @@
 
               <!-- RT -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">RT</label>
+                <label class="form-label"  style="font-weight: 600;">RT</label>
                 <select
                   v-model="filters.rt"
                   class="form-select text-muted uniform-input"
@@ -231,7 +231,7 @@
 
               <!-- Periode -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label">Periode</label>
+                <label class="form-label"  style="font-weight: 600;">Periode</label>
                 <select v-model="filters.periode" class="form-select uniform-input">
                   <option value="">All</option>
                   <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
@@ -667,25 +667,24 @@
                             <div
                               class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
                             >
-                              <button
-                                class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                                style="border-bottom-width: 5px !important"
-                              >
-                                <span class="small text-danger" id="text-title-card-span"
-                                  >Anak belum dapat Intervensi <br />
-                                  {{ totalBelum }}</span
-                                >
-                              </button>
+                            <a href="#"
+                                  class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                                  style="border-bottom-width: 5px !important; cursor: default;" >
+                                  <span class="small text-danger" id="text-title-card-span"
+                                      >Anak belum dapat Intervensi <br />
+                                      {{ totalBelum }}</span
+                                  >
+                              </a>
 
-                              <button
+                              <a href="#"
                                 class="small fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                                style="border-bottom-width: 5px !important"
+                                style="border-bottom-width: 5px !important; cursor: default;"
                               >
                                 <span class="small text-success" id="text-title-card-span"
                                   >Anak sudah dapat Intervensi <br />
                                   {{ totalSudah }}</span
                                 >
-                              </button>
+                              </a>
                             </div>
                           </div>
                         </div>
@@ -1057,25 +1056,7 @@
                             >
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
-                                <div class="text-center text-muted" v-if="noIntervensiMessage">
-                                  {{ noIntervensiMessage }}
-                                </div>
                                 <canvas
-                                  v-show="!noIntervensiMessage"
-                                  ref="sudahBumilChart"
-                                ></canvas>
-                                <canvas
-                                  v-if="isSudahBumil"
-                                  ref="sudahBumilChart"
-                                  style="
-                                    max-height: 280px;
-                                    min-height: 200px !important;
-                                    height: 100% !important;
-                                    width: 100% !important;
-                                  "
-                                ></canvas>
-                                <canvas
-                                  v-else
                                   ref="belumBumilChart"
                                   style="
                                     max-height: 280px;
@@ -3460,7 +3441,7 @@ normalizeTrendObject(trend) {
       })
     },
     renderBarChart() {
-      const data = this.dataLoad_belum || []
+      const data = this.dataLoad || []
       if (!data.length) return
 
       const now = new Date()
@@ -4026,83 +4007,111 @@ normalizeTrendObject(trend) {
     },
     renderIntervensiBumilChart(periodeBulan = 3) {
       this.$nextTick(() => {
-        const canvas = this.$refs.sudahBumilChart
+
+        // Mendapatkan elemen canvas
+        const canvas = this.$refs.belumBumilChart
         if (!canvas) return
 
         const ctx = canvas.getContext('2d')
-        //const data = this.dataLoad || [];
-        const data = this.dataLoad_belum || []
 
-        // 🛑 Jika data kosong sama sekali
-        // if (data.length == 0) {
-        //   this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
-        //   return
-        // }
+        const data = this.dataLoad || []
+        // --- 1. Log Data Awal ---
+        const dataString = JSON.stringify(data, null, 2) 
+        console.log('1. Data Mentah (this.dataLoad):', dataString);
 
+        // Menghitung tanggal awal periode
         const now = new Date()
         const startDate = new Date()
-        startDate.setMonth(now.getMonth() - periodeBulan)
+        // Menggunakan clone object 'now' untuk menghindari side effect pada 'now'
+        startDate.setMonth(now.getMonth() - periodeBulan) 
 
-        // 🔹 Ambil data intervensi dari setiap BUMIL
-        const allIntervensi = data.flatMap((bumil) =>
-          (bumil.data_intervensi || [])
-            .filter((i) => i.kategori && i.kategori.trim() !== '')
-            .map((i) => ({
-              tanggal: new Date(i.tgl_intervensi),
-              jenis: i.kategori,
-            })),
-        )
+        // --- 2. Log Rentang Tanggal ---
+        console.log('2. Rentang Periode Intervensi:', {
+            periodeBulan: periodeBulan,
+            startDate: startDate.toISOString().split('T')[0], // Format tanggal lebih mudah dibaca
+            now: now.toISOString().split('T')[0]
+        });
 
-        // 🔹 Filter periode
+
+        // Proses Data Intervensi (Menyesuaikan Key dan Kategori)
+        const allIntervensi = data.flatMap((subjek) => {
+          // Gunakan 'data_intervensi' (Anak) atau 'intervensi' (Bumil)
+          const intervensiArray = subjek.raw.data_intervensi || subjek.raw.intervensi || []; 
+          
+          // --- 3. Log Intervensi per Subjek (Opsional, jika data terlalu besar) ---
+          // console.log(3a. Intervensi mentah untuk subjek ${index}:, intervensiArray);
+
+          return intervensiArray
+            .filter((i) => i.kategori && i.kategori.trim() !== '') // Filter kategori kosong
+            .map((i) => {
+              // Lakukan penyesuaian kategori: 'Lainnya' diubah menjadi 'Bantuan Lainnya'
+              let jenisKategori = i.kategori.trim();
+              if (jenisKategori === 'Lainnya') {
+                jenisKategori = 'Bantuan Lainnya';
+              }
+
+              return {
+                tanggal: new Date(i.tgl_intervensi),
+                jenis: jenisKategori,
+              }
+            });
+          });
+
+        // --- 3b. Log Semua Intervensi yang Sudah Diproses/Disesuaikan ---
+        console.log('3b. Semua Intervensi yang Disesuaikan Kategori:', allIntervensi);
+
+
+        // Filter intervensi dalam rentang periode (3 bulan terakhir)
         const recentIntervensi = allIntervensi.filter(
-          (i) => i.tanggal >= startDate && i.tanggal <= now,
+        // Pastikan perbandingan tanggal: >= startDate dan <= now
+        (i) => i.tanggal >= startDate && i.tanggal <= now
         )
+        // --- 4. Log Intervensi yang Masuk Filter Tanggal ---
+        console.log('4. Intervensi yang Masuk Filter (RecentIntervensi):', recentIntervensi); 
 
-        // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
-        if (!recentIntervensi.length) {
-          this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
-          return
-        }
-
-        // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = ''
 
-        // 🔹 Kategori tetap
+        // Hitung frekuensi setiap jenis intervensi
         const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
         const counts = jenisList.map(
-          (jenis) => recentIntervensi.filter((i) => i.jenis === jenis).length,
+        (jenis) => recentIntervensi.filter((i) => i.jenis === jenis).length
         )
 
-        // 🔹 Hapus chart lama
-        if (this.sudahChart) this.sudahChart.destroy()
+        // --- 5. Log Hasil Akhir Perhitungan Frekuensi ---
+        console.log('5. Jenis Intervensi (Labels):', jenisList);
+        console.log('5. Frekuensi Intervensi (Counts):', counts);
+        console.log('--- Rendering Chart Selesai ---');
 
-        // 🔹 Render chart
-        this.sudahChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: jenisList,
-            datasets: [
-              {
-                data: counts,
-                backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b'],
-                color: '#FFFFFF',
-              },
-            ],
+
+        if (this.belumChart) this.belumChart.destroy()
+
+        // Inisialisasi Chart
+        this.belumChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: jenisList,
+          datasets: [
+          {
+            data: counts,
+            backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b'],
+            color: '#FFFFFF',
           },
-          options: {
-            indexAxis: 'y',
-            plugins: {
-              legend: { display: false },
-              datalabels: {
-                color: '#FFFFFF',
-                anchor: 'center',
-                align: 'center',
-                font: { weight: 'bold' },
-                formatter: (value) => value || '0',
-              },
-            },
-            scales: { x: { beginAtZero: true } },
+          ],
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: '#FFFFFF',
+            anchor: 'center',
+            align: 'center',
+            font: { weight: 'bold' },
+            formatter: (value) => value || '0',
           },
+          },
+          scales: { x: { beginAtZero: true } },
+        },
         })
       })
     },

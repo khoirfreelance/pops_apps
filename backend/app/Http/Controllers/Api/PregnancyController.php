@@ -1486,95 +1486,180 @@ class PregnancyController extends Controller
         }
     } */
 
+    // public function indikatorBulanan(Request $request)
+    // {
+    //     try {
+    //         $query = Pregnancy::query();
+
+    //         // ✅ Filter wilayah user
+    //         $query->where('kelurahan', $request->kelurahan);
+
+    //         // ✅ Filter tambahan dari frontend
+    //         foreach (['posyandu', 'rw', 'rt'] as $f) {
+    //             if ($request->filled($f))
+    //                 $query->where($f, $request->$f);
+    //         }
+
+    //         // ✅ Ambil data dalam 12 bulan terakhir
+    //         $startDate = now()->subMonths(11)->startOfMonth();
+    //         $endDate = now()->endOfMonth();
+
+    //         $query->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
+
+
+    //         $data = $query->get([
+    //             'nik_ibu',
+    //             'tanggal_pendampingan',
+    //             'status_gizi_lila',
+    //             'status_gizi_hb',
+    //             'status_risiko_usia'
+    //         ]);
+
+    //         if ($data->isEmpty()) {
+    //             return response()->json([
+    //                 'labels' => [],
+    //                 'indikator' => [],
+    //             ]);
+    //         }
+
+    //         // ✅ Buat label bulan
+    //         $months = collect(range(0, 11))
+    //             ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
+    //             ->values();
+
+    //         // ✅ Siapkan struktur hasil
+    //         $indikatorList = ['KEK', 'Anemia', 'Berisiko'];
+    //         $result = [];
+    //         foreach ($indikatorList as $indikator) {
+    //             $result[$indikator] = array_fill(0, 12, 0);
+    //         }
+
+    //         // Group per bulan, ambil semua record
+    //         $groupedByMonth = $data->groupBy(function ($item) {
+    //             return \Carbon\Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
+    //         });
+
+    //         // Hitung
+    //         foreach ($groupedByMonth as $monthKey => $rows) {
+
+    //             $label = \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
+    //             $idx = $months->search($label);
+    //             if ($idx === false)
+    //                 continue;
+
+    //             $result['KEK'][$idx] = $rows->filter(
+    //                 fn($i) =>
+    //                 str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek')
+    //             )->count();
+
+    //             $result['Anemia'][$idx] = $rows->filter(
+    //                 fn($i) =>
+    //                 str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia')
+    //             )->count();
+
+    //             $result['Berisiko'][$idx] = $rows->filter(
+    //                 fn($i) =>
+    //                 str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko')
+    //             )->count();
+    //         }
+
+    //         return response()->json([
+    //             'labels' => $months,
+    //             'indikator' => $result,
+    //         ]);
+
+    //     } catch (\Throwable $th) {
+    //         return response()->json([
+    //             'error' => 'Gagal memuat data indikator bulanan',
+    //             'message' => $th->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
     public function indikatorBulanan(Request $request)
-    {
-        try {
-            $query = Pregnancy::query();
+	{
+		try {
+			if (!$request->filled('periode')) {
+				return response()->json(['error' => 'Periode wajib diisi'], 422);
+			}
 
-            // ✅ Filter wilayah user
-            $query->where('kelurahan', $request->kelurahan);
+			// Input: 2025-11
+			$periode = $request->filled('periode') ? Carbon::createFromFormat('Y-m', $request->periode) : now();
 
-            // ✅ Filter tambahan dari frontend
-            foreach (['posyandu', 'rw', 'rt'] as $f) {
-                if ($request->filled($f))
-                    $query->where($f, $request->$f);
-            }
+			// ► Tiga bulan: Sep 2025, Oct 2025, Nov 2025
+			$months = collect([
+				$periode->copy()->subMonths(2)->format('M Y'),
+				$periode->copy()->subMonths(1)->format('M Y'),
+				$periode->copy()->format('M Y'),
+			]);
 
-            // ✅ Ambil data dalam 12 bulan terakhir
-            $startDate = now()->subMonths(11)->startOfMonth();
-            $endDate = now()->endOfMonth();
+			// Range tanggal (3 bulan)
+			$start = $periode->copy()->subMonths(2)->startOfMonth();
+			$end   = $periode->copy()->endOfMonth();
 
-            $query->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
+			// Query dasar
+			$query = Pregnancy::query();
 
+			foreach (['kelurahan','posyandu','rw','rt'] as $f) {
+				if ($request->filled($f)) {
+					$query->where($f, $request->$f);
+				}
+			}
 
-            $data = $query->get([
-                'nik_ibu',
-                'tanggal_pendampingan',
-                'status_gizi_lila',
-                'status_gizi_hb',
-                'status_risiko_usia'
-            ]);
+			// Filter tanggal 3 bulan
+			$query->whereBetween('tanggal_pemeriksaan_terakhir', [$start, $end]);
 
-            if ($data->isEmpty()) {
-                return response()->json([
-                    'labels' => [],
-                    'indikator' => [],
-                ]);
-            }
+			// Ambil data relevan
+			$data = $query->get([
+				'tanggal_pemeriksaan_terakhir',
+				'status_gizi_lila',
+				'status_gizi_hb',
+				'status_risiko_usia'
+			]);
 
-            // ✅ Buat label bulan
-            $months = collect(range(0, 11))
-                ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
-                ->values();
+			// Inisialisasi indikator
+			$indikatorList = ['KEK', 'Anemia', 'Berisiko', 'Normal'];
+			$result = [];
+			foreach ($indikatorList as $i) {
+				$result[$i] = [0, 0, 0];   // 3 slot
+			}
 
-            // ✅ Siapkan struktur hasil
-            $indikatorList = ['KEK', 'Anemia', 'Berisiko'];
-            $result = [];
-            foreach ($indikatorList as $indikator) {
-                $result[$indikator] = array_fill(0, 12, 0);
-            }
+			foreach ($data as $item) {
+				if (!$item->tanggal_pemeriksaan_terakhir) continue;
 
-            // Group per bulan, ambil semua record
-            $groupedByMonth = $data->groupBy(function ($item) {
-                return \Carbon\Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
-            });
+				$monthKey = Carbon::parse($item->tanggal_pemeriksaan_terakhir)->format('M Y');
+				$idx = $months->search($monthKey);
 
-            // Hitung
-            foreach ($groupedByMonth as $monthKey => $rows) {
+				if ($idx === false) continue;
 
-                $label = \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
-                $idx = $months->search($label);
-                if ($idx === false)
-                    continue;
+				$isKEK = str_contains(strtolower(trim($item->status_gizi_lila ?? '')), 'kek');
+				$isAnemia = str_contains(strtolower(trim($item->status_gizi_hb ?? '')), 'ya');
+				$isBerisiko = str_contains(strtolower(trim($item->status_risiko_usia ?? '')), 'berisiko');
 
-                $result['KEK'][$idx] = $rows->filter(
-                    fn($i) =>
-                    str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek')
-                )->count();
+				if ($isKEK) {
+					$result['KEK'][$idx]++;
+				} elseif ($isAnemia) {
+					$result['Anemia'][$idx]++;
+				} elseif ($isBerisiko) {
+					$result['Berisiko'][$idx]++;
+				} else {
+					$result['Normal'][$idx]++;
+				}
+			}
 
-                $result['Anemia'][$idx] = $rows->filter(
-                    fn($i) =>
-                    str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia')
-                )->count();
+			return response()->json([
+				'labels' => $months,
+				'indikator' => $result,
+			]);
 
-                $result['Berisiko'][$idx] = $rows->filter(
-                    fn($i) =>
-                    str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko')
-                )->count();
-            }
+		} catch (\Throwable $th) {
+			return response()->json([
+				'error' => 'Gagal memuat data indikator',
+				'message' => $th->getMessage(),
+			], 500);
+		}
+	}
 
-            return response()->json([
-                'labels' => $months,
-                'indikator' => $result,
-            ]);
-
-        } catch (\Throwable $th) {
-            return response()->json([
-                'error' => 'Gagal memuat data indikator bulanan',
-                'message' => $th->getMessage(),
-            ], 500);
-        }
-    }
 
     public function indikatorBulanan_old(Request $request)
     {

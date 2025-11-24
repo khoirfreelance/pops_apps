@@ -17,7 +17,7 @@
           {{ kelurahan || 'Wilayah' }}
         </span>
 
-        <p class="small d-flex align-items-center mt-1" style="font-size: 8;">
+        <p class="small mb-2 d-flex align-items-center mt-1" style="font-size: 8;">
           Data terakhir diperbarui pada&nbsp;<strong>{{ today }}</strong>
         </p>
       </div>
