@@ -366,7 +366,6 @@
                     <table class="table table-bordered table-hover align-middle text-center">
                       <thead class="table-primary">
                         <tr>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">No</th>
                           <th colspan="2">Nama Pasangan</th>
                           <th colspan="3">Catatan Berisiko</th>
                           <th colspan="2">Usia</th>
@@ -471,6 +470,7 @@
                       </thead>
                       <tbody>
                         <tr v-for="catin in paginatedData" :key="catin.id" class="">
+
                           <td class="text-start">
                             <a
                               href="#"
@@ -619,7 +619,7 @@
                       </thead>
                       <tbody>
                         <tr
-                          v-for="(r, i) in (selectedCatin.pemeriksaan_terakhir || []).slice(-3)"
+                          v-for="(r, i) in (selectedCatin.pemeriksaan_terakhir || [])"
                           :key="i"
                         >
                           <td>{{ this.formatDate(r.tanggal_pemeriksaan) }}</td>

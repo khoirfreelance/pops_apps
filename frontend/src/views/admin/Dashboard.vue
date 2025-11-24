@@ -904,23 +904,21 @@
                             <div
                               class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
                             >
-                              <button
+                              <div
                                 class="fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
                                 style="border-bottom-width: 5px !important"
-                                @click="toggleSudahBumil(false)"
                               >
                                 Ibu Hamil belum dapat Intervensi <br />
                                 {{ totalBelum }}
-                              </button>
+                              </div>
 
-                              <button
+                              <div
                                 class="fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
                                 style="border-bottom-width: 5px !important"
-                                @click="toggleSudahBumil(true)"
                               >
                                 Ibu Hamil sudah dapat Intervensi <br />
                                 {{ totalSudah }}
-                              </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -956,25 +954,7 @@
                             >
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
-                                <div class="text-center text-muted" v-if="noIntervensiMessage">
-                                  {{ noIntervensiMessage }}
-                                </div>
                                 <canvas
-                                  v-show="!noIntervensiMessage"
-                                  ref="sudahBumilChart"
-                                ></canvas>
-                                <canvas
-                                  v-if="isSudahBumil"
-                                  ref="sudahBumilChart"
-                                  style="
-                                    max-height: 280px;
-                                    min-height: 200px !important;
-                                    height: 100% !important;
-                                    width: 100% !important;
-                                  "
-                                ></canvas>
-                                <canvas
-                                  v-else
                                   ref="belumBumilChart"
                                   style="
                                     max-height: 280px;
@@ -1904,7 +1884,6 @@ export default {
     async generateIndikatorBumilBulanan() {
       try {
         //this.isLoading = true;
-
         const params = {
           kelurahan: this.filters.kelurahan || '',
           posyandu: this.filters.posyandu || '',
@@ -2241,16 +2220,6 @@ export default {
           kelurahan: this.filters.kelurahan || '',
         }
 
-        // const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
-        // let res = null;
-
-        // switch (this.activeMenu) {
-        //   case 'anak': res = await axios.get(`${baseURL}/api/children/status`, { headers, params }); break;
-        //   case 'bumil': res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params }); break;
-        //   case 'catin': res = await axios.get(`${baseURL}/api/bride/status`, { headers, params }); break;
-        //   default: return;
-        // }
-
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
         let res = null
 
@@ -2271,7 +2240,7 @@ export default {
         }
 
         const data = res.data
-        console.log('data', data)
+        //console.log('data', data)
 
         const total = data.total || 0
         this.totalAnak = total
@@ -2898,15 +2867,16 @@ export default {
         // 💚 bumil
         if (this.activeMenu === 'bumil') {
           const punya = res.data.detail.punya_keduanya.map((item) => this.mapToBumil(item))
-          const intervensiAja = res.data.detail.hanya_intervensi.map((item) =>
+          /* const intervensiAja = res.data.detail.hanya_intervensi.map((item) =>
             this.mapToBumil(item),
-          )
+          ) */
 
-          this.dataLoad = [...punya, ...intervensiAja] // 🔥 chart ambil dari sini
+          this.dataLoad = [...punya] // 🔥 chart ambil dari sini
           this.dataLoad_belum = res.data.detail.hanya_kunjungan.map((item) => this.mapToBumil(item))
         }
       } catch (e) {
-        this.showError('Error Ambil Data', e)
+        console.log(e);
+        //this.showError('Error Ambil Data', e)
       }
     },
     parseDate(str) {
@@ -3660,7 +3630,7 @@ export default {
         }
 
         // Log parameter filter
-        console.log('🔍 Parameter Filter:', params)
+        //console.log('🔍 Parameter Filter:', params)
         console.log(checkApplyFilter ?? 'mout')
 
         const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
@@ -3675,7 +3645,7 @@ export default {
         // Log data mentah dari API (hanya beberapa item untuk menghindari output yang terlalu panjang)
         console.log(`✅ Data Ibu Hamil Diterima (Total: ${apiDataBumil.length})`)
         if (apiDataBumil.length > 0) {
-          console.log('   Contoh data pertama:', apiDataBumil[0])
+          //console.log('   Contoh data pertama:', apiDataBumil[0])
         }
       } catch (error) {
         console.error('❌ Gagal mengambil data intervensi ibu hamil:', error)
@@ -3686,7 +3656,7 @@ export default {
       const summary = this.generateBumilSummary(apiDataBumil)
 
       // Log hasil pengolahan data
-      console.log('📊 Summary Hasil Pengolahan:', summary)
+      //console.log('📊 Summary Hasil Pengolahan:', summary)
 
       // 3. Setup Chart
       const ctx = this.$refs.bumilChart?.getContext('2d')
@@ -3853,58 +3823,45 @@ export default {
     },
     renderIntervensiBumilChart(periodeBulan = 3) {
       this.$nextTick(() => {
-        const canvas = this.$refs.sudahBumilChart
+
+        // 🔥 Harus sama dengan ref di template
+        const canvas = this.$refs.belumBumilChart
         if (!canvas) return
 
         const ctx = canvas.getContext('2d')
-        //const data = this.dataLoad || [];
-        const data = this.dataLoad_belum || []
 
-        // 🛑 Jika data kosong sama sekali
-        // if (data.length == 0) {
-        //   this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
-        //   return
-        // }
+        const data = this.dataLoad || []
+        console.log('data:', data);
+
 
         const now = new Date()
         const startDate = new Date()
         startDate.setMonth(now.getMonth() - periodeBulan)
 
-        // 🔹 Ambil data intervensi dari setiap BUMIL
         const allIntervensi = data.flatMap((bumil) =>
-          (bumil.data_intervensi || [])
+          (bumil.raw.data_intervensi || [])
             .filter((i) => i.kategori && i.kategori.trim() !== '')
             .map((i) => ({
               tanggal: new Date(i.tgl_intervensi),
               jenis: i.kategori,
-            })),
+            }))
         )
 
-        // 🔹 Filter periode
         const recentIntervensi = allIntervensi.filter(
-          (i) => i.tanggal >= startDate && i.tanggal <= now,
+          (i) => i.tanggal >= startDate && i.tanggal <= now
         )
+        console.log('reasen', recentIntervensi);
 
-        // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
-        /* if (!recentIntervensi.length) {
-          this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
-          return
-        } */
-
-        // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = ''
 
-        // 🔹 Kategori tetap
         const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
         const counts = jenisList.map(
-          (jenis) => recentIntervensi.filter((i) => i.jenis === jenis).length,
+          (jenis) => recentIntervensi.filter((i) => i.jenis === jenis).length
         )
 
-        // 🔹 Hapus chart lama
-        if (this.sudahChart) this.sudahChart.destroy()
+        if (this.belumChart) this.belumChart.destroy()
 
-        // 🔹 Render chart
-        this.sudahChart = new Chart(ctx, {
+        this.belumChart = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: jenisList,

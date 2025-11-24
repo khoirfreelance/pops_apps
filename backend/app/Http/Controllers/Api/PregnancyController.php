@@ -170,7 +170,7 @@ class PregnancyController extends Controller
                     'intervensi' => $intervensi ?? null,
                 ];
             });
-
+            //dd($grouped);
             return response()->json([
                 'total' => $grouped->count(),
                 'data' => $grouped->values(),
@@ -1405,14 +1405,9 @@ class PregnancyController extends Controller
         ]);
     }
 
-    public function indikatorBulanan(Request $request)
+    /* public function indikatorBulanan(Request $request)
     {
         try {
-            if (!$request->filled('periode')) {
-                return response()->json(['error' => 'Periode wajib diisi'], 422);
-            }
-
-            // Input: 2025-11
             $periode = $request->filled('periode') ? Carbon::createFromFormat('Y-m', $request->periode) : now();
 
             // ► Tiga bulan: Sep 2025, Oct 2025, Nov 2025
@@ -1489,8 +1484,97 @@ class PregnancyController extends Controller
                 'message' => $th->getMessage(),
             ], 500);
         }
-    }
+    } */
 
+    public function indikatorBulanan(Request $request)
+    {
+        try {
+            $query = Pregnancy::query();
+
+            // ✅ Filter wilayah user
+            $query->where('kelurahan', $request->kelurahan);
+
+            // ✅ Filter tambahan dari frontend
+            foreach (['posyandu', 'rw', 'rt'] as $f) {
+                if ($request->filled($f))
+                    $query->where($f, $request->$f);
+            }
+
+            // ✅ Ambil data dalam 12 bulan terakhir
+            $startDate = now()->subMonths(11)->startOfMonth();
+            $endDate = now()->endOfMonth();
+
+            $query->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
+
+
+            $data = $query->get([
+                'nik_ibu',
+                'tanggal_pendampingan',
+                'status_gizi_lila',
+                'status_gizi_hb',
+                'status_risiko_usia'
+            ]);
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'labels' => [],
+                    'indikator' => [],
+                ]);
+            }
+
+            // ✅ Buat label bulan
+            $months = collect(range(0, 11))
+                ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
+                ->values();
+
+            // ✅ Siapkan struktur hasil
+            $indikatorList = ['KEK', 'Anemia', 'Berisiko'];
+            $result = [];
+            foreach ($indikatorList as $indikator) {
+                $result[$indikator] = array_fill(0, 12, 0);
+            }
+
+            // Group per bulan, ambil semua record
+            $groupedByMonth = $data->groupBy(function ($item) {
+                return \Carbon\Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
+            });
+
+            // Hitung
+            foreach ($groupedByMonth as $monthKey => $rows) {
+
+                $label = \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
+                $idx = $months->search($label);
+                if ($idx === false)
+                    continue;
+
+                $result['KEK'][$idx] = $rows->filter(
+                    fn($i) =>
+                    str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek')
+                )->count();
+
+                $result['Anemia'][$idx] = $rows->filter(
+                    fn($i) =>
+                    str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia')
+                )->count();
+
+                $result['Berisiko'][$idx] = $rows->filter(
+                    fn($i) =>
+                    str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko')
+                )->count();
+            }
+
+            return response()->json([
+                'labels' => $months,
+                'indikator' => $result,
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'Gagal memuat data indikator bulanan',
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
 
     public function indikatorBulanan_old(Request $request)
     {
