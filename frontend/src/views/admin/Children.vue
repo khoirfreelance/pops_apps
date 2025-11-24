@@ -335,7 +335,7 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label text-primary">Pilih Periode:</label>
                 <select v-model="filters.periodeAwal" class="form-select text-muted">
-                  <option value="">Awal</option>
+                  <option value="">Start from</option>
                   <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
                 </select>
               </div>
@@ -343,7 +343,7 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label">&nbsp;</label>
                 <select v-model="filters.periodeAkhir" class="form-select text-muted">
-                  <option value="">Akhir</option>
+                  <option value="">To</option>
                   <option v-for="periode in periodeOptions" :key="periode">{{ periode }}</option>
                 </select>
               </div>
@@ -762,7 +762,7 @@
               <!-- TOTAL ANAK -->
               <div class="col-xl-2 col-sm-12">
                 <div
-                  class="card text-center border p-2 h-100 d-flex flex-column justify-content-center shadow"
+                  class="card border-0 rounded-3 overflow-hidden custom-card-size shadow text-center"
                   style="width: 108%"
                 >
                   <h3 class="text-muted fw-bold">Total Anak Balita</h3>
@@ -786,14 +786,14 @@
                         <tr>
                           <th
                             @click="sortBy('nama')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center frozen-column th-font"
                             rowspan="2"
                           >
                             Nama <SortIcon :field="'nama'" />
                           </th>
                           <th
                             @click="sortBy('posyandu')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             Posyandu <SortIcon :field="'posyandu'" />
@@ -801,7 +801,7 @@
                           <th
                             style="width: 100px"
                             @click="sortBy('usia')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             Usia (bln) <SortIcon :field="'usia'" />
@@ -809,49 +809,49 @@
                           <th
                             style="width: 60px"
                             @click="sortBy('gender')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             JK <SortIcon :field="'gender'" />
                           </th>
                           <th
                             @click="sortBy('tgl_ukur')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             Tgl Ukur Terakhir <SortIcon :field="'tgl_ukur'" />
                           </th>
                           <th
                             @click="sortBy('intervensi')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             Intervensi <SortIcon :field="'intervensi'" />
                           </th>
-                          <th colspan="3" class="text-center">Status</th>
+                          <th colspan="3" class="text-center th-font">Status</th>
                           <th
                             @click="sortBy('rw')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             RW <SortIcon :field="'rw'" />
                           </th>
                           <th
                             @click="sortBy('rt')"
-                            class="cursor-pointer align-middle text-center"
+                            class="cursor-pointer align-middle text-center th-font"
                             rowspan="2"
                           >
                             RT <SortIcon :field="'rt'" />
                           </th>
                         </tr>
                         <tr>
-                          <th @click="sortBy('tbu')" class="cursor-pointer text-center">
+                          <th @click="sortBy('tbu')" class="cursor-pointer text-center th-font">
                             TB/U <SortIcon :field="'tbu'" />
                           </th>
-                          <th @click="sortBy('bbu')" class="cursor-pointer text-center">
+                          <th @click="sortBy('bbu')" class="cursor-pointer text-center th-font">
                             BB/U <SortIcon :field="'bbu'" />
                           </th>
-                          <th @click="sortBy('bbtb')" class="cursor-pointer text-center">
+                          <th @click="sortBy('bbtb')" class="cursor-pointer text-center th-font">
                             BB/TB <SortIcon :field="'bbtb'" />
                           </th>
                         </tr>
@@ -859,22 +859,22 @@
 
                       <tbody>
                         <tr v-for="anak in paginatedData" :key="anak.id">
-                          <td class="text-start">
+                          <td class="text-start frozen-column td-font">
                             <a
                               href="#"
                               @click.prevent="showDetail(anak)"
-                              class="fw-semibold text-decoration-underline text-primary"
+                              class="fw-semibold text-decoration-underline text-primary td-font"
                             >
                               {{ anak.nama }}
                             </a>
                           </td>
-                          <td>{{ anak.posyandu }}</td>
-                          <td>{{ anak.usia }}</td>
-                          <td>{{ anak.gender }}</td>
-                          <td>{{ anak.tgl_ukur }}</td>
-                          <td>{{ anak.intervensi || '-' }}</td>
-                          <td>
-                            <span
+                          <td class="td-font">{{ anak.posyandu }}</td>
+                          <td class="td-font">{{ anak.usia }}</td>
+                          <td class="td-font">{{ anak.gender }}</td>
+                          <td class="td-font">{{ anak.tgl_ukur }}</td>
+                          <td class="td-font">{{ anak.intervensi || '-' }}</td>
+                          <td class="td-font">
+                            <span class="td-font"
                               :class="{
                                 'badge px-3 py-2 bg-danger': anak.tbu === 'Severely Stunted',
                                 'badge px-3 py-2 bg-warning text-dark': anak.tbu === 'Stunted',
@@ -885,7 +885,7 @@
                             </span>
                           </td>
                           <td>
-                            <span
+                            <span class="td-font"
                               :class="{
                                 'badge px-3 py-2 bg-danger': anak.bbu === 'Severely Underweight',
                                 'badge px-3 py-2 bg-warning text-dark': anak.bbu === 'Underweight',
@@ -896,7 +896,7 @@
                             </span>
                           </td>
                           <td>
-                            <span
+                            <span class="td-font"
                               :class="{
                                 'badge px-3 py-2 bg-danger': anak.bbtb === 'Severely Wasted',
                                 'badge px-3 py-2 bg-warning text-dark': anak.bbtb === 'Wasted',
@@ -906,8 +906,8 @@
                               {{ anak.bbtb }}
                             </span>
                           </td>
-                          <td>{{ anak.rw }}</td>
-                          <td>{{ anak.rt }}</td>
+                          <td class="td-font">{{ anak.rw }}</td>
+                          <td class="td-font">{{ anak.rt }}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -2887,6 +2887,34 @@ label {
   padding-right: 0 !important;
 }
 
+.table-responsive {
+    /* Ini penting: mengatur konteks penumpukan (stacking context) */
+    overflow-x: auto;
+}
+
+/* Kolom yang ingin dibekukan (kolom Nama) */
+.frozen-column {
+    /* 1. Kunci posisi pada 0 dari kiri */
+    position: sticky !important; /* Gunakan !important untuk memastikan override */
+    left: 0;
+
+    /* 2. Pastikan kolom berada di lapisan terdepan saat di-scroll */
+    z-index: 10; 
+    
+    /* 3. Atur latar belakang agar kolom di belakangnya tidak terlihat */
+    /* Warna Putih untuk baris data biasa */
+    background-color: #fff !important; 
+}
+
+/* Khusus untuk Header (<thead>) */
+.table-responsive thead .frozen-column {
+    /* Warna Hijau Terang/Success untuk thead Anda */
+    background-color: #d1e7dd !important; 
+    
+    /* Beri z-index lebih tinggi agar header tetap di atas baris data saat scroll vertikal (jika ada) */
+    z-index: 11 !important; 
+}
+
 /* ===== Pagination Responsive All Devices ===== */
 
 /* MOBILE SMALL (≤576px) */
@@ -2940,5 +2968,12 @@ label {
     padding: 8px 16px;
     font-size: 0.65rem;
   }
+}
+
+.th-font{
+  font-size: 16px;
+}
+.td-font{
+  font-size: 14px;
 }
 </style>
