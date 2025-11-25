@@ -905,7 +905,7 @@ class CatinController extends Controller
         $field = match ($key) {
             "Anemia" => "status_hb",
             "KEK" => "status_kek",
-            "Risiko Usia", "Total Berisiko" => "status_risiko_usia",
+            "Risiko Usia", "Total Berisiko" => "status_risiko",
             default => null
         };
 
