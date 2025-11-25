@@ -1235,8 +1235,18 @@ class PregnancyController extends Controller
                 ]);
             }
 
+            $nikCase = $rows->pluck('nik_ibu')->unique();
+            $dataIntervensi = Intervensi::where('status_subjek', 'bumil')
+                ->whereIn('nik_subjek', $nikCase->toArray())->get();
+
+            // Filter periode
+            $dataIntervensi = $dataIntervensi->filter(function ($item) use ($akhir, $awal) {
+                $tglIntervensi = Carbon::parse($item->tgl_intervensi);
+                return $tglIntervensi >= $awal && $tglIntervensi <= $akhir;
+            });
+
             // 🔹 Group by nik_ibu
-            $grouped = $rows->map(function ($latest) use ($dataRaw) {
+            $grouped = $rows->map(function ($latest) use ($dataRaw, $dataIntervensi) {
                 $riwayat = $dataRaw->where('nik_ibu', $latest->nik_ibu)->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
                     return [
                         'tanggal_pemeriksaan_terakhir' => $g->tanggal_pemeriksaan_terakhir,
@@ -1252,6 +1262,10 @@ class PregnancyController extends Controller
                         'intervensi' => $g->intervensi ?? null,
                     ];
                 })->values();
+
+                $latest->intervensi = $dataIntervensi->filter(function ($interv) use ($latest) {
+                    return $interv->nik_subjek == $latest->nik_ibu;
+                });
 
                 // 🔹 Deteksi kondisi (case-insensitive)
                 $isKek = str_contains(strtolower(trim($latest->status_gizi_lila ?? '')), 'kek');
@@ -1338,56 +1352,42 @@ class PregnancyController extends Controller
         return false;
     }
 
-    protected function detectIntervensiFor($group, $type)
+    protected function detectIntervensiFor($row, $type)
     {
-        foreach ($group as $row) {
-            // direct boolean column check
-            $col = $type . '_intervensi';
-            if (isset($row->$col)) {
-                if ($row->$col === 'Ya' || $row->$col === 1 || $row->$col === true) {
+
+        // direct boolean column check
+        $col = $type . '_intervensi';
+        if (isset($row->$col)) {
+            if ($row->$col === 'Ya' || $row->$col === 1 || $row->$col === true) {
+                return true;
+            }
+        }
+
+        // check 'intervensi' text/json
+        if (isset($row->intervensi) && !empty($row->intervensi)) {
+            $intervensi = $row->intervensi->first();
+            if(empty($intervensi)) return false;
+            $interv = $intervensi->kategori;
+            if (is_string($interv)) {
+                $s = strtolower($interv);
+                if ($type === 'kek')
                     return true;
-                }
-            }
-
-            // check 'intervensi' text/json
-            if (isset($row->intervensi) && $row->intervensi) {
-                $interv = $row->intervensi;
-                if (is_string($interv)) {
-                    $s = strtolower($interv);
-                    if ($type === 'kek' && Str::contains($s, ['pmt', 'kie', 'bansos', 'mbg', 'lainnya']))
-                        return true;
-                    if ($type === 'anemia' && Str::contains($s, ['pmt', 'kie', 'bansos', 'mbg', 'lainnya']))
-                        return true;
-                    if ($type === 'risti' && Str::contains($s, ['pmt', 'kie', 'bansos', 'mbg', 'lainnya']))
-                        return true;
-                } else {
-                    // if JSON/array
-                    try {
-                        $arr = (array) $interv;
-                        $flat = json_encode($arr);
-                        $s = strtolower($flat);
-                        if ($type === 'kek' && Str::contains($s, ['pmt', 'kie', 'bansos', 'mbg', 'lainnya']))
-                            return true;
-                        if ($type === 'anemia' && Str::contains($s, ['pmt', 'kie', 'bansos', 'mbg', 'lainnya']))
-                            return true;
-                        if ($type === 'risti' && Str::contains($s, ['pmt', 'kie', 'bansos', 'mbg', 'lainnya']))
-                            return true;
-                    } catch (\Throwable $t) {
-                        // ignore
-                    }
-                }
-            }
-
-            // also check columns like 'kek_intervensi' spelled various ways
-            $altCols = [
-                'kek' => ['kek_intervensi', 'intervensi_kek', 'intervensi_kek_ya'],
-                'anemia' => ['anemia_intervensi', 'intervensi_anemia', 'intervensi_anemia_ya'],
-                'risti' => ['risti_intervensi', 'intervensi_risti', 'intervensi_risiko']
-            ];
-            foreach ($altCols[$type] ?? [] as $c) {
-                if (isset($row->$c) && ($row->$c === 'Ya' || $row->$c === 1 || $row->$c === true))
+                if ($type === 'anemia')
+                    return true;
+                if ($type === 'risti')
                     return true;
             }
+        }
+
+        // also check columns like 'kek_intervensi' spelled various ways
+        $altCols = [
+            'kek' => ['kek_intervensi', 'intervensi_kek', 'intervensi_kek_ya'],
+            'anemia' => ['anemia_intervensi', 'intervensi_anemia', 'intervensi_anemia_ya'],
+            'risti' => ['risti_intervensi', 'intervensi_risti', 'intervensi_risiko']
+        ];
+        foreach ($altCols[$type] ?? [] as $c) {
+            if (isset($row->$c) && ($row->$c === 'Ya' || $row->$c === 1 || $row->$c === true))
+                return true;
         }
         return false;
     }
