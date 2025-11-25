@@ -570,7 +570,7 @@ class PregnancyController extends Controller
         }
     }
 
-    public function status (Request $request)
+    public function status(Request $request)
     {
         try {
             $user = Auth::user();
@@ -599,9 +599,9 @@ class PregnancyController extends Controller
                 $periodeAkhir = $periode->copy()->endOfMonth();
                 $periodeAwal = $periode->copy()->startOfMonth();
             } else {
-                $periode = now();
+                $periode = now()->subMonths(1);
                 $periodeAkhir = $periode->copy()->endOfMonth();
-                $periodeAwal = $periode->copy()->subMonths(11)->startOfMonth();
+                $periodeAwal = $periode->copy()->startOfMonth();
             }
 
 
@@ -753,7 +753,6 @@ class PregnancyController extends Controller
                 }
 
                 $trendCount[$status] = $trend;
-
             }
 
             // =====================================
@@ -1160,14 +1159,22 @@ class PregnancyController extends Controller
                 'provinsi' => $user->provinsi ?? null,
             ];
 
-            $query = Pregnancy::query();
+            $data = Pregnancy::get();
+
+            $dataRaw = $data;
+
+            $data = $data->groupBy('nik_ibu')->map(function ($group) {
+                return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
+            });
 
             // 🔹 Filter wilayah (prioritas: request > user)
             foreach (['kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
                 if ($request->filled($f)) {
-                    $query->where($f, $request->$f);
+                    $data = $data->filter(function ($item) use ($request, $f) {
+                        return strtolower($item->kelurahan) == strtolower($request[$f]);
+                    });
                 } elseif (!empty($wilayah[$f] ?? null)) {
-                    $query->where($f, $wilayah[$f]);
+                    $data = $data->where(strtolower($f), strtolower($wilayah[$f]));
                 }
             }
 
@@ -1208,16 +1215,17 @@ class PregnancyController extends Controller
                 }
             }
 
-            // 🔹 Default: 12 bulan terakhir
             if (!isset($awal) || !isset($akhir)) {
-                $akhir = Carbon::now()->endOfDay();
-                $awal = (clone $akhir)->subMonths(11)->startOfMonth();
+                $periode = Carbon::now()->subMonth();
+                $akhir = (clone $periode)->endOfMonth();
+                $awal = (clone $periode)->startOfMonth();
             }
-
-            $query->whereBetween('tanggal_pemeriksaan_terakhir', [$awal->toDateString(), $akhir->toDateString()]);
+            $data = $data->filter(function ($item) use ($awal, $akhir) {
+                return $item->tanggal_pemeriksaan_terakhir >= $awal && $item->tanggal_pemeriksaan_terakhir <= $akhir;
+            });
 
             // 🔹 Ambil data
-            $rows = $query->orderByDesc('tanggal_pemeriksaan_terakhir')->get();
+            $rows = $data;
 
             if ($rows->isEmpty()) {
                 return response()->json([
@@ -1228,10 +1236,8 @@ class PregnancyController extends Controller
             }
 
             // 🔹 Group by nik_ibu
-            $grouped = $rows->groupBy('nik_ibu')->map(function ($group) {
-                $latest = $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
-
-                $riwayat = $group->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
+            $grouped = $rows->map(function ($latest) use ($dataRaw) {
+                $riwayat = $dataRaw->where('nik_ibu', $latest->nik_ibu)->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
                     return [
                         'tanggal_pemeriksaan_terakhir' => $g->tanggal_pemeriksaan_terakhir,
                         'berat_badan' => $g->berat_badan,
@@ -1253,9 +1259,9 @@ class PregnancyController extends Controller
                 $isRisti = str_contains(strtolower(trim($latest->status_risiko_usia ?? '')), 'berisiko');
 
                 // 🔹 Deteksi intervensi
-                $kekInterv = $this->detectIntervensiFor($group, 'kek');
-                $anemiaInterv = $this->detectIntervensiFor($group, 'anemia');
-                $ristiInterv = $this->detectIntervensiFor($group, 'risti');
+                $kekInterv = $this->detectIntervensiFor($latest, 'kek');
+                $anemiaInterv = $this->detectIntervensiFor($latest, 'anemia');
+                $ristiInterv = $this->detectIntervensiFor($latest, 'risti');
 
                 return [
                     'nama_ibu' => $latest->nama_ibu,

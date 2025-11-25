@@ -2362,6 +2362,7 @@ export default {
       if (!ctx) return
 
       // Destroy instance sebelumnya jika ada
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
       if (!Array.isArray(dataTable) || !dataTable.length) return
 
       // Extract label dan nilai
@@ -3588,7 +3589,7 @@ export default {
 
       return summary
     },
-    async renderBumilChart(checkApplyFilter) {
+    async renderBumilChart() {
       let apiDataBumil = []
 
       // 1. Ambil Data dari API
@@ -3600,11 +3601,7 @@ export default {
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
         }
-
-        // Log parameter filter
-        //console.log('🔍 Parameter Filter:', params)
-        console.log(checkApplyFilter ?? 'mout')
-
+        
         const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
           params,
           headers: {
@@ -3613,12 +3610,6 @@ export default {
         })
 
         apiDataBumil = res.data.dataTable_bumil || []
-
-        // Log data mentah dari API (hanya beberapa item untuk menghindari output yang terlalu panjang)
-        console.log(`✅ Data Ibu Hamil Diterima (Total: ${apiDataBumil.length})`)
-        if (apiDataBumil.length > 0) {
-          //console.log('   Contoh data pertama:', apiDataBumil[0])
-        }
       } catch (error) {
         console.error('❌ Gagal mengambil data intervensi ibu hamil:', error)
         apiDataBumil = []
@@ -3651,20 +3642,24 @@ export default {
             }
 
       const labels = Object.keys(safeSummary)
-      const sudahBumil = labels.map((key) => safeSummary[key].sudahBumil)
-      const belumBumil = labels.map((key) => safeSummary[key].belumBumil)
+      let sudahBumil = labels.map((key) => safeSummary[key].sudahBumil)
+      let belumBumil = labels.map((key) => safeSummary[key].belumBumil)
+      
+      if (sudahBumil.length == 0) {
+        sudahBumil = labels.map(() => 0)
+      }
 
-      // Log data akhir yang masuk ke Chart.js
-      /* console.log('   Data Final Chart.js:')
-      console.log('   Labels:', labels)
-      console.log('   Sudah Intervensi:', sudahBumil)
-      console.log('   Belum Intervensi:', belumBumil) */
+      if (belumBumil.length == 0) {
+        belumBumil = labels.map(() => 0)
+      }
+      console.log('kok label nya cuma 2',labels, belumBumil, sudahBumil);
+
 
       // 4. Inisialisasi Chart
       this.bumilChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels,
+          labels: labels,
           datasets: [
             {
               label: 'Belum Dapat Intervensi',
@@ -3713,8 +3708,6 @@ export default {
           },
         },
       })
-
-      //console.log('--- renderBumilChart Selesai ---')
     },
     toggleSudahBumil(val) {
       this.isSudahBumil = val
@@ -4336,8 +4329,8 @@ export default {
       }
 
       if (this.activeMenu === 'bumil') {
-        this.renderBumilChart()
         this.rendersvgChart_Bumil()
+        this.renderBumilChart()
         this.renderIntervensiBumilChart()
         this.generateIndikatorBumilBulanan()
       }
