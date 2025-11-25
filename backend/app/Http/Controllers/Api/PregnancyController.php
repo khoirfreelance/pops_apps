@@ -599,9 +599,9 @@ class PregnancyController extends Controller
                 $periodeAkhir = $periode->copy()->endOfMonth();
                 $periodeAwal = $periode->copy()->startOfMonth();
             } else {
-                $periode = now();
+                $periode = now()->subMonths(1);
                 $periodeAkhir = $periode->copy()->endOfMonth();
-                $periodeAwal = $periode->copy()->subMonths(11)->startOfMonth();
+                $periodeAwal = $periode->copy()->startOfMonth();
             }
 
 
@@ -1215,10 +1215,10 @@ class PregnancyController extends Controller
                 }
             }
 
-            // 🔹 Default: 12 bulan terakhir
             if (!isset($awal) || !isset($akhir)) {
-                $akhir = Carbon::now()->endOfMonth();
-                $awal = (clone $akhir)->subMonths(11)->startOfMonth();
+                $periode = Carbon::now()->subMonth();
+                $akhir = (clone $periode)->endOfMonth();
+                $awal = (clone $periode)->startOfMonth();
             }
             $data = $data->filter(function ($item) use ($awal, $akhir) {
                 return $item->tanggal_pemeriksaan_terakhir >= $awal && $item->tanggal_pemeriksaan_terakhir <= $akhir;
