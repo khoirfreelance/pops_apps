@@ -451,6 +451,10 @@ class CatinController extends Controller
         return ($usia_perempuan < 21 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
     }
 
+    /**
+     * @param array|string|null $data
+     * @return string|array|null
+     */
     public function status(Request $request)
     {
         try {
@@ -472,7 +476,7 @@ class CatinController extends Controller
             if ($request->filled('periode')) {
 
                 $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
-                $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
 
             } elseif ($request->has('periodeAwal') && $request->has('periodeAkhir')) {
@@ -484,7 +488,7 @@ class CatinController extends Controller
                     $tanggalMulai = now()->subYear()->startOfMonth();
                     $tanggalAkhir = now()->endOfMonth();
 
-                    $filters['periodeAwal']  = $tanggalMulai->format('Y-m-d');
+                    $filters['periodeAwal'] = $tanggalMulai->format('Y-m-d');
                     $filters['periodeAkhir'] = $tanggalAkhir->format('Y-m-d');
 
                 } else {
@@ -501,15 +505,15 @@ class CatinController extends Controller
                         return Carbon::createFromFormat('Y-m', $tahun . '-' . $bulanIndex);
                     };
 
-                    $awal  = $parseBulanTahun($request->periodeAwal);
+                    $awal = $parseBulanTahun($request->periodeAwal);
                     $akhir = $parseBulanTahun($request->periodeAkhir);
 
-                    $filters['periodeAwal']  = $awal->copy()->startOfMonth()->format('Y-m-d');
+                    $filters['periodeAwal'] = $awal->copy()->startOfMonth()->format('Y-m-d');
                     $filters['periodeAkhir'] = $akhir->copy()->endOfMonth()->format('Y-m-d');
                 }
             } else {
                 $tanggal = now()->subMonth();
-                $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             }
 
@@ -702,7 +706,7 @@ class CatinController extends Controller
                         'Total Berisiko' => 'dark',
                         default => 'secondary'
                     },
-                    'trend' => $this->catinTrend($key, $filterKelurahan) // 🔥 TREND DI sini
+                    'trend' => $this->catinTrend($key, $filterKelurahan, $request) // 🔥 TREND DI sini
                 ];
             }
 
@@ -865,19 +869,43 @@ class CatinController extends Controller
         }
     }
 
-    private function catinTrend($key, $kelurahan)
+    private function catinTrend($key, $filterKelurahan, Request $request)
     {
         // Ambil 6 bulan terakhir
         $months = [];
+        if ($request->filled('periode')) {
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+        }
         for ($i = 0; $i < 6; $i++) {
-            $months[] = now()->subMonths($i)->format('Y-m');
+            $months[] = (clone $tanggal)->subMonths($i)->format('Y-m');
         }
         $months = array_reverse($months); // supaya urut dari paling lama → terbaru
 
         // Ambil data catin berdasarkan kelurahan
-        $data = Catin::query()
-            ->when($kelurahan, fn($q) => $q->where('kelurahan', $kelurahan))
-            ->get();
+        $query = Catin::query();
+
+        if ($filterKelurahan) {
+            $query->where('kelurahan', $filterKelurahan);
+        }
+        if ($request->filled('posyandu'))
+            $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $query->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $query->where('rt', $request->rt);
+
+        $tanggal = now()->subMonth();
+        $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->subMonths(6)->startOfMonth()->format('Y-m-d');
+        $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
+
+        // 👉 WAJIB: Terapkan filter periode ke query
+        $query->whereBetween('tanggal_pemeriksaan', [
+            $filters['periodeAwal'],
+            $filters['periodeAkhir']
+        ]);
+
+        $data = $query->get();
+
 
         if ($data->isEmpty()) {
             return [
@@ -905,7 +933,7 @@ class CatinController extends Controller
         $field = match ($key) {
             "Anemia" => "status_hb",
             "KEK" => "status_kek",
-            "Risiko Usia", "Total Berisiko" => "status_risiko_usia",
+            "Risiko Usia", "Total Berisiko" => "status_risiko",
             default => null
         };
 
