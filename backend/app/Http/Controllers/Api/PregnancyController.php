@@ -1575,33 +1575,34 @@ class PregnancyController extends Controller
                 if ($idx === false)
                     continue;
 
-				$isKEK = str_contains(strtolower(trim($item->status_gizi_lila ?? '')), 'kek');
-				$isAnemia = str_contains(strtolower(trim($item->status_gizi_hb ?? '')), 'ya');
-				$isBerisiko = str_contains(strtolower(trim($item->status_risiko_usia ?? '')), 'berisiko');
+                $result['KEK'][$idx] = $rows->filter(
+                    fn($i) =>
+                    str_contains(strtolower($i->status_gizi_lila ?? ''), 'kek')
+                )->count();
 
-				if ($isKEK) {
-					$result['KEK'][$idx]++;
-				} elseif ($isAnemia) {
-					$result['Anemia'][$idx]++;
-				} elseif ($isBerisiko) {
-					$result['Berisiko'][$idx]++;
-				} else {
-					$result['Normal'][$idx]++;
-				}
-			}
+                $result['Anemia'][$idx] = $rows->filter(
+                    fn($i) =>
+                    str_contains(strtolower($i->status_gizi_hb ?? ''), 'anemia')
+                )->count();
 
-			return response()->json([
-				'labels' => $months,
-				'indikator' => $result,
-			]);
+                $result['Berisiko'][$idx] = $rows->filter(
+                    fn($i) =>
+                    str_contains(strtolower($i->status_risiko_usia ?? ''), 'berisiko')
+                )->count();
+            }
 
-		} catch (\Throwable $th) {
-			return response()->json([
-				'error' => 'Gagal memuat data indikator',
-				'message' => $th->getMessage(),
-			], 500);
-		}
-	}
+            return response()->json([
+                'labels' => $months,
+                'indikator' => $result,
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => 'Gagal memuat data indikator bulanan',
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
 
 
     public function indikatorBulanan_old(Request $request)
