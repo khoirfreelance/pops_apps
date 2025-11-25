@@ -1841,10 +1841,6 @@ export default {
         this.bulanLabels = labels
         this.indikatorData = indikator
 
-        // render chart
-        this.$nextTick(() => {
-          this.renderBumilTrendChart()
-        })
         //console.log('✅ indikatorData:', this.indikatorData);
       } catch (err) {
         console.error('❌ Gagal memuat indikator bumil bulanan:', err)
@@ -2115,13 +2111,13 @@ export default {
           this.hitungIntervensi(),
           this.generateInfoBoxes(),
           this.generateIndikatorBumilBulanan(),
-          this.renderIntervensiBumilChart(),
         ])
 
         this.renderBarChart()
         this.renderLineChart()
         this.renderFunnelChart()
         this.renderBumilChart()
+        this.renderIntervensiBumilChart()
       } catch (e) {
         this.showError('Gagal menerapkan filter', e)
       } finally {
@@ -2827,6 +2823,9 @@ export default {
         if (this.activeMenu === 'bumil') {
           this.dataLoad = res.data.detail.punya_keduanya.map((item) => this.mapToBumil(item))
           this.dataLoad.push(...res.data.detail.hanya_kunjungan.map((item) => this.mapToBumil(item)))
+          this.$nextTick(() => {
+            this.renderBumilTrendChart(res.data.tren)
+          })
         }
       } catch (e) {
         this.showError('Error Ambil Data', e)
@@ -3516,7 +3515,7 @@ export default {
     }, */
     mapToBumil(item) {
       const intervensi = item.data_intervensi?.length ? item.data_intervensi : []
-      
+
       const mapped = ['MBG', 'KIE', 'Bansos', 'PMT']
 
       const normalizeJenis = (rawJenis) => {
@@ -3601,7 +3600,7 @@ export default {
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
         }
-        
+
         const res = await axios.get(`${baseURL}/api/pregnancy/intervensi-summary`, {
           params,
           headers: {
@@ -3636,15 +3635,15 @@ export default {
         summary && Object.keys(summary).length
           ? summary
           : {
-              KEK: { sudahBumil: 0, belumBumil: 0 },
-              ANEMIA: { sudahBumil: 0, belumBumil: 0 },
-              BERISIKO: { sudahBumil: 0, belumBumil: 0 },
-            }
+            KEK: { sudahBumil: 0, belumBumil: 0 },
+            ANEMIA: { sudahBumil: 0, belumBumil: 0 },
+            BERISIKO: { sudahBumil: 0, belumBumil: 0 },
+          }
 
       const labels = Object.keys(safeSummary)
       let sudahBumil = labels.map((key) => safeSummary[key].sudahBumil)
       let belumBumil = labels.map((key) => safeSummary[key].belumBumil)
-      
+
       if (sudahBumil.length == 0) {
         sudahBumil = labels.map(() => 0)
       }
@@ -3652,7 +3651,7 @@ export default {
       if (belumBumil.length == 0) {
         belumBumil = labels.map(() => 0)
       }
-      console.log('kok label nya cuma 2',labels, belumBumil, sudahBumil);
+      console.log('kok label nya cuma 2', labels, belumBumil, sudahBumil);
 
 
       // 4. Inisialisasi Chart
@@ -3668,6 +3667,7 @@ export default {
               borderRadius: 8,
               borderSkipped: false,
               datalabels: { color: '#fff' },
+              minBarLength: 20,
             },
             {
               label: 'Sudah Dapat Intervensi',
@@ -3676,6 +3676,7 @@ export default {
               borderRadius: 8,
               borderSkipped: false,
               datalabels: { color: '#fff' },
+              minBarLength: 20,
             },
           ],
         },
@@ -3712,7 +3713,8 @@ export default {
     toggleSudahBumil(val) {
       this.isSudahBumil = val
     },
-    renderBumilTrendChart() {
+    renderBumilTrendChart(tren) {
+      console.log(tren)
       const ctx = this.$refs.bumilTrendChart?.getContext('2d')
 
       if (!ctx || !this.indikatorData || !this.bulanLabels) return
@@ -3725,11 +3727,11 @@ export default {
       this.bumilTrendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: this.bulanLabels,
+          labels: tren.labels,
           datasets: [
             {
               label: 'KEK',
-              data: this.indikatorData.KEK || [],
+              data: tren.series.kek || [],
               borderColor: '#e63946', // merah
               backgroundColor: 'transparent',
               tension: 0.3,
@@ -3739,7 +3741,7 @@ export default {
             },
             {
               label: 'Anemia',
-              data: this.indikatorData.Anemia || [],
+              data: tren.series.anemia || [],
               borderColor: '#d4a017', // kuning
               backgroundColor: 'transparent',
               tension: 0.3,
@@ -3749,7 +3751,7 @@ export default {
             },
             {
               label: 'Risiko Tinggi',
-              data: this.indikatorData.Berisiko || [],
+              data: tren.series.risiko || [],
               borderColor: '#3b3bda', // biru
               backgroundColor: 'transparent',
               tension: 0.3,
@@ -3810,16 +3812,16 @@ export default {
         this.noIntervensiMessage = ''
 
         // Hitung frekuensi setiap jenis intervensi
-        const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
-
+        const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya', 'Belum Mendapat Bantuan']
         const mapped = ['MBG', 'KIE', 'Bansos', 'PMT']
-
         const normalizeJenis = (rawJenis) => {
           // jika rawJenis ada di jenisList, pakai itu
           if (mapped.includes(rawJenis)) {
             return rawJenis
           }
-
+          if (rawJenis == "-") {
+            return "Belum Mendapat Bantuan"
+          }
           // jika tidak ada → anggap "Bantuan Lainnya"
           return 'Bantuan Lainnya'
         }
@@ -3828,12 +3830,6 @@ export default {
         const counts = jenisList.map(
           (jenis) => data.filter((i) => normalizeJenis(i.intervensi) == jenis).length
         )
-
-        // --- 5. Log Hasil Akhir Perhitungan Frekuensi ---
-        console.log('5. Jenis Intervensi (Labels):', jenisList);
-        console.log('5. Frekuensi Intervensi (Counts):', counts);
-        console.log('--- Rendering Chart Selesai ---');
-
 
         if (this.belumChart) this.belumChart.destroy()
 

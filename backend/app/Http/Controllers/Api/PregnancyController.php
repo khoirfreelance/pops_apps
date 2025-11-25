@@ -127,16 +127,16 @@ class PregnancyController extends Controller
                 });
             }
 
-            if ($request->filled('posyandu')){
+            if ($request->filled('posyandu')) {
                 $data = $data->filter(function ($q) use ($request) {
-                    if ($request->filled('rw')){
-                        if ($request->filled('rt')){
-                            return strtolower($q->posyandu) == strtolower($request->posyandu) && 
-                                strtolower($q->rw) == strtolower($request->rw) && 
+                    if ($request->filled('rw')) {
+                        if ($request->filled('rt')) {
+                            return strtolower($q->posyandu) == strtolower($request->posyandu) &&
+                                strtolower($q->rw) == strtolower($request->rw) &&
                                 strtolower($q->rt) == strtolower($request->rt);
                         }
-                        return strtolower($q->posyandu) == strtolower($request->posyandu) && 
-                                strtolower($q->rw) == strtolower($request->rw);
+                        return strtolower($q->posyandu) == strtolower($request->posyandu) &&
+                            strtolower($q->rw) == strtolower($request->rw);
                     }
                     return strtolower($q->posyandu) == strtolower($request->posyandu);
                 });
@@ -216,7 +216,7 @@ class PregnancyController extends Controller
                                 });
                                 return $found;
                             }
-                            if ($val == "Bantuan Lainnya"){
+                            if ($val == "Bantuan Lainnya") {
                                 $found = false;
                                 $q['intervensi']->each(function ($intervensiItem) use (&$found) {
                                     if (!in_array(Str::lower($intervensiItem['intervensi']), ['mbg', 'kie', 'pmt', 'bansos'])) {
@@ -1416,9 +1416,9 @@ class PregnancyController extends Controller
         // Tentukan periode (Y-m)
         // ==========================
         if ($request->filled('periode')) {
-            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode)->endOfMonth();
         } else {
-            $tanggal = now()->subMonth(); // default bulan berjalan -1
+            $tanggal = now()->subMonth()->endOfMonth(); // default bulan berjalan -1
         }
 
         // ==========================
@@ -1450,13 +1450,20 @@ class PregnancyController extends Controller
                 return $item->rt == $request->rt;
             });
 
-        $data = $data->filter(function ($item) use ($tanggal) {
+
+        $data3bulan = $data->filter(function ($item) use ($tanggal) {
+            $tgl = Carbon::parse($item->tanggal_pendampingan);
+            $awal = (clone $tanggal)->subMonths(2)->startOfMonth();
+            return $tgl >= $awal && $tgl <= $tanggal;
+        });
+
+        $data = $data3bulan->filter(function ($item) use ($tanggal) {
             $tgl = Carbon::parse($item->tanggal_pendampingan);
             return $tgl->year == $tanggal->year && $tgl->month == $tanggal->month;
         });
 
 
-        $dataGanda = $data->filter(function ($item) {
+        $dataGanda3bulan = $data3bulan->filter(function ($item) {
             $ganda = 0;
             if ($item->status_gizi_lila == 'KEK')
                 $ganda++;   // KEK
@@ -1467,7 +1474,7 @@ class PregnancyController extends Controller
             return $ganda >= 2; // minimal 2 parameter bermasalah → status ganda
         });
 
-        $nikCase = $dataGanda->pluck('nik_ibu')->unique();
+        $nikCase = $dataGanda3bulan->pluck('nik_ibu')->unique();
 
         // ==========================
         // B. QUERY INTERVENSI BUMIL
@@ -1480,9 +1487,15 @@ class PregnancyController extends Controller
             $tglIntervensi = Carbon::parse($item->tgl_intervensi);
             $tglFilter = Carbon::create($tanggal->year, $tanggal->month, 1)->endOfMonth();
 
-            return $tglIntervensi <= $tglFilter;
+            return $tglIntervensi <= $tglFilter && (clone $tglFilter)->startOfMonth() <= $tglIntervensi;
         });
 
+
+
+        $dataGanda = $dataGanda3bulan->filter(function ($item) use ($tanggal) {
+            $tgl = Carbon::parse($item->tanggal_pendampingan);
+            return $tgl->year == $tanggal->year && $tgl->month == $tanggal->month;
+        });
 
         $dataAll = $dataGanda->map(function ($item) use ($dataIntervensi) {
             $intervensiUntukIbu = $dataIntervensi->filter(function ($interv) use ($item) {
@@ -1502,24 +1515,27 @@ class PregnancyController extends Controller
             ];
         });
 
+        $dataGiziGandaTerintervensi = $dataAll->filter(function ($item) {
+            return $item['data_intervensi']->isNotEmpty();
+        });
+
         return response()->json([
             'status' => 'success',
             'message' => 'Data intervensi & kunjungan bumil berhasil dimuat',
 
             'grouping' => [
                 'total_case' => $dataGanda->count(),
-                'punya_keduanya' => $dataIntervensi->count(),
+                'punya_keduanya' => $dataGiziGandaTerintervensi->count(),
                 'hanya_kunjungan' => $dataGanda->count() - $dataIntervensi->count(),
             ],
 
             'detail' => [
-                'punya_keduanya' => $dataAll->filter(function ($item) {
-                    return $item['data_intervensi']->isNotEmpty();
-                })->values(),
+                'punya_keduanya' => $dataGiziGandaTerintervensi->values(),
                 'hanya_kunjungan' => $dataAll->filter(function ($item) {
                     return $item['data_intervensi']->isEmpty();
                 })->values(),
             ],
+            'tren' => $this->generateLabelAndData($tanggal, $data3bulan)
         ]);
     }
 
@@ -1703,4 +1719,72 @@ class PregnancyController extends Controller
         return ($imt > 5 && $imt < 80) ? $imt : null;
     }
 
+    private function generateLabelAndData(Carbon $tanggal, $data)
+    {
+        $labels = [];
+        $kek = [];
+        $anemia = [];
+        $risiko = [];
+
+        // Ambil 3 bulan: bulan sekarang + 2 bulan ke belakang
+        $start = $tanggal->copy()->subMonths(2)->startOfMonth();
+        $end = $tanggal->copy()->endOfMonth();
+
+        // 1. Buat label bulan Y-m
+        $cursor = $start->copy();
+        while ($cursor <= $end) {
+            $labels[] = $cursor->format('M Y');
+            $cursor->addMonth();
+        }
+
+        // 2. Siapkan summary default 0
+        $summary = [];
+        foreach ($labels as $lb) {
+            $summary[$lb] = [
+                'kek' => 0,
+                'anemia' => 0,
+                'risiko' => 0,
+            ];
+        }
+
+        // 3. Mapping data dari database → kelompokkan ke bulan Y-m
+        $data->each(function ($item) use (&$summary) {
+            $bulan = Carbon::parse($item['tanggal_pemeriksaan_terakhir'])->format('M Y');
+            if (isset($summary[$bulan])) {
+                $ganda = 0;
+                if ($item->status_gizi_lila == 'KEK')
+                    $ganda++;
+                if ($item->status_gizi_hb == 'Anemia')
+                    $ganda++;
+                if ($item->status_risiko_usia == 'Berisiko')
+                    $ganda++;
+
+                if ($ganda > 1) {
+                    if ($item->status_gizi_lila == 'KEK')
+                        $summary[$bulan]['kek'] += 1;
+                    if ($item->status_gizi_hb == 'Anemia')
+                        $summary[$bulan]['anemia'] += 1;
+                    if ($item->status_risiko_usia == 'Berisiko')
+                        $summary[$bulan]['risiko'] += 1;
+                }
+            }
+        });
+
+        // 4. Convert summary ke dalam 3 series
+        foreach ($labels as $lb) {
+            $kek[] = $summary[$lb]['kek'];
+            $anemia[] = $summary[$lb]['anemia'];
+            $risiko[] = $summary[$lb]['risiko'];
+        }
+
+        // 5. Return dalam bentuk line chart friendly
+        return [
+            'labels' => $labels,
+            'series' => [
+                'kek' => $kek,
+                'anemia' => $anemia,
+                'risiko' => $risiko,
+            ],
+        ];
+    }
 }
