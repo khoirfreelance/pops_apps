@@ -1230,9 +1230,6 @@
                               <p class="mb-1">
                                 <strong>NIK Ibu:</strong> {{ selectedAnak.nik_ibu }}
                               </p>
-                              <p class="mb-1">
-                                <strong>No. Telp:</strong> {{ selectedAnak.no_telp }}
-                              </p>
                             </div>
                           </div>
                         </div>
@@ -1340,7 +1337,7 @@
                                   TB/U
                                 </button>
                               </li>
-                              <li class="nav-item" role="presentation">
+                              <!-- <li class="nav-item" role="presentation">
                                 <button
                                   class="nav-link"
                                   id="bbtb-tab"
@@ -1353,7 +1350,7 @@
                                 >
                                   BB/TB
                                 </button>
-                              </li>
+                              </li> -->
                             </ul>
 
                             <!-- Tabs Content -->
@@ -1875,7 +1872,7 @@ export default {
           const pendamping = item.pendampingan?.at(-1) || {};
           const posyandu = item.posyandu?.at(-1) || {};
           // eslint-disable-next-line no-unused-vars
-          const intervensi = item.intervensi?.at(-1);
+          const lastIntervensi = item.intervensi?.at(-1);
 
           return {
             id: item.id,
@@ -1897,7 +1894,10 @@ export default {
             bb: posyandu.bb || '-',
             tb: posyandu.tb || '-',
             bb_naik: posyandu.bb_naik || false,
-            intervensi: item.intervensi?.length ? item.intervensi.map(i => i.jenis).join(', ') : 'Belum mendapatkan intervensi',
+            intervensi: lastIntervensi
+            ? (lastIntervensi.jenis || "-")
+            : "Belum mendapatkan intervensi",
+            //intervensi: intervensi.intervensi?.length ? item.intervensi.map(i => i.jenis).join(', ') : 'Belum mendapatkan intervensi',
             tmpt_dilahirkan: kelahiran.tmpt_dilahirkan || '-',
             tgl_lahir: kelahiran.tgl_lahir || '-',
             bb_lahir: kelahiran.bb_lahir || '-',
@@ -1921,6 +1921,8 @@ export default {
             },
           }
         })
+
+        console.log('data: ', this.children);
 
         // ✅ simpan hasilnya
         this.filteredData = [...this.children]
@@ -2240,7 +2242,7 @@ export default {
 
         // --- Riwayat Intervensi ---
         riwayat_intervensi: intervensiList.map((i) => ({
-          tanggal: i.tanggal || '-',
+          tanggal: i.tgl_intervensi || '-',
           kader: i.kader || '-',
           intervensi: i.jenis || '-',
         })),
@@ -2899,20 +2901,20 @@ label {
     left: 0;
 
     /* 2. Pastikan kolom berada di lapisan terdepan saat di-scroll */
-    z-index: 10; 
-    
+    z-index: 10;
+
     /* 3. Atur latar belakang agar kolom di belakangnya tidak terlihat */
     /* Warna Putih untuk baris data biasa */
-    background-color: #fff !important; 
+    background-color: #fff !important;
 }
 
 /* Khusus untuk Header (<thead>) */
 .table-responsive thead .frozen-column {
     /* Warna Hijau Terang/Success untuk thead Anda */
-    background-color: #d1e7dd !important; 
-    
+    background-color: #d1e7dd !important;
+
     /* Beri z-index lebih tinggi agar header tetap di atas baris data saat scroll vertikal (jika ada) */
-    z-index: 11 !important; 
+    z-index: 11 !important;
 }
 
 /* ===== Pagination Responsive All Devices ===== */

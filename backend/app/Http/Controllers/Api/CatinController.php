@@ -234,17 +234,35 @@ class CatinController extends Controller
         // fallback jika format salah
         return \Carbon\Carbon::now();
     }
-
-    public function show($id)
+/*
+    public function show($nik_perempuan)
     {
-        $data = Catin::find($id);
+        try {
+            // ✅ Ambil semua data ibu berdasarkan NIK
+            $records = Catin::where('nik_perempuan', $nik_perempuan)->orderByDesc('tanggal_pendampingan')->get();
 
-        if (!$data) {
-            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
+            if ($records->isEmpty()) {
+                return response()->json([
+                    'message' => 'Data catin tidak ditemukan',
+                    'nik_perempuan' => $nik_perempuan,
+                    'data' => null
+                ], 404);
+            }
+
+            return response()->json([
+                'nama perempuan' => $ibu,
+                'riwayat_pemeriksaan' => $riwayatPemeriksaan,
+                'riwayat_intervensi' => $riwayatIntervensi,
+                'kehamilan' => $dataKehamilan,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil detail ibu hamil',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json(['success' => true, 'data' => $data]);
-    }
+    } */
 
     public function import(Request $request)
     {

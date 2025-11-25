@@ -423,6 +423,10 @@
                             Intervensi
                             <SortIcon :field="'intervensi'" />
                           </th>
+                          <th @click="sortBy('posyandu')" class="cursor-pointer align-middle text-center">
+                            Posyandu
+                            <SortIcon :field="'posyandu'" />
+                          </th>
                           <th @click="sortBy('rw')" class="cursor-pointer align-middle text-center">
                             RW
                             <SortIcon :field="'rw'" />
@@ -492,6 +496,7 @@
                             >
                             <span v-else>{{ bumil.intervensi }}</span>
                           </td>
+                          <td>{{ bumil.posyandu }}</td>
                           <td>{{ bumil.rw }}</td>
                           <td>{{ bumil.rt }}</td>
                           <td>{{ bumil.usia }}</td>
@@ -1226,7 +1231,7 @@ export default {
             lila: lastCheck?.lila || '-',
             anemia: lastCheck?.status_gizi_hb || '-',
             kek: lastCheck?.status_gizi_lila || '-',
-            nama_posyandu: lastCheck?.posyandu || '-',
+            posyandu: lastCheck?.posyandu || '-',
             intervensi: intervensi?.intervensi || '-',
           }
         })

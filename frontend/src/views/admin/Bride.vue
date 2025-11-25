@@ -501,11 +501,11 @@
 
                           <td>
                             <span
-                              v-if="catin.pemeriksaan_terakhir.status_risiko === 'Berisiko'"
+                              v-if="catin.status_risiko === 'Berisiko'"
                               class="badge bg-danger text-white"
-                              >{{ catin.pemeriksaan_terakhir.status_risiko }}</span
+                              >{{ catin.status_risiko }}</span
                             >
-                            <span v-else>{{ catin.pemeriksaan_terakhir.status_risiko }}</span>
+                            <span v-else>{{ catin.status_risiko }}</span>
                           </td>
 
                           <td>{{ catin.usia_perempuan }}</td>
@@ -539,33 +539,33 @@
 
                   <!-- Pagination -->
                  <nav>
-  <ul class="pagination justify-content-center mt-1 mb-0">
-    
-    <!-- Prev -->
-    <li class="page-item" :class="{ disabled: currentPage === 1 }">
-      <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
-    </li>
+                    <ul class="pagination justify-content-center mt-1 mb-0">
 
-    <!-- Halaman -->
-    <li class="page-item"
-        v-for="page in visiblePages"
-        :key="page"
-        :class="{ active: currentPage === page, disabled: page === '...' }">
+                      <!-- Prev -->
+                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
+                      </li>
 
-      <a v-if="page !== '...'" class="page-link" href="#" @click.prevent="changePage(page)">
-        {{ page }}
-      </a>
+                      <!-- Halaman -->
+                      <li class="page-item"
+                          v-for="page in visiblePages"
+                          :key="page"
+                          :class="{ active: currentPage === page, disabled: page === '...' }">
 
-      <span v-else class="page-link">...</span>
-    </li>
+                        <a v-if="page !== '...'" class="page-link" href="#" @click.prevent="changePage(page)">
+                          {{ page }}
+                        </a>
 
-    <!-- Next -->
-    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-      <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
-    </li>
+                        <span v-else class="page-link">...</span>
+                      </li>
 
-  </ul>
-</nav>
+                      <!-- Next -->
+                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
+                      </li>
+
+                    </ul>
+                  </nav>
 
                 </div>
               </div>
@@ -622,37 +622,74 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr
-                          v-for="(r, i) in (selectedCatin.pemeriksaan_terakhir || [])"
-                          :key="i"
-                        >
-                          <td>{{ this.formatDate(r.tanggal_pemeriksaan) }}</td>
-                          <td>
-                            <span
-                              class="badge"
-                              :class="r.status_hb === 'Anemia' ? 'bg-danger' : 'text-dark'"
-                            >
-                              {{ r.status_hb }}
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              class="badge"
-                              :class="r.status_kek === 'KEK' ? 'bg-danger' : 'text-dark'"
-                            >
-                              {{ r.status_kek }}
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              class="badge"
-                              :class="selectedCatin.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
-                            >
-                              {{ selectedCatin.status_risiko }}
-                            </span>
-                          </td>
-                        </tr>
-                      </tbody>
+  <tr v-if="selectedCatin.pemeriksaan_terakhir">
+    <td>{{ formatDate(selectedCatin.pemeriksaan_terakhir.tanggal_pemeriksaan) }}</td>
+
+    <!-- Hb / Anemia -->
+    <td>
+      <span class="badge"
+        :class="selectedCatin.pemeriksaan_terakhir.status_hb === 'Anemia' ? 'bg-danger' : 'text-dark'"
+      >
+        {{ selectedCatin.pemeriksaan_terakhir.status_hb }}
+      </span>
+    </td>
+
+    <!-- KEK -->
+    <td>
+      <span class="badge"
+        :class="selectedCatin.pemeriksaan_terakhir.status_kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+      >
+        {{ selectedCatin.pemeriksaan_terakhir.status_kek }}
+      </span>
+    </td>
+
+    <!-- Risiko -->
+    <td>
+      <span class="badge"
+        :class="selectedCatin.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
+      >
+        {{ selectedCatin.status_risiko }}
+      </span>
+    </td>
+
+    <!-- TB -->
+    <td>{{ selectedCatin.pemeriksaan_terakhir.tinggi_perempuan }}</td>
+
+    <!-- BB -->
+    <td>{{ selectedCatin.pemeriksaan_terakhir.berat_perempuan }}</td>
+
+    <!-- LILA -->
+    <td>{{ selectedCatin.pemeriksaan_terakhir.lila_perempuan }}</td>
+
+    <!-- Jamban -->
+    <td>
+      <i
+        v-if="selectedCatin.pemeriksaan_terakhir.menggunakan_jamban === 'Ya'"
+        class="fa fa-check text-danger"
+      ></i>
+      <span v-else>-</span>
+    </td>
+
+    <!-- Sumber Air Bersih -->
+    <td>
+      <i
+        v-if="selectedCatin.pemeriksaan_terakhir.sumber_air_bersih === 'Ya'"
+        class="fa fa-check text-danger"
+      ></i>
+      <span v-else>-</span>
+    </td>
+
+    <!-- Terpapar Rokok -->
+    <td>
+      <i
+        v-if="selectedCatin.pemeriksaan_terakhir.terpapar_rokok === true"
+        class="fa fa-check text-danger"
+      ></i>
+      <span v-else>-</span>
+    </td>
+  </tr>
+</tbody>
+
                     </table>
                   </div>
 
@@ -822,7 +859,7 @@
                               </thead>
                               <tbody>
                                 <tr
-                                  v-for="(item, i) in selectedCatin.riwayat"
+                                  v-for="(item, i) in selectedCatin.pemeriksaan_terakhir"
                                   :key="'kehamilan-' + i"
                                   class="text-center"
                                 >
@@ -992,7 +1029,7 @@ export default {
       })
     }
 
-    
+
 
     const totalPages = computed(() => Math.ceil(filteredCatin.value.length / perPage.value))
 
@@ -1377,6 +1414,7 @@ export default {
           nik_perempuan: nik,
           ...rawData[nik],
         }))
+
         this.catin = data.map((item) => ({
           nik: item.nik_perempuan,
           status_risiko: item.status_risiko,
@@ -1386,7 +1424,7 @@ export default {
           usia_laki: item.usia_laki,
           pekerjaan_perempuan: item.kerja_perempuan,
           pekerjaan_laki: item.kerja_laki,
-          posyandu: item.posyandu != ''? item.posyandu : '-',
+          posyandu: item.posyandu != '' ? item.posyandu : '-',
           provinsi: item.provinsi,
           kota: item.kota,
           kecamatan: item.kecamatan,
@@ -1396,12 +1434,15 @@ export default {
           tgl_kunjungan: item.tgl_kunjungan,
           tgl_menikah: item.tgl_pernikahan,
           riwayat_penyakit: item.riwayat_pemeriksaan.riwayat_penyakit,
-          sumber_air_bersih: item.sumber_air_bersih == true? 'Ya' : 'Tidak',
-          jamban_sehat: item.jamban_sehat == true? 'Ya' : 'Tidak',
-          // ambil pemeriksaan terakhir
+          sumber_air_bersih: item.sumber_air_bersih == true ? 'Ya' : 'Tidak',
+          jamban_sehat: item.jamban_sehat == true ? 'Ya' : 'Tidak',
+
           pemeriksaan_terakhir: item.riwayat_pemeriksaan?.[0] || null,
-          riwayat: item.riwayat_catin,
+
+          // 🔥 FIX INI
+          riwayat: item.riwayat_catin || [],
         }))
+
 
         // ✅ Set filtered dan total
         this.filteredCatin = [...this.catin]
@@ -1415,10 +1456,7 @@ export default {
         // console.log('isi catin:', this.catin);
       } catch (e) {
         console.error('Gagal ambil data pernikahan:', e);
-        /*
-        this.catin = [];
-        this.filteredCatin = [];
-        this.posyanduList = []; */
+
       }
     },
   },

@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bride/status', [CatinController::class, 'status']);
     Route::get('/bride/tren', [CatinController::class, 'tren']);
     Route::get('/bride/indikator-bulanan', [CatinController::class, 'indikatorBulanan']);
+    Route::get('/bride/{nik_perempuan}', [CatinController::class, 'show']);
     Route::apiResource('bride', CatinController::class)
         ->only(['index']);
     /* Route::get('/bride/pending', [BrideController::class, 'pendingData']);

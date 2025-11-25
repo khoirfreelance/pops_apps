@@ -186,7 +186,7 @@ class ChildrenController extends Controller
 
             if (empty($grouped[$nik]['keluarga'])) {
                 $grouped[$nik]['keluarga'][] = [
-                    'nama_ayah' => $item->nama_ayah ?? '-',
+                    'nama_ayah' => $item->nama_ortu ?? '-',
                     'nama_ibu' => $item->nama_ibu ?? '-',
                     'pekerjaan_ayah' => $item->pekerjaan_ayah ?? '-',
                     'pekerjaan_ibu' => $item->pekerjaan_ibu ?? '-',
@@ -230,6 +230,7 @@ class ChildrenController extends Controller
             ];
 
             $grouped[$nik]['intervensi'][] = [
+                'kader' => $item->petugas ?? '-',
                 'jenis' => $item->kategori ?? '-',
                 'tgl_intervensi' => $item->tgl_intervensi ?? '-',
                 'bantuan' => $item->bantuan ?? '-',
