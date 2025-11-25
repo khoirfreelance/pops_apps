@@ -3,10 +3,7 @@
   <div class="wrapper">
     <!-- 🔄 Spinner Overlay -->
     <transition name="fade">
-      <div
-        v-if="isLoading"
-        class="spinner-overlay d-flex justify-content-center align-items-center"
-      >
+      <div v-if="isLoading" class="spinner-overlay d-flex justify-content-center align-items-center">
         <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -16,13 +13,10 @@
     <!-- Header -->
     <HeaderAdmin />
 
-    <div
-      class="content flex-grow-1 d-flex flex-column flex-md-row"
-      :class="{
-        'sidebar-collapsed': isCollapsed,
-        'sidebar-expanded': !isCollapsed,
-      }"
-    >
+    <div class="content flex-grow-1 d-flex flex-column flex-md-row" :class="{
+      'sidebar-collapsed': isCollapsed,
+      'sidebar-expanded': !isCollapsed,
+    }">
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
@@ -35,11 +29,8 @@
           <!-- Statistic Cards -->
           <div class="mt-3">
             <div class="row justify-content-center g-2">
-              <div
-                v-for="(stat, index) in stats"
-                :key="index"
-                class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-6 col-6"
-              >
+              <div v-for="(stat, index) in stats" :key="index"
+                class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-6 col-6">
                 <div class="stat-card shadow-sm rounded h-100">
                   <h6 class="text-muted pt-2 ps-2" style="font-size: 16px;">{{ stat.title }}</h6>
                   <div class="card-body d-flex align-items-center justify-content-between px-2">
@@ -75,31 +66,22 @@
           </div> -->
 
           <!-- Filter Form -->
-          <div
-            class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block sticky-filter"
-            v-show="!isMobile || showFilterMobile"
-          >
+          <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block sticky-filter"
+            v-show="!isMobile || showFilterMobile">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
                 <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
-                <select
-                  v-model="filters.kelurahan"
-                  class="form-select text-muted small uniform-input"
-                  disabled
-                >
+                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
                   <option :value="kelurahan" class="small">{{ kelurahan }}</option>
                 </select>
               </div>
 
               <!-- Posyandu -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">Posyandu</label>
-                <select
-                  v-model="filters.posyandu"
-                  class="form-select text-muted uniform-input"
-                  @change="handlePosyanduChange"
-                >
+                <label class="form-label" style="font-weight: 600;">Posyandu</label>
+                <select v-model="filters.posyandu" class="form-select text-muted uniform-input"
+                  @change="handlePosyanduChange">
                   <option value="">All</option>
                   <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
                     {{ item.nama_posyandu }}
@@ -109,13 +91,9 @@
 
               <!-- RW -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">RW</label>
-                <select
-                  v-model="filters.rw"
-                  class="form-select text-muted uniform-input"
-                  @change="handleRWChange"
-                  :disabled="rwReadonly"
-                >
+                <label class="form-label" style="font-weight: 600;">RW</label>
+                <select v-model="filters.rw" class="form-select text-muted uniform-input" @change="handleRWChange"
+                  :disabled="rwReadonly">
                   <option value="">All</option>
                   <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
                 </select>
@@ -123,12 +101,8 @@
 
               <!-- RT -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">RT</label>
-                <select
-                  v-model="filters.rt"
-                  class="form-select text-muted uniform-input"
-                  :disabled="rtReadonly"
-                >
+                <label class="form-label" style="font-weight: 600;">RT</label>
+                <select v-model="filters.rt" class="form-select text-muted uniform-input" :disabled="rtReadonly">
                   <option value="">All</option>
                   <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
                 </select>
@@ -136,7 +110,7 @@
 
               <!-- Periode -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">Periode</label>
+                <label class="form-label" style="font-weight: 600;">Periode</label>
                 <select v-model="filters.periode" class="form-select uniform-input">
                   <option value="">All</option>
                   <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
@@ -156,10 +130,8 @@
 
           <!-- Mobile Filter -->
           <!-- Floating Button -->
-          <button
-            class="btn btn-primary filter-float-btn rounded-pill shadow-lg px-4 py-2"
-            @click="mobileFilterOpen = true"
-          >
+          <button class="btn btn-primary filter-float-btn rounded-pill shadow-lg px-4 py-2"
+            @click="mobileFilterOpen = true">
             <i class="bi bi-funnel"></i> Filter
           </button>
 
@@ -167,7 +139,7 @@
           <div class="filter-mobile-panel d-md-none" :class="{ open: mobileFilterOpen }">
             <!-- HEADER -->
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="fw-bold" >Filter</h5>
+              <h5 class="fw-bold">Filter</h5>
               <button class="btn btn-light" @click="mobileFilterOpen = false">
                 <i class="bi bi-x-lg"></i>
               </button>
@@ -178,23 +150,16 @@
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
                 <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
-                <select
-                  v-model="filters.kelurahan"
-                  class="form-select text-muted small uniform-input"
-                  disabled
-                >
+                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
                   <option :value="kelurahan" class="small">{{ kelurahan }}</option>
                 </select>
               </div>
 
               <!-- Posyandu -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">Posyandu</label>
-                <select
-                  v-model="filters.posyandu"
-                  class="form-select text-muted uniform-input"
-                  @change="handlePosyanduChange"
-                >
+                <label class="form-label" style="font-weight: 600;">Posyandu</label>
+                <select v-model="filters.posyandu" class="form-select text-muted uniform-input"
+                  @change="handlePosyanduChange">
                   <option value="">All</option>
                   <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
                     {{ item.nama_posyandu }}
@@ -204,13 +169,9 @@
 
               <!-- RW -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">RW</label>
-                <select
-                  v-model="filters.rw"
-                  class="form-select text-muted uniform-input"
-                  @change="handleRWChange"
-                  :disabled="rwReadonly"
-                >
+                <label class="form-label" style="font-weight: 600;">RW</label>
+                <select v-model="filters.rw" class="form-select text-muted uniform-input" @change="handleRWChange"
+                  :disabled="rwReadonly">
                   <option value="">All</option>
                   <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
                 </select>
@@ -218,12 +179,8 @@
 
               <!-- RT -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">RT</label>
-                <select
-                  v-model="filters.rt"
-                  class="form-select text-muted uniform-input"
-                  :disabled="rtReadonly"
-                >
+                <label class="form-label" style="font-weight: 600;">RT</label>
+                <select v-model="filters.rt" class="form-select text-muted uniform-input" :disabled="rtReadonly">
                   <option value="">All</option>
                   <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
                 </select>
@@ -231,7 +188,7 @@
 
               <!-- Periode -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label"  style="font-weight: 600;">Periode</label>
+                <label class="form-label" style="font-weight: 600;">Periode</label>
                 <select v-model="filters.periode" class="form-select uniform-input">
                   <option value="">All</option>
                   <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
@@ -251,56 +208,28 @@
 
           <!-- Main -->
           <div class="d-flex justify-content-center mt-4">
-            <ul
-              class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100"
-              id="myTab"
-              role="tablist"
-              style="max-width: 800px"
-            >
+            <ul class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100" id="myTab" role="tablist"
+              style="max-width: 800px">
               <li class="nav-item flex-fill text-center" role="presentation">
-                <button
-                  class="nav-link active w-100 text-truncate"
-                  id="anak-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#anak-tab-pane"
-                  type="button"
-                  role="tab"
-                  aria-controls="anak-tab-pane"
-                  aria-selected="true"
-                  @click="setMenu('anak')"
-                >
+                <button class="nav-link active w-100 text-truncate" id="anak-tab" data-bs-toggle="tab"
+                  data-bs-target="#anak-tab-pane" type="button" role="tab" aria-controls="anak-tab-pane"
+                  aria-selected="true" @click="setMenu('anak')">
                   Status Gizi Anak
                 </button>
               </li>
 
               <li class="nav-item flex-fill text-center" role="presentation">
-                <button
-                  class="nav-link w-100 text-truncate"
-                  id="bumil-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#bumil-tab-pane"
-                  type="button"
-                  role="tab"
-                  aria-controls="bumil-tab-pane"
-                  aria-selected="false"
-                  @click="setMenu('bumil')"
-                >
+                <button class="nav-link w-100 text-truncate" id="bumil-tab" data-bs-toggle="tab"
+                  data-bs-target="#bumil-tab-pane" type="button" role="tab" aria-controls="bumil-tab-pane"
+                  aria-selected="false" @click="setMenu('bumil')">
                   Status Kesehatan Ibu Hamil
                 </button>
               </li>
 
               <li class="nav-item flex-fill text-center" role="presentation">
-                <button
-                  class="nav-link w-100 text-truncate"
-                  id="catin-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#catin-tab-pane"
-                  type="button"
-                  role="tab"
-                  aria-controls="catin-tab-pane"
-                  aria-selected="false"
-                  @click="setMenu('catin')"
-                >
+                <button class="nav-link w-100 text-truncate" id="catin-tab" data-bs-toggle="tab"
+                  data-bs-target="#catin-tab-pane" type="button" role="tab" aria-controls="catin-tab-pane"
+                  aria-selected="false" @click="setMenu('catin')">
                   Calon Pengantin Berisiko
                 </button>
               </li>
@@ -327,18 +256,10 @@
                         <!-- GIZI CARDS -->
                         <div class="col-12 col-md-10">
                           <div class="row g-2">
-                            <div
-                              v-for="(item, index) in kesehatanData.anak"
-                              :key="index"
-                              class="col-6 col-lg-4"
-                            >
-                              <div
-                                class="card shadow-sm border-0 h-100"
-                                :class="`border-start border-4 border-${item.color}`"
-                              >
-                                <div
-                                  class="card-body py-2 d-flex justify-content-between align-items-center"
-                                >
+                            <div v-for="(item, index) in kesehatanData.anak" :key="index" class="col-6 col-lg-4">
+                              <div class="card shadow-sm border-0 h-100"
+                                :class="`border-start border-4 border-${item.color}`">
+                                <div class="card-body py-2 d-flex justify-content-between align-items-center">
                                   <div>
                                     <h2 class="fw-bold mb-1">{{ item.title }}</h2>
                                     <h3 class="mb-0" :class="`text-${item.color}`">
@@ -360,8 +281,7 @@
                         <!-- TOTAL ANAK -->
                         <div class="col-12 col-md-2 d-flex">
                           <div
-                            class="card text-center shadow-sm border p-3 w-100 d-flex flex-column justify-content-between"
-                          >
+                            class="card text-center shadow-sm border p-3 w-100 d-flex flex-column justify-content-between">
                             <!-- Judul selalu di atas -->
                             <h5 class="text-muted fw-bold mb-2">Total Anak Balita</h5>
 
@@ -377,14 +297,9 @@
 
                     <!-- INFO BOXES -->
                     <div id="infoBoxes" class="infoBoxes col-md-4 mt-2 small">
-                      <div
-                        v-for="(box, idx) in infoBoxes"
-                        :key="idx"
-                        class="alert py-2 mb-2"
-                        :class="`alert-${box.type}`"
-                      >
-                        <strong class="color-black">{{ box.title }}</strong
-                        ><br />
+                      <div v-for="(box, idx) in infoBoxes" :key="idx" class="alert py-2 mb-2"
+                        :class="`alert-${box.type}`">
+                        <strong class="color-black">{{ box.title }}</strong><br />
                         <span v-html="box.desc"></span>
                       </div>
                     </div>
@@ -422,37 +337,19 @@
                                 <tbody>
                                   <tr v-for="(row, index) in dataTable_bb" :key="index">
                                     <td>
-                                      <i
-                                        class="fa-solid fa-circle fs-6"
-                                        :style="{ color: row.color }"
-                                      ></i>
+                                      <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.status }}
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.jumlah }}
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.persen }} %
                                     </td>
-                                    <td
-                                      class="small"
-                                      id="text-diagram-table-piechart"
-                                      :class="row.trenClass"
-                                    >
-                                      <span v-if="row.tren !== '-'"
-                                        ><i :class="row.trenIcon"></i> {{ row.tren }}</span
-                                      >
+                                    <td class="small" id="text-diagram-table-piechart" :class="row.trenClass">
+                                      <span v-if="row.tren !== '-'"><i :class="row.trenIcon"></i> {{ row.tren }}</span>
                                       <span v-else>-</span>
                                     </td>
                                   </tr>
@@ -460,19 +357,14 @@
                                 <tfoot>
                                   <tr>
                                     <td colspan="4" class="small pt-2">
-                                      <a
-                                        href="/admin/dashboard/detail?tipe=bbu"
-                                        class="color-blue text-decoration-none"
-                                        >Lihat Grafik Selengkapnya</a
-                                      >
+                                      <a href="/admin/dashboard/detail?tipe=bbu"
+                                        class="color-blue text-decoration-none">Lihat Grafik Selengkapnya</a>
                                     </td>
                                   </tr>
                                 </tfoot>
                               </table>
                             </div>
-                            <div
-                              class="col-12 col-xl-5 d-flex justify-content-center align-items-center"
-                            >
+                            <div class="col-12 col-xl-5 d-flex justify-content-center align-items-center">
                               <div style="max-width: 75%; height: auto">
                                 <canvas ref="pieChart_bb" class="mx-auto"></canvas>
                               </div>
@@ -502,37 +394,19 @@
                                 <tbody>
                                   <tr v-for="(row, index) in dataTable_tb" :key="index">
                                     <td>
-                                      <i
-                                        class="fa-solid fa-circle fs-6"
-                                        :style="{ color: row.color }"
-                                      ></i>
+                                      <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.status }}
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.jumlah }}
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.persen }} %
                                     </td>
-                                    <td
-                                      class="small"
-                                      id="text-diagram-table-piechart"
-                                      :class="row.trenClass"
-                                    >
-                                      <span v-if="row.tren !== '-'"
-                                        ><i :class="row.trenIcon"></i> {{ row.tren }}</span
-                                      >
+                                    <td class="small" id="text-diagram-table-piechart" :class="row.trenClass">
+                                      <span v-if="row.tren !== '-'"><i :class="row.trenIcon"></i> {{ row.tren }}</span>
                                       <span v-else>-</span>
                                     </td>
                                   </tr>
@@ -540,19 +414,14 @@
                                 <tfoot>
                                   <tr>
                                     <td colspan="4" class="small pt-2">
-                                      <a
-                                        href="/admin/dashboard/detail?tipe=tbu"
-                                        class="color-blue text-decoration-none"
-                                        >Lihat Grafik Selengkapnya</a
-                                      >
+                                      <a href="/admin/dashboard/detail?tipe=tbu"
+                                        class="color-blue text-decoration-none">Lihat Grafik Selengkapnya</a>
                                     </td>
                                   </tr>
                                 </tfoot>
                               </table>
                             </div>
-                            <div
-                              class="col-12 col-xl-5 d-flex justify-content-center align-items-center"
-                            >
+                            <div class="col-12 col-xl-5 d-flex justify-content-center align-items-center">
                               <div style="max-width: 75%; height: auto">
                                 <canvas ref="pieChart_tb" class="mx-auto"></canvas>
                               </div>
@@ -584,56 +453,34 @@
                                 <tbody>
                                   <tr v-for="(row, index) in dataTable_bbtb" :key="index">
                                     <td>
-                                      <i
-                                        class="fa-solid fa-circle fs-6"
-                                        :style="{ color: row.color }"
-                                      ></i>
+                                      <i class="fa-solid fa-circle fs-6" :style="{ color: row.color }"></i>
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.status }}
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.jumlah ?? 0 }}
                                     </td>
-                                    <td
-                                      class="text-additional small"
-                                      id="text-diagram-table-piechart"
-                                    >
+                                    <td class="text-additional small" id="text-diagram-table-piechart">
                                       {{ row.persen ? row.persen + ' %' : '0 %' }}
                                     </td>
-                                    <td
-                                      class="small"
-                                      id="text-diagram-table-piechart"
-                                      :class="row.trenClass"
-                                    >
-                                      <span v-if="row.tren && row.tren !== '-'"
-                                        ><i :class="row.trenIcon"></i> {{ row.tren }}</span
-                                      >
+                                    <td class="small" id="text-diagram-table-piechart" :class="row.trenClass">
+                                      <span v-if="row.tren && row.tren !== '-'"><i :class="row.trenIcon"></i> {{
+                                        row.tren }}</span>
                                       <span v-else>-</span>
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
                             </div>
-                            <div
-                              class="col-12 d-flex justify-content-center align-items-center flex-column"
-                            >
+                            <div class="col-12 d-flex justify-content-center align-items-center flex-column">
                               <div style="max-width: 65%; height: auto">
                                 <canvas ref="pieChart_status" class="mx-auto"></canvas>
                               </div>
                             </div>
                             <div class="mt-2 text-center small">
-                              <a
-                                href="/admin/dashboard/detail?tipe=bbtb"
-                                class="color-blue text-decoration-none"
-                                >Lihat Grafik Selengkapnya</a
-                              >
+                              <a href="/admin/dashboard/detail?tipe=bbtb" class="color-blue text-decoration-none">Lihat
+                                Grafik Selengkapnya</a>
                             </div>
                           </div>
                         </div>
@@ -654,36 +501,28 @@
                       <div class="card shadow-sm border-0 rounded-4">
                         <!-- HEADER -->
                         <div class="text-center position-relative mb-0">
-                          <h1
-                            class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
-                            style="width: 55% !important"
-                            id="text-title-card-header-h1"
-                          >
+                          <h1 class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
+                            style="width: 55% !important" id="text-title-card-header-h1">
                             {{ totalKasus }} dengan Masalah Gizi Ganda
                           </h1>
 
                           <!-- TAB NAV -->
                           <div class="container position-relative" style="margin-top: -2.5rem">
-                            <div
-                              class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
-                            >
-                            <a href="#"
-                                  class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                                  style="border-bottom-width: 5px !important; cursor: default;" >
-                                  <span class="small text-danger" id="text-title-card-span"
-                                      >Anak belum dapat Intervensi <br />
-                                      {{ totalBelum }}</span
-                                  >
+                            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
+                              <a href="#"
+                                class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                                style="border-bottom-width: 5px !important; cursor: default;">
+                                <span class="small text-danger" id="text-title-card-span">Anak belum dapat Intervensi
+                                  <br />
+                                  {{ totalBelum }}</span>
                               </a>
 
                               <a href="#"
                                 class="small fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                                style="border-bottom-width: 5px !important; cursor: default;"
-                              >
-                                <span class="small text-success" id="text-title-card-span"
-                                  >Anak sudah dapat Intervensi <br />
-                                  {{ totalSudah }}</span
-                                >
+                                style="border-bottom-width: 5px !important; cursor: default;">
+                                <span class="small text-success" id="text-title-card-span">Anak sudah dapat Intervensi
+                                  <br />
+                                  {{ totalSudah }}</span>
                               </a>
                             </div>
                           </div>
@@ -691,55 +530,39 @@
 
                         <div class="row g-3 mt-3">
                           <div class="col-12 col-md-12 col-lg-4">
-                            <div
-                              class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
-                            >
+                            <div class="card shadow border-0 p-3 d-flex flex-column justify-content-between">
                               <div>
                                 <h3 class="text-center text-success mb-2">
                                   Jumlah anak tidak membaik<br />
-                                  <span class="fw-semibold"
-                                    >dalam {{ filterPeriode }} bulan terakhir</span
-                                  >
+                                  <span class="fw-semibold">dalam {{ filterPeriode }} bulan terakhir</span>
                                 </h3>
                               </div>
-                              <div
-                                id="responsive-chart-container"
-                                class="chart-placeholder text-muted text-center mt-auto flex-grow-1"
-                              >
+                              <div id="responsive-chart-container"
+                                class="chart-placeholder text-muted text-center mt-auto flex-grow-1">
                                 <canvas ref="lineChart" class="w-100"></canvas>
                               </div>
                             </div>
                           </div>
 
                           <div class="col-12 col-md-12 col-lg-4">
-                            <div
-                              class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
-                            >
+                            <div class="card shadow border-0 p-3 d-flex flex-column justify-content-between">
                               <h3 class="text-center text-success mb-2">Diagram Intervensi</h3>
-                              <div
-                                id="responsive-chart-container"
-                                class="chart-placeholder text-muted text-center flex-grow-1"
-                              >
+                              <div id="responsive-chart-container"
+                                class="chart-placeholder text-muted text-center flex-grow-1">
                                 <canvas ref="funnelChart" class="w-100"></canvas>
                               </div>
                             </div>
                           </div>
 
                           <div class="col-12 col-md-12 col-lg-4">
-                            <div
-                              class="card shadow border-0 p-3 d-flex flex-column justify-content-between"
-                            >
+                            <div class="card shadow border-0 p-3 d-flex flex-column justify-content-between">
                               <h3 class="text-center text-success mb-2">
                                 Top 5 Posyandu<br />
-                                <span class="fw-semibold"
-                                  >dengan anak tidak membaik dalam {{ filterPeriode }} bulan
-                                  terakhir</span
-                                >
+                                <span class="fw-semibold">dengan anak tidak membaik dalam {{ filterPeriode }} bulan
+                                  terakhir</span>
                               </h3>
-                              <div
-                                id="responsive-chart-container"
-                                class="chart-placeholder text-muted text-center flex-grow-1"
-                              >
+                              <div id="responsive-chart-container"
+                                class="chart-placeholder text-muted text-center flex-grow-1">
                                 <canvas ref="barChart" class="w-100"></canvas>
                               </div>
                             </div>
@@ -765,11 +588,7 @@
                             </tr>
                           </thead>
                           <tbody>
-                            <tr
-                              v-for="(anak, i) in paginatedAnakGabungan"
-                              :key="i"
-                              class="text-center"
-                            >
+                            <tr v-for="(anak, i) in paginatedAnakGabungan" :key="i" class="text-center">
                               <td class="row-data-font-size">{{ (currentPage - 1) * perPage + i + 1 }}</td>
                               <td class="row-data-font-size">{{ anak.nama }}</td>
                               <td class="text-center row-data-font-size">{{ anak.rumusan || '' }}</td>
@@ -783,10 +602,8 @@
                           <tfoot>
                             <tr>
                               <td colspan="100%" class="text-end">
-                                <button
-                                  class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                  @click="exportDashboardPdf('giziAnakExport')"
-                                >
+                                <button class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                  @click="exportDashboardPdf('giziAnakExport')">
                                   <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                                   Export
                                 </button>
@@ -803,31 +620,17 @@
                             </button>
                           </li>
 
-                          <li
-                            v-for="(page, i) in paginationNumbersAnakGabungan"
-                            :key="i"
-                            class="page-item"
-                            :class="{
-                              active: currentPage === page,
-                              disabled: page === '...',
-                            }"
-                          >
-                            <button
-                              class="page-link"
-                              @click="page !== '...' && (currentPage = page)"
-                            >
+                          <li v-for="(page, i) in paginationNumbersAnakGabungan" :key="i" class="page-item" :class="{
+                            active: currentPage === page,
+                            disabled: page === '...',
+                          }">
+                            <button class="page-link" @click="page !== '...' && (currentPage = page)">
                               {{ page }}
                             </button>
                           </li>
 
-                          <li
-                            class="page-item"
-                            :class="{ disabled: currentPage === totalPagesAnak }"
-                          >
-                            <button
-                              class="page-link"
-                              @click="currentPage < totalPagesAnak && currentPage++"
-                            >
+                          <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
+                            <button class="page-link" @click="currentPage < totalPagesAnak && currentPage++">
                               <span aria-hidden="true">&raquo;</span>
                             </button>
                           </li>
@@ -844,46 +647,32 @@
               <div id="kesehatanBumilExport">
                 <!-- card bumil -->
                 <div class="col-12">
-                  <div
-                    class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3"
-                  >
+                  <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
                     <div v-for="(item, index) in kesehatanData.bumil" :key="index" class="col">
-                      <div
-                        class="card h-100 shadow-sm border-0 d-flex flex-column"
-                        :class="`border-start border-4 border-${item.color}`"
-                      >
+                      <div class="card h-100 shadow-sm border-0 d-flex flex-column"
+                        :class="`border-start border-4 border-${item.color}`">
                         <!-- BODY -->
                         <div class="card-body d-flex justify-content-between align-items-center">
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                            <p
-                              v-if="index !== kesehatanData.bumil.length - 1"
-                              class="mb-0"
-                              :class="`text-${item.color}`"
-                            >
+                            <p v-if="index !== kesehatanData.bumil.length - 1" class="mb-0"
+                              :class="`text-${item.color}`">
                               {{ item.percent }}
                             </p>
 
                             <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
                           </div>
 
-                          <h2
-                            class="fw-bold mb-0"
-                            :class="`text-${item.color}`"
-                            style="font-size: 1rem"
-                          >
+                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`" style="font-size: 1rem">
                             {{ item.value }}
                           </h2>
                         </div>
 
                         <!-- FOOTER -->
                         <div class="card-footer bg-transparent border-0 p-0">
-                          <canvas
-                            v-if="index !== kesehatanData.bumil.length - 1"
-                            :ref="'chart-bumil-' + index"
-                            style="height: 120px; width: 100%"
-                          ></canvas>
+                          <canvas v-if="index !== kesehatanData.bumil.length - 1" :ref="'chart-bumil-' + index"
+                            style="height: 120px; width: 100%"></canvas>
 
                           <div v-else style="height: 120px"></div>
                         </div>
@@ -922,11 +711,7 @@
                                 <td id="text-diagram-table-piechart" class="text-additional small">
                                   {{ row.persen ? row.persen + ' %' : '0 %' }}
                                 </td>
-                                <td
-                                  id="text-diagram-table-piechart"
-                                  class="small"
-                                  :class="row.trenClass"
-                                >
+                                <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
                                   <span v-if="row.tren && row.tren !== '-'">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
@@ -942,9 +727,10 @@
                     <!-- Canvas Chart -->
                     <div class="col-12 col-xl-4">
                       <div
-                        class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center"
-                      >
-                        <canvas ref="bumilChart" class="w-100"></canvas>
+                        class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
+                        <div class="w-full h-[300px]">
+                          <canvas ref="bumilChart" class="w-full h-full"></canvas>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -954,9 +740,7 @@
                     <div class="col-12">
                       <div class="card border border-primary shadow p-3">
                         <div class="table-responsive">
-                          <table
-                            class="table table-bordered table-sm align-middle text-center mb-0"
-                          >
+                          <table class="table table-bordered table-sm align-middle text-center mb-0">
                             <thead class="table-primary">
                               <tr>
                                 <th class="py-3 fw-semibold">Indikator</th>
@@ -992,32 +776,24 @@
                       <div class="card shadow-sm border-0 rounded-4">
                         <!-- HEADER -->
                         <div class="text-center position-relative mb-0">
-                          <h2
-                            class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
-                            style="width: 55% !important"
-                          >
+                          <h2 class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary"
+                            style="width: 55% !important">
                             {{ totalKasus }} dengan Masalah Gizi Ganda
                           </h2>
 
                           <!-- TAB NAV -->
                           <div class="container position-relative" style="margin-top: -2.5rem">
-                            <div
-                              class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2"
-                            >
+                            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
                               <button
                                 class="fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                                style="border-bottom-width: 5px !important"
-                                @click="toggleSudahBumil(false)"
-                              >
+                                style="border-bottom-width: 5px !important" @click="toggleSudahBumil(false)">
                                 Ibu Hamil belum dapat Intervensi <br />
                                 {{ totalBelum }}
                               </button>
 
                               <button
                                 class="fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                                style="border-bottom-width: 5px !important"
-                                @click="toggleSudahBumil(true)"
-                              >
+                                style="border-bottom-width: 5px !important" @click="toggleSudahBumil(true)">
                                 Ibu Hamil sudah dapat Intervensi <br />
                                 {{ totalSudah }}
                               </button>
@@ -1029,69 +805,48 @@
                         <div class="row g-2 mt-3">
                           <!-- KIRI ATAS -->
                           <div class="col-md-6 col-sm-12">
-                            <div
-                              class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between"
-                            >
+                            <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                               <div>
                                 <h2 class="text-center text-success mb-2">Grafik tren Ibu Hamil</h2>
                               </div>
                               <div class="chart-placeholder text-muted text-center mt-auto">
-                                <canvas
-                                  ref="bumilTrendChart"
-                                  style="
+                                <canvas ref="bumilTrendChart" style="
                                     max-height: 280px;
                                     min-height: 200px !important;
                                     height: 100% !important;
                                     width: 100% !important;
-                                  "
-                                ></canvas>
+                                  "></canvas>
                               </div>
                             </div>
                           </div>
 
                           <!-- TENGAH ATAS -->
                           <div class="col-md-6 col-sm-12">
-                            <div
-                              class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between"
-                            >
+                            <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
                                 <div class="text-center text-muted" v-if="noIntervensiMessage">
                                   {{ noIntervensiMessage }}
                                 </div>
-                                <canvas
-                                  v-show="!noIntervensiMessage"
-                                  ref="sudahBumilChart"
-                                ></canvas>
-                                <canvas
-                                  v-if="isSudahBumil"
-                                  ref="sudahBumilChart"
-                                  style="
+                                <canvas v-show="!noIntervensiMessage" ref="sudahBumilChart"></canvas>
+                                <canvas v-if="isSudahBumil" ref="sudahBumilChart" style="
                                     max-height: 280px;
                                     min-height: 200px !important;
                                     height: 100% !important;
                                     width: 100% !important;
-                                  "
-                                ></canvas>
-                                <canvas
-                                  v-else
-                                  ref="belumBumilChart"
-                                  style="
+                                  "></canvas>
+                                <canvas v-else ref="belumBumilChart" style="
                                     max-height: 280px;
                                     min-height: 200px !important;
                                     height: 100% !important;
                                     width: 100% !important;
-                                  "
-                                ></canvas>
+                                  "></canvas>
                               </div>
                             </div>
                           </div>
 
                           <!-- BAWAH: TABEL -->
-                          <div
-                            id="bumilTableDashboard"
-                            class="card shadow-sm border-0 h-100 p-3 table-responsive"
-                          >
+                          <div id="bumilTableDashboard" class="card shadow-sm border-0 h-100 p-3 table-responsive">
                             <div v-if="isSudah">
                               <table class="table table-striped table-sm align-middle p-2">
                                 <thead class="table-success">
@@ -1108,11 +863,7 @@
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  <tr
-                                    v-for="(ibu, i) in paginatedBumil"
-                                    :key="i"
-                                    v-if="paginatedBumil.length"
-                                  >
+                                  <tr v-for="(ibu, i) in paginatedBumil" :key="i" v-if="paginatedBumil.length">
                                     <td class="text-center">
                                       {{ (currentPage - 1) * perPage + i + 1 }}
                                     </td>
@@ -1143,10 +894,8 @@
                                 <tfoot>
                                   <tr>
                                     <td colspan="100%" class="text-end">
-                                      <button
-                                        class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportDashboardPdf('kesehatanBumilExport')"
-                                      >
+                                      <button class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                        @click="exportDashboardPdf('kesehatanBumilExport')">
                                         <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                                         Expor
                                       </button>
@@ -1162,20 +911,13 @@
                                       <span aria-hidden="true">&laquo;</span>
                                     </button>
                                   </li>
-                                  <li
-                                    class="page-item"
-                                    v-for="page in totalPages"
-                                    :key="page"
-                                    :class="{ active: currentPage === page }"
-                                  >
+                                  <li class="page-item" v-for="page in totalPages" :key="page"
+                                    :class="{ active: currentPage === page }">
                                     <button class="page-link" @click="currentPage = page">
                                       {{ page }}
                                     </button>
                                   </li>
-                                  <li
-                                    class="page-item"
-                                    :class="{ disabled: currentPage === totalPages }"
-                                  >
+                                  <li class="page-item" :class="{ disabled: currentPage === totalPages }">
                                     <button class="page-link" @click="currentPage++">
                                       <span aria-hidden="true">&raquo;</span>
                                     </button>
@@ -1224,10 +966,8 @@
                                 <tfoot>
                                   <tr>
                                     <td colspan="100%" class="text-end">
-                                      <button
-                                        class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportDashboardPdf('kesehatanBumilExport')"
-                                      >
+                                      <button class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                        @click="exportDashboardPdf('kesehatanBumilExport')">
                                         <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                                         Export
                                       </button>
@@ -1266,24 +1006,17 @@
                 <div class="row"> -->
               <div id="catinExport">
                 <div class="col-12">
-                  <div
-                    class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3"
-                  >
+                  <div class="row row-cols-1 row-cols-sm-2 p-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
                     <div v-for="(item, index) in kesehatanData.catin" :key="index" class="col">
-                      <div
-                        class="card h-100 shadow-sm border-0 d-flex flex-column"
-                        :class="`border-start border-4 border-${item.color}`"
-                      >
+                      <div class="card h-100 shadow-sm border-0 d-flex flex-column"
+                        :class="`border-start border-4 border-${item.color}`">
                         <!-- BODY -->
                         <div class="card-body d-flex justify-content-between align-items-center">
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                            <p
-                              v-if="index !== kesehatanData.catin.length - 1"
-                              class="mb-0"
-                              :class="`text-${item.color}`"
-                            >
+                            <p v-if="index !== kesehatanData.catin.length - 1" class="mb-0"
+                              :class="`text-${item.color}`">
                               {{ item.percent }}
                             </p>
 
@@ -1297,11 +1030,8 @@
 
                         <!-- FOOTER -->
                         <div class="card-footer bg-transparent border-0 p-0">
-                          <canvas
-                            v-if="index !== kesehatanData.catin.length - 1"
-                            :ref="'chart-catin-' + index"
-                            height="120"
-                          ></canvas>
+                          <canvas v-if="index !== kesehatanData.catin.length - 1" :ref="'chart-catin-' + index"
+                            height="120"></canvas>
                           <div v-else style="height: 120px"></div>
                         </div>
                         <!-- </div>
@@ -1343,11 +1073,7 @@
                                 <td id="text-diagram-table-piechart" class="text-additional small">
                                   {{ row.persen ? row.persen + ' %' : '0 %' }}
                                 </td>
-                                <td
-                                  id="text-diagram-table-piechart"
-                                  class="small"
-                                  :class="row.trenClass"
-                                >
+                                <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
                                   <span v-if="row.tren && row.tren !== '-'">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
@@ -1366,9 +1092,7 @@
                     <div class="col-12">
                       <div class="card border border-primary shadow p-3">
                         <div class="table-responsive">
-                          <table
-                            class="table table-bordered table-sm align-middle text-center mb-0"
-                          >
+                          <table class="table table-bordered table-sm align-middle text-center mb-0">
                             <thead class="table-light">
                               <tr>
                                 <th>Indikator</th>
@@ -1386,10 +1110,7 @@
                       </div>
                     </div>
                   </div>
-                  <button
-                    class="btn btn-sm btn-outline-primary p-2 mt-2"
-                    @click="exportDashboardPdf('catinExport')"
-                  >
+                  <button class="btn btn-sm btn-outline-primary p-2 mt-2" @click="exportDashboardPdf('catinExport')">
                     <i class="bi bi-file-earmark-excel text-primary me-1"></i>
                     Export
                   </button>
@@ -1408,25 +1129,29 @@
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
+
 /* ============================= */
 /* DEFAULT UNTUK LAYAR ≥ 1300px */
 /* ============================= */
-.form-control, /* input, textarea */
+.form-control,
+/* input, textarea */
 .form-select,
 button {
   font-size: 0.9rem;
 }
 
-.row-data-font-size{
+.row-data-font-size {
   font-size: 14px;
 }
 
 label {
-  font-size: 0.9rem; /* label proporsional */
+  font-size: 0.9rem;
+  /* label proporsional */
 }
 
 #responsive-chart-container {
-  height: 160px; /* Tinggi untuk Mobile */
+  height: 160px;
+  /* Tinggi untuk Mobile */
 }
 
 .ringkasan-header,
@@ -1472,17 +1197,20 @@ label {
 
 @media (min-width: 576px) {
   #responsive-chart-container {
-    height: 210px; /* Tinggi untuk Tablet */
+    height: 210px;
+    /* Tinggi untuk Tablet */
   }
 }
 
 @media (min-width: 992px) {
   #responsive-chart-container {
-    height: auto; /* Tinggi untuk Desktop */
+    height: auto;
+    /* Tinggi untuk Desktop */
   }
 }
 
 @media (max-width: 767.98px) {
+
   /* Menargetkan semua tombol dan tautan di dalam pagination */
   #responsive-pagination .page-item .page-link {
     /* Ukuran font yang lebih besar */
@@ -1505,6 +1233,7 @@ label {
 /* UNTUK LAYAR < 1300px */
 /* ============================= */
 @media (max-width: 1299px) {
+
   .form-control,
   .form-select,
   button {
@@ -1512,7 +1241,8 @@ label {
   }
 
   label {
-    font-size: 0.75rem; /* label lebih kecil */
+    font-size: 0.75rem;
+    /* label lebih kecil */
   }
 }
 
@@ -1524,9 +1254,12 @@ label {
 
 .sticky-filter {
   position: sticky;
-  top: 75px; /* sesuaikan dengan tinggi HeaderAdmin kamu */
-  z-index: 1020; /* supaya tetap di atas card/chart */
-  background: #f8f9fa; /* warna bg-light */
+  top: 75px;
+  /* sesuaikan dengan tinggi HeaderAdmin kamu */
+  z-index: 1020;
+  /* supaya tetap di atas card/chart */
+  background: #f8f9fa;
+  /* warna bg-light */
 }
 
 .filter-wrapper {
@@ -1541,6 +1274,7 @@ label {
   background-color: var(--bs-primary) !important;
   color: white !important;
 }
+
 .chart-placeholder {
   background-color: #f8f9fa;
   border-radius: 10px;
@@ -1555,7 +1289,9 @@ label {
 
 .border-violet {
   border-color: #4f0891 !important;
-} /* Overweight - Hitam */
+}
+
+/* Overweight - Hitam */
 .text-violet {
   color: #4f0891 !important;
 }
@@ -1564,31 +1300,39 @@ label {
 .stroke-danger polyline {
   stroke: #dc3545;
 }
+
 .stroke-warning polyline {
   stroke: #ffc107;
 }
+
 .stroke-success polyline {
   stroke: #198754;
 }
+
 .stroke-info polyline {
   stroke: #0dcaf0;
 }
+
 .stroke-dark polyline {
   stroke: #343a40;
 }
+
 .stroke-violet polyline {
   stroke: #4f0891;
 }
+
 /* Hover efek */
 .card:hover .svg-line polyline {
   opacity: 1;
   stroke-width: 3;
   transition: all 0.3s ease;
 }
+
 .stat-card {
   background-color: #fff;
   border-top: 4px solid var(--bs-secondary);
-  height: 90px; /* proporsional */
+  height: 90px;
+  /* proporsional */
   transition: all 0.2s ease-in-out;
   max-width: 120px;
 
@@ -1627,10 +1371,12 @@ label {
   justify-content: flex-end;
   align-items: flex-start;
   height: 60px;
+
   .spacer {
     flex: 1;
   }
 }
+
 /* custom kolom 9 per baris */
 @media (min-width: 1400px) {
   .col-xl-1_9 {
@@ -1638,16 +1384,20 @@ label {
     width: 11.11%;
   }
 }
+
 /* fallback grid untuk ukuran lain */
 @media (min-width: 992px) and (max-width: 1399.98px) {
   .col-lg-2_custom {
     flex: 0 0 auto;
-    width: 11.11%; /* 5 kolom */
+    width: 11.11%;
+    /* 5 kolom */
   }
+
   .stat-card {
     background-color: #fff;
     border-top: 4px solid var(--bs-secondary);
-    height: 90px; /* proporsional */
+    height: 90px;
+    /* proporsional */
     transition: all 0.2s ease-in-out;
     max-width: 120px;
 
@@ -1679,12 +1429,14 @@ label {
       margin: 0;
     }
   }
+
   .stat-text {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;
     height: 60px;
+
     .spacer {
       flex: 1;
     }
@@ -1696,10 +1448,12 @@ label {
     flex: 0 0 auto;
     width: 11.11%;
   }
+
   .stat-card {
     background-color: #fff;
     border-top: 4px solid var(--bs-secondary);
-    height: 90px; /* proporsional */
+    height: 90px;
+    /* proporsional */
     transition: all 0.2s ease-in-out;
     max-width: 80px;
 
@@ -1731,12 +1485,14 @@ label {
       margin: 0;
     }
   }
+
   .stat-text {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;
     height: 60px;
+
     .spacer {
       flex: 1;
     }
@@ -1746,12 +1502,15 @@ label {
 @media (max-width: 767.98px) {
   .col-sm-4 {
     flex: 0 0 auto;
-    width: 33.33%; /* 3 kolom */
+    width: 33.33%;
+    /* 3 kolom */
   }
+
   .stat-card {
     background-color: #fff;
     border-top: 4px solid var(--bs-secondary);
-    height: 90px; /* proporsional */
+    height: 90px;
+    /* proporsional */
     transition: all 0.2s ease-in-out;
 
     &:hover {
@@ -2362,7 +2121,7 @@ export default {
         this.renderBarChart()
         this.renderLineChart()
         this.renderFunnelChart()
-        this.renderBumilChart('ini apply filter')
+        this.renderBumilChart()
       } catch (e) {
         this.showError('Gagal menerapkan filter', e)
       } finally {
@@ -2427,70 +2186,70 @@ export default {
 
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
-       this.$nextTick(() => {
-  setTimeout(() => {
-    this.kesehatanData[this.activeMenu].forEach((item, index) => {
+        this.$nextTick(() => {
+          setTimeout(() => {
+            this.kesehatanData[this.activeMenu].forEach((item, index) => {
 
-      let trendFixed = [];
+              let trendFixed = [];
 
-      // Pilih normalize sesuai menu aktif
-      if (this.activeMenu === "anak") {
-        trendFixed = this.normalizeTrendNumber(item.trend);
-        this.rendersvgChart(`chart-${index}`, trendFixed, [item.color]);
-      }
+              // Pilih normalize sesuai menu aktif
+              if (this.activeMenu === "anak") {
+                trendFixed = this.normalizeTrendNumber(item.trend);
+                this.rendersvgChart(`chart-${index}`, trendFixed, [item.color]);
+              }
 
-      else if (this.activeMenu === "bumil") {
-        trendFixed = this.normalizeTrendNumber(item.trend);
-        this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
-      }
+              else if (this.activeMenu === "bumil") {
+                trendFixed = this.normalizeTrendNumber(item.trend);
+                this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
+              }
 
-      else if (this.activeMenu === "catin") {
-        trendFixed = this.normalizeTrendObject(item.trend);
-        this.rendersvgChart_Catin(`chart-catin-${index}`, trendFixed, [item.color]);
-      }
+              else if (this.activeMenu === "catin") {
+                trendFixed = this.normalizeTrendObject(item.trend);
+                this.rendersvgChart_Catin(`chart-catin-${index}`, trendFixed, [item.color]);
+              }
 
-    });
-  }, 80)
-}) //console.log("Refs available:", this.$refs);
+            });
+          }, 80)
+        }) //console.log("Refs available:", this.$refs);
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error)
       }
     },
 
-normalizeTrendNumber(trend) {
- if (!trend) return []
+    normalizeTrendNumber(trend) {
+      if (!trend) return []
 
       // Jika sudah array (seperti menu anak), langsung kembalikan
       if (Array.isArray(trend)) return trend
 
 
-  // Format khusus CATIN: { months:[], data:[], total:{} }
-  // eslint-disable-next-line no-undef
-  if (months && trend.data) {
-    // eslint-disable-next-line no-undef
-    //console.log('normalizeCatinTrend - trend:', months, trend.data  )
-    return trend.months.map((bulan, i) => ({
-      bulan,
-      persen: this.extractNumber(trend.data[i])
-    }))
-  }
+      // Format khusus CATIN: { months:[], data:[], total:{} }
+      // eslint-disable-next-line no-undef
+      if (months && trend.data) {
+        // eslint-disable-next-line no-undef
+        //console.log('normalizeCatinTrend - trend:', months, trend.data  )
+        return trend.months.map((bulan, i) => ({
+          bulan,
+          persen: this.extractNumber(trend.data[i])
+        }))
+      }
 
       // Jika object lain, fallback ke Object.values()
       return Object.values(trend)
-},
-normalizeTrendObject(trend) {
-  if (!trend || !trend.months || !trend.data) return [];
+    },
+    normalizeTrendObject(trend) {
+      if (!trend || !trend.months || !trend.data) return [];
 
-  return trend.months.map((bulan, i) => {
-    const raw = trend.data[i];
-    const val = raw && typeof raw === "object" ? Object.values(raw)[0] : 0;
+      return trend.months.map((bulan, i) => {
+        const raw = trend.data[i];
+        const val = raw && typeof raw === "object" ? Object.values(raw)[0] : 0;
 
-    return {
-      bulan,
-      persen: Number(val) || 0,
-    };
-  });
-},
+        return {
+          bulan,
+          persen: Number(val) || 0,
+        };
+      });
+    },
     rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
       let ref = this.$refs[refName]
       if (!ref) return
@@ -2693,7 +2452,7 @@ normalizeTrendObject(trend) {
       })
     },
     rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-     let ref = this.$refs[refName]
+      let ref = this.$refs[refName]
       if (!ref) return
 
       const canvas = Array.isArray(ref) ? ref[0] : ref
@@ -2980,13 +2739,13 @@ normalizeTrendObject(trend) {
           this.dataTable_catin = Array.isArray(dataCatin)
             ? dataCatin
             : Object.values(dataCatin || {}).map((row) => ({
-                status: row.status || '-',
-                jumlah: row.jumlah ?? 0,
-                persen: row.persen ?? 0,
-                tren: row.tren ?? '-',
-                trenIcon: row.trenIcon ?? '',
-                trenClass: row.trenClass ?? '',
-              }))
+              status: row.status || '-',
+              jumlah: row.jumlah ?? 0,
+              persen: row.persen ?? 0,
+              tren: row.tren ?? '-',
+              trenIcon: row.trenIcon ?? '',
+              trenClass: row.trenClass ?? '',
+            }))
         }
       } catch (e) {
         this.showError('Error Ambil Data', e)
@@ -3066,7 +2825,7 @@ normalizeTrendObject(trend) {
         // 💚 bumil
         if (this.activeMenu === 'bumil') {
           this.dataLoad = res.data.detail.punya_keduanya.map((item) => this.mapToBumil(item))
-          this.dataLoad_belum = res.data.detail.hanya_kunjungan.map((item) => this.mapToBumil(item))
+          this.dataLoad.push(...res.data.detail.hanya_kunjungan.map((item) => this.mapToBumil(item)))
         }
       } catch (e) {
         this.showError('Error Ambil Data', e)
@@ -3779,7 +3538,7 @@ normalizeTrendObject(trend) {
         umur: item.umur ?? '-',
         anemia: item.data_kunjungan?.status_gizi_hb == 'Anemia',
         kek: item.data_kunjungan?.status_gizi_lila == 'KEK',
-        risiko : item.data_kunjungan?.status_risiko_usia == 'Berisiko',        
+        risiko: item.data_kunjungan?.status_risiko_usia == 'Berisiko',
         intervensi: intervensi.length ? normalizeJenis(intervensi[0].kategori) : '-',
         raw: {
           kunjungan: item.data_kunjungan || null,
@@ -4046,13 +3805,13 @@ normalizeTrendObject(trend) {
         const data = this.dataLoad || []
         console.log('data Bumil Nih:', data);
 
-        
+
 
         // 🛑 Jika tidak ada intervensi dalam 3 bulan terakhir → tampilkan pesan
-        if (!recentIntervensi.length) {
-          this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
-          return
-        }
+        // if (!recentIntervensi.length) {
+        //   this.noIntervensiMessage = 'Tidak ada data untuk 3 bulan terakhir'
+        //   return
+        // }
 
         // 🔄 Reset pesan kalau ada data
         this.noIntervensiMessage = ''
@@ -4087,31 +3846,31 @@ normalizeTrendObject(trend) {
 
         // Inisialisasi Chart
         this.belumChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: jenisList,
-          datasets: [
-          {
-            data: counts,
-            backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b'],
-            color: '#FFFFFF',
+          type: 'bar',
+          data: {
+            labels: jenisList,
+            datasets: [
+              {
+                data: counts,
+                backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b'],
+                color: '#FFFFFF',
+              },
+            ],
           },
-          ],
-        },
-        options: {
-          indexAxis: 'y',
-          plugins: {
-          legend: { display: false },
-          datalabels: {
-            color: '#FFFFFF',
-            anchor: 'center',
-            align: 'center',
-            font: { weight: 'bold' },
-            formatter: (value) => value || '0',
+          options: {
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                color: '#FFFFFF',
+                anchor: 'center',
+                align: 'center',
+                font: { weight: 'bold' },
+                formatter: (value) => value || '0',
+              },
+            },
+            scales: { x: { beginAtZero: true } },
           },
-          },
-          scales: { x: { beginAtZero: true } },
-        },
         })
       })
     },
@@ -4230,7 +3989,7 @@ normalizeTrendObject(trend) {
       const arr = Array.isArray(this.dataLoad) ? this.dataLoad : Object.values(this.dataLoad)
 
       const q = this.searchQuery?.toLowerCase() ?? ''
-      
+
       return arr.filter((item) => {
         const nama = item.nama?.toLowerCase() || ''
         const nik = item.nik || ''
