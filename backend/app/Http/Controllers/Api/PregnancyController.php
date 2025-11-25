@@ -570,7 +570,7 @@ class PregnancyController extends Controller
         }
     }
 
-    public function status(Request $request)
+    public function status (Request $request)
     {
         try {
             $user = Auth::user();
@@ -597,7 +597,7 @@ class PregnancyController extends Controller
             if ($request->filled('periode')) {
                 $periode = Carbon::createFromFormat('Y-m', $request->periode);
                 $periodeAkhir = $periode->copy()->endOfMonth();
-                $periodeAwal = $periode->copy()->subMonths(11)->startOfMonth();
+                $periodeAwal = $periode->copy()->startOfMonth();
             } else {
                 $periode = now();
                 $periodeAkhir = $periode->copy()->endOfMonth();
@@ -1063,7 +1063,7 @@ class PregnancyController extends Controller
         $user = Auth::user();
 
         // 1. Ambil data anggota TPK
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
@@ -1647,7 +1647,7 @@ class PregnancyController extends Controller
                 if (!$item->tanggal_pemeriksaan_terakhir)
                     continue;
 
-                $monthKey = \Carbon\Carbon::parse($item->tanggal_pemeriksaan_terakhir)->format('M Y');
+                $monthKey = Carbon::parse($item->tanggal_pemeriksaan_terakhir)->format('M Y');
                 $idx = $months->search($monthKey);
                 if ($idx === false)
                     continue;

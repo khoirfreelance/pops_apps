@@ -1031,7 +1031,6 @@ export default {
 
     return {
       searchQuery,
-      // eslint-disable-next-line vue/no-dupe-keys
       filteredData,
       currentPage,
       perPage,
