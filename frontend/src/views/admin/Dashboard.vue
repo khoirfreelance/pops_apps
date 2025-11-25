@@ -3835,7 +3835,7 @@ export default {
             datasets: [
               {
                 data: counts,
-                backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b'],
+                backgroundColor: ['#006341', '#007d52', '#009562', '#6fa287', '#6d8b7b', '#ea7f7f'],
                 color: '#FFFFFF',
               },
             ],
