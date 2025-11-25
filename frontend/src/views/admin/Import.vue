@@ -346,7 +346,7 @@
                     >
 
                       <!-- ACTION -->
-                      <template #item-action="{ value }">
+                      <!-- <template #item-action="{ value }">
                         <div class="d-flex justify-content-center gap-2">
                           <button class="btn btn-outline-primary"
                                   @click="Update(value)">
@@ -358,7 +358,7 @@
                             <i class="bi bi-x-square"></i>
                           </button>
                         </div>
-                      </template>
+                      </template> -->
 
                     </easy-data-table>
                   </div>
@@ -801,7 +801,7 @@ export default {
         { text: 'BB', value: 'bb' },
         { text: 'TB', value: 'tb' },
         { text: 'Unit Posyandu', value: 'unit_posyandu' },
-        { text: 'Action', value: 'action' },
+        //{ text: 'Action', value: 'action' },
       ],
       searchQuery: "",
       currentPage: 1,

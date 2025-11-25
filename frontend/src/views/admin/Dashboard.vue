@@ -825,10 +825,6 @@
                             <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
-                                <div class="text-center text-muted" v-if="noIntervensiMessage">
-                                  {{ noIntervensiMessage }}
-                                </div>
-                                <canvas v-show="!noIntervensiMessage" ref="sudahBumilChart"></canvas>
                                 <canvas v-if="isSudahBumil" ref="sudahBumilChart" style="
                                     max-height: 280px;
                                     min-height: 200px !important;
@@ -2394,7 +2390,7 @@ export default {
       // OPTIONAL: Gradient lembut biar grafik cantik
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
       gradient.addColorStop(0, borderColor + '33') // 20% opacity
-      gradient.addColorStop(1, borderColor + '00') // transparent      
+      gradient.addColorStop(1, borderColor + '00') // transparent
 
       this[refName + 'Instance'] = new Chart(ctx, {
         type: 'line',
@@ -2569,8 +2565,6 @@ export default {
             res = await axios.get(`${baseURL}/api/children/tren`, { headers, params })
             break
           case 'bumil':
-            console.log(`${baseURL}/api/pregnancy/tren`, { headers, params })
-
             res = await axios.get(`${baseURL}/api/pregnancy/tren`, { headers, params })
             break
           case 'catin':
