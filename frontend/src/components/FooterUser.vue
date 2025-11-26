@@ -48,7 +48,7 @@
 
         <!-- Logo -->
         <div class="col-md-4 text-center text-md-centert mb-4 mb-md-0">
-          <p class="small mb-3 text-uppercase letter-space">Program dari</p>
+          <p class="small text-white mb-3 text-uppercase letter-space">Program dari</p>
           <img
             src="/src/assets/tf_reserved_primary.png"
             alt="Logo"
@@ -67,25 +67,27 @@
               <div class="row">
                 <div class="col-6 col-md-6">
                   <ul class="list-unstyled">
-                    <li><a href="#section0" class="footer-link my-2">Home</a></li>
-                    <li><a href="#section1" class="footer-link my-2">Tentang Pops</a></li>
+                    <li><a :href="domain + '#section0'" class="footer-link my-2">Home</a></li>
+                    <li><a :href="domain + '#section1'" class="footer-link my-2">Tentang Pops</a></li>
                   </ul>
                 </div>
                 <div class="col-6 col-md-6">
                   <ul class="list-unstyled">
-                    <li><a href="#section2" class="footer-link my-2">Status Gizi</a></li>
-                    <li><a href="#section3" class="footer-link my-2">Kalkulator Mandiri</a></li>
+
+                    <li><a :href="domain + '#section2'" class="footer-link my-2">Status Gizi</a></li>
+                    <li><a :href="domain + '#section3'" class="footer-link my-2">Kalkulator Mandiri</a></li>
+
                   </ul>
                 </div>
               </div>
             </div>
 
             <!-- Contact Us button -->
-            <div class="col-md-3 text-md-end text-center mt-2 mt-md-0">
+            <!-- <div class="col-md-3 text-md-end text-center mt-2 mt-md-0">
               <a href="#contact" class="btn btn-secondary text-light fw-bold px-4 py-2 mt-4">
                 CONTACT US
               </a>
-            </div>
+            </div> -->
 
           </div>
 
@@ -117,7 +119,12 @@
 <script>
 import CopyRight from './CopyRight.vue';
 export default {
-  components: { CopyRight }
+  components: { CopyRight },
+  data() {
+    return {
+       domain: window.location.origin
+    }
+  }
 }
 </script>
 
