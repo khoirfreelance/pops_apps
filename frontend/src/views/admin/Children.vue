@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi {{ kelurahan }} Bulan {{ periodeLabel }}
+                Laporan Status Gizi Desa {{ this.filters.kelurahan }} Bulan {{ periodeLabel }}
               </div>
             </div>
           </div>
@@ -2083,6 +2083,7 @@ export default {
 
         const wilayah = res.data
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.filters.kelurahan = wilayah.kelurahan
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
         // Setelah dapet id_wilayah, langsung fetch posyandu

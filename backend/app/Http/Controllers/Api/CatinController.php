@@ -80,15 +80,27 @@ class CatinController extends Controller
                 foreach ($request->usia as $range) {
                     $range = trim($range);
 
-                    if ($range === '<20' && $usia < 20)
+                    // < 19 Tahun
+                    if ($range === '< 19 Tahun' && $usia < 19) {
                         return true;
-                    if ($range === '>40' && $usia > 40)
-                        return true;
+                    }
 
+                    // >= 35 Tahun
+                    if ($range === '>= 35 Tahun' && $usia >= 35) {
+                        return true;
+                    }
+
+                    // 19 - 34 Tahun
+                    if ($range === '19 - 34 Tahun' && $usia >= 19 && $usia <= 34) {
+                        return true;
+                    }
+
+                    // fallback jika ada format "X - Y"
                     if (str_contains($range, '-')) {
-                        [$min, $max] = explode('-', $range);
-                        if ($usia >= (int) $min && $usia <= (int) $max)
+                        [$min, $max] = array_map('trim', explode('-', $range));
+                        if ($usia >= (int)$min && $usia <= (int)$max) {
                             return true;
+                        }
                     }
                 }
 
@@ -560,15 +572,27 @@ class CatinController extends Controller
                     foreach ($request->usia as $range) {
                         $range = trim($range);
 
-                        if ($range === '<20' && $usia < 20)
+                        // < 19 Tahun
+                        if ($range === '< 19 Tahun' && $usia < 19) {
                             return true;
-                        if ($range === '>40' && $usia > 40)
-                            return true;
+                        }
 
+                        // >= 35 Tahun
+                        if ($range === '>= 35 Tahun' && $usia >= 35) {
+                            return true;
+                        }
+
+                        // 19 - 34 Tahun
+                        if ($range === '19 - 34 Tahun' && $usia >= 19 && $usia <= 34) {
+                            return true;
+                        }
+
+                        // fallback jika ada format "X - Y"
                         if (str_contains($range, '-')) {
-                            [$min, $max] = explode('-', $range);
-                            if ($usia >= (int) $min && $usia <= (int) $max)
+                            [$min, $max] = array_map('trim', explode('-', $range));
+                            if ($usia >= (int)$min && $usia <= (int)$max) {
                                 return true;
+                            }
                         }
                     }
 

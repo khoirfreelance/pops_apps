@@ -1096,7 +1096,7 @@ export default {
         usia: {
           label: 'Usia (Tahun)',
           placeholder: 'Pilih Usia',
-          options: ['<20', '20-30', '30-40', '>40'],
+          options: ['< 19 Tahun', '19 - 34 Tahun', '>= 35 Tahun'],
           filter: '',
         },
       }
