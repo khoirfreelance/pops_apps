@@ -622,73 +622,40 @@
                         </tr>
                       </thead>
                       <tbody>
-  <tr v-if="selectedCatin.pemeriksaan_terakhir">
-    <td>{{ formatDate(selectedCatin.pemeriksaan_terakhir.tanggal_pemeriksaan) }}</td>
+                        <tr
+                          v-for="(r, i) in (selectedCatin.pemeriksaan_terakhir || []).slice(-3)"
+                          :key="i"
+                        >
+                          <td>{{ formatDate(r.tanggal_pemeriksaan) }}</td>
 
-    <!-- Hb / Anemia -->
-    <td>
-      <span class="badge"
-        :class="selectedCatin.pemeriksaan_terakhir.status_hb === 'Anemia' ? 'bg-danger' : 'text-dark'"
-      >
-        {{ selectedCatin.pemeriksaan_terakhir.status_hb }}
-      </span>
-    </td>
+                          <!-- Hb / Anemia -->
+                          <td>
+                            <span class="badge"
+                              :class="r.status_hb === 'Anemia' ? 'bg-danger' : 'text-dark'"
+                            >
+                              {{ r.status_hb }}
+                            </span>
+                          </td>
 
-    <!-- KEK -->
-    <td>
-      <span class="badge"
-        :class="selectedCatin.pemeriksaan_terakhir.status_kek === 'KEK' ? 'bg-danger' : 'text-dark'"
-      >
-        {{ selectedCatin.pemeriksaan_terakhir.status_kek }}
-      </span>
-    </td>
+                          <!-- KEK -->
+                          <td>
+                            <span class="badge"
+                              :class="r.status_kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+                            >
+                              {{ r.status_kek }}
+                            </span>
+                          </td>
 
-    <!-- Risiko -->
-    <td>
-      <span class="badge"
-        :class="selectedCatin.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
-      >
-        {{ selectedCatin.status_risiko }}
-      </span>
-    </td>
-
-    <!-- TB -->
-    <td>{{ selectedCatin.pemeriksaan_terakhir.tinggi_perempuan }}</td>
-
-    <!-- BB -->
-    <td>{{ selectedCatin.pemeriksaan_terakhir.berat_perempuan }}</td>
-
-    <!-- LILA -->
-    <td>{{ selectedCatin.pemeriksaan_terakhir.lila_perempuan }}</td>
-
-    <!-- Jamban -->
-    <td>
-      <i
-        v-if="selectedCatin.pemeriksaan_terakhir.menggunakan_jamban === 'Ya'"
-        class="fa fa-check text-danger"
-      ></i>
-      <span v-else>-</span>
-    </td>
-
-    <!-- Sumber Air Bersih -->
-    <td>
-      <i
-        v-if="selectedCatin.pemeriksaan_terakhir.sumber_air_bersih === 'Ya'"
-        class="fa fa-check text-danger"
-      ></i>
-      <span v-else>-</span>
-    </td>
-
-    <!-- Terpapar Rokok -->
-    <td>
-      <i
-        v-if="selectedCatin.pemeriksaan_terakhir.terpapar_rokok === true"
-        class="fa fa-check text-danger"
-      ></i>
-      <span v-else>-</span>
-    </td>
-  </tr>
-</tbody>
+                          <!-- Risiko -->
+                          <td>
+                            <span class="badge"
+                              :class="selectedCatin.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'"
+                            >
+                              {{ selectedCatin.status_risiko }}
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
 
                     </table>
                   </div>
@@ -775,7 +742,7 @@
                                     <td class="fw-semibold" style="width: 120px">Nama</td>
                                     <td>:</td>
                                     <td>
-                                      {{ selectedCatin.nama_perempuan }} /
+                                      {{ selectedCatin.nama_perempuan }} -
                                       {{ selectedCatin.nama_laki }}
                                     </td>
                                   </tr>
@@ -783,7 +750,7 @@
                                     <td class="fw-semibold">Usia</td>
                                     <td>:</td>
                                     <td>
-                                      {{ selectedCatin.usia_perempuan }} Tahun /
+                                      {{ selectedCatin.usia_perempuan }} Tahun -
                                       {{ selectedCatin.usia_laki }} Tahun
                                     </td>
                                   </tr>
@@ -791,7 +758,7 @@
                                     <td class="fw-semibold">Pekerjaan</td>
                                     <td>:</td>
                                     <td>
-                                      {{ selectedCatin.pekerjaan_perempuan }} /
+                                      {{ selectedCatin.pekerjaan_perempuan }} -
                                       {{ selectedCatin.pekerjaan_laki }}
                                     </td>
                                   </tr>
@@ -852,32 +819,31 @@
                                   <th>Hb</th>
                                   <th>Anemia</th>
                                   <th>Riwayat Penyakit</th>
-                                  <th>Terpapar Asap Rokok</th>
                                   <th>Jamban Sehat</th>
                                   <th>Sumber Air Bersih</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 <tr
-                                  v-for="(item, i) in selectedCatin.pemeriksaan_terakhir"
-                                  :key="'kehamilan-' + i"
+                                  v-for="(item, i) in selectedCatin.riwayat"
+                                  :key="'catin-' + i"
                                   class="text-center"
                                 >
-                                  <td>{{ this.formatDate(item.tanggal_pemeriksaan) }}</td>
-                                  <td>{{ item.nama_petugas }}</td>
+                                  <td>{{ this.formatDate(item.tanggal) }}</td>
+                                  <td>{{ item.kader }}</td>
                                   <td>
                                     <span
                                       class="badge"
                                       :class="
-                                        item.status_risiko === 'Risiko' ? 'bg-danger' : 'text-dark'
+                                        item.status_risiko === 'Berisiko' ? 'bg-danger' : 'text-dark'
                                       "
                                     >
                                       {{ item.status_risiko || '-' }}
                                     </span>
                                   </td>
-                                  <td>{{ item.tinggi_perempuan }}</td>
-                                  <td>{{ item.berat_perempuan }}</td>
-                                  <td>{{ item.lila_perempuan }}</td>
+                                  <td>{{ item.tb }}</td>
+                                  <td>{{ item.bb }}</td>
+                                  <td>{{ item.lila }}</td>
                                   <td>
                                     <span
                                       class="badge"
@@ -886,42 +852,31 @@
                                       {{ item.status_kek || '-' }}
                                     </span>
                                   </td>
-                                  <td>{{ item.hb_perempuan }}</td>
+                                  <td>{{ item.hb }}</td>
                                   <td>
                                     <span
                                       class="badge"
                                       :class="
-                                        item.status_hb === 'anemia' ? 'bg-danger' : 'text-dark'
+                                        item.status_hb === 'Anemia' ? 'bg-danger' : 'text-dark'
                                       "
                                     >
                                       {{ item.status_hb || '-' }}
                                     </span>
                                   </td>
                                   <td>
-                                    <i
-                                      v-if="item.terpapar_rokok == true"
-                                      class="fa fa-check text-danger"
-                                    ></i>
-                                    <span v-else>-</span>
-                                  </td>
-                                  <td>
-                                    <i
-                                      v-if="item.mendapat_bantuan_pmt == true"
-                                      class="fa fa-check text-danger"
-                                    ></i>
-                                    <span v-else>-</span>
+                                    {{ item.riwayat_penyakit }}
                                   </td>
                                   <td>
                                     <i
                                       v-if="item.menggunakan_jamban == true"
-                                      class="fa fa-check text-danger"
+                                      class="fa fa-check text-success"
                                     ></i>
                                     <span v-else>-</span>
                                   </td>
                                   <td>
                                     <i
                                       v-if="item.sumber_air_bersih == true"
-                                      class="fa fa-check text-danger"
+                                      class="fa fa-check text-success"
                                     ></i>
                                     <span v-else>-</span>
                                   </td>
@@ -969,6 +924,7 @@ export default {
       isLoading: true,
       isCollapsed: false,
       username: '',
+      dataRaw: [],
       today: '',
       thisMonth: '',
       kelurahan: '',
@@ -1126,11 +1082,35 @@ export default {
       const year = date.getFullYear()
       return `${day}-${month}-${year}`
     },
-    showDetail(props) {
-      //console.log(props);
-      this.selectedCatin = props
-      console.log(this.selectedCatin);
+    async showDetail(catin) {
+      try {
+        this.isLoading = true;
+
+        const nik = catin.nik;
+
+        const res = await axios.get(`${baseURL}/api/bride/${nik}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+
+        const data = res.data;
+
+        // BUILD selectedCatin lengkap
+        this.selectedCatin = {
+          ...data.catin,                      // identitas
+          riwayat: data.riwayat || [],        // riwayat tabel bawah
+          pemeriksaan_terakhir: data.pemeriksaan_terakhir || [] // tabel 3 kolom pertama
+        };
+
+        console.log("selected:", this.selectedCatin);
+
+      } catch (error) {
+        console.error("Gagal load detail Catin:", error);
+        this.selectedCatin = null;
+      } finally {
+        this.isLoading = false;
+      }
     },
+
     downloadRiwayat() {
       if (!this.selectedCatin) {
         alert('Silakan pilih calon pengantin terlebih dahulu.')
@@ -1217,7 +1197,7 @@ export default {
     async applyFilter() {
        console.log('Applying filters:');
       await this.loadBride()
-      await this.hitungStatusKesehatan()
+      //await this.hitungStatusKesehatan()
     },
     async resetFilter() {
 
@@ -1228,8 +1208,8 @@ export default {
         else if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
       }),
-      await this.loadBride(),
-      await this.hitungStatusKesehatan()
+      await this.loadBride()
+      //await this.hitungStatusKesehatan()
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
@@ -1359,7 +1339,7 @@ export default {
 
       this.periodeOptions = result
     },
-    async hitungStatusKesehatan() {
+    /* async hitungStatusKesehatan() {
       try {
         const params = {
           ref:this.ref || '',
@@ -1387,7 +1367,7 @@ export default {
         const data = res.data
         const total = data.total || 0
 
-        //this.totalBumil = total;
+        //this.totalCatin = total;
         this.kesehatan = data.counts.map((item) => ({
           title: item.title,
           value: item.value,
@@ -1398,7 +1378,7 @@ export default {
       } catch (e) {
         console.error('❌ hitungStatusKesehatan error:', e)
       }
-    },
+    }, */
     async loadBride() {
       try {
         const res = await axios.get(`${baseURL}/api/bride`, {
@@ -1406,14 +1386,21 @@ export default {
           params: this.filters,
         })
 
-        console.log('data: ', this.filters);
+        const data = res.data?.data || []
 
-        // ✅ Ubah data object jadi array
-        const rawData = res.data?.data || {}
-        const data = Object.keys(rawData).map((nik) => ({
-          nik_perempuan: nik,
-          ...rawData[nik],
+        // ✅ Ambil semua nama posyandu dari seluruh riwayat_pemeriksaan
+        const allPosyandu = data.flatMap((catin) =>
+          (catin.riwayat_pemeriksaan || []).map((r) => r.posyandu).filter(Boolean),
+        )
+
+        // ✅ Buat list unik
+        const uniquePosyandu = [...new Set(allPosyandu)]
+        this.posyanduList = uniquePosyandu.map((nama, idx) => ({
+          id: idx + 1,
+          nama_posyandu: nama,
         }))
+
+        this.dataRaw = data;
 
         this.catin = data.map((item) => ({
           nik: item.nik_perempuan,
@@ -1453,7 +1440,21 @@ export default {
           nama_posyandu: nama,
         }))
 
-        // console.log('isi catin:', this.catin);
+        const total = res.data.total || 0
+
+        this.kesehatan = res.data.counts.map((item) => ({
+          title: item.title,
+          value: item.value,
+          percent:
+            item.title != 'Total Catin'
+              ? total > 0
+                ? ((item.value / total) * 100).toFixed(1) + '%'
+                : '0%'
+              : '',
+          color: item.color,
+        }))
+
+        this.currentPage = 1
       } catch (e) {
         console.error('Gagal ambil data pernikahan:', e);
 
@@ -1467,7 +1468,7 @@ export default {
         //this.loadConfigWithCache(),
         //this.getPendingData(),
         await this.getWilayahUser(),
-        this.hitungStatusKesehatan(),
+        //this.hitungStatusKesehatan(),
         this.loadBride(),
         this.handleResize(),
         this.generatePeriodeOptions(),

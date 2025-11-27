@@ -1245,7 +1245,7 @@ export default {
         const total = res.data.total || 0
 
         //this.totalBumil = total;
-        console.log('Total bumil:', res)
+        //console.log('Total bumil:', res)
         this.kesehatan = res.data.counts.map((item) => ({
           title: item.title,
           value: item.value,
