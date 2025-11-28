@@ -1011,7 +1011,7 @@
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                            <p v-if="index !== kesehatanData.catin.length - 1" class="mb-0"
+                            <p v-if="index !== kesehatanData.catin.length - 2" class="mb-0"
                               :class="`text-${item.color}`">
                               {{ item.percent }}
                             </p>
@@ -1026,7 +1026,7 @@
 
                         <!-- FOOTER -->
                         <div class="card-footer bg-transparent border-0 p-0">
-                          <canvas v-if="index !== kesehatanData.catin.length - 1" :ref="'chart-catin-' + index"
+                          <canvas v-if="index !== kesehatanData.catin.length - 2" :ref="'chart-catin-' + index"
                             height="120"></canvas>
                           <div v-else style="height: 120px"></div>
                         </div>
@@ -2123,23 +2123,12 @@ export default {
     async hitungStatistik() {
       try {
         const params = {
-          from: 'dashboard',
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
           kelurahan: this.filters.kelurahan || '',
         }
-
-        // const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
-        // let res = null;
-
-        // switch (this.activeMenu) {
-        //   case 'anak': res = await axios.get(`${baseURL}/api/children/status`, { headers, params }); break;
-        //   case 'bumil': res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params }); break;
-        //   case 'catin': res = await axios.get(`${baseURL}/api/bride/status`, { headers, params }); break;
-        //   default: return;
-        // }
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
         let res = null
@@ -2149,8 +2138,6 @@ export default {
             res = await axios.get(`${baseURL}/api/children/status`, { headers, params })
             break
           case 'bumil':
-            console.log(`${baseURL}/api/pregnancy/status`, { headers, params })
-
             res = await axios.get(`${baseURL}/api/pregnancy/status`, { headers, params })
             break
           case 'catin':
@@ -2176,7 +2163,6 @@ export default {
 
         //console.log('✅ kesehatanData:', this.kesehatanData);
 
-
         // 🔥 render chart setelah semua elemen DOM selesai muncul
         this.$nextTick(() => {
           setTimeout(() => {
@@ -2196,7 +2182,7 @@ export default {
               }
 
               else if (this.activeMenu === "catin") {
-                trendFixed = this.normalizeTrendObject(item.trend);
+                trendFixed = this.normalizeTrendNumber(item.trend);
                 this.rendersvgChart_Catin(`chart-catin-${index}`, trendFixed, [item.color]);
               }
 
@@ -3645,7 +3631,7 @@ export default {
       if (belumBumil.length == 0) {
         belumBumil = labels.map(() => 0)
       }
-      console.log('kok label nya cuma 2', labels, belumBumil, sudahBumil);
+      //console.log('kok label nya cuma 2', labels, belumBumil, sudahBumil);
 
 
       // 4. Inisialisasi Chart
@@ -3708,7 +3694,7 @@ export default {
       this.isSudahBumil = val
     },
     renderBumilTrendChart(tren) {
-      console.log(tren)
+      //console.log(tren)
       const ctx = this.$refs.bumilTrendChart?.getContext('2d')
 
       if (!ctx || !this.indikatorData || !this.bulanLabels) return
@@ -3792,7 +3778,7 @@ export default {
         const ctx = canvas.getContext('2d')
 
         const data = this.dataLoad || []
-        console.log('data Bumil Nih:', data);
+        //console.log('data Bumil Nih:', data);
 
 
 
@@ -3892,8 +3878,8 @@ export default {
         this.bulanLabels = labels
         this.indikatorCatin = indikator
 
-        console.log('📌 Labels Catin:', this.bulanLabels)
-        console.log('📌 Indikator Catin:', this.indikatorCatin)
+        //console.log('📌 Labels Catin:', this.bulanLabels)
+        //console.log('📌 Indikator Catin:', this.indikatorCatin)
       } catch (err) {
         console.error('❌ Gagal memuat indikator catin bulanan:', err)
 
@@ -4305,7 +4291,7 @@ export default {
       this.handlePosyanduChange(val)
     },
     async activeMenu() {
-      console.log('🔄 Menu berganti, refresh data dan chart')
+      //console.log('🔄 Menu berganti, refresh data dan chart')
       await this.hitungIntervensi()
       await this.hitungStatistik() // hitung ulang sesuai menu 'anak'
       await this.generateInfoBoxes()
