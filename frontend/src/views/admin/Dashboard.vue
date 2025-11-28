@@ -652,29 +652,37 @@
                       <div class="card h-100 shadow-sm border-0 d-flex flex-column"
                         :class="`border-start border-4 border-${item.color}`">
                         <!-- BODY -->
-                        <div class="card-body d-flex justify-content-between align-items-center">
+                        <div v-if="index !== kesehatanData.bumil.length - 1" class="card-body d-flex justify-content-between align-items-center">
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                            <p v-if="index !== kesehatanData.bumil.length - 1" class="mb-0"
-                              :class="`text-${item.color}`">
+                            <p class="mb-0" :class="`text-${item.color}`">
                               {{ item.percent }}
                             </p>
 
-                            <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
                           </div>
 
-                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`" style="font-size: 1rem">
+                          <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
                             {{ item.value }}
                           </h2>
                         </div>
 
-                        <!-- FOOTER -->
-                        <div class="card-footer bg-transparent border-0 p-0">
-                          <canvas v-if="index !== kesehatanData.bumil.length - 1" :ref="'chart-bumil-' + index"
-                            style="height: 120px; width: 100%"></canvas>
+                        <div v-else class="card-body d-flex flex-column justify-content-between">
+                          <h6 class="fw-bold mb-3">{{ item.title }}</h6>
 
-                          <div v-else style="height: 120px"></div>
+                          <div class="d-flex justify-content-between align-items-center gap-3">
+                            <i class="bi bi-people display-6" :class="`text-${item.color}`"></i>
+
+                            <h1 class="fw-bold display-5 mb-0" :class="`text-${item.color}`">
+                              {{ item.value }}
+                            </h1>
+                          </div>
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div v-if="index !== kesehatanData.bumil.length - 1" class="card-footer bg-transparent border-0 p-0">
+                          <canvas :ref="'chart-bumil-' + index"
+                            height="120"></canvas>
                         </div>
                       </div>
                     </div>
@@ -1007,16 +1015,14 @@
                       <div class="card h-100 shadow-sm border-0 d-flex flex-column"
                         :class="`border-start border-4 border-${item.color}`">
                         <!-- BODY -->
-                        <div class="card-body d-flex justify-content-between align-items-center">
+                        <div v-if="index < 3" class="card-body d-flex justify-content-between align-items-center">
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
-                            <p v-if="index !== kesehatanData.catin.length - 2" class="mb-0"
-                              :class="`text-${item.color}`">
+                            <p class="mb-0" :class="`text-${item.color}`">
                               {{ item.percent }}
                             </p>
 
-                            <i v-else class="bi bi-people fs-1" :class="`text-${item.color}`"></i>
                           </div>
 
                           <h2 class="fw-bold mb-0" :class="`text-${item.color}`">
@@ -1024,14 +1030,23 @@
                           </h2>
                         </div>
 
-                        <!-- FOOTER -->
-                        <div class="card-footer bg-transparent border-0 p-0">
-                          <canvas v-if="index !== kesehatanData.catin.length - 2" :ref="'chart-catin-' + index"
-                            height="120"></canvas>
-                          <div v-else style="height: 120px"></div>
+                        <div v-else class="card-body d-flex flex-column justify-content-between">
+                          <h6 class="fw-bold mb-3">{{ item.title }}</h6>
+
+                          <div class="d-flex justify-content-between align-items-center gap-3">
+                            <i class="bi bi-people display-6" :class="`text-${item.color}`"></i>
+
+                            <h1 class="fw-bold display-5 mb-0" :class="`text-${item.color}`">
+                              {{ item.value }}
+                            </h1>
+                          </div>
                         </div>
-                        <!-- </div>
-    </div> -->
+
+                        <!-- FOOTER -->
+                        <div v-if="index < 3" class="card-footer bg-transparent border-0 p-0">
+                          <canvas :ref="'chart-catin-' + index"
+                            height="120"></canvas>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2148,7 +2163,7 @@ export default {
         }
 
         const data = res.data
-        //console.log('menu', this.activeMenu)
+        //console.log('catin', data)
 
         const total = data.total || 0
         this.totalAnak = total
@@ -3982,7 +3997,7 @@ export default {
     paginatedBumil() {
       //console.log('⏩ paginatedAnak DIPANGGIL');
       const filtered = this.filteredBumil
-      console.log(filtered);
+      //console.log(filtered);
       const start = (this.currentPage - 1) * this.perPage
       return filtered.slice(start, start + this.perPage)
     },
