@@ -1078,7 +1078,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(i, idx) in selectedAnak.riwayat_intervensi || []" :key="idx">
+                        <tr v-for="(i, idx) in (selectedAnak.riwayat_intervensi || []).slice(-3)" :key="idx">
                           <td>{{ i.tanggal }}</td>
                           <td>{{ i.kader }}</td>
                           <td>{{ i.intervensi }}</td>
