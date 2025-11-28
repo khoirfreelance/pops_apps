@@ -51,7 +51,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi {{ kelurahan }} Periode {{ periodeLabel }}
+                Laporan Status Gizi Desa {{ kelurahan }} Periode {{ periodeLabel }}
               </div>
             </div>
           </div>
