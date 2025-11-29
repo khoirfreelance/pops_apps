@@ -641,14 +641,14 @@ class CatinController extends Controller
     {
         if (is_null($hb))
             return null;
-        return $hb < 11 ? 'Anemia' : 'Normal';
+        return $hb < 12 ? 'Anemia' : 'Normal';
     }
 
     private function statusRisiko($usia_perempuan)
     {
         if (is_null($usia_perempuan))
             return null;
-        return ($usia_perempuan <= 19 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
+        return ($usia_perempuan < 20 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
     }
 
     public function status(Request $request)

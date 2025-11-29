@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} Periode {{ thisMonth }}
+                Laporan Status Kesehatan Calon Pengantin Desa {{ this.filters.kelurahan }} Periode {{ thisMonth }}
               </div>
             </div>
           </div>
@@ -328,7 +328,7 @@
                     :class="`border-start border-4 border-${item.color}`"
                     style="width: 108%"
                   >
-                    <div class="card-body position-relative">
+                    <div v-if="index < 3" class="card-body position-relative">
                       <!-- TITLE -->
                       <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
 
@@ -339,16 +339,25 @@
 
                       <!-- PERCENT OR ICON -->
                       <p
-                        v-if="index !== kesehatan.length - 1"
                         class="position-absolute bottom-0 end-0 mb-1 me-2 small"
                         :class="`text-${item.color}`" style="font-size: 16px;"
                       >
                         {{ item.percent }}
                       </p>
+                    </div>
 
-                      <p v-else class="position-absolute bottom-0 end-0 mb-1 me-2 small">
+                    <div v-else class="card-body position-relative">
+                      <!-- TITLE -->
+                      <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
+
+                      <!-- VALUE -->
+                      <h1 class="text-center display-6 fw-bold mb-0" :class="`text-${item.color}`">
+                        {{ item.value }}
+                      </h1>
+
+                      <!-- <p class="position-absolute bottom-0 end-0 mb-1 me-2 small">
                         <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
-                      </p>
+                      </p> -->
                     </div>
                   </div>
                 </div>
@@ -1052,7 +1061,7 @@ export default {
         usia: {
           label: 'Usia (Tahun)',
           placeholder: 'Pilih Usia',
-          options: ['< 19 Tahun', '19 - 34 Tahun', '>= 35 Tahun'],
+          options: ['< 20 Tahun', '20 - 34 Tahun', '>= 35 Tahun'],
           filter: '',
         },
       }
