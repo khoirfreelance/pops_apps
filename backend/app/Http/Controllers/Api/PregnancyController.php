@@ -941,17 +941,23 @@ class PregnancyController extends Controller
                 'provinsi' => $user->provinsi ?? null,
             ];
 
-            $query = Pregnancy::query();
+            $data = Pregnancy::get();
+
+            $data = $data->groupBy('nik_ibu')->map(function ($group) {
+                return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
+            });
+
+            $dataRaw = $data;
 
             // Filter default wilayah user
             if (!empty($wilayah['kelurahan'])) {
-                $query->where('kelurahan', $wilayah['kelurahan']);
+                $data->where('kelurahan', $wilayah['kelurahan']);
             }
 
             // 2️⃣ Filter tambahan request
             foreach (['kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
                 if ($request->filled($f)) {
-                    $query->where($f, $request->$f);
+                    $data->where($f, $request->$f);
                 }
             }
 
@@ -967,7 +973,7 @@ class PregnancyController extends Controller
             }
 
             // 4️⃣ Ambil data all (tanpa filter bulan)
-            $allData = $query->get();
+            $allData = $data;
 
             // 5️⃣ Filter current & previous berdasarkan bulan
             $current = $allData->filter(
