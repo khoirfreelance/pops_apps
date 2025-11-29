@@ -1974,30 +1974,27 @@ class ChildrenController extends Controller
         } else {
             $tanggal = now()->subMonth(); // default bulan berjalan -1
         }
+        $startDate = $tanggal->copy()->startOfMonth();
+        $endDate   = $tanggal->copy()->endOfMonth();
+
 
         // ==========================
         // A. Query KUNJUNGAN
         // ==========================
-        $qKunjungan = Kunjungan::query();
-
-        if ($filterKelurahan)
-            $qKunjungan->where('kelurahan', $filterKelurahan);
-        if ($request->filled('posyandu'))
-            $qKunjungan->where('posyandu', $request->posyandu);
-        if ($request->filled('rw'))
-            $qKunjungan->where('rw', $request->rw);
-        if ($request->filled('rt'))
-            $qKunjungan->where('rt', $request->rt);
-
-        // $qKunjungan->whereYear('tgl_pengukuran', $tanggal->year)
-        //         ->whereMonth('tgl_pengukuran', $tanggal->month);
-
-        $startDate = $tanggal->copy()->subMonths(3)->startOfMonth();
-        $endDate   = $tanggal->copy()->endOfMonth();
-
-        $qKunjungan->whereBetween('tgl_pengukuran', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
-
-        $kunjungan = $qKunjungan->get();
+        $kunjungan = $this->getData(
+            $filterKelurahan,
+            $startDate->format("Y-m-d"),
+            $endDate->format('Y-m-d'),
+            $request->posyandu,
+            $request->rt,
+            $request->rw,
+            null,
+            null,
+            null,
+            null,
+            null,
+        );
+        // dd([$kunjungan->count(), $dataKunjungan->count()]);
 
         // 🔥 Filter anak dengan **masalah gizi ganda**
         $nik_case = $kunjungan->filter(function ($item) {
@@ -2025,17 +2022,20 @@ class ChildrenController extends Controller
         $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
                     ->whereMonth('tgl_intervensi', $tanggal->month);
 
+        $qIntervensi->whereIn("nik_subjek", $nik_case)->where("status_subjek", "anak");
+
         $intervensi = $qIntervensi->get();
 
         // ==========================
         // C. GROUPING NIK
         // ==========================
-        $nikKunjungan   = $nik_case;
+        $nikGanda   = $nik_case;
+        $nikKunjungan = $kunjungan->pluck('nik')->unique();
         $nikIntervensi  = $intervensi->pluck('nik_subjek')->unique();
 
-        $punya_keduanya   = $nikKunjungan->intersect($nikIntervensi);
-        $hanya_kunjungan  = $nikKunjungan->diff($nikIntervensi);
-        $hanya_intervensi = $nikIntervensi->diff($nikKunjungan);
+        $punya_keduanya  = $nikIntervensi->intersect($nikGanda);;
+        $hanya_intervensi = $nikIntervensi->diff($nikGanda);
+        $hanya_kunjungan = $nikGanda->diff($nikIntervensi);
 
         // ==========================
         // D. Build DETAIL
@@ -2080,7 +2080,7 @@ class ChildrenController extends Controller
             'status' => 'success',
             'message' => 'Data intervensi & kunjungan gizi ganda berhasil dimuat',
             'grouping' => [
-                'total_case'        => $nikKunjungan->count(),
+                'total_case'        => $nikGanda->count(),
                 'punya_keduanya'    => $punya_keduanya->count(),
                 'hanya_kunjungan'   => $hanya_kunjungan->count(),
                 'hanya_intervensi'  => $hanya_intervensi->count(),
