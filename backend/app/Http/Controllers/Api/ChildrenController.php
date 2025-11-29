@@ -2447,6 +2447,10 @@ class ChildrenController extends Controller
         $nikList = $latest->pluck('nik')->unique()->values();
 
         $intervensiLower = array_map('strtolower', $intervensiFilters);
+        
+        foreach ($intervensiLower as $key => $value) {
+            if($value == "belum mendapatkan intervensi") $intervensiLower[$key] = "belum mendapatkan bantuan";
+        }
 
         // Ambil semua intervensi anak dalam periode
         $history = Intervensi::query()
