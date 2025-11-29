@@ -79,27 +79,38 @@ class PregnancyController extends Controller
 
             if ($request->filled('status') && is_array($request->status)) {
                 $data = $data->filter(function ($q) use ($request) {
+
+                    $ok = true; // semua kondisi harus terpenuhi
+
                     foreach ($request->status as $status) {
                         $statusLower = strtolower($status);
+
+                        // KEK
                         if (str_contains($statusLower, 'kek')) {
-                            if (empty($q->status_gizi_lila)) {
-                                return false;
+                            if (empty($q->status_gizi_lila) || $q->status_gizi_lila !== 'KEK') {
+                                $ok = false;
                             }
-                            return $q->status_gizi_lila == 'KEK';
-                        } else if (str_contains($statusLower, 'anemia')) {
-                            if (empty($q->status_gizi_hb)) {
-                                return false;
+                        }
+
+                        // Anemia
+                        if (str_contains($statusLower, 'anemia')) {
+                            if (empty($q->status_gizi_hb) || $q->status_gizi_hb !== 'Anemia') {
+                                $ok = false;
                             }
-                            return $q->status_gizi_hb == 'Anemia';
-                        } else if (str_contains($statusLower, 'risiko')) {
-                            if (empty($q->status_risiko_usia)) {
-                                return false;
+                        }
+
+                        // Risiko Usia
+                        if (str_contains($statusLower, 'risiko')) {
+                            if (empty($q->status_risiko_usia) || $q->status_risiko_usia !== 'Berisiko') {
+                                $ok = false;
                             }
-                            return $q->status_risiko_usia == 'Berisiko';
                         }
                     }
+
+                    return $ok;
                 });
             }
+
 
             if ($request->filled('usia') && is_array($request->usia)) {
                 $data = $data->filter(function ($q) use ($request) {

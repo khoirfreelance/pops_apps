@@ -86,25 +86,31 @@ class CatinController extends Controller
 
             if ($request->filled('status') && is_array($request->status)) {
                 $data = $data->filter(function ($q) use ($request) {
+                    $ok = true; // semua harus true
+
                     foreach ($request->status as $status) {
                         $statusLower = strtolower($status);
+
                         if (str_contains($statusLower, 'kek')) {
-                            if (empty($q->status_kek)) {
-                                return false;
+                            if (empty($q->status_kek) || $q->status_kek !== 'KEK') {
+                                $ok = false;
                             }
-                            return $q->status_kek == 'KEK';
-                        } else if (str_contains($statusLower, 'anemia')) {
-                            if (empty($q->status_hb)) {
-                                return false;
+                        }
+
+                        if (str_contains($statusLower, 'anemia')) {
+                            if (empty($q->status_hb) || $q->status_hb !== 'Anemia') {
+                                $ok = false;
                             }
-                            return $q->status_hb == 'Anemia';
-                        } else if (str_contains($statusLower, 'risiko')) {
-                            if (empty($q->status_risiko)) {
-                                return false;
+                        }
+
+                        if (str_contains($statusLower, 'risiko')) {
+                            if (empty($q->status_risiko) || $q->status_risiko !== 'Berisiko') {
+                                $ok = false;
                             }
-                            return $q->status_risiko == 'Berisiko';
                         }
                     }
+
+                    return $ok;
                 });
             }
 

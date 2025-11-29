@@ -583,7 +583,7 @@
                               <th class="text-center">Stunting</th>
                               <th class="text-center">Wasting</th>
                               <th class="text-center">Underweight</th>
-                              <th class="text-center">BB Sangat</th>
+                              <th class="text-center">BB Stagnan</th>
                               <th class="text-center">Overweight</th>
                             </tr>
                           </thead>
@@ -595,7 +595,7 @@
                               <td class="row-data-font-size"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
                               <td class="row-data-font-size"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
                               <td class="row-data-font-size"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                              <td class="row-data-font-size"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                              <td class="row-data-font-size"><i v-if="anak.bb_stagnan" class="bi bi-check2"></i></td>
                               <td class="row-data-font-size"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
                             </tr>
                           </tbody>
@@ -1889,7 +1889,7 @@ export default {
         'Stunting',
         'Wasting',
         'Underweight',
-        'BB Sangat',
+        'BB Stagnan',
         'Overweight',
       ]
 
@@ -1908,7 +1908,7 @@ export default {
           item.stunting ? '✓' : '',
           item.wasting ? '✓' : '',
           item.underweight ? '✓' : '',
-          item.bb_sangat ? '✓' : '',
+          item.bb_stagnan ? '✓' : '',
           item.overweight ? '✓' : '',
         ]
       })
@@ -3033,7 +3033,7 @@ export default {
         wasting: k.bb_tb && k.bb_tb !== 'Normal',
         underweight: k.bb_u && k.bb_u !== 'Normal',
 
-        bb_sangat: k.bb_tb && k.bb_tb.includes('Severely'),
+        bb_stagnan: k.bb_tb && k.bb_tb.includes('Severely'),
         overweight: k.bb_tb && k.bb_tb.includes('Overweight'),
 
         data_kunjungan: k,
