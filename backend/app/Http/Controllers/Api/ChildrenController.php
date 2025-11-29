@@ -2040,7 +2040,7 @@ class ChildrenController extends Controller
 
         $qIntervensi->whereIn("nik_subjek", $nik_case)->where("status_subjek", "anak");
 
-        $intervensi = $qIntervensi->get();
+        $intervensi = $qIntervensi->orderBy('tgl_intervensi', 'desc')->get();
 
         // ==========================
         // C. GROUPING NIK
