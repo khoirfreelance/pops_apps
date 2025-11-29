@@ -477,7 +477,8 @@ class ChildrenController extends Controller
             $filters["intervensi"] ?? null,
         );
         //$pendampingan = Child::where('kelurahan', $filterKelurahan)->get();
-        $intervensi = Intervensi::where('desa', $filterKelurahan)->get();
+        $nikKunjungan = $kunjungan->pluck('nik')->unique();
+        $intervensi = Intervensi::where('desa', $filterKelurahan, )->whereIn('nik_subjek', $nikKunjungan)->where('status_subjek', 'anak')->get();
         $grouped = [];
 
 
@@ -587,6 +588,7 @@ class ChildrenController extends Controller
 
         // 3️⃣ INTERVENSI
         foreach ($intervensi as $item) {
+            $nik = $item->nik_subjek;
 
             $grouped[$nik]['intervensi'][] = [
                 'kader' => $item->petugas ?? '-',
@@ -797,7 +799,7 @@ class ChildrenController extends Controller
                     $count['Normal']++;
                 if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obes'))
                     $count['Overweight']++;
-                if (is_null($a['naikBB'])) $count['BB Stagnan']++;
+                if (is_null($a['naikBB']) || $a['naikBB'] == 0) $count['BB Stagnan']++;
             }
 
             // ================================
@@ -2443,14 +2445,14 @@ class ChildrenController extends Controller
             return $latest;
         }
 
+        foreach ($intervensiFilters as $key => $value) {
+            if(strtolower($value) == "belum mendapatkan intervensi") $intervensiFilters[$key] = "Belum Mendapatkan Bantuan";
+        }
+
         // Ambil list NIK
         $nikList = $latest->pluck('nik')->unique()->values();
 
         $intervensiLower = array_map('strtolower', $intervensiFilters);
-        
-        foreach ($intervensiLower as $key => $value) {
-            if($value == "belum mendapatkan intervensi") $intervensiLower[$key] = "belum mendapatkan bantuan";
-        }
 
         // Ambil semua intervensi anak dalam periode
         $history = Intervensi::query()
