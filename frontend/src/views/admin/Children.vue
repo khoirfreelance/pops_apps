@@ -785,6 +785,13 @@
                       <thead class="table-success">
                         <tr>
                           <th
+                            @click="sortBy('no')"
+                            class="cursor-pointer align-middle text-center frozen-column th-font"
+                            rowspan="2"
+                          >
+                            No <SortIcon :field="'no'" />
+                          </th>
+                          <th
                             @click="sortBy('nama')"
                             class="cursor-pointer align-middle text-center frozen-column th-font"
                             rowspan="2"
@@ -858,7 +865,8 @@
                       </thead>
 
                       <tbody>
-                        <tr v-for="anak in paginatedData" :key="anak.id">
+                        <tr v-for="(anak,i) in paginatedData" :key="anak.id">
+                          <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
                           <td class="text-start frozen-column td-font">
                             <a
                               href="#"
@@ -1673,7 +1681,7 @@ export default {
         'KIE',
         'Bansos',
         'PMT',
-        'Bantuan Lainnya',
+        'Lainnya',
         'Belum mendapatkan intervensi',
       ],
       bbuOptions: ['Severely Underweight', 'Underweight', 'Normal', 'Risiko BB Lebih'],
