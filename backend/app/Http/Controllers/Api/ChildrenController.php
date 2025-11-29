@@ -25,6 +25,7 @@ class ChildrenController extends Controller
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
 
+    /*
     public function getData(Request $request)
     {
         try {
@@ -140,7 +141,7 @@ class ChildrenController extends Controller
             }
 
             // 2️⃣ PENDAMPINGAN
-            /* foreach ($pendampingan as $item) {
+            foreach ($pendampingan as $item) {
                 $nik = $item->nik_anak ?? $item->nik_ibu ?? '';
                 if (!$nik)
                     continue;
@@ -187,7 +188,7 @@ class ChildrenController extends Controller
                         'pb_lahir' => $item->tb_lahir ?? '-',
                     ];
                 }
-            } */
+            }
 
             // 3️⃣ INTERVENSI
             foreach ($intervensi as $item) {
@@ -403,6 +404,365 @@ class ChildrenController extends Controller
             'status' => 'success',
             'message' => 'Data anak berhasil dimuat',
             'data_anak' => $latestData,
+            'status' => $result
+        ]);
+
+    }
+    */
+
+    public function index(Request $request)
+    {
+        $filters = $request->only([
+            'periodeAwal',
+            'periodeAkhir',
+            'posyandu',
+            'rw',
+            'rt',
+            'bbu',
+            'tbu',
+            'bbtb',
+            'stagnan',
+            'intervensi'
+        ]);
+
+        // Normalisasi format periode
+        if (!empty($filters['periodeAwal'])) {
+            try {
+                $periodeAwal = explode(' ', $filters['periodeAwal']);
+                if(count($periodeAwal) === 1){
+                    $periodeAwal = explode('+', $filters['periodeAwal']);
+                }
+                $bulanIndex = array_search($periodeAwal[0], self::bulan);
+                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
+                    ->startOfMonth()->format('Y-m-d');
+            } catch (\Exception $e) {
+                $filters['periodeAwal'] = null;
+            }
+        }
+
+        if (!empty($filters['periodeAkhir'])) {
+            try {
+                $periodeAkhir = explode(' ', $filters['periodeAkhir']);
+                if(count($periodeAkhir) === 1){
+                    $periodeAkhir = explode('+', $filters['periodeAkhir']);
+                }
+                $bulanIndex = array_search($periodeAkhir[0], self::bulan);
+                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
+                    ->endOfMonth()->format('Y-m-d');
+            } catch (\Exception $e) {
+                $filters['periodeAkhir'] = null;
+            }
+        }
+
+        // ✅ 3. Dapatkan kelurahan user
+        $filterKelurahan = $request->kelurahan ?? null;
+
+        // DEFAULT: 1 tahun terakhir kalau user tidak apply periode
+        if (empty($filters['periodeAwal']) && empty($filters['periodeAkhir'])) {
+            $filters['periodeAwal'] = now()->subYear()->startOfDay()->format('Y-m-d');
+            $filters['periodeAkhir'] = now()->endOfDay()->format('Y-m-d');
+        }
+
+        $kunjungan = Kunjungan::where('kelurahan', $filterKelurahan)->get();
+        //$pendampingan = Child::where('kelurahan', $filterKelurahan)->get();
+        $intervensi = Intervensi::where('desa', $filterKelurahan)->get();
+        $grouped = [];
+
+        // 1️⃣ KUNJUNGAN — sumber utama data anak
+        foreach ($kunjungan as $item) {
+            $nik = $item->nik ?? $item->nik_ortu ?? '';
+            if (!$nik)
+                continue;
+
+            if (!isset($grouped[$nik])) {
+                $grouped[$nik] = [
+                    'id' => $item->id,
+                    'nama' => $item->nama_anak ?? '-',
+                    'nik' => $item->nik ?? '',
+                    'jk' => $item->jk ?? '-',
+                    'provinsi' => $item->provinsi ?? '-',
+                    'kota' => $item->kota ?? '-',
+                    'kecamatan' => $item->kecamatan ?? '-',
+                    'kelurahan' => $item->kelurahan ?? '-',
+                    'rw' => $item->rw ?? '-',
+                    'rt' => $item->rt ?? '-',
+                    'kelahiran' => [],
+                    'keluarga' => [],
+                    'pendampingan' => [],
+                    'posyandu' => [],
+                    'intervensi' => []
+                ];
+            }
+
+            $grouped[$nik]['posyandu'][] = [
+                'posyandu' => $item->posyandu,
+                'tgl_ukur' => $item->tgl_pengukuran,
+                'usia' => $item->usia_saat_ukur,
+                'bbu' => $item->bb_u,
+                'tbu' => $item->tb_u,
+                'bbtb' => $item->bb_tb,
+                'bb' => $item->bb,
+                'tb' => $item->tb,
+                'bb_naik' => $item->naik_berat_badan,
+            ];
+
+            $grouped[$nik]['kelahiran'][] = [
+                'tgl_lahir' => $item->tgl_lahir ?? '-',
+                'bb_lahir' => $item->bb_lahir ?? '-',
+                'pb_lahir' => $item->tb_lahir ?? '-',
+            ];
+
+            $grouped[$nik]['keluarga'][] = [
+                'nama_ayah' => $item->peran === 'Ayah' ? $item->nama_ortu : '-',
+                'nama_ibu' => $item->peran === 'Ibu' ? $item->nama_ortu : '-',
+                'pekerjaan_ayah' => '-',
+                'pekerjaan_ibu' => '-',
+                'usia_ayah' => '-',
+                'usia_ibu' => '-',
+                'anak_ke' => '-',
+            ];
+        }
+
+        // 2️⃣ PENDAMPINGAN
+        /* foreach ($pendampingan as $item) {
+            $nik = $item->nik_anak ?? $item->nik_ibu ?? '';
+            if (!$nik)
+                continue;
+
+            $grouped[$nik] ??= [
+                'id' => $item->id,
+                'nama' => $item->nama_anak ?? '-',
+                'nik' => $item->nik_anak ?? '',
+                'jk' => $item->jk ?? '-',
+                'provinsi' => $item->provinsi ?? '-',
+                'kota' => $item->kota ?? '-',
+                'kecamatan' => $item->kecamatan ?? '-',
+                'kelurahan' => $item->kelurahan ?? '-',
+                'rw' => $item->rw ?? '-',
+                'rt' => $item->rt ?? '-',
+                'kelahiran' => [],
+                'keluarga' => [],
+                'pendampingan' => [],
+                'posyandu' => [],
+                'intervensi' => []
+            ];
+
+            $grouped[$nik]['pendampingan'][] = [
+                'kader' => $item->petugas ?? '-',
+                'tanggal' => $item->tgl_pendampingan ?? '-',
+            ];
+
+            if (empty($grouped[$nik]['keluarga'])) {
+                $grouped[$nik]['keluarga'][] = [
+                    'nama_ayah' => $item->nama_ortu ?? '-',
+                    'nama_ibu' => $item->nama_ibu ?? '-',
+                    'pekerjaan_ayah' => $item->pekerjaan_ayah ?? '-',
+                    'pekerjaan_ibu' => $item->pekerjaan_ibu ?? '-',
+                    'usia_ayah' => $item->usia_ayah ?? '-',
+                    'usia_ibu' => $item->usia_ibu ?? '-',
+                    'anak_ke' => $item->anak_ke ?? '-',
+                ];
+            }
+
+            if (empty($grouped[$nik]['kelahiran'])) {
+                $grouped[$nik]['kelahiran'][] = [
+                    'tgl_lahir' => $item->tgl_lahir ?? '-',
+                    'bb_lahir' => $item->bb_lahir ?? '-',
+                    'pb_lahir' => $item->tb_lahir ?? '-',
+                ];
+            }
+        } */
+
+        // 3️⃣ INTERVENSI
+        foreach ($intervensi as $item) {
+            $nik = $item->nik_subjek ?? $item->nik_wali ?? '';
+            if (!$nik)
+                continue;
+
+            $grouped[$nik] ??= [
+                'id' => $item->id,
+                'nama' => $item->nama_subjek ?? '-',
+                'nik' => $item->nik_subjek ?? '',
+                'jk' => $item->jk ?? '-',
+                'provinsi' => $item->desa ?? '-',
+                'kota' => '-',
+                'kecamatan' => '-',
+                'kelurahan' => '-',
+                'rw' => $item->rw ?? '-',
+                'rt' => $item->rt ?? '-',
+                'kelahiran' => [],
+                'keluarga' => [],
+                'pendampingan' => [],
+                'posyandu' => [],
+                'intervensi' => []
+            ];
+
+            $grouped[$nik]['intervensi'][] = [
+                'kader' => $item->petugas ?? '-',
+                'jenis' => $item->kategori ?? '-',
+                'tgl_intervensi' => $item->tgl_intervensi ?? '-',
+                'bantuan' => $item->bantuan ?? '-',
+            ];
+        }
+
+        $filtered = collect($grouped)->filter(function ($anak) use ($filters) {
+
+            // Filter Posyandu
+            if (!empty($filters['posyandu'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['posyandu'], (array) $filters['posyandu'])
+                );
+                if (!$match) return false;
+            }
+
+            // Filter RW
+            if (!empty($filters['rw']) && !in_array($anak['rw'], (array) $filters['rw'])) {
+                return false;
+            }
+
+            // Filter RT
+            if (!empty($filters['rt']) && !in_array($anak['rt'], (array) $filters['rt'])) {
+                return false;
+            }
+
+            // Filter STATUS GIZI
+            if (!empty($filters['bbu'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['bbu'], (array) $filters['bbu'])
+                );
+                if (!$match) return false;
+            }
+
+            if (!empty($filters['tbu'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['tbu'], (array) $filters['tbu'])
+                );
+                if (!$match) return false;
+            }
+
+            if (!empty($filters['bbtb'])) {
+                $match = collect($anak['posyandu'])->contains(fn($p) =>
+                    in_array($p['bbtb'], (array) $filters['bbtb'])
+                );
+                if (!$match) return false;
+            }
+
+            // Filter PENDAMPINGAN periode
+            if (!empty($filters['periodeAwal']) || !empty($filters['periodeAkhir'])) {
+                $match = collect($anak['posyandu'])->contains(function($p) use ($filters) {
+                    $tgl = $p['tgl_ukur'];
+                    return (!$filters['periodeAwal'] || $tgl >= $filters['periodeAwal']) &&
+                        (!$filters['periodeAkhir'] || $tgl <= $filters['periodeAkhir']);
+                });
+
+                if (!$match) return false;
+            }
+
+            // Filter intervensi
+            if (!empty($filters['intervensi'])) {
+
+                if ($filters['intervensi'] != "Belum mendapatkan intervensi") {
+                    $match = collect($anak['intervensi'])->contains(fn($i) =>
+                        in_array($i['jenis'], (array) $filters['intervensi'])
+                    );
+                    if (!$match) return false;
+                }else {
+                    if (!$match) return false;
+                }
+            }
+
+            return true;
+        });
+
+        $filteredData = $filtered->map(function ($anak) {
+            return $anak;
+        })->values();
+
+        $latestData = $filteredData->map(function ($anak) {
+            // kalau tidak ada pengukuran → skip
+            if (empty($anak['posyandu'])) return null;
+
+            // Ambil tgl terbaru
+            $latest = collect($anak['posyandu'])->sortByDesc('tgl_ukur')->first();
+
+            return [
+                'bbu'   => strtolower($latest['bbu'] ?? ''),
+                'tbu'   => strtolower($latest['tbu'] ?? ''),
+                'bbtb'  => strtolower($latest['bbtb'] ?? ''),
+                'naikBB' => $latest['bb_naik'] ?? null,
+            ];
+        })->filter(); // buang null
+
+        $data = $latestData;
+        $total = $data->count();
+
+        $count = [
+            'Stunting' => 0,
+            'Wasting' => 0,
+            'Underweight' => 0,
+            'Normal' => 0,
+            'Overweight' => 0,
+            'BB Stagnan' => 0,
+        ];
+
+        foreach ($data as $a) {
+
+            if (str_contains($a['tbu'], 'stunted')) {
+                $count['Stunting']++;
+            }
+
+            if (str_contains($a['bbtb'], 'wasted')) {
+                $count['Wasting']++;
+            }
+
+            if (str_contains($a['bbu'], 'underweight')) {
+                $count['Underweight']++;
+            }
+
+            if (
+                ($a['bbu'] === 'normal') &&
+                ($a['tbu'] === 'normal') &&
+                ($a['bbtb'] === 'normal')
+            ) {
+                $count['Normal']++;
+            }
+
+            if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obesitas')) {
+                $count['Overweight']++;
+            }
+
+            if (is_null($a['naikBB']) || $a['naikBB'] == 0) {
+                $count['BB Stagnan']++;
+            }
+        }
+
+        $result = [];
+        foreach ($count as $title => $value) {
+
+            $color = match($title) {
+                'Stunting' => 'danger',
+                'Wasting' => 'warning',
+                'Underweight' => 'violet',
+                'Normal' => 'success',
+                'BB Stagnan' => 'info',
+                'Overweight' => 'dark',
+            };
+
+            $percent = $total ? round(($value / $total) * 100, 1) : 0;
+
+            $result[] = [
+                'title'   => $title,
+                'value'   => $value,
+                'percent' => "{$percent}%",
+                'color'   => $color,
+                //'trend'   => $trendCount[$title] ?? [],
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data anak berhasil dimuat',
+            'data_anak' => $filteredData,
             'status' => $result
         ]);
 
