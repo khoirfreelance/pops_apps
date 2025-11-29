@@ -480,11 +480,10 @@ class ChildrenController extends Controller
         $intervensi = Intervensi::where('desa', $filterKelurahan)->get();
         $grouped = [];
 
+
         // 1️⃣ KUNJUNGAN — sumber utama data anak
         foreach ($kunjungan as $item) {
-            $nik = $item->nik ?? $item->nik_ortu ?? '';
-            if (!$nik)
-                continue;
+            $nik = $item->nik;
 
             if (!isset($grouped[$nik])) {
                 $grouped[$nik] = [
@@ -508,7 +507,7 @@ class ChildrenController extends Controller
 
             $grouped[$nik]['posyandu'][] = [
                 'posyandu' => $item->posyandu,
-                'tgl_ukur' => $item->tgl_pengukuran,
+                'tgl_ukur' => $item->tgl_pengukuran->format("Y-m-d"),
                 'usia' => $item->usia_saat_ukur,
                 'bbu' => $item->bb_u,
                 'tbu' => $item->tb_u,
@@ -534,6 +533,7 @@ class ChildrenController extends Controller
                 'anak_ke' => '-',
             ];
         }
+        
 
         // 2️⃣ PENDAMPINGAN
         /* foreach ($pendampingan as $item) {
@@ -587,27 +587,6 @@ class ChildrenController extends Controller
 
         // 3️⃣ INTERVENSI
         foreach ($intervensi as $item) {
-            $nik = $item->nik_subjek ?? $item->nik_wali ?? '';
-            if (!$nik)
-                continue;
-
-            $grouped[$nik] ??= [
-                'id' => $item->id,
-                'nama' => $item->nama_subjek ?? '-',
-                'nik' => $item->nik_subjek ?? '',
-                'jk' => $item->jk ?? '-',
-                'provinsi' => $item->desa ?? '-',
-                'kota' => '-',
-                'kecamatan' => '-',
-                'kelurahan' => '-',
-                'rw' => $item->rw ?? '-',
-                'rt' => $item->rt ?? '-',
-                'kelahiran' => [],
-                'keluarga' => [],
-                'pendampingan' => [],
-                'posyandu' => [],
-                'intervensi' => []
-            ];
 
             $grouped[$nik]['intervensi'][] = [
                 'kader' => $item->petugas ?? '-',
@@ -617,76 +596,9 @@ class ChildrenController extends Controller
             ];
         }
 
-        $filtered = collect($grouped)->filter(function ($anak) use ($filters) {
 
-            // Filter Posyandu
-            if (!empty($filters['posyandu'])) {
-                $match = collect($anak['posyandu'])->contains(fn($p) =>
-                    in_array($p['posyandu'], (array) $filters['posyandu'])
-                );
-                if (!$match) return false;
-            }
 
-            // Filter RW
-            if (!empty($filters['rw']) && !in_array($anak['rw'], (array) $filters['rw'])) {
-                return false;
-            }
-
-            // Filter RT
-            if (!empty($filters['rt']) && !in_array($anak['rt'], (array) $filters['rt'])) {
-                return false;
-            }
-
-            // Filter STATUS GIZI
-            if (!empty($filters['bbu'])) {
-                $match = collect($anak['posyandu'])->contains(fn($p) =>
-                    in_array($p['bbu'], (array) $filters['bbu'])
-                );
-                if (!$match) return false;
-            }
-
-            if (!empty($filters['tbu'])) {
-                $match = collect($anak['posyandu'])->contains(fn($p) =>
-                    in_array($p['tbu'], (array) $filters['tbu'])
-                );
-                if (!$match) return false;
-            }
-
-            if (!empty($filters['bbtb'])) {
-                $match = collect($anak['posyandu'])->contains(fn($p) =>
-                    in_array($p['bbtb'], (array) $filters['bbtb'])
-                );
-                if (!$match) return false;
-            }
-
-            // Filter PENDAMPINGAN periode
-            if (!empty($filters['periodeAwal']) || !empty($filters['periodeAkhir'])) {
-                $match = collect($anak['posyandu'])->contains(function($p) use ($filters) {
-                    $tgl = $p['tgl_ukur'];
-                    return (!$filters['periodeAwal'] || $tgl >= $filters['periodeAwal']) &&
-                        (!$filters['periodeAkhir'] || $tgl <= $filters['periodeAkhir']);
-                });
-
-                if (!$match) return false;
-            }
-
-            // Filter intervensi
-            if (!empty($filters['intervensi'])) {
-
-                if ($filters['intervensi'] != "Belum mendapatkan intervensi") {
-                    $match = collect($anak['intervensi'])->contains(fn($i) =>
-                        in_array($i['jenis'], (array) $filters['intervensi'])
-                    );
-                    if (!$match) return false;
-                }else {
-                    if (!$match) return false;
-                }
-            }
-
-            return true;
-        });
-
-        $filteredData = $filtered->map(function ($anak) {
+        $filteredData = collect($grouped)->map(function ($anak) {
             return $anak;
         })->values();
 
@@ -772,7 +684,6 @@ class ChildrenController extends Controller
         }
 
         return response()->json([
-            'status' => 'success',
             'message' => 'Data anak berhasil dimuat',
             'data_anak' => $filteredData,
             'status' => $result
@@ -821,23 +732,23 @@ class ChildrenController extends Controller
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             }
 
+
             // ================================
             // 3. Query utama: Kunjungan
             // ================================
-            $kunjungan = Kunjungan::query()
-                ->where('kelurahan', $filterKelurahan)
-                ->whereDate('tgl_pengukuran', '>=', $filters['periodeAwal'])
-                ->whereDate('tgl_pengukuran', '<=', $filters['periodeAkhir'])
-                ->when($filters['posyandu'] ?? null, fn($q, $v) => $q->whereIn('posyandu', (array) $v))
-                ->when($filters['rw'] ?? null, fn($q, $v) => $q->whereIn('rw', (array) $v))
-                ->when($filters['rt'] ?? null, fn($q, $v) => $q->whereIn('rt', (array) $v))
-                ->when($filters['bbu'] ?? null, fn($q, $v) => $q->whereIn('bb_u', (array) $v))
-                ->when($filters['tbu'] ?? null, fn($q, $v) => $q->whereIn('tb_u', (array) $v))
-                ->when($filters['bbtb'] ?? null, fn($q, $v) => $q->whereIn('bb_tb', (array) $v))
-                ->when(isset($filters['stagnan']), fn($q) =>
-                    $q->where('naik_berat_badan', $filters['stagnan'] ? 0 : 1)
-                )
-                ->get();
+            $kunjungan = $this->getData(
+                $filterKelurahan,
+                $filters['periodeAwal'],
+                $filters['periodeAkhir'],
+                $filters["posyandu"],
+                $filters["rt"],
+                $filters["rw"],
+                null,
+                null,
+                null,
+                null,
+                null,
+            );
 
             if ($kunjungan->isEmpty()) {
                 return response()->json([
@@ -2354,21 +2265,20 @@ class ChildrenController extends Controller
         // ---------------------------------------------------------
         // 1. SUBQUERY: ambil tanggal pengukuran terakhir (per anak)
         // ---------------------------------------------------------
-        $sub = Kunjungan::selectRaw('nik, MAX(tgl_pengukuran) as last_date')
+        $sub = Kunjungan::selectRaw('trim(nik) as nik, MAX(tgl_pengukuran), MAX(id) as id')
             ->when($kelurahan, fn($q) => $q->where('kelurahan', strtoupper($kelurahan)))
             ->when($periodeAwal, fn($q) => 
                 $q->whereDate('tgl_pengukuran', '>=', $periodeAwal))
             ->when($periodeAkhir, fn($q) => 
                 $q->whereDate('tgl_pengukuran', '<=', $periodeAkhir))
-            ->groupBy('nik');
+            ->groupBy(DB::raw("trim(nik)"));
 
         // ---------------------------------------------------------
         // 2. MAIN QUERY: ambil row terakhir berdasarkan subquery
         // ---------------------------------------------------------
         $latest = Kunjungan::from('kunjungan_anak as ka')
             ->joinSub($sub, 'latest', function ($join) {
-                $join->on('ka.nik', '=', 'latest.nik')
-                    ->on('ka.tgl_pengukuran', '=', 'latest.last_date');
+                $join->on('ka.id', '=', 'latest.id');
             })
             ->select('ka.*')
             ->when($kelurahan, fn($q) => $q->where('ka.kelurahan', strtoupper($kelurahan)))
