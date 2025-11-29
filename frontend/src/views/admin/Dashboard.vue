@@ -2347,7 +2347,7 @@ export default {
         },
       })
     },
-    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
       let ref = this.$refs[refName]
       if (!ref) return
 
@@ -2448,7 +2448,7 @@ export default {
         },
       })
     },
-    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
       let ref = this.$refs[refName]
       if (!ref) return
 
