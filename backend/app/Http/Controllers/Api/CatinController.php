@@ -837,7 +837,7 @@ class CatinController extends Controller
                     'trend' => $trendCount[$title],
                 ];
             }
-
+            //dd($result);
             return response()->json([
                 'total' => $total,
                 'counts' => $result,

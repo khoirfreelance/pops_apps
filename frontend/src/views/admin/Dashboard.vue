@@ -2176,7 +2176,7 @@ export default {
           trend: item.trend,
         }))
 
-        //console.log('✅ kesehatanData:', this.kesehatanData);
+        console.log('✅ kesehatanData:', this.kesehatanData);
 
         // 🔥 render chart setelah semua elemen DOM selesai muncul
         this.$nextTick(() => {
@@ -2188,16 +2188,19 @@ export default {
               // Pilih normalize sesuai menu aktif
               if (this.activeMenu === "anak") {
                 trendFixed = this.normalizeTrendNumber(item.trend);
+                console.log('anak',trendFixed);
                 this.rendersvgChart(`chart-${index}`, trendFixed, [item.color]);
               }
 
               else if (this.activeMenu === "bumil") {
                 trendFixed = this.normalizeTrendNumber(item.trend);
+                console.log('bumil',trendFixed);
                 this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
               }
 
               else if (this.activeMenu === "catin") {
                 trendFixed = this.normalizeTrendNumber(item.trend);
+                console.log('catin',trendFixed);
                 this.rendersvgChart_Catin(`chart-catin-${index}`, trendFixed, [item.color]);
               }
 
