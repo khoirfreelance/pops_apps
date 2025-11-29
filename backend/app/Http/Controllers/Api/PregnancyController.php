@@ -202,7 +202,7 @@ class PregnancyController extends Controller
                 $groupedData = $groupedData->filter(function ($q) use ($request) {
                     foreach ($request->intervensi as $val) {
                         $jenisIntervensi = ['MBG', 'KIE', 'PMT', 'Bansos'];
-                        if ($val === "Belum Mendapatkan Intervensi") {
+                        if (strtolower($val) == "belum mendapatkan intervensi") {
                             if (empty($q['intervensi']) || $q['intervensi']->isEmpty()) {
                                 return true;
                             }
