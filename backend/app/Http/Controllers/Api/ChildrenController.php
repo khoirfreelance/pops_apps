@@ -463,7 +463,19 @@ class ChildrenController extends Controller
             $filters['periodeAkhir'] = now()->endOfDay()->format('Y-m-d');
         }
 
-        $kunjungan = Kunjungan::where('kelurahan', $filterKelurahan)->get();
+        $kunjungan = $this->getData(
+            $filterKelurahan,
+            $filters["periodeAwal"] ?? null,
+            $filters["periodeAkhir"] ?? null,
+            $filters["posyandu"] ?? null,
+            $filters["rt"] ?? null,     // benar (rt dulu)
+            $filters["rw"] ?? null,     // rw
+            $filters["bbu"] ?? null,
+            $filters["tbu"] ?? null,
+            $filters["bbtb"] ?? null,
+            $filters["stagnan"] ?? null,
+            $filters["intervensi"] ?? null,
+        );
         //$pendampingan = Child::where('kelurahan', $filterKelurahan)->get();
         $intervensi = Intervensi::where('desa', $filterKelurahan)->get();
         $grouped = [];
@@ -2326,4 +2338,235 @@ class ChildrenController extends Controller
         ]);
     }
 
+    private function getData(
+        ?string $kelurahan,
+        ?string $periodeAwal,
+        ?string $periodeAkhir,
+        ?string $posyandu,
+        ?string $rt,
+        ?string $rw,
+        ?array $bbu,
+        ?array $tbu,
+        ?array $bbtb,
+        ?array $stagnan,      // 1, 2, '>2'
+        ?array $intervensi
+    ){
+        // ---------------------------------------------------------
+        // 1. SUBQUERY: ambil tanggal pengukuran terakhir (per anak)
+        // ---------------------------------------------------------
+        $sub = Kunjungan::selectRaw('nik, MAX(tgl_pengukuran) as last_date')
+            ->when($kelurahan, fn($q) => $q->where('kelurahan', strtoupper($kelurahan)))
+            ->when($periodeAwal, fn($q) => 
+                $q->whereDate('tgl_pengukuran', '>=', $periodeAwal))
+            ->when($periodeAkhir, fn($q) => 
+                $q->whereDate('tgl_pengukuran', '<=', $periodeAkhir))
+            ->groupBy('nik');
+
+        // ---------------------------------------------------------
+        // 2. MAIN QUERY: ambil row terakhir berdasarkan subquery
+        // ---------------------------------------------------------
+        $latest = Kunjungan::from('kunjungan_anak as ka')
+            ->joinSub($sub, 'latest', function ($join) {
+                $join->on('ka.nik', '=', 'latest.nik')
+                    ->on('ka.tgl_pengukuran', '=', 'latest.last_date');
+            })
+            ->select('ka.*')
+            ->when($kelurahan, fn($q) => $q->where('ka.kelurahan', strtoupper($kelurahan)))
+            ->when($posyandu, fn($q) => $q->where('ka.posyandu', $posyandu))
+            ->when($rt, fn($q) => $q->where('ka.rt', $rt))
+            ->when($rw, fn($q) => $q->where('ka.rw', $rw))
+            ->when($bbu, fn($q) => $q->whereIn('ka.bb_u', $bbu))
+            ->when($tbu, fn($q) => $q->whereIn('ka.tb_u', $tbu))
+            ->when($bbtb, fn($q) => $q->whereIn('ka.bb_tb', $bbtb))
+            ->get();
+
+        // ---------------------------------------------------------
+        // 3. Hitung stagnan per anak kalau filter stagnan dipakai
+        // ---------------------------------------------------------
+        if ($stagnan) {
+            $latest = $this->getStagnanData($latest, $periodeAwal, $periodeAkhir, $stagnan);
+        }
+
+        if ($intervensi && count($intervensi) > 0) {
+            $latest = $this->getIntervensiData(
+                $latest, 
+                $periodeAwal, 
+                $periodeAkhir, 
+                $intervensi
+            );
+        }
+
+
+        return $latest;
+    }
+
+    public function testGetData(Request $request){
+        $filters = $request->only([
+            'kelurahan',
+            'periodeAwal',
+            'periodeAkhir',
+            'posyandu',
+            'rw',
+            'rt',
+            'bbu',
+            'tbu',
+            'bbtb',
+            'stagnan',
+            'intervensi'
+        ]);
+
+
+        // Normalisasi format periode
+        if (!empty($filters['periodeAwal'])) {
+            try {
+                $periodeAwal = explode(' ', $filters['periodeAwal']);
+                if(count($periodeAwal) === 1){
+                    $periodeAwal = explode('+', $filters['periodeAwal']);
+                }
+                $bulanIndex = array_search($periodeAwal[0], self::bulan);
+                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
+                    ->startOfMonth()->format('Y-m-d');
+            } catch (\Exception $e) {
+                $filters['periodeAwal'] = null;
+            }
+        }
+
+        if (!empty($filters['periodeAkhir'])) {
+            try {
+                $periodeAkhir = explode(' ', $filters['periodeAkhir']);
+                if(count($periodeAkhir) === 1){
+                    $periodeAkhir = explode('+', $filters['periodeAkhir']);
+                }
+                $bulanIndex = array_search($periodeAkhir[0], self::bulan);
+                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
+                    ->endOfMonth()->format('Y-m-d');
+            } catch (\Exception $e) {
+                $filters['periodeAkhir'] = null;
+            }
+        }
+
+
+        $latest = $this->getData(
+            $filters["kelurahan"] ?? null,
+            $filters["periodeAwal"] ?? null,
+            $filters["periodeAkhir"] ?? null,
+            $filters["posyandu"] ?? null,
+            $filters["rt"] ?? null,     // benar (rt dulu)
+            $filters["rw"] ?? null,     // rw
+            $filters["bbu"] ?? null,
+            $filters["tbu"] ?? null,
+            $filters["bbtb"] ?? null,
+            $filters["stagnan"] ?? null,
+            $filters["intervensi"] ?? null,
+        );
+        return response()->json([
+            "count" => $latest->count(),
+            "data"  => $latest,
+        ]);
+    }
+
+    private function getStagnanData($latest, $periodeAwal, $periodeAkhir, $stagnanFilters)
+    {
+        if (!$stagnanFilters || count($stagnanFilters) === 0) {
+            return $latest;
+        }
+
+        $nikList = $latest->pluck('nik');
+
+        $all = Kunjungan::whereIn('nik', $nikList)
+            ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_pengukuran', '<=', $periodeAkhir))
+            ->orderBy('tgl_pengukuran', 'desc')
+            ->get()
+            ->groupBy('nik');
+
+        // Hitung stagnan berdasarkan bulan
+        $latest = $latest->map(function ($row) use ($all) {
+            $history = $all[$row->nik] ?? collect();
+            $row->stagnan_months = $this->calculateStagnanByMonth($history);
+            return $row;
+        });
+
+        // FILTER MULTI-VALUE
+        return $latest->filter(function ($row) use ($stagnanFilters) {
+
+            foreach ($stagnanFilters as $filter) {
+
+                if ($filter == "1 T" && $row->stagnan_months == 1) return true;
+                if ($filter == "2 T" && $row->stagnan_months == 2) return true;
+                if (trim($filter) == "> 2 T" && $row->stagnan_months >= 3) return true;
+            }
+
+            return false;
+        })->values();
+    }
+
+    private function calculateStagnanByMonth($history)
+    {
+        // history sudah dalam urutan terbaru -> terlama
+        $history = $history->sortByDesc('tgl_pengukuran')->values();
+
+        $stagnanMonths = 0;
+
+        for ($i = 0; $i < $history->count() - 1; $i++) {
+
+            $current = $history[$i];
+            $next = $history[$i + 1];
+
+            // STOP condition:
+            if (is_null($current->naik_berat_badan)) break;
+            if ($current->naik_berat_badan == 1) break;
+
+            // current is stagnan (0)
+            $monthDiff = $current->tgl_pengukuran->diffInMonths($next->tgl_pengukuran);
+
+            // minimal 1 month stagnan
+            $stagnanMonths += max($monthDiff, 1);
+        }
+
+        return $stagnanMonths;
+    }
+
+    private function getIntervensiData($latest, $periodeAwal, $periodeAkhir, $intervensiFilters)
+    {
+        // Jika tidak ada filter intervensi → lewati saja
+        if (!$intervensiFilters || count($intervensiFilters) === 0) {
+            return $latest;
+        }
+
+        // Ambil list NIK
+        $nikList = $latest->pluck('nik')->unique()->values();
+
+        $intervensiLower = array_map('strtolower', $intervensiFilters);
+
+        // Ambil semua intervensi anak dalam periode
+        $history = Intervensi::query()
+            ->whereIn('nik_subjek', $nikList)
+            ->where('status_subjek', 'anak')
+            ->when($periodeAwal, fn($q) => $q->whereDate('tgl_intervensi', '>=', $periodeAwal))
+            ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_intervensi', '<=', $periodeAkhir))
+            ->when($intervensiFilters, fn($q) => $q->whereIn(DB::raw('LOWER(kategori)'), $intervensiLower))
+            ->orderBy('tgl_intervensi', 'desc')
+            ->get()->groupBy("nik_subjek");
+        
+        // Tentukan intervensi terakhir
+        $latest = $latest->map(function ($row) use ($history) {
+
+            $h = $history[$row->nik] ?? collect();
+            // Default: tidak ada intervensi
+            $row->intervensi_last_kategori = null;
+
+            if ($h->count() > 0) {
+                // Ambil intervensi terbaru
+                $last = $h->first();
+                $row->intervensi_last_kategori = $last->kategori;
+            }
+
+            return $row;
+        });
+
+        // Filter sesuai kategori pilihan user
+        return $latest->filter(function ($row) use ($intervensiFilters) {
+            return in_array($row->intervensi_last_kategori, $intervensiFilters);
+        })->values();
+    }
 }

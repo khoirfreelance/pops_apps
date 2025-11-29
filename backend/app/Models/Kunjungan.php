@@ -60,6 +60,12 @@ class Kunjungan extends Model
         'no_kk'
     ];
 
+    protected $dates = ['tgl_pengukuran'];
+    # atau
+    protected $casts = [
+        'tgl_pengukuran' => 'datetime:Y-m-d',
+    ];
+
     public function pendampingan()
     {
         return $this->hasMany(Child::class, 'nik_anak', 'nik');
