@@ -1593,7 +1593,7 @@ class PregnancyController extends Controller
             }
 
             $months = collect(range(0, 11))
-                ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
+                ->map(fn($i) => now()->startOfMonth()->subMonths(11 - $i)->format('M Y'))
                 ->values();
 
             $indikatorList = ['KEK', 'Anemia', 'Berisiko'];
@@ -1609,7 +1609,7 @@ class PregnancyController extends Controller
 
             // Hitung
             foreach ($groupedByMonth as $monthKey => $rows) {
-                $label = Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
+                $label = Carbon::createFromFormat('Y-m-d', $monthKey."-01")->format('M Y');
                 $idx = $months->search($label);
                 if ($idx === false)
                     continue;

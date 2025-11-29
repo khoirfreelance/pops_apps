@@ -1075,7 +1075,7 @@ class CatinController extends Controller
 
             // ✅ Buat label bulan
             $months = collect(range(0, 11))
-                ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
+                ->map(fn($i) => now()->StartOfMonth()->subMonths(value: 11 - $i)->format('M Y'))
                 ->values();
 
             // ✅ Siapkan struktur hasil
@@ -1087,13 +1087,13 @@ class CatinController extends Controller
 
             // Group per bulan, ambil semua record
             $groupedByMonth = $data->groupBy(function ($item) {
-                return \Carbon\Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
+                return Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
             });
 
             // Hitung
             foreach ($groupedByMonth as $monthKey => $rows) {
 
-                $label = \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
+                $label = Carbon::createFromFormat('Y-m-d', $monthKey."-01")->format('M Y');
                 $idx = $months->search($label);
                 if ($idx === false)
                     continue;
