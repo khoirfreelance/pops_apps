@@ -652,7 +652,8 @@
                       <div class="card h-100 shadow-sm border-0 d-flex flex-column"
                         :class="`border-start border-4 border-${item.color}`">
                         <!-- BODY -->
-                        <div v-if="index !== kesehatanData.bumil.length - 1" class="card-body d-flex justify-content-between align-items-center">
+                        <div v-if="index !== kesehatanData.bumil.length - 1"
+                          class="card-body d-flex justify-content-between align-items-center">
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
@@ -680,9 +681,9 @@
                         </div>
 
                         <!-- FOOTER -->
-                        <div v-if="index !== kesehatanData.bumil.length - 1" class="card-footer bg-transparent border-0 p-0">
-                          <canvas :ref="'chart-bumil-' + index"
-                            height="120"></canvas>
+                        <div v-if="index !== kesehatanData.bumil.length - 1"
+                          class="card-footer bg-transparent border-0 p-0">
+                          <canvas :ref="'chart-bumil-' + index" height="120"></canvas>
                         </div>
                       </div>
                     </div>
@@ -1044,8 +1045,7 @@
 
                         <!-- FOOTER -->
                         <div v-if="index < 3" class="card-footer bg-transparent border-0 p-0">
-                          <canvas :ref="'chart-catin-' + index"
-                            height="120"></canvas>
+                          <canvas :ref="'chart-catin-' + index" height="120"></canvas>
                         </div>
                       </div>
                     </div>
@@ -1678,6 +1678,7 @@ export default {
       jmlTotalAnak: 0,
       noIntervensiMessage: '',
       dataLoad_belum: [],
+      giziGandaAnak: [],
       dataLoad: [],
       kesehatanData: {
         anak: [],
@@ -2122,10 +2123,9 @@ export default {
           this.hitungIntervensi(),
           this.generateInfoBoxes(),
           this.generateIndikatorBumilBulanan(),
+          this.renderGiziGandaGiziAnak()
         ])
 
-        this.renderBarChart()
-        this.renderLineChart()
         this.renderFunnelChart()
         this.renderBumilChart()
         this.renderIntervensiBumilChart()
@@ -3040,116 +3040,31 @@ export default {
         raw: item,
       }
     },
-    renderLineChart(periodeBulan = 3) {
-      const data = this.dataLoad || []
-      if (!data.length) return
-
-      const now = new Date()
-      let cutoff
-
-      // ============================================
-      // 🔹 Tentukan cut-off date
-      // ============================================
-      if (this.filters?.periode) {
-        // Format: YYYY-MM
-        const [y, m] = this.filters.periode.split('-').map(Number)
-        cutoff = new Date(y, m - 1, 1)
-      } else {
-        // Default: bulan berjalan
-        cutoff = new Date(now.getFullYear(), now.getMonth(), 1)
+    async renderGiziGandaGiziAnak() {
+      const params = {
+        posyandu: this.filters.posyandu || '',
+        rw: this.filters.rw || '',
+        rt: this.filters.rt || '',
+        periode: this.filters.periode || '',
+        kelurahan: this.filters.kelurahan || '',
       }
-
-      // ============================================
-      // 🔹 Tentukan startDate (periodeBulan terakhir)
-      // ============================================
-      const startDate = new Date(cutoff)
-      startDate.setMonth(cutoff.getMonth() - (periodeBulan - 1))
-
-      const endDate = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0) // akhir bulan cut-off
-
-      const monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'Mei',
-        'Jun',
-        'Jul',
-        'Agu',
-        'Sep',
-        'Okt',
-        'Nov',
-        'Des',
-      ]
-
-      // ============================================
-      // 🔹 Inisialisasi data per bulan
-      // ============================================
-      const monthlyData = {}
-      for (let i = 0; i < periodeBulan; i++) {
-        const temp = new Date(startDate)
-        temp.setMonth(startDate.getMonth() + i)
-
-        const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}`
-        monthlyData[key] = { giziGanda: 0 }
-      }
-
-      // ============================================
-      // 🔹 Flatten data kunjungan
-      // ============================================
-      const allKunjungan = data.flatMap((anak) => {
-        if (!anak.data_kunjungan) return []
-
-        const kunj = Array.isArray(anak.data_kunjungan)
-          ? anak.data_kunjungan
-          : [anak.data_kunjungan]
-
-        return kunj.map((k) => ({
-          tanggal: new Date(k.tgl_pengukuran),
-          bb_u: k.bb_u,
-          tb_u: k.tb_u,
-          bb_tb: k.bb_tb,
-        }))
+      const res = await axios.get(`${baseURL}/api/children/get-children-double-problem`, {
+        params: params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       })
+      this.giziGandaAnak = res.data   // simpan data backend
 
-      // ============================================
-      // 🔹 Filter data sesuai periode startDate–cutoff
-      // ============================================
-      const recent = allKunjungan.filter((k) => k.tanggal >= startDate && k.tanggal <= endDate)
+      this.renderLineChart()
+      this.renderBarChart()
+    },
+    renderLineChart() {
+      if (!this.giziGandaAnak || !this.giziGandaAnak.count) return
 
-      // ============================================
-      // 🔹 Function cek gizi ganda
-      // ============================================
-      const isGiziGanda = (bb_u, tb_u, bb_tb) => {
-        const notNormal = (x) => x && x !== 'Normal'
-        const count = [notNormal(bb_u), notNormal(tb_u), notNormal(bb_tb)].filter(Boolean).length
-        return count >= 2
-      }
+      const labels = this.giziGandaAnak.count.label         // ["Agu 2025", "Sep 2025", ...]
+      const values = this.giziGandaAnak.count.count         // [12, 9, 6, 5]
 
-      // ============================================
-      // 🔹 Hitung gizi ganda per bulan
-      // ============================================
-      recent.forEach((p) => {
-        const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2, '0')}`
-        if (monthlyData[key] && isGiziGanda(p.bb_u, p.tb_u, p.bb_tb)) {
-          monthlyData[key].giziGanda++
-        }
-      })
-
-      // ============================================
-      // 🔹 Siapkan label dan dataset
-      // ============================================
-      const sortedKeys = Object.keys(monthlyData).sort()
-      const labels = sortedKeys.map((key) => {
-        const [, month] = key.split('-')
-        return monthNames[parseInt(month) - 1]
-      })
-
-      const dataGiziGanda = sortedKeys.map((key) => monthlyData[key].giziGanda)
-
-      // ============================================
-      // 🔹 Render chart
-      // ============================================
       if (this.lineChart) this.lineChart.destroy()
 
       const ctx = this.$refs.lineChart?.getContext('2d')
@@ -3162,105 +3077,41 @@ export default {
           datasets: [
             {
               label: 'Jumlah anak tidak membaik',
-              data: dataGiziGanda,
+              data: values,
               borderColor: 'goldenrod',
               backgroundColor: 'rgba(255, 215, 0, 0.3)',
               fill: true,
               tension: 0.3,
               pointRadius: 4,
               pointBackgroundColor: 'goldenrod',
-            },
-          ],
+            }
+          ]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false }
+          },
           scales: {
             y: {
-              beginAtZero: true,
-              ticks: {
-                // Ticks untuk Sumbu Y (Angka)
-                font: {
-                  size: 10, // Menyesuaikan dengan sumbu Y Line Chart
-                  weight: 'normal',
-                },
-              },
+              beginAtZero: true
             },
             x: {
-              title: { display: false },
               ticks: {
-                // Ticks untuk Sumbu X (Label)
                 autoSkip: false,
-                font: {
-                  size: 14, // Menyesuaikan dengan sumbu X Line Chart
-                  weight: 'normal',
-                },
-              },
-            },
-          },
-          // ❌ Konfigurasi ticks: { ... } yang lama di sini sudah Dihapus/Dipindahkan
-        },
+                font: { size: 14 }
+              }
+            }
+          }
+        }
       })
     },
     renderBarChart() {
-      const data = this.dataLoad || []
-      if (!data.length) return
+      if (!this.giziGandaAnak || !this.giziGandaAnak.posyandu) return
 
-      const now = new Date()
-      let startDate, endDate
+      const labels = this.giziGandaAnak.posyandu.name
+      const values = this.giziGandaAnak.posyandu.count
 
-      // ===============================
-      // 🔥 TENTUKAN PERIODE CUT-OFF
-      // ===============================
-      if (this.filters?.periode) {
-        // format periode biasanya "2025-08" → ubah ke date
-        const [tahun, bulan] = this.filters.periode.split('-')
-        startDate = new Date(parseInt(tahun), parseInt(bulan) - 1, 1)
-        endDate = new Date(parseInt(tahun), parseInt(bulan), 0, 23, 59, 59) // akhir bulan
-      } else {
-        // default 1 bulan terakhir (h-1 bulan berjalan)
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59) // akhir bulan
-      }
-
-      // ===============================
-      // 🔥 PROSES DATA POSYANDU
-      // ===============================
-      const allPosyandu = data.flatMap((anak) => {
-        const kun = anak.data_kunjungan
-        if (!kun) return []
-        return [
-          {
-            posyandu: kun.posyandu || 'Tidak Diketahui',
-            tanggal: new Date(kun.tgl_pengukuran),
-            bb_naik: kun.naik_berat_badan,
-          },
-        ]
-      })
-
-      const posyanduCounts = {}
-
-      allPosyandu.forEach((p) => {
-        if (p.tanggal >= startDate && p.tanggal <= endDate && !p.bb_naik) {
-          const key = p.posyandu || 'Tidak Diketahui'
-          if (!posyanduCounts[key]) posyanduCounts[key] = 0
-          posyanduCounts[key]++
-        }
-      })
-
-      // ===============================
-      // 🔥 AMBIL TOP 5 POSYANDU
-      // ===============================
-      const top5 = Object.entries(posyanduCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-
-      const labels = top5.map((item) => item[0])
-      const values = top5.map((item) => item[1])
-
-      // ===============================
-      // 🔥 HANCURKAN CHART LAMA DAN RENDER BAR CHART
-      // ===============================
       if (this.barChart) this.barChart.destroy()
 
       const ctx = this.$refs.barChart.getContext('2d')
@@ -3274,25 +3125,23 @@ export default {
               data: values,
               backgroundColor: 'rgba(255, 99, 132, 0.6)',
               borderRadius: 8,
-              maxBarThickness: 40, // ✅ maksimal lebar bar tetap
-            },
-          ],
+              maxBarThickness: 40,
+            }
+          ]
         },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true },
-            x: { title: { display: false } },
-          },
-          ticks: {
-            autoSkip: false, // jangan skip label
-            font: {
-              size: 8, // perkecil font
-              weight: 'normal',
-            },
-          },
-        },
+            x: {
+              ticks: {
+                autoSkip: false,
+                font: { size: 11 }
+              }
+            }
+          }
+        }
       })
     },
     async renderFunnelChart() {
@@ -4265,8 +4114,7 @@ export default {
 
       this.generateIndikatorBumilBulanan()
 
-      this.renderLineChart()
-      this.renderBarChart()
+      this.renderGiziGandaGiziAnak()
       this.renderFunnelChart()
       //this.renderSudahChart();
       this.renderBumilChart()
@@ -4314,8 +4162,7 @@ export default {
       await this.masalahGanda()
 
       if (this.activeMenu === 'anak') {
-        this.renderLineChart()
-        this.renderBarChart()
+        this.renderGiziGandaGiziAnak()
         this.rendersvgChart()
       }
 

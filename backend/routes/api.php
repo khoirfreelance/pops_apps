@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/children/import_pendampingan', [ChildrenController::class, 'import_pendampingan']);
     Route::post('/children/import_intervensi', [ChildrenController::class, 'import_intervensi']);
     Route::get('/children/get-data', [ChildrenController::class, 'testGetData']);
+    Route::get('/children/get-children-double-problem', [ChildrenController::class, 'getDataDoubleProblem']);
 });
 
 // Family Endpoint

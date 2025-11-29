@@ -2569,4 +2569,208 @@ class ChildrenController extends Controller
             return in_array($row->intervensi_last_kategori, $intervensiFilters);
         })->values();
     }
+
+    public function getDataDoubleProblem(Request $request)
+    {
+        $user = Auth::user();
+
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
+        if (!$anggotaTPK) {
+            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
+        }
+
+        $posyandu = $anggotaTPK->posyandu;
+        $wilayah = $posyandu?->wilayah;
+        if (!$wilayah) {
+            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
+        }
+
+        $filterKelurahan = $wilayah->kelurahan ?? null;
+
+        // ==========================
+        // Tentukan periode
+        // ==========================
+        if ($request->filled('periode')) {
+            $tanggal = Carbon::createFromFormat('Y-m-d', $request->periode."-01")->startOfMonth();
+        } else {
+            $tanggal = now()->subMonth()->startOfMonth(); // default bulan berjalan -1
+        }
+
+        // ==========================
+        // A. Query KUNJUNGAN
+        // ==========================
+        $qKunjungan = Kunjungan::query();
+
+        if ($filterKelurahan)
+            $qKunjungan->where('kelurahan', $filterKelurahan);
+        if ($request->filled('posyandu'))
+            $qKunjungan->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $qKunjungan->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $qKunjungan->where('rt', $request->rt);
+
+        $startDate = $tanggal->copy()->subMonths(2)->startOfMonth();
+        $endDate = $tanggal->copy()->endOfMonth();
+
+        $qKunjungan->whereBetween('tgl_pengukuran', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+
+        $kunjungan = $qKunjungan->get();
+
+        // Filter anak dengan **masalah gizi ganda**
+        $isDoubleProblem = function ($item) {
+            $gizi_ganda = 0;
+            if ($item->bb_u !== null && $item->bb_u !== 'Normal') $gizi_ganda++;
+            if ($item->tb_u !== null && $item->tb_u !== 'Normal') $gizi_ganda++;
+            if ($item->bb_tb !== null && $item->bb_tb !== 'Normal') $gizi_ganda++;
+            return $gizi_ganda >= 2;
+        };
+
+        // ==========================
+        // B. Ambil NIK anak yang PERNAH double problem
+        //    dalam range periode ini
+        // ==========================
+        $nik_case = $kunjungan
+            ->filter($isDoubleProblem)
+            ->pluck('nik')
+            ->unique()
+            ->values();
+
+        // Kalau tidak ada kasus sama sekali
+        if ($nik_case->isEmpty()) {
+            return response()->json([
+                "count" => [
+                    "label" => [],
+                    "count" => [],
+                ],
+                "posyandu" => [
+                    "name" => [],
+                    "count" => [],
+                ],
+            ], 200);
+        }
+
+        // Batasi kunjungan hanya untuk NIK yang pernah double problem
+        $kunjungan = $kunjungan->whereIn('nik', $nik_case);
+
+        // ==========================
+        // C. Siapkan label per bulan
+        // ==========================
+        $labels   = [];
+        $monthMap = [];
+
+        $monthNames = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+        ];
+
+        $cursor = $startDate->copy()->startOfMonth();
+        $lastMonthKey = null;
+
+        while ($cursor->lte($endDate)) {
+
+            $key = $cursor->format('Y-m');
+
+            // buat label: Jan 2025, Feb 2025, dst
+            $monthIndex = (int)$cursor->format('n') - 1; // 0–11
+            $labels[] = $monthNames[$monthIndex];
+
+            // simpan data bulan ini
+            $monthMap[$key] = $kunjungan->filter(function ($row) use ($cursor) {
+                $tgl = Carbon::parse($row->tgl_pengukuran);
+                return $tgl->isSameMonth($cursor);
+            });
+
+            $lastMonthKey = $key;
+            $cursor->addMonth();
+        }
+
+        // ==========================
+        // D. Untuk tiap bulan:
+        //    - ambil kunjungan terakhir per NIK di bulan tsb
+        //    - cek apakah masih double problem
+        //    - bentuk set NIK per bulan yang double problem
+        // ==========================
+        $nikPerMonth = []; // key: 'Y-m' → Collection nik
+
+        foreach ($monthMap as $key => $rows) {
+            // Latest kunjungan per NIK di bulan tsb
+            $latestPerNik = $rows
+                ->sortByDesc('tgl_pengukuran')
+                ->groupBy('nik')
+                ->map->first();
+
+            // Simpan hanya yang double problem di bulan ini
+            $nikPerMonth[$key] = $latestPerNik
+                ->filter($isDoubleProblem)
+                ->pluck('nik')
+                ->values();
+        }
+
+        // ==========================
+        // E. Intersect dari bulan pertama s/d bulan berjalan
+        //    untuk mendapatkan anak yang TIDAK MEMBAIK
+        //    (tetap double problem berturut-turut)
+        // ==========================
+        $counts = [];
+        $runningIntersection = null;
+
+        foreach (array_keys($monthMap) as $idx => $key) {
+            $currentNik = $nikPerMonth[$key] ?? collect();
+
+            if ($idx === 0) {
+                // Bulan pertama: base set = semua NIK yang double problem di bulan pertama
+                $runningIntersection = $currentNik->unique();
+            } else {
+                // Bulan berikutnya: intersect dengan bulan ini
+                $runningIntersection = $runningIntersection
+                    ->intersect($currentNik)
+                    ->values();
+            }
+
+            // Jumlah anak yang konsisten double problem dari bulan pertama s/d bulan ini
+            $counts[] = $runningIntersection->count();
+        }
+
+        // ==========================
+        // F. Group by POSYANDU di bulan terakhir
+        //    hanya untuk anak yang TIDAK MEMBAIK
+        //    (intersection final)
+        // ==========================
+        $persistNik = $runningIntersection ?? collect(); // NIK yang tetap double problem sampai bulan terakhir
+
+        $dataLastMonth = collect();
+        if ($lastMonthKey) {
+            $rowsLast = $monthMap[$lastMonthKey] ?? collect();
+
+            // latest per nik di bulan terakhir
+            $dataLastMonth = $rowsLast
+                ->whereIn('nik', $persistNik)
+                ->sortByDesc('tgl_pengukuran')
+                ->groupBy('nik')
+                ->map->first();
+        }
+
+        $groupPosyandu = $dataLastMonth
+            ->groupBy('posyandu')
+            ->map->count()
+            ->sortDesc()->take(5);
+
+        $posyanduNames = $groupPosyandu->keys()->values();
+        $posyanduCounts = $groupPosyandu->values()->values();
+
+        // ==========================
+        // G. Response
+        // ==========================
+        return response()->json([
+            "count" => [
+                "label" => $labels,      // label bulan (Agustus 2025, dst)
+                "count" => $counts,      // jumlah anak yang tetap double problem dari awal sampai bulan itu
+            ],
+            "posyandu" => [
+                "name" => $posyanduNames,
+                "count" => $posyanduCounts,
+            ],
+        ], 200);
+    }
 }
