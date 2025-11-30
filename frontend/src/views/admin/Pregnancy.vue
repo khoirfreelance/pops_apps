@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ thisMonth }}
+                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ periodeLabel }}
               </div>
             </div>
           </div>
@@ -1050,6 +1050,50 @@ export default {
     }
   },
   computed: {
+    periodeLabel() {
+      const awal = this.filters.periodeAwal
+      const akhir = this.filters.periodeAkhir
+
+      // ============================
+      // DEFAULT: 12 bulan terakhir
+      // ============================
+      const now = new Date()
+
+      const defaultAkhir = now.toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
+
+      const defaultAwalDate = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11, // mundur 11 bulan
+        1
+      )
+
+      const defaultAwal = defaultAwalDate.toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
+
+      // Jika tidak ada filter → pakai default range 12 bulan
+      if (!awal || !akhir) {
+        return `${defaultAwal} - ${defaultAkhir}`
+      }
+
+      // ============================
+      // Jika ada filter periode
+      // Format input: "Februari+2025"
+      // ============================
+      const awalLabel = awal.replace('+', ' ')
+      const akhirLabel = akhir.replace('+', ' ')
+
+      // Jika awal = akhir → hanya tampilkan 1
+      if (awalLabel === akhirLabel) {
+        return awalLabel
+      }
+
+      return `${awalLabel} - ${akhirLabel}`
+    },
     filterOptions() {
       return {
         status: {
@@ -1331,8 +1375,8 @@ export default {
       Object.keys(this.filters).forEach((k) => {
         if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
-      })
-      ;(await this.loadPregnancy())
+      });
+      (await this.loadPregnancy(),await this.getWilayahUser())
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed

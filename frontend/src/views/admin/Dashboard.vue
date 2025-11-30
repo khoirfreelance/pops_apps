@@ -2243,7 +2243,119 @@ export default {
         };
       });
     },
-    rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+    rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
+      let ref = this.$refs[refName]
+      if (!ref) return
+
+      const canvas = Array.isArray(ref) ? ref[0] : ref
+      if (!canvas) return
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      // Destroy instance sebelumnya jika ada
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
+      if (!Array.isArray(dataTable) || !dataTable.length) return
+
+      let processedData = dataTable
+      //console.log('periode',this.filters.periode);
+
+      if (!this.filters.periode) {
+        // Default → buang data terakhir
+        processedData = dataTable.slice(0, -1)
+      } else {
+        // Periode dipilih → buang data pertama
+        processedData = dataTable.slice(1)
+      }
+
+      // Extract label dan nilai
+      const labels = processedData.map((row) => row[labelKey])
+      const values = processedData.map((row) => parseFloat(row[valueKey]) || 0)
+
+      // AUTO SCALE: Buat grafik tidak datar
+      let minValue = Math.min(...values)
+      let maxValue = Math.max(...values)
+
+      const gap = maxValue - minValue
+
+      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+      const padding = gap === 0 ? 5 : gap * 0.3
+
+      const yMin = minValue - padding
+      const yMax = maxValue + padding
+
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: '#0d6efd',
+        violet: '#4f0891',
+        secondary: '#6c757d',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        dark: '#212529',
+      }
+
+      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
+
+      // OPTIONAL: Gradient lembut biar grafik cantik
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, borderColor + '33') // 20% opacity
+      gradient.addColorStop(1, borderColor + '00') // transparent
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor,
+              backgroundColor: gradient,
+              borderWidth: 3,
+              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: true, // ✔ ada gradasi lembut
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+          },
+
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
+          },
+
+          elements: {
+            line: {
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+            },
+          },
+
+          animation: {
+            duration: 0,
+          },
+        },
+      })
+    },
+    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
       let ref = this.$refs[refName]
       if (!ref) return
 
@@ -2344,108 +2456,7 @@ export default {
         },
       })
     },
-    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName]
-      if (!ref) return
-
-      const canvas = Array.isArray(ref) ? ref[0] : ref
-      if (!canvas) return
-
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-
-      // Destroy instance sebelumnya jika ada
-      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
-      if (!Array.isArray(dataTable) || !dataTable.length) return
-
-      // Extract label dan nilai
-      const labels = dataTable.map((row) => row[labelKey])
-      const values = dataTable.map((row) => parseFloat(row[valueKey]) || 0)
-
-      // AUTO SCALE: Buat grafik tidak datar
-      let minValue = Math.min(...values)
-      let maxValue = Math.max(...values)
-
-      const gap = maxValue - minValue
-
-      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
-      const padding = gap === 0 ? 5 : gap * 0.3
-
-      const yMin = minValue - padding
-      const yMax = maxValue + padding
-
-      // MAP BOOTSTRAP COLOR → HEX
-      const colorMap = {
-        primary: '#0d6efd',
-        violet: '#4f0891',
-        secondary: '#6c757d',
-        success: '#198754',
-        danger: '#dc3545',
-        warning: '#ffc107',
-        info: '#0dcaf0',
-        dark: '#212529',
-      }
-
-      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
-
-      // OPTIONAL: Gradient lembut biar grafik cantik
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-      gradient.addColorStop(0, borderColor + '33') // 20% opacity
-      gradient.addColorStop(1, borderColor + '00') // transparent
-
-      this[refName + 'Instance'] = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: values,
-              borderColor,
-              backgroundColor: gradient,
-              borderWidth: 3,
-              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              fill: true, // ✔ ada gradasi lembut
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-
-          plugins: {
-            legend: { display: false },
-            datalabels: { display: false },
-          },
-
-          scales: {
-            x: {
-              display: false,
-              grid: { display: false },
-            },
-            y: {
-              display: false,
-              grid: { display: false },
-              min: yMin,
-              max: yMax,
-            },
-          },
-
-          elements: {
-            line: {
-              borderCapStyle: 'round',
-              borderJoinStyle: 'round',
-            },
-          },
-
-          animation: {
-            duration: 0,
-          },
-        },
-      })
-    },
-    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
       let ref = this.$refs[refName]
       if (!ref) return
 
