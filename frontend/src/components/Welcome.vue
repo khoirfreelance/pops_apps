@@ -122,21 +122,30 @@ export default {
 
 <style scoped>
 .welcome-card {
-  background-image: url(/welcome0.png);
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position-x: right;
+    background-image: url(/welcome0.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position-x: right;
+    height: 200px;
 }
 
 .welcome-img {
-  object-fit: contain;
+    object-fit: stretch;
 }
 
 /* ====== Versi mobile (≤991px) ====== */
 @media (max-width: 991px) {
-  .welcome-card {
-    margin-top: 60px;
-    background: linear-gradient(0deg, #10754f 10%, #f7fcf4 13% ) !important;
-  }
+    .welcome-card {
+        margin-top: 60px;
+        /* background: linear-gradient(0deg, #10754f 10%, #f7fcf4 13% ) !important; */
+        border-radius: 0 0 20px 20px !important; 
+    }
+}
+
+@media (max-width: 600px) {
+    .welcome-card {
+        height: 170px;
+        background: linear-gradient(0deg, #10754f 10%, #f7fcf4 13% ) !important;
+    }
 }
 </style>
