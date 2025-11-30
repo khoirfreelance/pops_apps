@@ -47,7 +47,6 @@
           </div>
 
           <!-- Judul Laporan -->
-
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
@@ -909,20 +908,24 @@
                               </table>
                               <!-- Pagination -->
                               <nav id="responsive-pagination">
-                                <ul class="pagination justify-content-center">
+                                <ul class="pagination justify-content-end">
                                   <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                    <button class="page-link" @click="currentPage--">
+                                    <button class="page-link" @click="currentPage > 1 && currentPage--">
                                       <span aria-hidden="true">&laquo;</span>
                                     </button>
                                   </li>
-                                  <li class="page-item" v-for="page in totalPages" :key="page"
-                                    :class="{ active: currentPage === page }">
-                                    <button class="page-link" @click="currentPage = page">
+
+                                  <li v-for="(page, i) in paginationNumbersBumil" :key="i" class="page-item" :class="{
+                                    active: currentPage === page,
+                                    disabled: page === '...',
+                                  }">
+                                    <button class="page-link" @click="page !== '...' && (currentPage = page)">
                                       {{ page }}
                                     </button>
                                   </li>
-                                  <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                                    <button class="page-link" @click="currentPage++">
+
+                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesBumil }">
+                                    <button class="page-link" @click="currentPage < totalPagesBumil && currentPage++">
                                       <span aria-hidden="true">&raquo;</span>
                                     </button>
                                   </li>
@@ -988,7 +991,7 @@
                                     </button>
                                   </li>
 
-                                  <li v-for="(page, i) in paginationNumbersAnakGabungan" :key="i" class="page-item" :class="{
+                                  <li v-for="(page, i) in paginationNumbersBumil" :key="i" class="page-item" :class="{
                                     active: currentPage === page,
                                     disabled: page === '...',
                                   }">
@@ -997,8 +1000,8 @@
                                     </button>
                                   </li>
 
-                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
-                                    <button class="page-link" @click="currentPage < totalPagesAnak && currentPage++">
+                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesBumil }">
+                                    <button class="page-link" @click="currentPage < totalPagesBumil && currentPage++">
                                       <span aria-hidden="true">&raquo;</span>
                                     </button>
                                   </li>
