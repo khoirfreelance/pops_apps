@@ -942,7 +942,7 @@
                           <div class="col-md-6 col-sm-12">
                             <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                               <div>
-                                <h2 class="text-center text-success mb-2">Grafik tren Ibu Hamil</h2>
+                                <h2 class="text-center text-success mb-2">Grafik Tren Ibu Hamil</h2>
                               </div>
                               <div class="chart-placeholder text-muted text-center mt-auto">
                                 <canvas ref="bumilTrendChart" style="

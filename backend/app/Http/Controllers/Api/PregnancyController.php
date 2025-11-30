@@ -273,7 +273,7 @@ class PregnancyController extends Controller
             'KEK' => 0,
             'Berisiko' => 0,
             'Normal' => 0,
-            'Total Bumil' => $data->count(),
+            'Total Ibu Hamil' => $data->count(),
         ];
 
         foreach ($data as $row) {
@@ -302,7 +302,7 @@ class PregnancyController extends Controller
                 'Anemia' => 'warning',
                 'Berisiko' => 'violet',
                 'Normal' => 'success',
-                'Total Bumil' => 'secondary'
+                'Total Ibu Hamil' => 'secondary'
             };
 
             $percent = $total ? round(($value / $total) * 100, 1) : 0;
@@ -663,7 +663,7 @@ class PregnancyController extends Controller
                         ['title' => 'KEK', 'value' => 0, 'percent' => '0%', 'color' => 'danger', 'trend' => []],
                         ['title' => 'Berisiko', 'value' => 0, 'percent' => '0%', 'color' => 'violet', 'trend' => []],
                         ['title' => 'Normal', 'value' => 0, 'percent' => '0%', 'color' => 'success', 'trend' => []],
-                        ['title' => 'Total Bumil', 'value' => 0, 'percent' => '0%', 'color' => 'secondary', 'trend' => []],
+                        ['title' => 'Total Ibu Hamil', 'value' => 0, 'percent' => '0%', 'color' => 'secondary', 'trend' => []],
                     ],
                     'kelurahan' => $filterKelurahan,
                 ]);
@@ -679,7 +679,7 @@ class PregnancyController extends Controller
                 'KEK' => 0,
                 'Berisiko' => 0,
                 'Normal' => 0,
-                'Total Bumil' => $total,
+                'Total Ibu Hamil' => $total,
             ];
             foreach ($data as $row) {
 
@@ -747,7 +747,7 @@ class PregnancyController extends Controller
                             $jumlah++;
                         }
 
-                        if ($status === 'Total Bumil') {
+                        if ($status === 'Total Ibu Hamil') {
                             $jumlah = $totalMonth;
                         }
                     }
@@ -777,7 +777,7 @@ class PregnancyController extends Controller
                     'Anemia' => 'warning',
                     'Berisiko' => 'violet',
                     'Normal' => 'success',
-                    'Total Bumil' => 'secondary'
+                    'Total Ibu Hamil' => 'secondary'
                 };
 
                 $percent = $total ? round(($value / $total) * 100, 1) : 0;

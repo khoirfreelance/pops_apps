@@ -255,7 +255,7 @@ class CatinController extends Controller
             'KEK' => 0,
             'Risiko Usia' => 0,
             'Total Kasus' => 0,
-            'Total Catin' => $data->count(),
+            'Total Calon Pengantin' => $data->count(),
         ];
 
         // Hitung masing-masing kategori
@@ -280,7 +280,7 @@ class CatinController extends Controller
             $count['KEK'] +
             $count['Risiko Usia'];
 
-        $total = $count['Total Catin'];
+        $total = $count['Total Calon Pengantin'];
 
         $result = [];
         //dd($count);
@@ -291,7 +291,7 @@ class CatinController extends Controller
                 'KEK' => 'warning',
                 'Risiko Usia' => 'violet',
                 'Total Kasus' => 'success',
-                'Total Catin' => 'secondary'
+                'Total Calon Pengantin' => 'secondary'
             };
 
             $percent = $total ? round(($value / $total) * 100, 1) : 0;
@@ -721,7 +721,7 @@ class CatinController extends Controller
                         'KEK' => 0,
                         'Risiko Usia' => 0,
                         'Total Kasus' => 0,
-                        'Total Catin' => $data->count(),
+                        'Total Calon Pengantin' => $data->count(),
                     ],
                     'kelurahan' => $filterKelurahan,
                 ]);
@@ -737,7 +737,7 @@ class CatinController extends Controller
                 'KEK' => 0,
                 'Risiko Usia' => 0,
                 'Total Kasus' => 0,
-                'Total Catin' => $data->count(),
+                'Total Calon Pengantin' => $data->count(),
             ];
 
             foreach ($data as $row) {
@@ -801,7 +801,7 @@ class CatinController extends Controller
                             if ($lilaStatus === 'KEK') $jumlah++;
                             if ($riskStatus === 'BERISIKO') $jumlah++;
                         }
-                        if ($status === 'Total Catin') {
+                        if ($status === 'Total Calon Pengantin') {
                             $jumlah = $totalMonth;
                         }
                     }
@@ -831,7 +831,7 @@ class CatinController extends Controller
                     'KEK' => 'warning',
                     'Risiko Usia' => 'violet',
                     'Total Kasus' => 'success',
-                    'Total Catin' => 'secondary'
+                    'Total Calon Pengantin' => 'secondary'
                 };
 
                 $percent = $total ? round(($value / $total) * 100, 1) : 0;
