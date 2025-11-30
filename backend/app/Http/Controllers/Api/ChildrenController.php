@@ -820,7 +820,7 @@ class ChildrenController extends Controller
                 $trend = collect();
 
                 // Loop 3 bulan terakhir: cut-off -2 sampai cut-off
-                for ($i = 2; $i >= 0; $i--) {
+                for ($i = 6; $i >= 0; $i--) {
 
                     $tgl = $cutoff->copy()->subMonths($i);
                     $awal = $tgl->startOfMonth()->format('Y-m-d');
@@ -858,7 +858,8 @@ class ChildrenController extends Controller
 
                     $trend->push([
                         'bulan' => $tgl->format('M'),
-                        'persen' => $persen
+                        'persen' => $persen,
+                        'jumlah' => $jumlahStatusBulan
                     ]);
                 }
 

@@ -1948,7 +1948,7 @@ export default {
         // Backend sudah kirim array status
         const status = this.statusGiziSummary || [];
 
-        console.log("STATUS GIZI:", status);
+        //console.log("STATUS GIZI:", status);
 
         // isi status ke komponen
         this.gizi = status;
