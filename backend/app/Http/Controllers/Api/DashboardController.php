@@ -61,7 +61,7 @@ class DashboardController extends Controller
             'posyandu' => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu','id_wilayah')->get()->count(),
             'bidan' => User::where('role', '=', 'Bidan')->count(),
             'catin' => Catin::count(),
-            'anak' => $anak,
+            'anak' => $anakDariKunjungan,
         ]);
     }
 
