@@ -478,7 +478,13 @@ class ChildrenController extends Controller
         );
         //$pendampingan = Child::where('kelurahan', $filterKelurahan)->get();
         $nikKunjungan = $kunjungan->pluck('nik')->unique();
-        $intervensi = Intervensi::where('desa', $filterKelurahan, )->whereIn('nik_subjek', $nikKunjungan)->where('status_subjek', 'anak')->get();
+        $intervensi = Intervensi::query()
+            ->whereIn('nik_subjek', $nikKunjungan)
+            ->where('status_subjek', 'anak')
+            ->when($periodeAwal, fn($q) => $q->whereDate('tgl_intervensi', '>=', $filters["periodeAwal"]))
+            ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_intervensi', '<=', $filters["periodeAkhir"]))
+            ->orderBy('tgl_intervensi', 'desc')
+            ->get()->groupBy("nik_subjek");
         $grouped = [];
 
 
@@ -533,6 +539,44 @@ class ChildrenController extends Controller
                 'usia_ibu' => '-',
                 'anak_ke' => '-',
             ];
+
+            $problem = 0;
+            if ($item->bb_u != null && $item->bb_u !== 'Normal') $problem++;
+            if ($item->tb_u != null && $item->tb_u !== 'Normal') $problem++;
+            if ($item->bb_tb != null && $item->bb_tb !== 'Normal') $problem++;
+
+            $h = $intervensi[$item->nik] ?? collect();
+            // Default: tidak ada intervensi
+            $item->intervensi_last_kategori = null;
+
+            if ($h->count() > 0) {
+                // Ambil intervensi terbaru
+                $last = $h->first();
+                $grouped[$nik]['intervensi'][] = [
+                    'kader' => $last->petugas ?? '-',
+                    'jenis' => $last->kategori ?? '-',
+                    'tgl_intervensi' => $last->tgl_intervensi ?? '-',
+                    'bantuan' => $last->bantuan ?? '-',
+                ];
+            }
+
+            if ($problem > 0 && $h->count() == 0){
+                $grouped[$nik]['intervensi'][] = [
+                    'kader' => '-',
+                    'jenis' => 'Belum Mendapatkan Intervensi',
+                    'tgl_intervensi' =>  '-',
+                    'bantuan' => '-',
+                ];
+            }
+
+            if ($problem === 0 && $h->count() == 0){
+                $grouped[$nik]['intervensi'][] = [
+                    'kader' => '-',
+                    'jenis' => 'Normal',
+                    'tgl_intervensi' => '-',
+                    'bantuan' => '-',
+                ];
+            }
         }
 
 
@@ -586,18 +630,17 @@ class ChildrenController extends Controller
             }
         } */
 
-        // 3️⃣ INTERVENSI
-        foreach ($intervensi as $item) {
-            $nik = $item->nik_subjek;
-
-            $grouped[$nik]['intervensi'][] = [
-                'kader' => $item->petugas ?? '-',
-                'jenis' => $item->kategori ?? '-',
-                'tgl_intervensi' => $item->tgl_intervensi ?? '-',
-                'bantuan' => $item->bantuan ?? '-',
-            ];
-        }
-
+            // 3️⃣ INTERVENSI
+        // foreach ($intervensi as $nik => $data) {
+        //     if(!isset($grouped[$nik])) continue;
+        //     $item = $data->first() ?? collect();
+        //     $grouped[$nik]['intervensi'][] = [
+        //         'kader' => $item->petugas ?? '-',
+        //         'jenis' => $item->kategori ?? '-',
+        //         'tgl_intervensi' => $item->tgl_intervensi ?? '-',
+        //         'bantuan' => $item->bantuan ?? '-',
+        //     ];
+        // }
 
 
         $filteredData = collect($grouped)->map(function ($anak) {
@@ -2445,14 +2488,8 @@ class ChildrenController extends Controller
             return $latest;
         }
 
-        foreach ($intervensiFilters as $key => $value) {
-            if(strtolower($value) == "belum mendapatkan intervensi") $intervensiFilters[$key] = "Belum Mendapatkan Bantuan";
-        }
-
         // Ambil list NIK
         $nikList = $latest->pluck('nik')->unique()->values();
-
-        $intervensiLower = array_map('strtolower', $intervensiFilters);
 
         // Ambil semua intervensi anak dalam periode
         $history = Intervensi::query()
@@ -2460,12 +2497,17 @@ class ChildrenController extends Controller
             ->where('status_subjek', 'anak')
             ->when($periodeAwal, fn($q) => $q->whereDate('tgl_intervensi', '>=', $periodeAwal))
             ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_intervensi', '<=', $periodeAkhir))
-            ->when($intervensiFilters, fn($q) => $q->whereIn(DB::raw('LOWER(kategori)'), $intervensiLower))
+            // ->when($intervensiFilters, fn($q) => $q->whereIn(DB::raw('LOWER(kategori)'), $intervensiLower))
             ->orderBy('tgl_intervensi', 'desc')
             ->get()->groupBy("nik_subjek");
 
         // Tentukan intervensi terakhir
         $latest = $latest->map(function ($row) use ($history) {
+
+            $problem = 0;
+            if ($row->bb_u != null && $row->bb_u !== 'Normal') $problem++;
+            if ($row->tb_u != null && $row->tb_u !== 'Normal') $problem++;
+            if ($row->bb_tb != null && $row->bb_tb !== 'Normal') $problem++;
 
             $h = $history[$row->nik] ?? collect();
             // Default: tidak ada intervensi
@@ -2477,12 +2519,18 @@ class ChildrenController extends Controller
                 $row->intervensi_last_kategori = $last->kategori;
             }
 
+            if ($problem > 0 && $h->count() == 0){
+                $row->intervensi_last_kategori = "belum mendapatkan intervensi";
+            }
+
             return $row;
         });
 
+        $intervensiLower = array_map('strtolower', $intervensiFilters);
+
         // Filter sesuai kategori pilihan user
-        return $latest->filter(function ($row) use ($intervensiFilters) {
-            return in_array($row->intervensi_last_kategori, $intervensiFilters);
+        return $latest->filter(function ($row) use ($intervensiLower) {
+            return in_array(strtolower($row->intervensi_last_kategori), $intervensiLower);
         })->values();
     }
 
