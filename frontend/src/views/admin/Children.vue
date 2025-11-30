@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi Desa {{ this.filters.kelurahan }} Bulan {{ periodeLabel }}
+                Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ this.filters.periodeAwal.replace('+', ' ') }} - {{ this.filters.periodeAkhir.replace('+', ' ') }}
               </div>
             </div>
           </div>
@@ -785,6 +785,13 @@
                       <thead class="table-success">
                         <tr>
                           <th
+                            @click="sortBy('no')"
+                            class="cursor-pointer align-middle text-center frozen-column th-font"
+                            rowspan="2"
+                          >
+                            No <SortIcon :field="'no'" />
+                          </th>
+                          <th
                             @click="sortBy('nama')"
                             class="cursor-pointer align-middle text-center frozen-column th-font"
                             rowspan="2"
@@ -858,7 +865,8 @@
                       </thead>
 
                       <tbody>
-                        <tr v-for="anak in paginatedData" :key="anak.id">
+                        <tr v-for="(anak,i) in paginatedData" :key="anak.id">
+                          <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
                           <td class="text-start frozen-column td-font">
                             <a
                               href="#"
@@ -1673,7 +1681,7 @@ export default {
         'KIE',
         'Bansos',
         'PMT',
-        'Bantuan Lainnya',
+        'Lainnya',
         'Belum mendapatkan intervensi',
       ],
       bbuOptions: ['Severely Underweight', 'Underweight', 'Normal', 'Risiko BB Lebih'],
@@ -1838,7 +1846,7 @@ export default {
           const startDate = new Date(now.getFullYear() - 1, now.getMonth() + 1, 1);
           this.filters.periodeAwal = bulan[startDate.getMonth()] + "+" + startDate.getFullYear();
           this.filters.periodeAkhir = bulan[endDate.getMonth()] + "+" + endDate.getFullYear();
-          console.log("Set default periode:", this.filters.periodeAwal, this.filters.periodeAkhir);
+          //console.log("Set default periode:", this.filters.periodeAwal, this.filters.periodeAkhir);
         }
 
         const res = await axios.get(`${baseURL}/api/children`, {
@@ -1940,7 +1948,7 @@ export default {
         // Backend sudah kirim array status
         const status = this.statusGiziSummary || [];
 
-        console.log("STATUS GIZI:", status);
+        //console.log("STATUS GIZI:", status);
 
         // isi status ke komponen
         this.gizi = status;
@@ -2012,6 +2020,7 @@ export default {
 
       this.filteredData = [...this.children]
       await this.loadChildren()
+      await this.getWilayahUser()
       //await this.hitungStatusGizi()
     },
     selectAll_bbu() {
@@ -2503,15 +2512,28 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   computed: {
+    // eslint-disable-next-line vue/return-in-computed-property
     periodeLabel() {
-      // Jika user pilih ALL → tampilkan bulan berjalan
-      if (!this.filters.periode) {
-        return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+      // DEFAULT → pakai bulan berjalan
+      const defaultLabel = new Date().toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
+
+      // Jika user belum pilih periode → gunakan default
+      if (!this.filters.periodeAwal || !this.filters.periodeAwal.includes('-')) {
+        return defaultLabel
       }
 
-      const [year, month] = this.filters.periode.split('-')
-      const date = new Date(year, month - 1, 1)
-      return date.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+      // Parse "YYYY-MM"
+      const [year, month] = this.filters.periodeAwal.split('-')
+      const date = new Date(Number(year), Number(month) - 1, 1)
+
+      // Return label format Indonesia
+      return date.toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
     },
     underDisplayText() {
       const total = this.filters.bbu.length

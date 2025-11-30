@@ -669,46 +669,22 @@ export default {
       });
     },
     generateIndikatorDataBB() {
-      // Pastikan format label bulan (urut kronologis)
       const monthNames = [
         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
       ];
 
-      // Ambil semua tanggal pengukuran dari data anak
-      const allDates = [];
-      this.children.forEach((anak) => {
-        (anak.raw.posyandu || []).forEach((p) => {
-          if (p.tgl_ukur) allDates.push(p.tgl_ukur);
-        });
-      });
+      // 🟢 Generate 12 bulan terakhir (FIX)
+      const today = new Date();
+      let bulanUnik = [];
 
-      // Dapatkan bulan unik yang ada di data
-      const bulanUnik = [
-        ...new Set(
-          allDates
-            .map((tgl) => {
-              const d = new Date(tgl);
-              if (isNaN(d)) return null;
-              return `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            })
-            .filter(Boolean)
-        ),
-      ];
-
-      // Urutkan berdasarkan waktu
-      bulanUnik.sort((a, b) => {
-        const [blnA, thnA] = a.split(' ');
-        const [blnB, thnB] = b.split(' ');
-        return (
-          new Date(`${thnA}-${monthNames.indexOf(blnA) + 1}`) -
-          new Date(`${thnB}-${monthNames.indexOf(blnB) + 1}`)
-        );
-      });
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        bulanUnik.push(`${monthNames[d.getMonth()]} ${d.getFullYear()}`);
+      }
 
       this.bulanLabels = bulanUnik;
 
-      // Siapkan kategori status
       const kategoriStatus = [
         'Severely Underweight',
         'Underweight',
@@ -717,13 +693,13 @@ export default {
         'BB Stagnan'
       ];
 
-      // Inisialisasi struktur kosong
       const indikatorData = {};
       kategoriStatus.forEach((k) => (indikatorData[k] = Array(bulanUnik.length).fill(0)));
 
-      // Loop setiap anak dan riwayat posyandu-nya
+      // 🟡 Hitung data sesuai bulan 12 bulan terakhir
       this.children.forEach((anak) => {
         const riwayat = anak.raw.posyandu || [];
+
         for (let i = 0; i < riwayat.length; i++) {
           const r = riwayat[i];
           if (!r.tgl_ukur) continue;
@@ -732,18 +708,21 @@ export default {
           if (isNaN(d)) continue;
 
           const label = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+
+          // Lewati jika tidak ada pada 12 bulan terakhir
           const idx = bulanUnik.indexOf(label);
           if (idx === -1) continue;
 
           const status = r.bbu;
 
-          // Cek stagnan: bandingkan dengan record sebelumnya
+          // Tentukan stagnan
           let stagnan = false;
           if (i > 0) {
             const prev = riwayat[i - 1];
             if (prev.bb && r.bb && parseFloat(r.bb) <= parseFloat(prev.bb)) stagnan = true;
           } else if (r.bb_naik === false) stagnan = true;
 
+          // Masukkan kategori
           if (stagnan) {
             indikatorData['BB Stagnan'][idx]++;
           } else if (kategoriStatus.includes(status)) {
@@ -754,6 +733,7 @@ export default {
 
       this.indikatorData = indikatorData;
     },
+
     async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {

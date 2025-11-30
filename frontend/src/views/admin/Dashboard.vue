@@ -47,7 +47,6 @@
           </div>
 
           <!-- Judul Laporan -->
-
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
@@ -699,7 +698,7 @@
                               <th class="text-center">Stunting</th>
                               <th class="text-center">Wasting</th>
                               <th class="text-center">Underweight</th>
-                              <th class="text-center">BB Sangat</th>
+                              <th class="text-center">BB Stagnan</th>
                               <th class="text-center">Overweight</th>
                             </tr>
                           </thead>
@@ -712,7 +711,7 @@
                               <td class="row-data-font-size"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
                               <td class="row-data-font-size"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
                               <td class="row-data-font-size"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                              <td class="row-data-font-size"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                              <td class="row-data-font-size"><i v-if="anak.bb_stagnan" class="bi bi-check2"></i></td>
                               <td class="row-data-font-size"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
                             </tr>
                           </tbody>
@@ -1021,7 +1020,6 @@
                                     </td>
                                   </tr>
                                 </tbody>
-
                                 <tfoot>
                                   <tr>
                                     <td colspan="100%" class="text-end">
@@ -1036,20 +1034,24 @@
                               </table>
                               <!-- Pagination -->
                               <nav id="responsive-pagination">
-                                <ul class="pagination justify-content-center">
+                                <ul class="pagination justify-content-end">
                                   <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                    <button class="page-link" @click="currentPage--">
+                                    <button class="page-link" @click="currentPage > 1 && currentPage--">
                                       <span aria-hidden="true">&laquo;</span>
                                     </button>
                                   </li>
-                                  <li class="page-item" v-for="page in totalPages" :key="page"
-                                    :class="{ active: currentPage === page }">
-                                    <button class="page-link" @click="currentPage = page">
+
+                                  <li v-for="(page, i) in paginationNumbersBumil" :key="i" class="page-item" :class="{
+                                    active: currentPage === page,
+                                    disabled: page === '...',
+                                  }">
+                                    <button class="page-link" @click="page !== '...' && (currentPage = page)">
                                       {{ page }}
                                     </button>
                                   </li>
-                                  <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                                    <button class="page-link" @click="currentPage++">
+
+                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesBumil }">
+                                    <button class="page-link" @click="currentPage < totalPagesBumil && currentPage++">
                                       <span aria-hidden="true">&raquo;</span>
                                     </button>
                                   </li>
@@ -1219,18 +1221,29 @@
                               </div>
 
                               <!-- Pagination -->
-                              <nav>
-                                <!-- <ul class="pagination justify-content-center">
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button class="page-link" @click="currentPage--">Previous</button>
-                                </li>
-                                <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
-                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
-                                </li>
-                                <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
-                                  <button class="page-link" @click="currentPage++">Next</button>
-                                </li>
-                              </ul> -->
+                              <nav id="responsive-pagination">
+                                <ul class="pagination justify-content-end">
+                                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                    <button class="page-link" @click="currentPage > 1 && currentPage--">
+                                      <span aria-hidden="true">&laquo;</span>
+                                    </button>
+                                  </li>
+
+                                  <li v-for="(page, i) in paginationNumbersBumil" :key="i" class="page-item" :class="{
+                                    active: currentPage === page,
+                                    disabled: page === '...',
+                                  }">
+                                    <button class="page-link" @click="page !== '...' && (currentPage = page)">
+                                      {{ page }}
+                                    </button>
+                                  </li>
+
+                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesBumil }">
+                                    <button class="page-link" @click="currentPage < totalPagesBumil && currentPage++">
+                                      <span aria-hidden="true">&raquo;</span>
+                                    </button>
+                                  </li>
+                                </ul>
                               </nav>
                             </div>
                           </div>
@@ -2049,6 +2062,7 @@ export default {
       jmlTotalAnak: 0,
       noIntervensiMessage: '',
       dataLoad_belum: [],
+      giziGandaAnak: [],
       dataLoad: [],
       selectedChart: null,
       kesehatanData: {
@@ -2326,7 +2340,7 @@ export default {
         'Stunting',
         'Wasting',
         'Underweight',
-        'BB Sangat',
+        'BB Stagnan',
         'Overweight',
       ]
 
@@ -2345,7 +2359,7 @@ export default {
           item.stunting ? '✓' : '',
           item.wasting ? '✓' : '',
           item.underweight ? '✓' : '',
-          item.bb_sangat ? '✓' : '',
+          item.bb_stagnan ? '✓' : '',
           item.overweight ? '✓' : '',
         ]
       })
@@ -2560,10 +2574,9 @@ export default {
           this.hitungIntervensi(),
           this.generateInfoBoxes(),
           this.generateIndikatorBumilBulanan(),
+          this.renderGiziGandaGiziAnak()
         ])
 
-        this.renderBarChart()
-        this.renderLineChart()
         this.renderFunnelChart()
         this.renderBumilChart()
         this.renderIntervensiBumilChart()
@@ -2631,6 +2644,8 @@ export default {
 
               else if (this.activeMenu === "bumil") {
                 trendFixed = this.normalizeTrendNumber(item.trend);
+                console.log('trendBumil:',trendFixed);
+
                 this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
               }
 
@@ -2681,7 +2696,119 @@ export default {
         };
       });
     },
-    rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+    rendersvgChart(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
+      let ref = this.$refs[refName]
+      if (!ref) return
+
+      const canvas = Array.isArray(ref) ? ref[0] : ref
+      if (!canvas) return
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      // Destroy instance sebelumnya jika ada
+      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
+      if (!Array.isArray(dataTable) || !dataTable.length) return
+
+      let processedData = dataTable
+      //console.log('periode',this.filters.periode);
+
+      if (!this.filters.periode) {
+        // Default → buang data terakhir
+        processedData = dataTable.slice(0, -1)
+      } else {
+        // Periode dipilih → buang data pertama
+        processedData = dataTable.slice(1)
+      }
+
+      // Extract label dan nilai
+      const labels = processedData.map((row) => row[labelKey])
+      const values = processedData.map((row) => parseFloat(row[valueKey]) || 0)
+
+      // AUTO SCALE: Buat grafik tidak datar
+      let minValue = Math.min(...values)
+      let maxValue = Math.max(...values)
+
+      const gap = maxValue - minValue
+
+      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
+      const padding = gap === 0 ? 5 : gap * 0.3
+
+      const yMin = minValue - padding
+      const yMax = maxValue + padding
+
+      // MAP BOOTSTRAP COLOR → HEX
+      const colorMap = {
+        primary: '#0d6efd',
+        violet: '#4f0891',
+        secondary: '#6c757d',
+        success: '#198754',
+        danger: '#dc3545',
+        warning: '#ffc107',
+        info: '#0dcaf0',
+        dark: '#212529',
+      }
+
+      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
+
+      // OPTIONAL: Gradient lembut biar grafik cantik
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, borderColor + '33') // 20% opacity
+      gradient.addColorStop(1, borderColor + '00') // transparent
+
+      this[refName + 'Instance'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor,
+              backgroundColor: gradient,
+              borderWidth: 3,
+              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: true, // ✔ ada gradasi lembut
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false },
+          },
+
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
+          },
+
+          elements: {
+            line: {
+              borderCapStyle: 'round',
+              borderJoinStyle: 'round',
+            },
+          },
+
+          animation: {
+            duration: 0,
+          },
+        },
+      })
+    },
+    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
       let ref = this.$refs[refName]
       if (!ref) return
 
@@ -2782,108 +2909,7 @@ export default {
         },
       })
     },
-    rendersvgChart_Bumil(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
-      let ref = this.$refs[refName]
-      if (!ref) return
-
-      const canvas = Array.isArray(ref) ? ref[0] : ref
-      if (!canvas) return
-
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-
-      // Destroy instance sebelumnya jika ada
-      if (this[refName + 'Instance']) this[refName + 'Instance'].destroy()
-      if (!Array.isArray(dataTable) || !dataTable.length) return
-
-      // Extract label dan nilai
-      const labels = dataTable.map((row) => row[labelKey])
-      const values = dataTable.map((row) => parseFloat(row[valueKey]) || 0)
-
-      // AUTO SCALE: Buat grafik tidak datar
-      let minValue = Math.min(...values)
-      let maxValue = Math.max(...values)
-
-      const gap = maxValue - minValue
-
-      // Jika datanya sama semua → pakai padding default supaya grafik tidak flat
-      const padding = gap === 0 ? 5 : gap * 0.3
-
-      const yMin = minValue - padding
-      const yMax = maxValue + padding
-
-      // MAP BOOTSTRAP COLOR → HEX
-      const colorMap = {
-        primary: '#0d6efd',
-        violet: '#4f0891',
-        secondary: '#6c757d',
-        success: '#198754',
-        danger: '#dc3545',
-        warning: '#ffc107',
-        info: '#0dcaf0',
-        dark: '#212529',
-      }
-
-      const borderColor = colorMap[colors[0]] || colors[0] || '#0d6efd'
-
-      // OPTIONAL: Gradient lembut biar grafik cantik
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-      gradient.addColorStop(0, borderColor + '33') // 20% opacity
-      gradient.addColorStop(1, borderColor + '00') // transparent
-
-      this[refName + 'Instance'] = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              data: values,
-              borderColor,
-              backgroundColor: gradient,
-              borderWidth: 3,
-              tension: 0.4, // ✔ lebih smooth & terlihat perubahan
-              pointRadius: 0,
-              pointHoverRadius: 0,
-              fill: true, // ✔ ada gradasi lembut
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-
-          plugins: {
-            legend: { display: false },
-            datalabels: { display: false },
-          },
-
-          scales: {
-            x: {
-              display: false,
-              grid: { display: false },
-            },
-            y: {
-              display: false,
-              grid: { display: false },
-              min: yMin,
-              max: yMax,
-            },
-          },
-
-          elements: {
-            line: {
-              borderCapStyle: 'round',
-              borderJoinStyle: 'round',
-            },
-          },
-
-          animation: {
-            duration: 0,
-          },
-        },
-      })
-    },
-    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'persen') {
+    rendersvgChart_Catin(refName, dataTable, colors, labelKey = 'bulan', valueKey = 'jumlah') {
       let ref = this.$refs[refName]
       if (!ref) return
 
@@ -3555,123 +3581,38 @@ export default {
         wasting: k.bb_tb && k.bb_tb !== 'Normal',
         underweight: k.bb_u && k.bb_u !== 'Normal',
 
-        bb_sangat: k.bb_tb && k.bb_tb.includes('Severely'),
+        bb_stagnan: k.bb_tb && k.bb_tb.includes('Severely'),
         overweight: k.bb_tb && k.bb_tb.includes('Overweight'),
 
         data_kunjungan: k,
         raw: item,
       }
     },
-    renderLineChart(periodeBulan = 3) {
-      const data = this.dataLoad || []
-      if (!data.length) return
-
-      const now = new Date()
-      let cutoff
-
-      // ============================================
-      // 🔹 Tentukan cut-off date
-      // ============================================
-      if (this.filters?.periode) {
-        // Format: YYYY-MM
-        const [y, m] = this.filters.periode.split('-').map(Number)
-        cutoff = new Date(y, m - 1, 1)
-      } else {
-        // Default: bulan berjalan
-        cutoff = new Date(now.getFullYear(), now.getMonth(), 1)
+    async renderGiziGandaGiziAnak() {
+      const params = {
+        posyandu: this.filters.posyandu || '',
+        rw: this.filters.rw || '',
+        rt: this.filters.rt || '',
+        periode: this.filters.periode || '',
+        kelurahan: this.filters.kelurahan || '',
       }
-
-      // ============================================
-      // 🔹 Tentukan startDate (periodeBulan terakhir)
-      // ============================================
-      const startDate = new Date(cutoff)
-      startDate.setMonth(cutoff.getMonth() - (periodeBulan - 1))
-
-      const endDate = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 0) // akhir bulan cut-off
-
-      const monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'Mei',
-        'Jun',
-        'Jul',
-        'Agu',
-        'Sep',
-        'Okt',
-        'Nov',
-        'Des',
-      ]
-
-      // ============================================
-      // 🔹 Inisialisasi data per bulan
-      // ============================================
-      const monthlyData = {}
-      for (let i = 0; i < periodeBulan; i++) {
-        const temp = new Date(startDate)
-        temp.setMonth(startDate.getMonth() + i)
-
-        const key = `${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}`
-        monthlyData[key] = { giziGanda: 0 }
-      }
-
-      // ============================================
-      // 🔹 Flatten data kunjungan
-      // ============================================
-      const allKunjungan = data.flatMap((anak) => {
-        if (!anak.data_kunjungan) return []
-
-        const kunj = Array.isArray(anak.data_kunjungan)
-          ? anak.data_kunjungan
-          : [anak.data_kunjungan]
-
-        return kunj.map((k) => ({
-          tanggal: new Date(k.tgl_pengukuran),
-          bb_u: k.bb_u,
-          tb_u: k.tb_u,
-          bb_tb: k.bb_tb,
-        }))
+      const res = await axios.get(`${baseURL}/api/children/get-children-double-problem`, {
+        params: params,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       })
+      this.giziGandaAnak = res.data   // simpan data backend
 
-      // ============================================
-      // 🔹 Filter data sesuai periode startDate–cutoff
-      // ============================================
-      const recent = allKunjungan.filter((k) => k.tanggal >= startDate && k.tanggal <= endDate)
+      this.renderLineChart()
+      this.renderBarChart()
+    },
+    renderLineChart() {
+      if (!this.giziGandaAnak || !this.giziGandaAnak.count) return
 
-      // ============================================
-      // 🔹 Function cek gizi ganda
-      // ============================================
-      const isGiziGanda = (bb_u, tb_u, bb_tb) => {
-        const notNormal = (x) => x && x !== 'Normal'
-        const count = [notNormal(bb_u), notNormal(tb_u), notNormal(bb_tb)].filter(Boolean).length
-        return count >= 2
-      }
+      const labels = this.giziGandaAnak.count.label         // ["Agu 2025", "Sep 2025", ...]
+      const values = this.giziGandaAnak.count.count         // [12, 9, 6, 5]
 
-      // ============================================
-      // 🔹 Hitung gizi ganda per bulan
-      // ============================================
-      recent.forEach((p) => {
-        const key = `${p.tanggal.getFullYear()}-${String(p.tanggal.getMonth() + 1).padStart(2, '0')}`
-        if (monthlyData[key] && isGiziGanda(p.bb_u, p.tb_u, p.bb_tb)) {
-          monthlyData[key].giziGanda++
-        }
-      })
-
-      // ============================================
-      // 🔹 Siapkan label dan dataset
-      // ============================================
-      const sortedKeys = Object.keys(monthlyData).sort()
-      const labels = sortedKeys.map((key) => {
-        const [, month] = key.split('-')
-        return monthNames[parseInt(month) - 1]
-      })
-
-      const dataGiziGanda = sortedKeys.map((key) => monthlyData[key].giziGanda)
-
-      // ============================================
-      // 🔹 Render chart
-      // ============================================
       if (this.lineChart) this.lineChart.destroy()
 
       const ctx = this.$refs.lineChart?.getContext('2d')
@@ -3684,105 +3625,41 @@ export default {
           datasets: [
             {
               label: 'Jumlah anak tidak membaik',
-              data: dataGiziGanda,
+              data: values,
               borderColor: 'goldenrod',
               backgroundColor: 'rgba(255, 215, 0, 0.3)',
               fill: true,
               tension: 0.3,
               pointRadius: 4,
               pointBackgroundColor: 'goldenrod',
-            },
-          ],
+            }
+          ]
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false }
+          },
           scales: {
             y: {
-              beginAtZero: true,
-              ticks: {
-                // Ticks untuk Sumbu Y (Angka)
-                font: {
-                  size: 10, // Menyesuaikan dengan sumbu Y Line Chart
-                  weight: 'normal',
-                },
-              },
+              beginAtZero: true
             },
             x: {
-              title: { display: false },
               ticks: {
-                // Ticks untuk Sumbu X (Label)
                 autoSkip: false,
-                font: {
-                  size: 14, // Menyesuaikan dengan sumbu X Line Chart
-                  weight: 'normal',
-                },
-              },
-            },
-          },
-          // ❌ Konfigurasi ticks: { ... } yang lama di sini sudah Dihapus/Dipindahkan
-        },
+                font: { size: 14 }
+              }
+            }
+          }
+        }
       })
     },
     renderBarChart() {
-      const data = this.dataLoad || []
-      if (!data.length) return
+      if (!this.giziGandaAnak || !this.giziGandaAnak.posyandu) return
 
-      const now = new Date()
-      let startDate, endDate
+      const labels = this.giziGandaAnak.posyandu.name
+      const values = this.giziGandaAnak.posyandu.count
 
-      // ===============================
-      // 🔥 TENTUKAN PERIODE CUT-OFF
-      // ===============================
-      if (this.filters?.periode) {
-        // format periode biasanya "2025-08" → ubah ke date
-        const [tahun, bulan] = this.filters.periode.split('-')
-        startDate = new Date(parseInt(tahun), parseInt(bulan) - 1, 1)
-        endDate = new Date(parseInt(tahun), parseInt(bulan), 0, 23, 59, 59) // akhir bulan
-      } else {
-        // default 1 bulan terakhir (h-1 bulan berjalan)
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59) // akhir bulan
-      }
-
-      // ===============================
-      // 🔥 PROSES DATA POSYANDU
-      // ===============================
-      const allPosyandu = data.flatMap((anak) => {
-        const kun = anak.data_kunjungan
-        if (!kun) return []
-        return [
-          {
-            posyandu: kun.posyandu || 'Tidak Diketahui',
-            tanggal: new Date(kun.tgl_pengukuran),
-            bb_naik: kun.naik_berat_badan,
-          },
-        ]
-      })
-
-      const posyanduCounts = {}
-
-      allPosyandu.forEach((p) => {
-        if (p.tanggal >= startDate && p.tanggal <= endDate && !p.bb_naik) {
-          const key = p.posyandu || 'Tidak Diketahui'
-          if (!posyanduCounts[key]) posyanduCounts[key] = 0
-          posyanduCounts[key]++
-        }
-      })
-
-      // ===============================
-      // 🔥 AMBIL TOP 5 POSYANDU
-      // ===============================
-      const top5 = Object.entries(posyanduCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-
-      const labels = top5.map((item) => item[0])
-      const values = top5.map((item) => item[1])
-
-      // ===============================
-      // 🔥 HANCURKAN CHART LAMA DAN RENDER BAR CHART
-      // ===============================
       if (this.barChart) this.barChart.destroy()
 
       const ctx = this.$refs.barChart.getContext('2d')
@@ -3796,25 +3673,23 @@ export default {
               data: values,
               backgroundColor: 'rgba(255, 99, 132, 0.6)',
               borderRadius: 8,
-              maxBarThickness: 40, // ✅ maksimal lebar bar tetap
-            },
-          ],
+              maxBarThickness: 40,
+            }
+          ]
         },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
           scales: {
             y: { beginAtZero: true },
-            x: { title: { display: false } },
-          },
-          ticks: {
-            autoSkip: false, // jangan skip label
-            font: {
-              size: 8, // perkecil font
-              weight: 'normal',
-            },
-          },
-        },
+            x: {
+              ticks: {
+                autoSkip: false,
+                font: { size: 11 }
+              }
+            }
+          }
+        }
       })
     },
     async renderFunnelChart() {
@@ -4838,8 +4713,7 @@ export default {
 
       this.generateIndikatorBumilBulanan()
 
-      this.renderLineChart()
-      this.renderBarChart()
+      this.renderGiziGandaGiziAnak()
       this.renderFunnelChart()
       //this.renderSudahChart();
       this.renderBumilChart()
@@ -4893,8 +4767,7 @@ export default {
       await this.masalahGanda()
 
       if (this.activeMenu === 'anak') {
-        this.renderLineChart()
-        this.renderBarChart()
+        this.renderGiziGandaGiziAnak()
         this.rendersvgChart()
       }
 

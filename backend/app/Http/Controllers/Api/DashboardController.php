@@ -60,8 +60,8 @@ class DashboardController extends Controller
             'ibu_hamil' => Pregnancy::count(),
             'posyandu' => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu','id_wilayah')->get()->count(),
             'bidan' => User::where('role', '=', 'Bidan')->count(),
-            'catin' => Bride::count(),
-            'anak' => $anak,
+            'catin' => Catin::count(),
+            'anak' => $anakDariKunjungan,
         ]);
     }
 

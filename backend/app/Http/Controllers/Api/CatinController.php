@@ -86,25 +86,31 @@ class CatinController extends Controller
 
             if ($request->filled('status') && is_array($request->status)) {
                 $data = $data->filter(function ($q) use ($request) {
+                    $ok = true; // semua harus true
+
                     foreach ($request->status as $status) {
                         $statusLower = strtolower($status);
+
                         if (str_contains($statusLower, 'kek')) {
-                            if (empty($q->status_kek)) {
-                                return false;
+                            if (empty($q->status_kek) || $q->status_kek !== 'KEK') {
+                                $ok = false;
                             }
-                            return $q->status_kek == 'KEK';
-                        } else if (str_contains($statusLower, 'anemia')) {
-                            if (empty($q->status_hb)) {
-                                return false;
+                        }
+
+                        if (str_contains($statusLower, 'anemia')) {
+                            if (empty($q->status_hb) || $q->status_hb !== 'Anemia') {
+                                $ok = false;
                             }
-                            return $q->status_hb == 'Anemia';
-                        } else if (str_contains($statusLower, 'risiko')) {
-                            if (empty($q->status_risiko)) {
-                                return false;
+                        }
+
+                        if (str_contains($statusLower, 'risiko')) {
+                            if (empty($q->status_risiko) || $q->status_risiko !== 'Berisiko') {
+                                $ok = false;
                             }
-                            return $q->status_risiko == 'Berisiko';
                         }
                     }
+
+                    return $ok;
                 });
             }
 
@@ -641,14 +647,14 @@ class CatinController extends Controller
     {
         if (is_null($hb))
             return null;
-        return $hb < 11 ? 'Anemia' : 'Normal';
+        return $hb < 12 ? 'Anemia' : 'Normal';
     }
 
     private function statusRisiko($usia_perempuan)
     {
         if (is_null($usia_perempuan))
             return null;
-        return ($usia_perempuan <= 19 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
+        return ($usia_perempuan < 20 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
     }
 
     public function status(Request $request)
@@ -660,13 +666,14 @@ class CatinController extends Controller
             // 2. Tentukan periode (default H-1 bulan)
             // =====================================
             if ($request->filled('periode')) {
-                $periode = Carbon::createFromFormat('Y-m', $request->periode);
-                $periodeAkhir = $periode->copy()->endOfMonth();
+                $periode = Carbon::createFromFormat('!Y-m', $request->periode);
                 $periodeAwal = $periode->copy()->startOfMonth();
+                $periodeAkhir = $periode->copy()->endOfMonth();
+                //dd($periode);
             } else {
-                $periode = now()->subMonths(1);
-                $periodeAkhir = $periode->copy()->endOfMonth();
+                $periode = now()->subMonths(1)->startOfMonth();
                 $periodeAwal = $periode->copy()->startOfMonth();
+                $periodeAkhir = $periode->copy()->endOfMonth();
             }
 
             $data = Catin::get();
@@ -837,7 +844,7 @@ class CatinController extends Controller
                     'trend' => $trendCount[$title],
                 ];
             }
-
+            //dd($result);
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
@@ -946,14 +953,29 @@ class CatinController extends Controller
                 $prevTotal = $prevCount['total'] ?? 0;
                 $prevPersen = $prevTotal > 0 ? round(($prevJumlah / $prevTotal) * 100, 1) : 0;
 
-                // tren dalam persentase
-                $deltaPersen = $persen - $prevPersen;
-                $tren = $deltaPersen === 0
-                    ? '-'
-                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
+                // ============================
+                // 🔥 HITUNG TREND BERDASARKAN JUMLAH
+                // ============================
+                if ($prevJumlah > 0) {
+                    // Rumus: (curr - prev) / prev * 100
+                    $trendPercent = round((($jumlah - $prevJumlah) / $prevJumlah) * 100, 1);
+                } else {
+                    // Kalau bulan lalu nol → otomatis dianggap 100% naik jika bulan ini > 0
+                    $trendPercent = $jumlah > 0 ? 100 : 0;
+                }
 
-                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
+                // Format tampilan tren
+                $tren = $trendPercent === 0
+                    ? '-'
+                    : ($trendPercent > 0 ? "+{$trendPercent}%" : "{$trendPercent}%");
+
+                $trenClass = $trendPercent > 0
+                    ? 'text-danger'
+                    : ($trendPercent < 0 ? 'text-success' : 'text-muted');
+
+                $trenIcon = $trendPercent > 0
+                    ? 'fa-solid fa-caret-up'
+                    : ($trendPercent < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
 
                 $dataTable[] = [
                     'status' => $status,
@@ -964,6 +986,7 @@ class CatinController extends Controller
                     'trenIcon' => $trenIcon,
                 ];
             }
+
 
 
             // jika data kosong, kirim default 0
@@ -1026,7 +1049,7 @@ class CatinController extends Controller
     {
         if (isset($row->status_risiko) && $row->status_risiko) {
             $s = strtolower($row->status_risiko);
-            return Str::contains($s, ['risiko', 'berisiko', 'high risk', 'risti']);
+            return Str::contains($s, ['berisiko']);
         }
         return false;
     }
@@ -1069,7 +1092,7 @@ class CatinController extends Controller
 
             // ✅ Buat label bulan
             $months = collect(range(0, 11))
-                ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
+                ->map(fn($i) => now()->StartOfMonth()->subMonths(value: 11 - $i)->format('M Y'))
                 ->values();
 
             // ✅ Siapkan struktur hasil
@@ -1081,13 +1104,13 @@ class CatinController extends Controller
 
             // Group per bulan, ambil semua record
             $groupedByMonth = $data->groupBy(function ($item) {
-                return \Carbon\Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
+                return Carbon::parse($item->tanggal_pendampingan)->format('Y-m');
             });
 
             // Hitung
             foreach ($groupedByMonth as $monthKey => $rows) {
 
-                $label = \Carbon\Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
+                $label = Carbon::createFromFormat('Y-m-d', $monthKey."-01")->format('M Y');
                 $idx = $months->search($label);
                 if ($idx === false)
                     continue;

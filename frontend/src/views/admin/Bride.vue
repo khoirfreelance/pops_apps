@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} Periode {{ thisMonth }}
+                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} periode {{ periodeLabel }}
               </div>
             </div>
           </div>
@@ -328,7 +328,7 @@
                     :class="`border-start border-4 border-${item.color}`"
                     style="width: 108%"
                   >
-                    <div class="card-body position-relative">
+                    <div v-if="index < 3" class="card-body position-relative">
                       <!-- TITLE -->
                       <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
 
@@ -339,16 +339,25 @@
 
                       <!-- PERCENT OR ICON -->
                       <p
-                        v-if="index !== kesehatan.length - 1"
                         class="position-absolute bottom-0 end-0 mb-1 me-2 small"
                         :class="`text-${item.color}`" style="font-size: 16px;"
                       >
                         {{ item.percent }}
                       </p>
+                    </div>
 
-                      <p v-else class="position-absolute bottom-0 end-0 mb-1 me-2 small">
+                    <div v-else class="card-body position-relative">
+                      <!-- TITLE -->
+                      <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
+
+                      <!-- VALUE -->
+                      <h1 class="text-center display-6 fw-bold mb-0" :class="`text-${item.color}`">
+                        {{ item.value }}
+                      </h1>
+
+                      <!-- <p class="position-absolute bottom-0 end-0 mb-1 me-2 small">
                         <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
-                      </p>
+                      </p> -->
                     </div>
                   </div>
                 </div>
@@ -1016,6 +1025,50 @@ export default {
     }
   },
   computed: {
+    periodeLabel() {
+      const awal = this.filters.periodeAwal
+      const akhir = this.filters.periodeAkhir
+
+      // ============================
+      // DEFAULT: 12 bulan terakhir
+      // ============================
+      const now = new Date()
+
+      const defaultAkhir = now.toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
+
+      const defaultAwalDate = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11, // mundur 11 bulan
+        1
+      )
+
+      const defaultAwal = defaultAwalDate.toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
+
+      // Jika tidak ada filter → pakai default range 12 bulan
+      if (!awal || !akhir) {
+        return `${defaultAwal} - ${defaultAkhir}`
+      }
+
+      // ============================
+      // Jika ada filter periode
+      // Format input: "Februari+2025"
+      // ============================
+      const awalLabel = awal.replace('+', ' ')
+      const akhirLabel = akhir.replace('+', ' ')
+
+      // Jika awal = akhir → hanya tampilkan 1
+      if (awalLabel === akhirLabel) {
+        return awalLabel
+      }
+
+      return `${awalLabel} - ${akhirLabel}`
+    },
     visiblePages() {
     const pages = [];
     const maxVisible = 5; // jumlah maksimal tombol halaman yang muncul
@@ -1052,7 +1105,7 @@ export default {
         usia: {
           label: 'Usia (Tahun)',
           placeholder: 'Pilih Usia',
-          options: ['< 19 Tahun', '19 - 34 Tahun', '>= 35 Tahun'],
+          options: ['< 20 Tahun', '20 - 34 Tahun', '>= 35 Tahun'],
           filter: '',
         },
       }
@@ -1209,6 +1262,7 @@ export default {
         else this.filters[k] = ''
       }),
       await this.loadBride()
+      await this.getWilayahUser()
       //await this.hitungStatusKesehatan()
     },
     toggleSidebar() {
@@ -1258,6 +1312,7 @@ export default {
         })
         const wilayah = res.data
         //console.log('✅ getWilayahUser ->', wilayah)
+        this.kelurahan = wilayah.kelurahan || 'Desa tidak diketahui'
         this.filters.kelurahan = wilayah.kelurahan || '-'
         this.kecamatan = wilayah.kecamatan || '-'
         this.kota = wilayah.kota || '-'

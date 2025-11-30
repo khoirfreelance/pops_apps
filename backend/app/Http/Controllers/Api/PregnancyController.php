@@ -79,27 +79,38 @@ class PregnancyController extends Controller
 
             if ($request->filled('status') && is_array($request->status)) {
                 $data = $data->filter(function ($q) use ($request) {
+
+                    $ok = true; // semua kondisi harus terpenuhi
+
                     foreach ($request->status as $status) {
                         $statusLower = strtolower($status);
+
+                        // KEK
                         if (str_contains($statusLower, 'kek')) {
-                            if (empty($q->status_gizi_lila)) {
-                                return false;
+                            if (empty($q->status_gizi_lila) || $q->status_gizi_lila !== 'KEK') {
+                                $ok = false;
                             }
-                            return $q->status_gizi_lila == 'KEK';
-                        } else if (str_contains($statusLower, 'anemia')) {
-                            if (empty($q->status_gizi_hb)) {
-                                return false;
+                        }
+
+                        // Anemia
+                        if (str_contains($statusLower, 'anemia')) {
+                            if (empty($q->status_gizi_hb) || $q->status_gizi_hb !== 'Anemia') {
+                                $ok = false;
                             }
-                            return $q->status_gizi_hb == 'Anemia';
-                        } else if (str_contains($statusLower, 'risiko')) {
-                            if (empty($q->status_risiko_usia)) {
-                                return false;
+                        }
+
+                        // Risiko Usia
+                        if (str_contains($statusLower, 'risiko')) {
+                            if (empty($q->status_risiko_usia) || $q->status_risiko_usia !== 'Berisiko') {
+                                $ok = false;
                             }
-                            return $q->status_risiko_usia == 'Berisiko';
                         }
                     }
+
+                    return $ok;
                 });
             }
+
 
             if ($request->filled('usia') && is_array($request->usia)) {
                 $data = $data->filter(function ($q) use ($request) {
@@ -202,7 +213,7 @@ class PregnancyController extends Controller
                 $groupedData = $groupedData->filter(function ($q) use ($request) {
                     foreach ($request->intervensi as $val) {
                         $jenisIntervensi = ['MBG', 'KIE', 'PMT', 'Bansos'];
-                        if ($val === "Belum Mendapatkan Intervensi") {
+                        if (strtolower($val) == "belum mendapatkan intervensi") {
                             if (empty($q['intervensi']) || $q['intervensi']->isEmpty()) {
                                 return true;
                             }
@@ -573,7 +584,7 @@ class PregnancyController extends Controller
     public function status(Request $request)
     {
         try {
-            $user = Auth::user();
+            /* $user = Auth::user();
 
             // =====================================
             // 1. Ambil wilayah user
@@ -589,13 +600,13 @@ class PregnancyController extends Controller
 
             if (!$wilayah) {
                 return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
-            }
-
+            } */
+            $filterKelurahan = $request->kelurahan;
             // =====================================
             // 2. Tentukan periode (default H-1 bulan)
             // =====================================
             if ($request->filled('periode')) {
-                $periode = Carbon::createFromFormat('Y-m', $request->periode);
+                $periode = Carbon::createFromFormat('!Y-m', $request->periode);
                 $periodeAkhir = $periode->copy()->endOfMonth();
                 $periodeAwal = $periode->copy()->startOfMonth();
             } else {
@@ -613,9 +624,9 @@ class PregnancyController extends Controller
 
             $dataRaw = $data;
 
-            if (!empty($wilayah->kelurahan)) {
-                $data = $data->filter(function ($item) use ($wilayah) {
-                    return strtolower($item->kelurahan) === strtolower($wilayah->kelurahan);
+            if (!empty($filterKelurahan)) {
+                $data = $data->filter(function ($item) use ($filterKelurahan) {
+                    return strtolower($item->kelurahan) === strtolower($filterKelurahan);
                 });
             }
 
@@ -654,7 +665,7 @@ class PregnancyController extends Controller
                         ['title' => 'Normal', 'value' => 0, 'percent' => '0%', 'color' => 'success', 'trend' => []],
                         ['title' => 'Total Bumil', 'value' => 0, 'percent' => '0%', 'color' => 'secondary', 'trend' => []],
                     ],
-                    'kelurahan' => $wilayah->kelurahan,
+                    'kelurahan' => $filterKelurahan,
                 ]);
             }
 
@@ -670,7 +681,6 @@ class PregnancyController extends Controller
                 'Normal' => 0,
                 'Total Bumil' => $total,
             ];
-
             foreach ($data as $row) {
 
                 $hbStatus = strtoupper($row->status_gizi_hb ?? '');
@@ -729,8 +739,8 @@ class PregnancyController extends Controller
                             $jumlah++;
                         if ($status === 'Berisiko' && $riskStatus === 'BERISIKO')
                             $jumlah++;
-                        if (
-                            $hbStatus == 'NORMAL'
+                        if ($status == 'Normal'
+                            && $hbStatus == 'NORMAL'
                             && $lilaStatus == 'NORMAL'
                             && $riskStatus == 'NORMAL'
                         ) {
@@ -741,7 +751,7 @@ class PregnancyController extends Controller
                             $jumlah = $totalMonth;
                         }
                     }
-
+                    //dd($groupedMonth);
                     $persen = $totalMonth ? round(($jumlah / $totalMonth) * 100, 1) : 0;
 
                     $trend->push([
@@ -784,7 +794,7 @@ class PregnancyController extends Controller
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
-                'kelurahan' => $wilayah->kelurahan,
+                //elurahan' => $wilayah->kelurahan,
                 'final' => $data->values(),
                 'groupMonth' => $groupedMonth
             ]);
@@ -927,7 +937,7 @@ class PregnancyController extends Controller
     public function tren(Request $request)
     {
         try {
-            $user = Auth::user();
+            /* $user = Auth::user();
 
             if (!$user) {
                 return response()->json(['message' => 'User tidak ditemukan'], 404);
@@ -939,25 +949,32 @@ class PregnancyController extends Controller
                 'kecamatan' => $user->kecamatan ?? null,
                 'kota' => $user->kota ?? null,
                 'provinsi' => $user->provinsi ?? null,
-            ];
+            ]; */
 
-            $query = Pregnancy::query();
+            $filterKelurahan = $request->kelurahan;
+            $data = Pregnancy::get();
+
+            $data = $data->groupBy('nik_ibu')->map(function ($group) {
+                return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
+            });
+
+            $dataRaw = $data;
 
             // Filter default wilayah user
-            if (!empty($wilayah['kelurahan'])) {
-                $query->where('kelurahan', $wilayah['kelurahan']);
+            if (!empty($filterKelurahan)) {
+                $data->where('kelurahan',$filterKelurahan);
             }
 
             // 2️⃣ Filter tambahan request
             foreach (['kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
                 if ($request->filled($f)) {
-                    $query->where($f, $request->$f);
+                    $data->where($f, $request->$f);
                 }
             }
 
             // 3️⃣ Tentukan current & previous month
             if ($request->filled('periode')) {
-                $periode = Carbon::createFromFormat('Y-m', $request->periode)->startOfMonth();
+                $periode = Carbon::createFromFormat('!Y-m', $request->periode)->startOfMonth();
 
                 $currentMonth = $periode->format('Y-m');
                 $previousMonth = $periode->copy()->subMonth()->format('Y-m');
@@ -967,7 +984,7 @@ class PregnancyController extends Controller
             }
 
             // 4️⃣ Ambil data all (tanpa filter bulan)
-            $allData = $query->get();
+            $allData = $data;
 
             // 5️⃣ Filter current & previous berdasarkan bulan
             $current = $allData->filter(
@@ -1008,14 +1025,46 @@ class PregnancyController extends Controller
                 $prevTotal = $prevCount['total'] ?? 0;
                 $prevPersen = $prevTotal > 0 ? round(($prevJumlah / $prevTotal) * 100, 1) : 0;
 
-                // tren dalam persentase
+                if ($prevJumlah > 0) {
+                    // Rumus: (curr - prev) / prev * 100
+                    $trendPercent = round((($jumlah - $prevJumlah) / $prevJumlah) * 100, 1);
+                } else {
+                    // Kalau bulan lalu nol → otomatis dianggap 100% naik jika bulan ini > 0
+                    $trendPercent = $jumlah > 0 ? 100 : 0;
+                }
+
+                // Format tampilan tren
+                $tren = $trendPercent === 0
+                    ? ''
+                    : ($trendPercent > 0 ? "{$trendPercent}%" : "". abs($trendPercent) ."%");
+
+                $trenClass = $trendPercent > 0
+                    ? 'text-danger'
+                    : ($trendPercent < 0 ? 'text-success' : 'text-muted');
+
+                $trenIcon = $trendPercent > 0
+                    ? 'fa-solid fa-caret-up'
+                    : ($trendPercent < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
+                //UCOK
+               /*  $prevDivision = $prevJumlah;
+                if($prevJumlah === 0){
+                    $prevDivision = 1;
+                }
+                $deltaPersen = (($jumlah - $prevJumlah)/$prevDivision)*100;
+                $tren = $deltaPersen === 0
+                    ? '-'
+                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
+
+                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
+                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus'); */
+                /* // tren dalam persentase
                 $deltaPersen = $persen - $prevPersen;
                 $tren = $deltaPersen === 0
                     ? '-'
                     : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
 
                 $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
+                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus'); */
 
                 $dataTable[] = [
                     'status' => $status,
@@ -1576,7 +1625,7 @@ class PregnancyController extends Controller
             }
 
             $months = collect(range(0, 11))
-                ->map(fn($i) => now()->subMonths(11 - $i)->format('M Y'))
+                ->map(fn($i) => now()->startOfMonth()->subMonths(11 - $i)->format('M Y'))
                 ->values();
 
             $indikatorList = ['KEK', 'Anemia', 'Berisiko'];
@@ -1592,7 +1641,7 @@ class PregnancyController extends Controller
 
             // Hitung
             foreach ($groupedByMonth as $monthKey => $rows) {
-                $label = Carbon::createFromFormat('Y-m', $monthKey)->format('M Y');
+                $label = Carbon::createFromFormat('Y-m-d', $monthKey."-01")->format('M Y');
                 $idx = $months->search($label);
                 if ($idx === false)
                     continue;
