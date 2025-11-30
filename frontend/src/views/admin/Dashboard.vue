@@ -243,7 +243,7 @@
                   <!-- Row utama tanpa gutter -->
                   <div class="row gx-2">
                     <!-- RINGKASAN STATUS GIZI -->
-                    <div class="col-md-8 d-flex flex-column">
+                    <div class="col-md-12 d-flex flex-column">
                       <!-- Judul -->
                       <h2 class="ringkasan-header text-success mb-4">
                         Ringkasan Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
@@ -281,26 +281,40 @@
                         <!-- TOTAL ANAK -->
                         <div class="col-12 col-md-2 d-flex">
                           <div
-                            class="card text-center shadow-sm border p-3 w-100 d-flex flex-column justify-content-between">
+                            class="card-body d-flex flex-column justify-content-between border  shadow-sm p-2">
                             <!-- Judul selalu di atas -->
-                            <h5 class="text-muted fw-bold mb-2">Total Anak Balita</h5>
+                            <h5 class="fw-bold mb-3">Total Anak Balita</h5>
+                            <div class="d-flex justify-content-between align-items-center gap-3">
+                              <i class="bi bi-people display-6 text-dark mt-2"></i>
 
-                            <!-- Angka di tengah secara vertikal -->
-                            <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
-
-                            <!-- Icon di bawah -->
-                            <i class="bi bi-people fs-2 text-dark mt-2"></i>
+                              <h1 class="fw-bold display-5 mb-0 text-secondary">
+                                {{ totalAnak }}
+                              </h1>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <!-- INFO BOXES -->
-                    <div id="infoBoxes" class="infoBoxes col-md-4 mt-2 small">
+                  </div>
+
+                  <div class="row gx-2">
+                    <div id="infoBoxes" class="infoBoxes col-md-12 p-3 small">
                       <div v-for="(box, idx) in infoBoxes" :key="idx" class="alert py-2 mb-2"
                         :class="`alert-${box.type}`">
-                        <strong class="color-black">{{ box.title }}</strong><br />
-                        <span v-html="box.desc"></span>
+                        <!-- Title + Chevron -->
+                        <div class="fw-bold color-black d-flex justify-content-between align-items-center"
+                          @click="toggle(idx)" style="cursor: pointer">
+                          {{ box.title }}
+                          <i class="bi bi-chevron-down" :class="{ rotate: box.open }"></i>
+                        </div>
+
+                        <!-- Description -->
+                        <transition name="fade">
+                          <div v-if="box.open" class="mt-1">
+                            <span v-html="box.desc"></span>
+                          </div>
+                        </transition>
                       </div>
                     </div>
                   </div>
@@ -319,30 +333,29 @@
                   <div class="row g-3 mb-4">
                     <!-- Card BB/U -->
                     <div class="col-12 col-md-6 col-xl-4">
-                      <div 
-                        class="card border-primary shadow-sm h-100 cursor-pointer" 
-                        :class="{ 'border-3': selectedChart === 'bb' }"
-                        @click="selectChart('bb')"
-                      >
+                      <div class="card border-primary shadow-sm h-100 cursor-pointer"
+                        :class="{ 'border-3': selectedChart === 'bb' }" @click="selectChart('bb')">
                         <div class="card-body p-3 text-center">
                           <h5 class="fw-bold text-primary mb-3">
                             Berat Badan / Usia
                           </h5>
-                          
-                          <div style="max-width: 280px; margin: 0 auto;">
+
+                          <div style="max-width: 280px; margin: 0 auto;"
+                            class="d-flex justify-content-center align-items-center">
                             <canvas ref="pieChart_bb"></canvas>
                           </div>
-                          
+
                           <p class="mt-3 mb-2 small text-muted">Klik Chart untuk Melihat Data</p>
-                          
+
                           <!-- Legend -->
                           <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-3">
-                            <div v-for="(row, index) in dataTable_bb" :key="index" class="d-flex align-items-center gap-1">
+                            <div v-for="(row, index) in dataTable_bb" :key="index"
+                              class="d-flex align-items-center gap-1">
                               <i class="fa-solid fa-circle" style="font-size: 8px;" :style="{ color: row.color }"></i>
                               <span style="font-size: 10px;" class="text-additional">{{ row.status }}</span>
                             </div>
                           </div>
-                          
+
                           <button class="btn btn-sm btn-link text-decoration-none mt-2">
                             <i class="fa-solid fa-chevron-down"></i> Detail
                           </button>
@@ -352,30 +365,29 @@
 
                     <!-- Card TB/U -->
                     <div class="col-12 col-md-6 col-xl-4">
-                      <div 
-                        class="card border-primary shadow-sm h-100 cursor-pointer"
-                        :class="{ 'border-3': selectedChart === 'tb' }"
-                        @click="selectChart('tb')"
-                      >
+                      <div class="card border-primary shadow-sm h-100 cursor-pointer"
+                        :class="{ 'border-3': selectedChart === 'tb' }" @click="selectChart('tb')">
                         <div class="card-body p-3 text-center">
                           <h5 class="fw-bold text-primary mb-3">
                             Tinggi Badan / Usia
                           </h5>
-                          
-                          <div style="max-width: 280px; margin: 0 auto;">
+
+                          <div style="max-width: 280px; margin: 0 auto;"
+                            class="d-flex justify-content-center align-items-center">
                             <canvas ref="pieChart_tb"></canvas>
                           </div>
-                          
+
                           <p class="mt-3 mb-2 small text-muted">Klik Chart untuk Melihat Data</p>
-                          
+
                           <!-- Legend -->
                           <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-3">
-                            <div v-for="(row, index) in dataTable_tb" :key="index" class="d-flex align-items-center gap-1">
+                            <div v-for="(row, index) in dataTable_tb" :key="index"
+                              class="d-flex align-items-center gap-1">
                               <i class="fa-solid fa-circle" style="font-size: 8px;" :style="{ color: row.color }"></i>
                               <span style="font-size: 10px;" class="text-additional">{{ row.status }}</span>
                             </div>
                           </div>
-                          
+
                           <button class="btn btn-sm btn-link text-decoration-none mt-2">
                             <i class="fa-solid fa-chevron-down"></i> Detail
                           </button>
@@ -385,30 +397,29 @@
 
                     <!-- Card BB/TB -->
                     <div class="col-12 col-md-6 col-xl-4">
-                      <div 
-                        class="card border-primary shadow-sm h-100 cursor-pointer"
-                        :class="{ 'border-3': selectedChart === 'bbtb' }"
-                        @click="selectChart('bbtb')"
-                      >
+                      <div class="card border-primary shadow-sm h-100 cursor-pointer"
+                        :class="{ 'border-3': selectedChart === 'bbtb' }" @click="selectChart('bbtb')">
                         <div class="card-body p-3 text-center">
                           <h5 class="fw-bold text-primary mb-3">
                             Berat Badan / Tinggi Badan
                           </h5>
-                          
-                          <div style="max-width: 280px; margin: 0 auto;">
+
+                          <div style="max-width: 280px; margin: 0 auto;"
+                            class="d-flex justify-content-center align-items-center">
                             <canvas ref="pieChart_status"></canvas>
                           </div>
-                          
+
                           <p class="mt-3 mb-2 small text-muted">Klik Chart untuk Melihat Data</p>
-                          
+
                           <!-- Legend -->
                           <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-3">
-                            <div v-for="(row, index) in dataTable_bbtb" :key="index" class="d-flex align-items-center gap-1">
+                            <div v-for="(row, index) in dataTable_bbtb" :key="index"
+                              class="d-flex align-items-center gap-1">
                               <i class="fa-solid fa-circle" style="font-size: 8px;" :style="{ color: row.color }"></i>
                               <span style="font-size: 10px;" class="text-additional">{{ row.status }}</span>
                             </div>
                           </div>
-                          
+
                           <button class="btn btn-sm btn-link text-decoration-none mt-2">
                             <i class="fa-solid fa-chevron-down"></i> Detail
                           </button>
@@ -424,7 +435,8 @@
                     <div v-if="selectedChart" class="row">
                       <div class="col-12">
                         <div class="card border-success shadow-lg">
-                          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                          <div
+                            class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
                               <i class="fa-solid fa-chart-pie me-2"></i>
                               Detail: {{ detailTitle }}
@@ -433,7 +445,7 @@
                               <i class="fa-solid fa-times"></i> Tutup
                             </button>
                           </div>
-                          
+
                           <div class="card-body p-4">
                             <div class="row g-4">
                               <!-- Kolom Kiri: Table -->
@@ -484,7 +496,7 @@
                                   </table>
                                 </div>
                               </div>
-                              
+
                               <!-- Kolom Kanan: Chart Detail -->
                               <!-- <div class="col-12 col-lg-5 d-flex align-items-center justify-content-center">
                                 <div style="max-width: 100%; width: 350px;">
@@ -558,7 +570,8 @@
                             <div class="card shadow border-0 p-3 d-flex flex-column justify-content-between h-100">
                               <h3 class="text-center text-success mb-2">
                                 Top 5 Posyandu<br />
-                                <span class="fw-semibold">dengan anak tidak membaik dalam {{ filterPeriode }} bulan terakhir</span>
+                                <span class="fw-semibold">dengan anak tidak membaik dalam {{ filterPeriode }} bulan
+                                  terakhir</span>
                               </h3>
                               <div class="chart-wrapper flex-grow-1">
                                 <canvas ref="barChart"></canvas>
@@ -643,9 +656,8 @@
                               </button>
                             </li>
 
-                            <li v-for="(page, i) in paginationNumbersAnakGabungan" :key="i"
-                                class="page-item"
-                                :class="{ active: currentPage === page, disabled: page === '...' }">
+                            <li v-for="(page, i) in paginationNumbersAnakGabungan" :key="i" class="page-item"
+                              :class="{ active: currentPage === page, disabled: page === '...' }">
 
                               <button class="page-link" @click="page !== '...' && (currentPage = page)">
                                 {{ page }}
@@ -757,7 +769,8 @@
                       <div class="card h-100 shadow-sm border-0 d-flex flex-column"
                         :class="`border-start border-4 border-${item.color}`">
                         <!-- BODY -->
-                        <div v-if="index !== kesehatanData.bumil.length - 1" class="card-body d-flex justify-content-between align-items-center">
+                        <div v-if="index !== kesehatanData.bumil.length - 1"
+                          class="card-body d-flex justify-content-between align-items-center">
                           <div>
                             <h6 class="fw-bold mb-1">{{ item.title }}</h6>
 
@@ -785,9 +798,9 @@
                         </div>
 
                         <!-- FOOTER -->
-                        <div v-if="index !== kesehatanData.bumil.length - 1" class="card-footer bg-transparent border-0 p-0">
-                          <canvas :ref="'chart-bumil-' + index"
-                            height="120"></canvas>
+                        <div v-if="index !== kesehatanData.bumil.length - 1"
+                          class="card-footer bg-transparent border-0 p-0">
+                          <canvas :ref="'chart-bumil-' + index" height="120"></canvas>
                         </div>
                       </div>
                     </div>
@@ -801,31 +814,38 @@
                   <!-- Row utama: tabel & chart berdampingan -->
                   <div class="row g-3">
                     <!-- Table -->
-                    <div class="col-12 col-xl-8">
+                    <div class="col-12 col-xl-6">
                       <div class="card border border-primary shadow p-3 h-100">
                         <div class="table-responsive">
                           <table class="table table-borderless align-middle">
                             <thead>
                               <tr class="fw-semibold text-additional">
-                                <th class="text-additional">Status</th>
-                                <th class="text-additional">Jumlah</th>
-                                <th class="text-additional">Persen</th>
-                                <th class="text-additional">Tren</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">
+                                  Status</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">
+                                  Jumlah</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">
+                                  Persen</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">Tren
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               <tr v-for="(row, index) in dataTable_bumil" :key="index">
-                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                <td id="text-diagram-table-piechart" class="text-additional small"
+                                  style="color: #006341 !important">
                                   {{ row.status }}
                                 </td>
-                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                <td id="text-diagram-table-piechart" class="text-additional small"
+                                  style="color: #006341 !important">
                                   {{ row.jumlah ?? 0 }}
                                 </td>
-                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                <td id="text-diagram-table-piechart" class="text-additional small"
+                                  style="color: #006341 !important">
                                   {{ row.persen ? row.persen + ' %' : '0 %' }}
                                 </td>
                                 <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'">
+                                  <span v-if="row.tren && row.tren !== '-'" style="color: #006341 !important">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
                                   <span v-else>-</span>
@@ -838,12 +858,12 @@
                     </div>
 
                     <!-- Canvas Chart -->
-                    <div class="col-12 col-xl-4">
+                    <div class="col-12 col-xl-6">
                       <div
                         class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
-                        <div class="w-full h-[300px]">
-                          <canvas ref="bumilChart" class="w-full h-full"></canvas>
-                        </div>
+                        <!-- <div class="w-full h-[300px]"> -->
+                        <canvas ref="bumilChart" class="w-full h-full"></canvas>
+                        <!-- </div> -->
                       </div>
                     </div>
                   </div>
@@ -897,19 +917,21 @@
                           <!-- TAB NAV -->
                           <div class="container position-relative" style="margin-top: -2.5rem">
                             <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
-                              <button
-                                class="fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                                style="border-bottom-width: 5px !important" @click="toggleSudahBumil(false)">
-                                Ibu Hamil belum dapat Intervensi <br />
-                                {{ totalBelum }}
-                              </button>
+                              <a href="#"
+                                class="small fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
+                                style="border-bottom-width: 5px !important; cursor: default;">
+                                <span class="small text-danger" id="text-title-card-span">Ibu Hamil belum dapat Intervensi
+                                  <br />
+                                  {{ totalBelum }}</span>
+                              </a>
 
-                              <button
-                                class="fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                                style="border-bottom-width: 5px !important" @click="toggleSudahBumil(true)">
-                                Ibu Hamil sudah dapat Intervensi <br />
-                                {{ totalSudah }}
-                              </button>
+                              <a href="#"
+                                class="small fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
+                                style="border-bottom-width: 5px !important; cursor: default;">
+                                <span class="small text-success" id="text-title-card-span">Ibu Hamil sudah dapat Intervensi
+                                  <br />
+                                  {{ totalSudah }}</span>
+                              </a>
                             </div>
                           </div>
                         </div>
@@ -1035,55 +1057,167 @@
                               </nav>
                             </div>
                             <div v-else>
-                              <table class="table table-striped table-sm align-middle p-2">
-                                <thead class="table-success">
-                                  <tr>
-                                    <th class="text-center p-2">No</th>
-                                    <th class="text-center p-2" width="300">Nama</th>
-                                    <th class="text-center p-2">Jenis Intervensi</th>
-                                    <th class="text-center p-2">Anemia</th>
-                                    <th class="text-center p-2">Kehamilan Berisiko</th>
-                                    <th class="text-center p-2">KEK</th>
-                                    <th class="text-center p-2">RT</th>
-                                    <th class="text-center p-2">RW</th>
-                                    <th class="text-center p-2">
-                                      Usia <span class="fw-normal">(Tahun)</span>
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr v-for="(bumil, i) in paginatedBumil" :key="i">
-                                    <td class="text-center">
-                                      {{ (currentPage - 1) * perPage + i + 1 }}
-                                    </td>
-                                    <td>{{ bumil.nama }}</td>
-                                    <td class="text-center">{{ bumil.intervensi }}</td>
-                                    <td class="text-center">
-                                      <i v-if="bumil.anemia" class="bi bi-check2"></i>
-                                    </td>
-                                    <td class="text-center">
-                                      <i v-if="bumil.risiko" class="bi bi-check2"></i>
-                                    </td>
-                                    <td class="text-center">
-                                      <i v-if="bumil.kek" class="bi bi-check2"></i>
-                                    </td>
-                                    <td class="text-center">{{ bumil.rt }}</td>
-                                    <td class="text-center">{{ bumil.rw }}</td>
-                                    <td class="text-center">{{ bumil.umur }}</td>
-                                  </tr>
-                                </tbody>
-                                <tfoot>
-                                  <tr>
-                                    <td colspan="100%" class="text-end">
-                                      <button class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportDashboardPdf('kesehatanBumilExport')">
-                                        <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                        Export
-                                      </button>
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </table>
+
+
+                              <!-- Tombol buka/tutup -->
+                              <div class="text-center my-3" @click="showTableIbuHamil = !showTableIbuHamil"
+                                style="cursor:pointer;">
+                                <span v-if="!showTableIbuHamil">▼ Lihat tabel anak</span>
+                                <span v-else>▲ Tutup tabel anak</span>
+                              </div>
+
+                              <!-- ANIMASI TRANSITION WRAPPER -->
+                              <transition name="slide">
+                                <div v-show="showTableIbuHamil" class="table-wrapper">
+
+                                  <div id="bumilTableDashboard"
+                                    class="card shadow-sm border-0 h-100 p-3 table-responsive">
+                                    <div v-if="isSudah">
+                                      <table class="table table-striped table-sm align-middle p-2">
+                                        <thead class="table-success">
+                                          <tr>
+                                            <th class="text-center p-2">No</th>
+                                            <th class="text-center p-2" width="300">Nama</th>
+                                            <th class="text-center p-2">Anemia</th>
+                                            <th class="text-center p-2">Kehamilan Berisiko</th>
+                                            <th class="text-center p-2">KEK</th>
+                                            <th class="text-center p-2">Intervensi</th>
+                                            <th class="text-center p-2">RT</th>
+                                            <th class="text-center p-2">RW</th>
+                                            <th class="text-center p-2">Usia (Tahun)</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr v-for="(ibu, i) in paginatedBumil" :key="i" v-if="paginatedBumil.length">
+                                            <td class="text-center">
+                                              {{ (currentPage - 1) * perPage + i + 1 }}
+                                            </td>
+                                            <td>{{ ibu.nama }}</td>
+                                            <td class="text-center">
+                                              <i v-if="ibu.raw.data_kunjungan.status_gizi_hb" class="bi bi-check2"></i>
+                                            </td>
+                                            <td class="text-center">
+                                              <i v-if="ibu.raw.data_kunjungan.status_gizi_lila"
+                                                class="bi bi-check2"></i>
+                                            </td>
+                                            <td class="text-center">
+                                              <i v-if="ibu.raw.data_kunjungan.status_gizi_lila"
+                                                class="bi bi-check2"></i>
+                                            </td>
+                                            <td class="text-center">{{ ibu.raw.data_intervensi[0]?.kategori }}</td>
+                                            <td class="text-center">{{ ibu.rt }}</td>
+                                            <td class="text-center">{{ ibu.rw }}</td>
+                                            <td class="text-center">{{ ibu.umur ?? '-' }}</td>
+                                          </tr>
+
+                                          <!-- Fallback bila kosong -->
+                                          <tr v-else>
+                                            <td colspan="100%" class="text-center text-muted p-3">
+                                              Tidak ada data untuk 3 bulan terakhir
+                                            </td>
+                                          </tr>
+                                        </tbody>
+
+                                        <tfoot>
+                                          <tr>
+                                            <td colspan="100%" class="text-end">
+                                              <button class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                                @click="exportDashboardPdf('kesehatanBumilExport')">
+                                                <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                                Expor
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        </tfoot>
+                                      </table>
+                                      <!-- Pagination -->
+                                      <nav id="responsive-pagination">
+                                        <ul class="pagination justify-content-center">
+                                          <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                            <button class="page-link" @click="currentPage--">
+                                              <span aria-hidden="true">&laquo;</span>
+                                            </button>
+                                          </li>
+                                          <li class="page-item" v-for="page in totalPages" :key="page"
+                                            :class="{ active: currentPage === page }">
+                                            <button class="page-link" @click="currentPage = page">
+                                              {{ page }}
+                                            </button>
+                                          </li>
+                                          <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                                            <button class="page-link" @click="currentPage++">
+                                              <span aria-hidden="true">&raquo;</span>
+                                            </button>
+                                          </li>
+                                        </ul>
+                                      </nav>
+                                    </div>
+                                    <div v-else>
+                                      <table class="table table-striped table-sm align-middle p-2">
+                                        <thead class="table-success">
+                                          <tr>
+                                            <th class="text-center p-2">No</th>
+                                            <th class="text-center p-2" width="300">Nama</th>
+                                            <th class="text-center p-2">Jenis Intervensi</th>
+                                            <th class="text-center p-2">Anemia</th>
+                                            <th class="text-center p-2">Kehamilan Berisiko</th>
+                                            <th class="text-center p-2">KEK</th>
+                                            <th class="text-center p-2">RT</th>
+                                            <th class="text-center p-2">RW</th>
+                                            <th class="text-center p-2">
+                                              Usia <span class="fw-normal">(Tahun)</span>
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr v-for="(bumil, i) in paginatedBumil" :key="i">
+                                            <td class="text-center">
+                                              {{ (currentPage - 1) * perPage + i + 1 }}
+                                            </td>
+                                            <td>{{ bumil.nama }}</td>
+                                            <td class="text-center">{{ bumil.intervensi }}</td>
+                                            <td class="text-center">
+                                              <i v-if="bumil.anemia" class="bi bi-check2"></i>
+                                            </td>
+                                            <td class="text-center">
+                                              <i v-if="bumil.risiko" class="bi bi-check2"></i>
+                                            </td>
+                                            <td class="text-center">
+                                              <i v-if="bumil.kek" class="bi bi-check2"></i>
+                                            </td>
+                                            <td class="text-center">{{ bumil.rt }}</td>
+                                            <td class="text-center">{{ bumil.rw }}</td>
+                                            <td class="text-center">{{ bumil.umur }}</td>
+                                          </tr>
+                                        </tbody>
+                                        <tfoot>
+                                          <tr>
+                                            <!-- <td colspan="100%" class="text-end">
+                                          <button class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                            @click="exportDashboardPdf('kesehatanBumilExport')">
+                                            <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                            Export
+                                          </button>
+                                        </td> -->
+                                          </tr>
+                                        </tfoot>
+                                      </table>
+                                      <nav>
+                                      </nav>
+                                    </div>
+                                  </div>
+
+                                </div>
+                              </transition>
+
+                              <div class="d-flex justify-content-end">
+                                <button class="btn btn-sm btn-outline-primary p-2 mt-2"
+                                  @click="exportDashboardPdf('kesehatanBumilExport')">
+                                  <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                                  Export
+                                </button>
+                              </div>
+
                               <!-- Pagination -->
                               <nav>
                                 <!-- <ul class="pagination justify-content-center">
@@ -1149,8 +1283,7 @@
 
                         <!-- FOOTER -->
                         <div v-if="index < 3" class="card-footer bg-transparent border-0 p-0">
-                          <canvas :ref="'chart-catin-' + index"
-                            height="120"></canvas>
+                          <canvas :ref="'chart-catin-' + index" height="120"></canvas>
                         </div>
                       </div>
                     </div>
@@ -1172,25 +1305,32 @@
                           <table class="table table-borderless align-middle">
                             <thead>
                               <tr class="fw-semibold text-additional">
-                                <th class="text-additional">Status</th>
-                                <th class="text-additional">Jumlah</th>
-                                <th class="text-additional">Persen</th>
-                                <th class="text-additional">Tren</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">
+                                  Status</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">
+                                  Jumlah</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">
+                                  Persen</th>
+                                <th class="text-additional" style="color: #006341 !important;font-weight: bolder;">Tren
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               <tr v-for="(row, index) in dataTable_catin" :key="index">
-                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                <td id="text-diagram-table-piechart" class="text-additional small"
+                                  style="color: #006341 !important;">
                                   {{ row.status }}
                                 </td>
-                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                <td id="text-diagram-table-piechart" class="text-additional small"
+                                  style="color: #006341 !important;">
                                   {{ row.jumlah ?? 0 }}
                                 </td>
-                                <td id="text-diagram-table-piechart" class="text-additional small">
+                                <td id="text-diagram-table-piechart" class="text-additional small"
+                                  style="color: #006341 !important;">
                                   {{ row.persen ? row.persen + ' %' : '0 %' }}
                                 </td>
                                 <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'">
+                                  <span v-if="row.tren && row.tren !== '-'" style="color: #006341 !important;">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
                                   <span v-else>-</span>
@@ -1700,6 +1840,27 @@ label {
   font-size: 16px;
 }
 
+/* Fade effect */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Rotate icon */
+.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.25s ease;
+}
+
+.bi-chevron-down {
+  transition: transform 0.25s ease;
+}
+
 #text-diagram-table-piechart {
   font-size: 16px;
 }
@@ -1727,12 +1888,14 @@ label {
 
 .chart-wrapper-large {
   position: relative;
-  height: 420px; /* Lebar besar utk desktop */
+  height: 420px;
+  /* Lebar besar utk desktop */
 }
 
 @media (max-width: 768px) {
   .chart-wrapper-large {
-    height: 320px; /* Mobile lebih kecil */
+    height: 320px;
+    /* Mobile lebih kecil */
   }
 }
 
@@ -1755,7 +1918,8 @@ label {
 
 .slide-enter-to,
 .slide-leave-from {
-  max-height: 2000px; /* cukup besar untuk semua konten */
+  max-height: 2000px;
+  /* cukup besar untuk semua konten */
   opacity: 1;
 }
 
@@ -1806,6 +1970,7 @@ canvas {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1879,6 +2044,7 @@ export default {
       showDetail_tb: false,
       showDetail_bbtb: false,
       showTable: false,
+      showTableIbuHamil: false,
       diagramIntervensi: [],
       jmlTotalAnak: 0,
       noIntervensiMessage: '',
@@ -1967,6 +2133,9 @@ export default {
     }
   },
   methods: {
+    toggle(idx) {
+      this.infoBoxes[idx].open = !this.infoBoxes[idx].open
+    },
     toggleDetail(type) {
       if (type === 'bb') {
         this.showDetail_bb = !this.showDetail_bb
@@ -1985,7 +2154,7 @@ export default {
             }
           }
         })
-      } 
+      }
       else if (type === 'tb') {
         this.showDetail_tb = !this.showDetail_tb
         this.$nextTick(() => {
@@ -2002,7 +2171,7 @@ export default {
             }
           }
         })
-      } 
+      }
       else if (type === 'bbtb') {
         this.showDetail_bbtb = !this.showDetail_bbtb
         this.$nextTick(() => {
@@ -3136,24 +3305,24 @@ export default {
     },
     selectChart(type) {
       this.selectedChart = type
-      
+
       // Scroll ke detail section
       this.$nextTick(() => {
         this.renderDetailChart()
-        
+
         // Smooth scroll ke detail
         setTimeout(() => {
           const detailSection = document.querySelector('.card.border-success')
           if (detailSection) {
-            detailSection.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start' 
+            detailSection.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
             })
           }
         }, 100)
       })
     },
-    
+
     // ✅ METHOD BARU: Close Detail
     closeDetail() {
       // Destroy chart detail sebelum close
@@ -3161,29 +3330,29 @@ export default {
         this.chartInstances.detail.destroy()
         this.chartInstances.detail = null
       }
-      
+
       this.selectedChart = null
     },
-    
+
     // ✅ METHOD BARU: Render Detail Chart
     renderDetailChart() {
       const canvas = this.$refs.pieChart_detail
       if (!canvas) return
-      
+
       const ctx = canvas.getContext('2d')
-      
+
       // Destroy old chart
       if (this.chartInstances.detail) {
         this.chartInstances.detail.destroy()
       }
-      
+
       const data = this.detailData
       if (!data.length) return
-      
+
       const labels = data.map(row => row.status)
       const values = data.map(row => parseFloat(row.persen) || 0)
       const colors = data.map(row => row.color)
-      
+
       this.chartInstances.detail = new Chart(ctx, {
         type: 'pie',
         data: {
@@ -3205,7 +3374,7 @@ export default {
             },
             tooltip: {
               callbacks: {
-                label: function(context) {
+                label: function (context) {
                   const label = context.label || ''
                   const value = context.parsed || 0
                   return `${label}: ${value}%`
@@ -3227,23 +3396,23 @@ export default {
         plugins: [ChartDataLabels]
       })
     },
-    
+
     // ✅ MODIFIKASI renderChart() yang sudah ada - TIDAK PERLU DIUBAH BANYAK
     // Hanya pastikan menggunakan chartInstances yang benar
     renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
       let canvasRef = this.$refs[refName]
-      
+
       if (!canvasRef) {
         console.warn(`⚠️ Canvas ref "${refName}" tidak ditemukan`)
         return
       }
-      
+
       const ctx = canvasRef.getContext('2d')
       if (!ctx) return
 
       // Tentukan instance key
       const instanceKey = refName.replace('pieChart_', '').replace('_status', 'bbtb')
-      
+
       // Destroy old chart
       if (this.chartInstances[instanceKey]) {
         this.chartInstances[instanceKey].destroy()
@@ -3278,9 +3447,18 @@ export default {
             },
             tooltip: {
               callbacks: {
+                title: function () {
+                  return ''     // Mematikan title
+                },
                 label: function (context) {
-                  const value = context.parsed
-                  return value > 0 ? [`${value}%`] : []
+                  const label = context.label || ''
+                  const value = context.parsed || 0
+
+                  // Memecah label per ±25 karakter agar tidak kepotong
+                  const maxLength = 25
+                  const wrappedLabel = label.match(new RegExp('.{1,' + maxLength + '}', 'g'))
+
+                  return [...wrappedLabel, `${value}%`]
                 }
               }
             },
@@ -3292,7 +3470,7 @@ export default {
             if (!elements.length) return
             const index = elements[0].index
             const item = dataTable[index]
-            
+
             // Mapping status untuk routing
             let state = ''
             if (item.status === 'Berat Badan Sangat Kurang (Severely Underweight)')
@@ -3311,9 +3489,9 @@ export default {
               state = 'Possible Risk of Overweight'
             else if (item.status === 'Gizi Lebih (Overweight)') state = 'Overweight'
             else if (item.status === 'Obesitas (Obese)') state = 'Obese'
-            
+
             const status = state
-            
+
             let tipe = ''
             if (refName.includes('bb')) tipe = 'BB/U'
             else if (refName.includes('tb')) tipe = 'TB/U'
@@ -3327,7 +3505,7 @@ export default {
         },
         plugins: [ChartDataLabels]
       })
-      
+
       // Simpan juga di old pattern untuk backward compatibility
       this[refName + 'Instance'] = this.chartInstances[instanceKey]
     },
@@ -4575,7 +4753,7 @@ export default {
       }
       return titles[this.selectedChart] || ''
     },
-    
+
     detailData() {
       const dataMap = {
         'bb': this.dataTable_bb,
@@ -4584,7 +4762,7 @@ export default {
       }
       return dataMap[this.selectedChart] || []
     },
-    
+
     detailLink() {
       const linkMap = {
         'bb': '/admin/dashboard/detail?tipe=bbu',
@@ -4696,7 +4874,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
     window.removeEventListener('resize', this.handleResize)
-    
+
     // ✅ TAMBAHAN: Destroy semua chart instances
     Object.values(this.chartInstances).forEach(chart => {
       if (chart) chart.destroy()
