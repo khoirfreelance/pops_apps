@@ -895,7 +895,6 @@
                                     </td>
                                   </tr>
                                 </tbody>
-
                                 <tfoot>
                                   <tr>
                                     <td colspan="100%" class="text-end">
@@ -981,18 +980,29 @@
                                 </tfoot>
                               </table>
                               <!-- Pagination -->
-                              <nav>
-                                <!-- <ul class="pagination justify-content-center">
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button class="page-link" @click="currentPage--">Previous</button>
-                                </li>
-                                <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
-                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
-                                </li>
-                                <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
-                                  <button class="page-link" @click="currentPage++">Next</button>
-                                </li>
-                              </ul> -->
+                              <nav id="responsive-pagination">
+                                <ul class="pagination justify-content-end">
+                                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                    <button class="page-link" @click="currentPage > 1 && currentPage--">
+                                      <span aria-hidden="true">&laquo;</span>
+                                    </button>
+                                  </li>
+
+                                  <li v-for="(page, i) in paginationNumbersAnakGabungan" :key="i" class="page-item" :class="{
+                                    active: currentPage === page,
+                                    disabled: page === '...',
+                                  }">
+                                    <button class="page-link" @click="page !== '...' && (currentPage = page)">
+                                      {{ page }}
+                                    </button>
+                                  </li>
+
+                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
+                                    <button class="page-link" @click="currentPage < totalPagesAnak && currentPage++">
+                                      <span aria-hidden="true">&raquo;</span>
+                                    </button>
+                                  </li>
+                                </ul>
                               </nav>
                             </div>
                           </div>
@@ -2193,6 +2203,8 @@ export default {
 
               else if (this.activeMenu === "bumil") {
                 trendFixed = this.normalizeTrendNumber(item.trend);
+                console.log('trendBumil:',trendFixed);
+
                 this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
               }
 

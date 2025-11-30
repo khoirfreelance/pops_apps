@@ -681,7 +681,6 @@ class PregnancyController extends Controller
                 'Normal' => 0,
                 'Total Bumil' => $total,
             ];
-
             foreach ($data as $row) {
 
                 $hbStatus = strtoupper($row->status_gizi_hb ?? '');
@@ -740,8 +739,8 @@ class PregnancyController extends Controller
                             $jumlah++;
                         if ($status === 'Berisiko' && $riskStatus === 'BERISIKO')
                             $jumlah++;
-                        if (
-                            $hbStatus == 'NORMAL'
+                        if ($status == 'Normal'
+                            && $hbStatus == 'NORMAL'
                             && $lilaStatus == 'NORMAL'
                             && $riskStatus == 'NORMAL'
                         ) {
@@ -752,7 +751,7 @@ class PregnancyController extends Controller
                             $jumlah = $totalMonth;
                         }
                     }
-
+                    //dd($groupedMonth);
                     $persen = $totalMonth ? round(($jumlah / $totalMonth) * 100, 1) : 0;
 
                     $trend->push([
