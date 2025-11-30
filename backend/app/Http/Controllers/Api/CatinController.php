@@ -966,8 +966,8 @@ class CatinController extends Controller
 
                 // Format tampilan tren
                 $tren = $trendPercent === 0
-                    ? '-'
-                    : ($trendPercent > 0 ? "+{$trendPercent}%" : "{$trendPercent}%");
+                    ? ''
+                    : ($trendPercent > 0 ? "{$trendPercent}%" : "". abs($trendPercent) ."%");
 
                 $trenClass = $trendPercent > 0
                     ? 'text-danger'
