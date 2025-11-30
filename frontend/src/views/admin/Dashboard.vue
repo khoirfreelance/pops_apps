@@ -595,13 +595,14 @@
                   <div class="col-12 mt-3">
 
                     <!-- Tombol buka/tutup -->
-                    <div class="text-center my-3" @click="showTable = !showTable" style="cursor:pointer;">
+                    <div class="text-center my-3" @click="showTable = !showTable" style="cursor:pointer;" data-html2canvas-ignore
+>
                       <span v-if="!showTable">▼ Lihat tabel anak</span>
                       <span v-else>▲ Tutup tabel anak</span>
                     </div>
 
                     <!-- ANIMASI TRANSITION WRAPPER -->
-                    <transition name="slide">
+                    <transition name="slide" data-html2canvas-ignore>
                       <div v-show="showTable" class="table-wrapper">
 
                         <div class="table-responsive">
@@ -675,7 +676,7 @@
                     </transition>
 
                   </div>
-                  <div class="d-flex justify-content-end">
+                  <div class="d-flex justify-content-end" data-html2canvas-ignore >
                     <button class="btn btn-sm btn-outline-primary p-2 mt-2"
                       @click="exportDashboardPdf('giziAnakExport')">
                       <i class="bi bi-file-earmark-excel text-primary me-1"></i>
@@ -861,7 +862,7 @@
                       <div
                         class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
                         <!-- <div class="w-full h-[300px]"> -->
-                        <canvas ref="bumilChart" class="w-full h-full"></canvas>
+                        <canvas ref="bumilChart" class="w-full h-full" id="canvas-status-bumil"></canvas>
                         <!-- </div> -->
                       </div>
                     </div>
@@ -1063,13 +1064,15 @@
 
                               <!-- Tombol buka/tutup -->
                               <div class="text-center my-3" @click="showTableIbuHamil = !showTableIbuHamil"
-                                style="cursor:pointer;">
-                                <span v-if="!showTableIbuHamil">▼ Lihat tabel anak</span>
-                                <span v-else>▲ Tutup tabel anak</span>
+                                style="cursor:pointer;" data-html2canvas-ignore
+>
+                                <span v-if="!showTableIbuHamil">▼ Lihat tabel ibu hamil</span>
+                                <span v-else>▲ Tutup tabel ibu hamil</span>
                               </div>
 
                               <!-- ANIMASI TRANSITION WRAPPER -->
-                              <transition name="slide">
+                              <transition name="slide" data-html2canvas-ignore
+>
                                 <div v-show="showTableIbuHamil" class="table-wrapper">
 
                                   <div id="bumilTableDashboard"
@@ -1212,7 +1215,8 @@
                                 </div>
                               </transition>
 
-                              <div class="d-flex justify-content-end">
+                              <div class="d-flex justify-content-end" data-html2canvas-ignore
+>
                                 <button class="btn btn-sm btn-outline-primary p-2 mt-2"
                                   @click="exportDashboardPdf('kesehatanBumilExport')">
                                   <i class="bi bi-file-earmark-excel text-primary me-1"></i>
@@ -1221,29 +1225,18 @@
                               </div>
 
                               <!-- Pagination -->
-                              <nav id="responsive-pagination">
-                                <ul class="pagination justify-content-end">
-                                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                    <button class="page-link" @click="currentPage > 1 && currentPage--">
-                                      <span aria-hidden="true">&laquo;</span>
-                                    </button>
-                                  </li>
-
-                                  <li v-for="(page, i) in paginationNumbersBumil" :key="i" class="page-item" :class="{
-                                    active: currentPage === page,
-                                    disabled: page === '...',
-                                  }">
-                                    <button class="page-link" @click="page !== '...' && (currentPage = page)">
-                                      {{ page }}
-                                    </button>
-                                  </li>
-
-                                  <li class="page-item" :class="{ disabled: currentPage === totalPagesBumil }">
-                                    <button class="page-link" @click="currentPage < totalPagesBumil && currentPage++">
-                                      <span aria-hidden="true">&raquo;</span>
-                                    </button>
-                                  </li>
-                                </ul>
+                              <nav>
+                                <!-- <ul class="pagination justify-content-center">
+                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                  <button class="page-link" @click="currentPage--">Previous</button>
+                                </li>
+                                <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
+                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
+                                </li>
+                                <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
+                                  <button class="page-link" @click="currentPage++">Next</button>
+                                </li>
+                              </ul> -->
                               </nav>
                             </div>
                           </div>
@@ -1894,6 +1887,10 @@ label {
   display: none !important;
 }
 
+.canvas-status-bumil {
+  padding-left: 5px;
+}
+
 .intervensi-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -2206,7 +2203,9 @@ export default {
     },
     async exportDashboardPdf(tagId) {
       const infoBoxes = document.querySelector('#infoBoxes')
+      const canvasStatusBumil = document.querySelector('#canvas-status-bumil')
       if (infoBoxes) infoBoxes.classList.add('hide-for-pdf')
+      if (canvasStatusBumil) infoBoxes.classList.add('canvas-status-bumil')
 
       // const bumilTable = document.querySelector('#bumilTableDashboard')
       // if (bumilTable) bumilTable.classList.add('hide-for-pdf')
