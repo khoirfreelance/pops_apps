@@ -953,14 +953,29 @@ class CatinController extends Controller
                 $prevTotal = $prevCount['total'] ?? 0;
                 $prevPersen = $prevTotal > 0 ? round(($prevJumlah / $prevTotal) * 100, 1) : 0;
 
-                // tren dalam persentase
-                $deltaPersen = $persen - $prevPersen;
-                $tren = $deltaPersen === 0
-                    ? '-'
-                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
+                // ============================
+                // 🔥 HITUNG TREND BERDASARKAN JUMLAH
+                // ============================
+                if ($prevJumlah > 0) {
+                    // Rumus: (curr - prev) / prev * 100
+                    $trendPercent = round((($jumlah - $prevJumlah) / $prevJumlah) * 100, 1);
+                } else {
+                    // Kalau bulan lalu nol → otomatis dianggap 100% naik jika bulan ini > 0
+                    $trendPercent = $jumlah > 0 ? 100 : 0;
+                }
 
-                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
+                // Format tampilan tren
+                $tren = $trendPercent === 0
+                    ? '-'
+                    : ($trendPercent > 0 ? "+{$trendPercent}%" : "{$trendPercent}%");
+
+                $trenClass = $trendPercent > 0
+                    ? 'text-danger'
+                    : ($trendPercent < 0 ? 'text-success' : 'text-muted');
+
+                $trenIcon = $trendPercent > 0
+                    ? 'fa-solid fa-caret-up'
+                    : ($trendPercent < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
 
                 $dataTable[] = [
                     'status' => $status,
@@ -971,6 +986,7 @@ class CatinController extends Controller
                     'trenIcon' => $trenIcon,
                 ];
             }
+
 
 
             // jika data kosong, kirim default 0
