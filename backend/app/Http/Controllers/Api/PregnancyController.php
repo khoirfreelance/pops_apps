@@ -584,7 +584,7 @@ class PregnancyController extends Controller
     public function status(Request $request)
     {
         try {
-            $user = Auth::user();
+            /* $user = Auth::user();
 
             // =====================================
             // 1. Ambil wilayah user
@@ -600,13 +600,13 @@ class PregnancyController extends Controller
 
             if (!$wilayah) {
                 return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
-            }
-
+            } */
+            $filterKelurahan = $request->kelurahan;
             // =====================================
             // 2. Tentukan periode (default H-1 bulan)
             // =====================================
             if ($request->filled('periode')) {
-                $periode = Carbon::createFromFormat('Y-m', $request->periode);
+                $periode = Carbon::createFromFormat('!Y-m', $request->periode);
                 $periodeAkhir = $periode->copy()->endOfMonth();
                 $periodeAwal = $periode->copy()->startOfMonth();
             } else {
@@ -624,9 +624,9 @@ class PregnancyController extends Controller
 
             $dataRaw = $data;
 
-            if (!empty($wilayah->kelurahan)) {
-                $data = $data->filter(function ($item) use ($wilayah) {
-                    return strtolower($item->kelurahan) === strtolower($wilayah->kelurahan);
+            if (!empty($filterKelurahan)) {
+                $data = $data->filter(function ($item) use ($filterKelurahan) {
+                    return strtolower($item->kelurahan) === strtolower($filterKelurahan);
                 });
             }
 
@@ -665,7 +665,7 @@ class PregnancyController extends Controller
                         ['title' => 'Normal', 'value' => 0, 'percent' => '0%', 'color' => 'success', 'trend' => []],
                         ['title' => 'Total Bumil', 'value' => 0, 'percent' => '0%', 'color' => 'secondary', 'trend' => []],
                     ],
-                    'kelurahan' => $wilayah->kelurahan,
+                    'kelurahan' => $filterKelurahan,
                 ]);
             }
 
@@ -795,7 +795,7 @@ class PregnancyController extends Controller
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
-                'kelurahan' => $wilayah->kelurahan,
+                //elurahan' => $wilayah->kelurahan,
                 'final' => $data->values(),
                 'groupMonth' => $groupedMonth
             ]);
@@ -938,7 +938,7 @@ class PregnancyController extends Controller
     public function tren(Request $request)
     {
         try {
-            $user = Auth::user();
+            /* $user = Auth::user();
 
             if (!$user) {
                 return response()->json(['message' => 'User tidak ditemukan'], 404);
@@ -950,8 +950,9 @@ class PregnancyController extends Controller
                 'kecamatan' => $user->kecamatan ?? null,
                 'kota' => $user->kota ?? null,
                 'provinsi' => $user->provinsi ?? null,
-            ];
+            ]; */
 
+            $filterKelurahan = $request->kelurahan;
             $data = Pregnancy::get();
 
             $data = $data->groupBy('nik_ibu')->map(function ($group) {
@@ -961,8 +962,8 @@ class PregnancyController extends Controller
             $dataRaw = $data;
 
             // Filter default wilayah user
-            if (!empty($wilayah['kelurahan'])) {
-                $data->where('kelurahan', $wilayah['kelurahan']);
+            if (!empty($filterKelurahan)) {
+                $data->where('kelurahan',$filterKelurahan);
             }
 
             // 2️⃣ Filter tambahan request
@@ -974,7 +975,7 @@ class PregnancyController extends Controller
 
             // 3️⃣ Tentukan current & previous month
             if ($request->filled('periode')) {
-                $periode = Carbon::createFromFormat('Y-m', $request->periode)->startOfMonth();
+                $periode = Carbon::createFromFormat('!Y-m', $request->periode)->startOfMonth();
 
                 $currentMonth = $periode->format('Y-m');
                 $previousMonth = $periode->copy()->subMonth()->format('Y-m');

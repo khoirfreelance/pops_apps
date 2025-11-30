@@ -666,13 +666,14 @@ class CatinController extends Controller
             // 2. Tentukan periode (default H-1 bulan)
             // =====================================
             if ($request->filled('periode')) {
-                $periode = Carbon::createFromFormat('Y-m', $request->periode);
-                $periodeAkhir = $periode->copy()->endOfMonth();
+                $periode = Carbon::createFromFormat('!Y-m', $request->periode);
                 $periodeAwal = $periode->copy()->startOfMonth();
+                $periodeAkhir = $periode->copy()->endOfMonth();
+                //dd($periode);
             } else {
-                $periode = now()->subMonths(1);
-                $periodeAkhir = $periode->copy()->endOfMonth();
+                $periode = now()->subMonths(1)->startOfMonth();
                 $periodeAwal = $periode->copy()->startOfMonth();
+                $periodeAkhir = $periode->copy()->endOfMonth();
             }
 
             $data = Catin::get();
@@ -1032,7 +1033,7 @@ class CatinController extends Controller
     {
         if (isset($row->status_risiko) && $row->status_risiko) {
             $s = strtolower($row->status_risiko);
-            return Str::contains($s, ['risiko', 'berisiko', 'high risk', 'risti']);
+            return Str::contains($s, ['berisiko']);
         }
         return false;
     }
