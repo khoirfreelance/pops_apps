@@ -477,6 +477,9 @@ class ChildrenController extends Controller
             $filters["intervensi"] ?? null,
         );
         //$pendampingan = Child::where('kelurahan', $filterKelurahan)->get();
+        $periodeAwal = $filters['periodeAwal'] ?? null;
+        $periodeAkhir = $filters['periodeAkhir'] ?? null;
+
         $nikKunjungan = $kunjungan->pluck('nik')->unique();
         $intervensi = Intervensi::query()
             ->whereIn('nik_subjek', $nikKunjungan)
