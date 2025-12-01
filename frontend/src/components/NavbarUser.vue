@@ -4,11 +4,6 @@
     :class="isScrolled ? 'scrolled-navbar' : 'bg-primary navbar-dark'"
   >
     <div class="container-fluid">
-      <!-- Brand -->
-      <a class="navbar-brand d-flex align-items-center mx-4" href="#">
-        <img src="@/assets/tf_box_outlined.png" alt="POPS Logo" height="50" class="me-2" />
-      </a>
-
       <!-- Toggler -->
       <button
         class="navbar-toggler custom-toggler"
@@ -74,6 +69,10 @@ export default {
 </script>
 
 <style scoped>
+/* nav {
+  z-index: 1050;
+  border-bottom: 5px solid var(--bs-secondary);
+} */
 /* Transition */
 .transition-all {
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
@@ -81,13 +80,13 @@ export default {
 
 /* Navbar scroll style */
 .scrolled-navbar {
-  background-color: #fff !important;
+  background-color: var(--bs-primary) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* Link color fix */
 .scrolled-navbar .nav-link {
-  color: #000 !important;
+  color: #fff !important;
 }
 .navbar-dark .nav-link {
   color: #fff !important;

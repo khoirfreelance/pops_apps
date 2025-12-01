@@ -30,7 +30,7 @@
           <div class="mt-3">
             <div class="row justify-content-center g-2">
               <div v-for="(stat, index) in stats" :key="index"
-                class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-6 col-6">
+                class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-3 col-6">
                 <div class="stat-card shadow-sm rounded h-100">
                   <h6 class="text-muted pt-2 ps-2" style="font-size: 16px;">{{ stat.title }}</h6>
                   <div class="card-body d-flex align-items-center justify-content-between px-2">
@@ -615,7 +615,7 @@
                                 <th class="text-center">Stunting</th>
                                 <th class="text-center">Wasting</th>
                                 <th class="text-center">Underweight</th>
-                                <th class="text-center">BB Sangat</th>
+                                <th class="text-center">BB Stagnan</th>
                                 <th class="text-center">Overweight</th>
                               </tr>
                             </thead>

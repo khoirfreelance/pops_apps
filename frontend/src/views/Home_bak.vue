@@ -7,38 +7,48 @@
     <!-- Section Cover -->
     <section id="section0" class="hero-section position-relative text-white">
       <!-- Hero Content -->
-      <div class="hero-content d-flex flex-column align-items-center justify-content-center text-center ms-auto col-md-6 col-12">
-        <h5 class="fw-regular text-dark" style="font-size: 24px !important;">Selamat Datang di</h5>
-        <h1 class="fw-bold display-4 text-primary text-shadow">
+      <div class="hero-content d-flex flex-column align-items-center justify-content-center text-center py-5">
+        <h5 class="fw-semibold text-dark">Selamat Datang di</h5>
+        <h1 class="fw-bold display-4 text-primary">
           Pusat Operasi Penurunan Stunting (POPS)
         </h1>
+        <!-- <h3 class="fw-bold text-primary">Kabupaten Brebes ▼</h3> -->
       </div>
-    </section>
 
-    <!-- Statistic Cards -->
-    <section id="section0_1" class="container-fluid mt-2">
-      <div class="row justify-content-center g-2">
-        <div v-for="(stat, index) in stats" :key="index"
-          class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-3 col-6">
-          <div class="stat-card shadow rounded h-100">
-            <h6 class="text-muted pt-2 ps-2" style="font-size: 14px;">{{ stat.title }}</h6>
-            <div class="card-body d-flex align-items-center justify-content-between px-2">
-              <!-- Text -->
-              <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
-              <!-- Icon -->
-              <div class="icon-wrap d-flex align-items-center justify-content-center mb-1">
-                <i :class="[stat.icon]"></i>
+      <!-- Hero Image -->
+      <div class="hero-image text-start top-0">
+        <img src="/src/assets/anak.png" alt="Anak" class="img-fluid hero-anak">
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-wrapper container position-relative z-2 mt-3">
+        <div class="stats-grid">
+          <div
+            v-for="item in stats"
+            :key="item.title"
+            class="card stat-card h-100 py-2 position-relative shadow"
+          >
+            <div class="card-body p-2 d-flex flex-column justify-content-between">
+              <h3 class="fw-bold text-success position-absolute top-0 end-0 m-2">
+                {{ item.value }}
+              </h3>
+              <div class="d-flex align-items-center justify-content-between mt-auto pt-4">
+                <h6 class="mb-0 text-primary fw-semibold">{{ item.title }}</h6>
+                <div class="icon-wrapper text-muted mt-2">
+                  <i :class="item.icon + ' fs-5'"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
     </section>
 
     <!-- Section Gizi -->
-    <section class="mt-2" id="section2">
+    <section class="py-5" id="section2" style="background-image: url('/src/assets/pattern_bg.png');background-position: center;background-size: contain;">
       <div class="container">
-        <ul class="nav nav-pills justify-content-center" id="chartTabs" role="tablist">
+        <ul class="nav nav-pills justify-content-center mb-4" id="chartTabs" role="tablist">
           <li class="nav-item me-2">
             <button
               class="nav-link active"
@@ -348,69 +358,85 @@
     </section>
 
     <!-- Section About POPS -->
-    <section class="about-pops-section mb-3" id="section1">
-      <div class="blur-bg"></div>
-      <h2 class="text-center display-5 mb-4">Tentang POPS</h2>
-      <div class="container">
-        <div class="about-card shadow-lg">
-          <!-- Description -->
-           <img src="\src\assets\tf_box.png" alt="" class="mb-2" style="max-width: 100px;">
-          <div class="about-body">
+    <section
+      class="py-5 position-relative overflow-hidden"
+      id="section1"
+      style="background: linear-gradient(135deg, #6fa287 0%, #a2aaad 100%)"
+    >
+      <div class="container py-5">
+        <!-- Heading -->
+        <div class="text-center mb-5 text-white">
+          <h2 class="fw-bold display-5 mb-3 animate-fade-in">Tentang POPS</h2>
+          <div
+            class="mx-auto mb-3"
+            style="width: 90px; height: 4px; background: #fff; border-radius: 3px"
+          ></div>
+        </div>
 
-            <p class="lh-lg text-justify">
+        <!-- Split Layout -->
+        <div class="row align-items-center mb-5 text-white">
+            <p class="lh-lg" style="text-align: justify">
               <strong>Tanoto Foundation</strong> bersama <strong>BKKBN</strong> dan pemerintah daerah bekerja sama dalam mengembangkan program percepatan penurunan stunting di empat kabupaten/kota di Provinsi Jawa Barat, Kabupaten Bogor. Strategi pengembangan program tidak saja fokus kepada dukungan teknis konvergensi dan koordinasi dalam penyusunan kebijakan strategi percepatan penurunan stunting, namun juga mewujudkan layanan pencegahan stunting yang lebih berkualitas di tingkat masyarakat.
             </p>
-
-            <p class="lh-lg text-justify">
-              Agar program pendampingan percepatan penurunan stunting tersebut dilakukan secara tepat sasaran sesuai dengan ketersediaan sumber daya hingga di tingkat desa, Tanoto Foundation berupaya menginisiasi pengelolaan program stunting berbasis data penerima sasaran di tingkat desa melalui program POPS (Pusat Operasi Penurunan Stunting). Inisiatif ini akan diujicobakan (pilot) di Desa Kluwut, Kabupaten Brebes. Dalam mempersiapkan program tersebut, beberapa tahapan akan dilakukan diantaranya ; Pertemuan assesmen kebutuhan (needs assessment) untuk menggali kebutuhan dan situasi di desa secara komprehensif sehingga kerangka program POPS yang dikembangkan tepat untuk membantu TPPS desa melakukan pengambilan keputusan intervensi stunting yang efektif, Menyepakati alur proses pengumpulan data dan informasi yang dibutuhkan, dan pengembangan website - applikasi POPS sebagai media yang akan ditampilkan dalam penyajian data.
+            <p class="lh-lg" style="text-align: justify">
+              Agar program pendampingan percepatan penurunan stunting tersebut dilakukan secara tepat sasaran sesuai dengan ketersediaan sumber daya hingga di tingkat desa, Tanoto Foundation berupaya menginisiasi pengelolaan program stunting berbasis data penerima sasaran di tingkat desa melalui program POPS (Pusat Operasi Penurunan Stunting). Inisiatif ini akan diujicobakan (pilot) di Desa Kluwut, Kabupaten Brebes. Dalam mempersiapkan program tersebut, beberapa tahapan akan dilakukan diantaranya ; Pertemuan assesmen kebutuhan (needs assessment) untuk menggali kebutuhan dan situasi di desa secara komprehensif sehingga kerangka program POPS yang dikembangkan tepat untuk membantu TPPS desa melakukan pengambilan keputusan intervensi stunting yang efektif, Menyepakati alur proses pengumpulan data dan informasi yang dibutuhkan, dan pengembangan website – applikasi POPS sebagai media yang akan ditampilkan dalam penyajian data.
             </p>
-
-            <p class="lh-lg text-justify">
+            <p class="lh-lg" style="text-align: justify">
               Dalam pelaksanaan Program POPS ini, Tanoto Foundation bekerjasama dengan Yayasan Satu Karsa Karya (YSKK) sebagai mitra implementasi di Lapangan, dan juga mengajak Pemerintah dan Kader Desa Kluwut untuk membantu dalam penggalian/pengumpulan data dan informasi. Pelibatan Desa Kluwut sejak awal program POPS perlu dilakukan untuk memastikan adanya jaminan keberlanjutan Program POPS ini. Terkait dengan hal tersebut untuk mempermudah memahami alur porses program POPS berikut kami susun acuan program untuk bisa dibaca dan dipahami oleh para pihak yang akan terlibat dalam implementasi program ini.
             </p>
+        </div>
 
-          </div>
+        <!-- Goals Section -->
+        <div class="text-center pt-5 border-top border-light">
+          <h2 class="fw-bold text-white mb-3">Tujuan Pelaksanaan POPS</h2>
+          <p class="text-light">Dua fokus utama yang ingin dicapai:</p>
+        </div>
 
-          <!-- Goals Section -->
-          <div class="text-center mt-5 pt-4 border-top">
-            <h3 class="fw-bold">Tujuan Pelaksanaan POPS</h3>
-            <p class="text-muted mb-3">Dua fokus utama yang ingin dicapai:</p>
-          </div>
-
-          <div class="row mt-4">
-
-            <!-- Card 1 -->
-            <div class="col-md-6 mb-4">
-              <div class="mini-card shadow-sm">
-                <div class="d-flex align-items-center">
-                  <img src="/report.png" alt="">
-                  <p class="lh-lg mb-0 ms-3">
-                    Mengkoordinasikan data dan informasi sasaran program stunting yang ada didesa Kluwut agar selalu update dan mudah diakses banyak pihak, melalui pengembangan website berbasis data.
+        <!-- Cards -->
+        <div class="row mt-4">
+          <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-lg text-dark hover-card">
+              <div class="card-body p-4">
+                <div class="d-flex">
+                  <div
+                    class="rounded-circle bg-gradient-primary d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                    style="width: 60px; height: 60px"
+                  >
+                    <i class="bi bi-database-fill text-white fs-3"></i>
+                  </div>
+                  <p class="lh-lg mb-0" style="text-align: justify">
+                    Mengkoordinasikan data dan informasi program stunting di Desa Kluwut agar selalu
+                    update dan mudah diakses, melalui website berbasis data.
                   </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Card 2 -->
-            <div class="col-md-6 mb-4">
-              <div class="mini-card shadow-sm">
-                <div class="d-flex align-items-center">
-                  <img src="/chart.png" alt="" style="width: 100px;">
-                  <p class="lh-lg mb-0 ms-3">
-                    Mengembangkan Dashboard (website) berbasis data di Desa Kluwut
+          <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-lg text-dark hover-card">
+              <div class="card-body p-4">
+                <div class="d-flex">
+                  <div
+                    class="rounded-circle bg-gradient-success d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                    style="width: 60px; height: 60px"
+                  >
+                    <i class="bi bi-bar-chart-line-fill text-white fs-3"></i>
+                  </div>
+                  <p class="lh-lg mb-0" style="text-align: justify">
+                    Mengembangkan <strong>Dashboard (website)</strong> berbasis data di Desa Kluwut
+                    untuk mendukung pengambilan keputusan intervensi stunting.
                   </p>
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
     </section>
 
     <!-- Section KMS -->
-    <section id="section3" class="py-5 bg-light">
+    <section id="section3" class="py-5 bg-light position-relative">
       <div class="container px-4">
         <h2 class="text-center mb-2 fw-bold text-primary">Kalkulator Mandiri</h2>
         <p class="text-center text-muted mb-4">Pantau pertumbuhan anak dengan mudah dan cepat</p>
@@ -509,7 +535,6 @@
     <FooterUser />
   </div>
 </template>
-
 <script>
 import NavbarUser from '../components/NavbarUser.vue'
 import FooterUser from '../components/FooterUser.vue'
@@ -524,15 +549,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import axios from 'axios'
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-// PORT backend kamu
-const API_PORT = 8000
 
-// Bangun base URL dari window.location
-const { protocol, hostname } = window.location
-// contoh hasil: "http://192.168.0.5:8000"
-const baseURL = `${protocol}//${hostname}:${API_PORT}`
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 
 export default {
   name: 'StatusGiziTabs',
@@ -569,8 +587,7 @@ export default {
       ],
     }
   },
-  async mounted() {
-    await this.fetchStats()
+  mounted() {
     const umurGroups = [
       '0-5',
       '6-11',
@@ -654,27 +671,6 @@ export default {
     })
   },
   methods: {
-    async fetchStats() {
-      try {
-        const res = await axios.get(`${baseURL}/api/dashboard/stats/`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        const data = res.data
-        this.stats = [
-          { title: 'RW', value: data.rw, icon: 'bi bi-houses-fill' },
-          { title: 'RT', value: data.rt, icon: 'bi bi-house-fill' },
-          { title: 'Keluarga Terdaftar', value: data.keluarga, icon: 'fa-solid fa-people-roof' },
-          { title: 'TPK', value: data.tpk, icon: 'bi bi-person-vcard' },
-          { title: 'Ibu Hamil', value: data.ibu_hamil, icon: 'fa-solid fa-person-pregnant' },
-          { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
-          { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
-          { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
-          { title: 'Anak <= 5 Tahun', value: data.anak, icon: 'fa-solid fa-baby' },
-        ]
-      } catch (e) {
-        console.error(e)
-      }
-    },
     applyFilter() {
       this.loadChart() // reload chart sesuai filter
     },
@@ -724,6 +720,7 @@ export default {
 
       return labels
     },
+
     createChart(canvasId, labels, datasetsObj) {
       const datasets = Object.entries(datasetsObj).map(([label, cfg]) => ({
         label,
@@ -780,317 +777,46 @@ export default {
 </script>
 
 <style scoped>
-  .about-pops-section {
-    position: relative;
-    padding: 60px 0;
-  }
-
-  .blur-bg {
-    position: absolute;
-    inset: 0;
-    height: 30%;
-    background-image: url('/banner_1520.png');
-    background-size: cover;
-    background-position: center;
-    filter: blur(8px);
-    opacity: 0.6;
-    z-index: 1;
-  }
-
-  .about-card {
+  .hero-image {
     position: relative;
     z-index: 2;
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
   }
 
-  .about-header .logo-tanoto {
-    width: 80px;
-    height: auto;
+  .hero-anak {
+    max-width: 220px;
+    margin-left: 2rem;
+    margin-top: -40px;
+    opacity: 0;
+    transform: translateY(20px); /* efek naik dikit */
+    animation: fadeInUp 1s ease-out forwards;
   }
-
-  .text-justify {
-    text-align: justify;
-  }
-
-/* Mini cards seperti di gambar */
-.mini-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(0,0,0,0.05);
-}
-
-.icon-circle {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
-  .stat-card {
-    background-color: #fff;
-    border-top: 4px solid var(--bs-secondary);
-    height: 90px;
-    /* proporsional */
-    transition: all 0.2s ease-in-out;
-    max-width: 150px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  /* Keyframes */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
     }
-
-    .icon-wrap {
-      background-color: var(--bs-secondary);
-      color: #fff;
-      border-radius: 8px;
-      width: 34px;
-      height: 34px;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-
-    h6 {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.75rem;
-      margin: 0;
-    }
-
-    h4 {
-      font-family: 'Inter', sans-serif;
-      color: #000;
-      font-size: 1.1rem;
-      margin: 0;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
-
-  .stat-text {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    height: 60px;
-
-    .spacer {
-      flex: 1;
-    }
-  }
-
-  /* custom kolom 9 per baris */
-  @media (min-width: 1400px) {
-    .col-xl-1_9 {
-      flex: 0 0 auto;
-      width: 11.11%;
-    }
-  }
-
-  /* fallback grid untuk ukuran lain */
-  @media (min-width: 992px) and (max-width: 1399.98px) {
-    .col-lg-2_custom {
-      flex: 0 0 auto;
-      width: 11.11%;
-      /* 5 kolom */
-    }
-
-    .stat-card {
-      background-color: #fff;
-      border-top: 4px solid var(--bs-secondary);
-      height: 90px;
-      /* proporsional */
-      transition: all 0.2s ease-in-out;
-      max-width: 120px;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-      }
-
-      .icon-wrap {
-        background-color: var(--bs-secondary);
-        color: #fff;
-        border-radius: 8px;
-        width: 25px !important;
-        height: 25px !important;
-        font-size: 12px !important;
-        flex-shrink: 0;
-      }
-
-      h6 {
-        font-family: 'Inter', sans-serif;
-        font-size: 10px !important;
-        margin: 0;
-      }
-
-      h4 {
-        font-family: 'Inter', sans-serif;
-        color: #000;
-        font-size: 14px !important;
-        margin: 0;
-      }
-    }
-
-    .stat-text {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: flex-start;
-      height: 60px;
-
-      .spacer {
-        flex: 1;
-      }
-    }
-  }
-
-  @media (min-width: 768px) and (max-width: 991.98px) {
-    .col-md-3 {
-      flex: 0 0 auto;
-      /* width: 11.11%; */
-    }
-
-    .stat-card {
-      background-color: #fff;
-      border-top: 4px solid var(--bs-secondary);
-      height: 90px;
-      /* proporsional */
-      transition: all 0.2s ease-in-out;
-      max-width: 80px;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-      }
-
-      .icon-wrap {
-        background-color: var(--bs-secondary);
-        color: #fff;
-        border-radius: 8px;
-        width: 25px !important;
-        height: 25px !important;
-        font-size: 12px !important;
-        flex-shrink: 0;
-      }
-
-      h6 {
-        font-family: 'Inter', sans-serif;
-        font-size: 6px !important;
-        margin: 0;
-      }
-
-      h4 {
-        font-family: 'Inter', sans-serif;
-        color: #000;
-        font-size: 12px !important;
-        margin: 0;
-      }
-    }
-
-    .stat-text {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: flex-start;
-      height: 60px;
-
-      .spacer {
-        flex: 1;
-      }
-    }
-  }
-
-  @media (max-width: 767.98px) {
-    .col-sm-4 {
-      flex: 0 0 auto;
-      /* width: 33.33%; */
-      /* 3 kolom */
-    }
-
-    .stat-card {
-      background-color: #fff;
-      border-top: 4px solid var(--bs-secondary);
-      height: 90px;
-      /* proporsional */
-      transition: all 0.2s ease-in-out;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-      }
-
-      .icon-wrap {
-        background-color: var(--bs-secondary);
-        color: #fff;
-        border-radius: 8px;
-        width: 30px !important;
-        height: 30px !important;
-        font-size: 12px !important;
-        flex-shrink: 0;
-      }
-
-      h6 {
-        font-family: 'Inter', sans-serif;
-        font-size: 7px !important;
-        margin: 0;
-      }
-
-      h4 {
-        font-family: 'Inter', sans-serif;
-        color: #000;
-        font-size: 12px !important;
-        margin: 0;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .sticky-filter {
-        position: sticky;
-        top: 70px;
-        z-index: 10;
-      }
-    }
-
-    @media (max-width: 767px) {
-      .sticky-filter {
-        top: 100px;
-      }
-    }
-
-    .filter-floating-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      border-radius: 50%;
-      width: 55px;
-      height: 55px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-  }
-
   .hero-section {
-    margin-top: 40px;
-    min-height: 80vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
     width: 100%;
     overflow: hidden;
-    background: url('/banner_1520.png') center/cover no-repeat;
+    background: url('/banner.png') center/cover no-repeat;
   }
 
   /* Konten di atas overlay */
   .hero-content {
     margin-top: 100px;
-    /* position: relative;
-    z-index: 2; */
+    position: relative;
+    z-index: 2;
     opacity: 0;
     transform: translateY(20px); /* efek naik dikit */
     animation: fadeInDown 1s ease-out forwards;
@@ -1126,6 +852,12 @@ export default {
     }
   }
 
+
+  .stats-wrapper {
+    bottom: 0; /* nempel bawah */
+    padding-bottom: 2rem; /* kasih jarak dikit biar ga terlalu mepet */
+  }
+
   /* bikin col-1-5 (1.5 kolom dari 12 grid = 12/8) */
   @media (min-width: 992px) {
     .col-lg-1-5 {
@@ -1133,13 +865,25 @@ export default {
       width: 12.5%; /* 100% / 8 */
     }
   }
-  #section2{
-    background-image: url('/pattern.png') !important;
-    background-size: cover;
-    background-repeat: no-repeat;
-    padding-top: 10%;
+
+  /* Stat card */
+  .stat-card {
+    border: 2px solid #198754;
+    border-radius: 0.75rem;
+    background: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-size: 0.8rem;
   }
 
+  .icon-wrapper {
+    width: 30px;
+    height: 30px;
+    background: rgba(25, 135, 84, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
@@ -1198,7 +942,7 @@ export default {
   .big-circle {
     width: 400px; /* Biar nggak kebesaran di HP */
     height: 400px;
-    background-image: url('/banner1520.png');
+    background-image: url('/src/assets/cover2.png');
     background-size: cover;
     background-position: center;
     border-radius: 50%;
