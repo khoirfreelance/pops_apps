@@ -8,23 +8,28 @@
       <button
         class="navbar-toggler custom-toggler"
         type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
+        @click="toggleMenu"
       >
+
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <!-- Menu -->
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav gap-3"> <!-- kasih jarak antar menu -->
+      <div
+        class="collapse navbar-collapse"
+        :class="{ show: isCollapse }"
+        id="navbarSupportedContent"
+      >
+
+        <ul class="navbar-nav gap-3">
           <li class="nav-item">
-            <a href="#section1" class="nav-link">Tentang POPS</a>
+            <a href="#section0" class="nav-link" @click="isCollapse=false">Home</a>
           </li>
           <li class="nav-item">
-            <a href="#section3" class="nav-link">Kalkulator Mandiri</a>
+            <a href="#section1" class="nav-link" @click="isCollapse=false">Tentang POPS</a>
+          </li>
+          <li class="nav-item">
+            <a href="#section3" class="nav-link" @click="isCollapse=false">Kalkulator</a>
           </li>
         </ul>
       </div>
@@ -42,11 +47,15 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
+import { Collapse } from 'bootstrap';
+
 export default {
   data() {
     return {
       isScrolled: false,
       showBackToTop: false,
+      isCollapse: false
     }
   },
   mounted() {
@@ -64,6 +73,9 @@ export default {
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: "smooth" })
     },
+    toggleMenu() {
+      this.isCollapse = !this.isCollapse   // FIXED 👍
+    }
   },
 }
 </script>

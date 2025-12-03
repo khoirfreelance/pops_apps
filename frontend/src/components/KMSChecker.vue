@@ -67,12 +67,12 @@
       <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
           <h6 class="mb-2">BB/U (0–60 bln)</h6>
-          <div style="height: 200px">
+          <div style="height: 500px">
             <canvas ref="chartBB"></canvas>
           </div>
-          <div class="small text-muted mt-2">
+          <!-- <div class="small text-muted mt-2">
             Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -80,12 +80,12 @@
       <div class="card border-0 shadow-sm">
         <div class="card-body">
           <h6 class="mb-2">TB/U (0–60 bln)</h6>
-          <div style="height: 200px">
+          <div style="height: 500px">
             <canvas ref="chartTB"></canvas>
           </div>
-          <div class="small text-muted mt-2">
+          <!-- <div class="small text-muted mt-2">
             Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

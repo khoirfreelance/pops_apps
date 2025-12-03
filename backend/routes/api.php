@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ChildrenController;
 use App\Http\Controllers\Api\PregnancyController;
 use App\Http\Controllers\Api\CatinController;
+use App\Http\Controllers\Api\HomeController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -121,3 +122,8 @@ Route::middleware('auth:sanctum')->get('/log', [LogController::class, 'index']);
 
 // User Endpoint
 Route::middleware('auth:sanctum')->get('/user/region', [CadreController::class, 'wilayahByUser']);
+
+// Home Endpoint
+Route::get('/home/pregnancy', [HomeController::class, 'getBumil']);
+Route::get('/home/children', [HomeController::class, 'getAnak']);
+Route::get('/home/indicator', [HomeController::class, 'getIndikatorAnak']);

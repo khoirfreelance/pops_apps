@@ -19,7 +19,7 @@
     <section id="section0_1" class="container-fluid mt-2">
       <div class="row justify-content-center g-2">
         <div v-for="(stat, index) in stats" :key="index"
-          class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-3 col-6">
+          class="col-xl-1_9 col-lg-2 col-md-1 col-sm-3 col-6">
           <div class="stat-card shadow rounded h-100">
             <h6 class="text-muted pt-2 ps-2" style="font-size: 14px;">{{ stat.title }}</h6>
             <div class="card-body d-flex align-items-center justify-content-between px-2">
@@ -36,12 +36,12 @@
     </section>
 
     <!-- Section Gizi -->
-    <section class="mt-2" id="section2">
-      <div class="container">
+    <section class="py-3" id="section2">
+      <div class="container-fluid mt-5">
         <ul class="nav nav-pills justify-content-center" id="chartTabs" role="tablist">
           <li class="nav-item me-2">
             <button
-              class="nav-link active"
+              class="nav-link active col-12"
               id="gizi-tab"
               data-bs-toggle="pill"
               data-bs-target="#gizi"
@@ -53,34 +53,28 @@
           </li>
           <li class="nav-item">
             <button
-              class="nav-link"
+              class="nav-link col-12"
               id="hamil-tab"
               data-bs-toggle="pill"
               data-bs-target="#hamil"
               type="button"
               role="tab"
             >
-              Ibu Hamil
+              Kesehatan Ibu Hamil
             </button>
           </li>
         </ul>
         <div class="tab-content">
+          <!-- Anak -->
           <div class="tab-pane fade show active" id="gizi" role="tabpanel">
-            <!-- Alert -->
-            <!-- <div class="alert alert-info">
-              <i></i>
-              Total Data <strong>Gizi Anak</strong> Per Bulan {{ currentMonthYear }}:
-              <strong>{{ totalData }}</strong>
-            </div> -->
-
-            <div class="mt-5">
-              <h5 class="mb-0 fw-bold">Status Gizi Anak</h5>
-              <h1 class="text-primary fw-bold">Berdasarkan Kategori Usia</h1>
+            <div class="">
+              <h2 class="mb-0">Status Gizi Anak</h2>
+              <h5 class="text-primary">Berdasarkan Usia</h5>
             </div>
 
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-end mb-2">
               <!-- Nav Pills -->
-              <ul class="nav nav-pills mb-2 mb-md-0" id="pills-tab" role="tablist">
+              <ul class="nav nav-pills-custom mb-2 mb-md-0" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                   <button
                     class="nav-link active"
@@ -118,35 +112,14 @@
                   </button>
                 </li>
               </ul>
-
-              <!-- Filter Form -->
-              <form class="d-flex align-items-center gap-2" @submit.prevent="applyFilter">
-                <select v-model="selectedMonth" class="form-select">
-                  <option v-for="(m, idx) in months" :key="idx" :value="idx + 1">
-                    {{ m }}
-                  </option>
-                </select>
-
-                <select v-model="selectedYear" class="form-select">
-                  <option v-for="y in yearOptions" :key="y" :value="y">
-                    {{ y }}
-                  </option>
-                </select>
-
-                <button type="submit" class="btn btn-gradient px-5">
-                  Cari
-                </button>
-              </form>
             </div>
 
             <!-- content -->
-            <div class="p-4 rounded shadow-sm text-center">
-
+            <div class="p-4 bg-light rounded shadow-sm text-center">
               <!-- Tabs Content -->
               <div class="tab-content" id="pills-tabContent">
                 <!-- BB/U -->
                 <div class="tab-pane fade show active" id="pills-bb-usia" role="tabpanel">
-                  <h5>Berat Badan / Usia</h5>
                   <div class="bg-light chart-container">
                     <canvas id="chart-bb-usia"></canvas>
                   </div>
@@ -171,14 +144,14 @@
             </div>
 
             <div class="mt-5">
-              <h5 class="mb-0 fw-bold">Status Gizi Anak</h5>
-              <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
+              <h2 class="mb-0">Status Gizi Anak</h2>
+              <h5 class="text-primary">Dalam 12 Bulan Terakhir</h5>
             </div>
 
             <!-- content 2 -->
-            <div class="p-4 rounded shadow-sm text-center">
+            <div class="p-4 bg-light rounded shadow-sm text-center">
               <!-- Nav Pills -->
-              <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+              <ul class="nav nav-pills-custom mb-3 " id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                   <button
                     class="nav-link active"
@@ -246,7 +219,7 @@
             </div>
 
             <!-- content 3 -->
-            <div class="mt-5">
+            <!-- <div class="mt-5">
               <h5 class="mb-0 fw-bold">Indikator Utama (Persentase)</h5>
               <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
             </div>
@@ -255,90 +228,30 @@
               <div class="bg-light chart-container">
                 <canvas id="chart-bb-tb-indikator"></canvas>
               </div>
-            </div>
+            </div> -->
           </div>
-          <div class="tab-pane fade" id="hamil" role="tabpanel">
-            <div class="p-4">
-              <!-- Alert -->
-              <div class="alert alert-info">
-                <i></i>
-                Total Data <strong>Kesehatan Ibu Hamil</strong> Per Bulan {{ currentMonthYear }}:
-                <strong>0</strong>
-              </div>
 
-              <!-- Filter Form Content 1 -->
-              <div class="my-3">
-                <div class="card border-0 shadow-sm p-3">
-                  <h5 class="mb-3">Filter Data</h5>
-                  <form class="row g-3 align-items-center">
-                    <div class="col-auto">
-                      <select name="month" id="month" class="form-select">
-                        <option value="1">Januari</option>
-                        <option value="2">Februari</option>
-                        <option value="3">Maret</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <select name="year" id="year" class="form-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search me-1"></i> Cari
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
+          <!-- Ibu Hamil -->
+          <div class="tab-pane fade" id="hamil" role="tabpanel">
+            <div class="">
+              <!-- Alert -->
+              <!-- <div class="alert alert-info">
+                <p class="fs-4 mb-0">
+                  <i class="fa fa-info-circle"></i>
+                  Total Data <strong>Kesehatan Ibu Hamil</strong> Per Bulan {{ currentMonthYear }}:
+                  <strong>{{countBumil}}</strong>
+                </p>
+              </div> -->
 
               <!-- Content 1 -->
-              <div class="mt-5">
-                <h5 class="mb-0 fw-bold">Kesehatan Ibu Hamil</h5>
-                <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
+              <div class="">
+                <h2 class="mb-0">Data Kesehatan Ibu Hamil</h2>
+                <h5 class="text-primary">Dalam 12 Bulan Terakhir</h5>
               </div>
 
-              <div class="p-4 rounded shadow-sm text-center">
-                <div class="bg-light chart-container">
+              <div class="p-4 bg-light rounded shadow-sm text-center">
+                <div class="bg-light table-responsive">
                   <canvas id="chart-bumil"></canvas>
-                </div>
-              </div>
-              <!-- Filter Form Content 2 -->
-              <div class="my-3">
-                <div class="card border-0 shadow-sm p-3">
-                  <h5 class="mb-3">Filter Data</h5>
-                  <form class="row g-3 align-items-center">
-                    <div class="col-auto">
-                      <select name="month" id="month" class="form-select">
-                        <option value="1">Januari</option>
-                        <option value="2">Februari</option>
-                        <option value="3">Maret</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <select name="year" id="year" class="form-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search me-1"></i> Cari
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-
-              <!-- Content 2 -->
-              <div class="mt-5">
-                <h5 class="mb-0 fw-bold">Indikator Utama (persentase)</h5>
-                <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
-              </div>
-              <div class="p-4 rounded shadow-sm text-center">
-                <div class="bg-light chart-container">
-                  <canvas id="chart-bumil-indikator"></canvas>
                 </div>
               </div>
             </div>
@@ -411,7 +324,7 @@
 
     <!-- Section KMS -->
     <section id="section3" class="py-5 bg-light">
-      <div class="container px-4">
+      <div class="container px-4 mt-3">
         <h2 class="text-center mb-2 fw-bold text-primary">Kalkulator Mandiri</h2>
         <p class="text-center text-muted mb-4">Pantau pertumbuhan anak dengan mudah dan cepat</p>
         <hr class="my-3 w-50 mx-auto" />
@@ -435,13 +348,13 @@
           aria-labelledby="kmsModalLabel"
           aria-hidden="true"
         >
-          <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow-lg">
               <div class="modal-header bg-primary text-white rounded-top-4">
-                <h5 class="modal-title fw-bold" id="kmsModalLabel">
-                  <small class="fw-normal"> Untuk Anak Usia 0 - 5 Tahun </small><br>
-                  Cek Indeks Berat dan Tinggi Badan Menurut Umur
-                </h5>
+                <h3 class="modal-title" id="kmsModalLabel">
+                  <small class="fw-normal text-secondary"> Untuk Anak Usia 0 - 5 Tahun </small><br>
+                  Cek indeks berat dan tinggi badan menurut umur
+                </h3>
                 <button
                   type="button"
                   class="btn-close btn-close-white"
@@ -538,6 +451,7 @@ export default {
   name: 'StatusGiziTabs',
   data() {
     return {
+      countBumil: '',
       months: [
         'Januari',
         'Februari',
@@ -571,87 +485,22 @@ export default {
   },
   async mounted() {
     await this.fetchStats()
-    const umurGroups = [
-      '0-5',
-      '6-11',
-      '12-17',
-      '18-23',
-      '24-29',
-      '30-35',
-      '36-41',
-      '42-47',
-      '48-60',
-    ]
+    await this.loadBumil()
+    await this.loadAnak()
+    await this.Indikator()
+    // BB/U-12
 
-    const indi = ['-10', '0', '20', '30', '40', '50']
-    const bulan = this.getLastMonths(12)
-
-    //chart-bumil
-    this.createChart('chart-bumil', bulan, {
-      KEK: { data: [4, 4, 7, 4, 1, 0, 0, 5, 0, 3, 6, 2], color: '#8B4513' }, // contoh 12 data
-      Anemia: { data: [3, 7, 9, 7, 1, 0, 0, 13, 0, 2, 1, 4], color: '#FFD700' },
-      'Risiko Tinggi': { data: [10, 18, 14, 10, 1, 0, 0, 11, 0, 5, 8, 6], color: '#006341' },
-    })
-
-    //chart-bumil
-    this.createChart('chart-bumil-indikator', bulan, {
-      KEK: { data: [4, 4, 7, 4, 1, 0, 0, 5, 0, 3, 6, 2], color: '#8B4513' }, // contoh 12 data
-      Anemia: { data: [3, 7, 9, 7, 1, 0, 0, 13, 0, 2, 1, 4], color: '#FFD700' },
-      'Risiko Tinggi': { data: [10, 18, 14, 10, 1, 0, 0, 11, 0, 5, 8, 6], color: '#006341' },
-    })
+    /* const indi = ['-10', '0', '20', '30', '40', '50']
 
     //chart-bb-tb-indikator
     this.createChart('chart-bb-tb-indikator', indi, {
       'Balita Stunting': { data: [2, 3, 1, 4, 2, 1, 2, 1, 0], color: 'red' },
-      'Balita UNderweight': { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'yellow' },
+      'Balita Underweight': { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'yellow' },
       'Balita BBTN': { data: [5, 6, 8, 7, 6, 7, 6, 8, 7], color: 'green' },
       'Bumil KEK': { data: [1, 0, 1, 0, 1, 1, 0, 1, 2], color: 'blue' },
       'Bumil Anemia': { data: [1, 0, 1, 0, 1, 1, 0, 1, 8], color: 'purple' },
-      'Catin Beresiko': { data: [1, 0, 1, 0, 1, 1, 0, 1, 10], color: 'cyan' },
-    })
-
-    // BB/U
-    this.loadChart()
-
-    // TB/U
-    this.createChart('chart-tb-usia', umurGroups, {
-      'Sangat Pendek': { data: [1, 2, 1, 3, 1, 1, 1, 0, 1], color: 'red' },
-      Pendek: { data: [2, 3, 2, 2, 3, 2, 2, 1, 1], color: 'yellow' },
-      Normal: { data: [6, 7, 8, 7, 7, 8, 8, 9, 8], color: 'green' },
-      Tinggi: { data: [0, 0, 1, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
-
-    // BB/TB
-    this.createChart('chart-bb-tb', umurGroups, {
-      'Gizi Buruk': { data: [2, 1, 1, 2, 1, 0, 1, 0, 0], color: 'red' },
-      'Gizi Kurang': { data: [2, 3, 2, 2, 2, 2, 1, 2, 1], color: 'yellow' },
-      Normal: { data: [7, 6, 8, 7, 8, 8, 9, 8, 8], color: 'green' },
-      'Risiko Lebih': { data: [0, 1, 0, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
-
-    // BB/U-12
-    this.createChart('chart-bb-usia-12', umurGroups, {
-      'Sangat Kurang': { data: [2, 3, 1, 4, 2, 1, 2, 1, 0], color: 'red' },
-      Kurang: { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'yellow' },
-      Normal: { data: [5, 6, 8, 7, 6, 7, 6, 8, 7], color: 'green' },
-      'Risiko Lebih': { data: [1, 0, 1, 0, 1, 1, 0, 1, 2], color: 'blue' },
-    })
-
-    // TB/U-12
-    this.createChart('chart-tb-usia-12', umurGroups, {
-      'Sangat Pendek': { data: [1, 2, 1, 3, 1, 1, 1, 0, 1], color: 'red' },
-      Pendek: { data: [2, 3, 2, 2, 3, 2, 2, 1, 1], color: 'yellow' },
-      Normal: { data: [6, 7, 8, 7, 7, 8, 8, 9, 8], color: 'green' },
-      Tinggi: { data: [0, 0, 1, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
-
-    // BB/TB-12
-    this.createChart('chart-bb-tb-12', umurGroups, {
-      'Gizi Buruk': { data: [2, 1, 1, 2, 1, 0, 1, 0, 0], color: 'red' },
-      'Gizi Kurang': { data: [2, 3, 2, 2, 2, 2, 1, 2, 1], color: 'yellow' },
-      Normal: { data: [7, 6, 8, 7, 8, 8, 9, 8, 8], color: 'green' },
-      'Risiko Lebih': { data: [0, 1, 0, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
+      'Bumil Beresiko': { data: [1, 0, 1, 0, 1, 1, 0, 1, 10], color: 'cyan' },
+    }) */
   },
   methods: {
     async fetchStats() {
@@ -675,55 +524,53 @@ export default {
         console.error(e)
       }
     },
-    applyFilter() {
-      this.loadChart() // reload chart sesuai filter
-    },
-    loadChart() {
-      // Hapus chart lama biar gak numpuk
-      if (this.chartInstance) {
-        this.chartInstance.destroy()
+
+    // BUMIL
+    async loadBumil() {
+      try {
+        const res = await axios.get(`${baseURL}/api/home/pregnancy/`)
+        const data = res.data
+
+        this.countBumil= data.countBumil
+
+        //chart-bumil
+        this.createChart('chart-bumil', data.labels, data.indikator)
+
+      } catch (e) {
+        console.error(e)
       }
-      const umurGroup = [
-        '0-5',
-        '6-11',
-        '12-17',
-        '18-23',
-        '24-29',
-        '30-35',
-        '36-41',
-        '42-47',
-        '48-60',
-      ]
-
-      // Dummy data bisa diganti API sesuai bulan & tahun filter
-      const datasetsObj = {
-        'Sangat Kurang': { data: [2, 3, 1, 4, 2, 1, 2, 1, 0], color: 'red' },
-        Kurang: { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'orange' },
-        Normal: { data: [5, 6, 8, 7, 6, 7, 6, 8, 7], color: 'green' },
-        'Risiko Lebih': { data: [1, 0, 1, 0, 1, 1, 0, 1, 2], color: 'blue' },
-      }
-
-      this.totalData = Object.values(datasetsObj)
-        .flatMap((d) => d.data)
-        .reduce((a, b) => a + b, 0)
-
-      this.createChart('chart-bb-usia', umurGroup, datasetsObj)
     },
-    getLastMonths(count = 12) {
-      const labels = []
-      const now = new Date()
 
-      for (let i = count - 1; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    // Anak
+    async loadAnak(){
+      try {
+        const res = await axios.get(`${baseURL}/api/home/children/`)
+        const data = res.data
+        console.log(data);
 
-        const bulan = d.toLocaleString('id-ID', { month: 'long' }) // nama bulan Indonesia
-        const tahun = d.getFullYear()
-
-        labels.push(`${bulan} ${tahun}`)
+        //chart-usia
+        this.createChart('chart-bb-usia', data.labels, data.bbu)
+        this.createChart('chart-tb-usia', data.labels, data.tbu)
+        this.createChart('chart-bb-tb', data.labels, data.bbtb)
+      } catch (e) {
+        console.error(e)
       }
-
-      return labels
     },
+
+    async Indikator(){
+      try {
+        const res = await axios.get(`${baseURL}/api/home/indicator/`)
+        const data = res.data
+        // chart per bulan
+        this.createChart('chart-bb-usia-12', data.labels, data.bbu)
+        this.createChart('chart-tb-usia-12', data.labels, data.tbu)
+        this.createChart('chart-bb-tb-12', data.labels, data.bbtb)
+        console.log(data);
+      } catch (e) {
+        console.error(e)
+      }
+    },
+
     createChart(canvasId, labels, datasetsObj) {
       const datasets = Object.entries(datasetsObj).map(([label, cfg]) => ({
         label,
@@ -751,7 +598,7 @@ export default {
           },
           scales: {
             x: {
-              title: { display: true, text: 'Kelompok Umur (bulan)' },
+              title: { display: false},
             },
             y: {
               title: { display: true, text: 'Jumlah Individu' },
@@ -780,6 +627,39 @@ export default {
 </script>
 
 <style scoped>
+   /* Hilangkan background default */
+  .nav-pills-custom .nav-link {
+    background: none !important;
+    color: #4A707A; /* Warna teks default */
+    border-radius: 0 !important;
+    padding-bottom: 6px;
+    position: relative;
+    font-weight: 500;
+  }
+
+  /* Warna teks aktif */
+  .nav-pills-custom .nav-link.active {
+    color: #1E6F5C !important; /* hijau gelap seperti gambar */
+    background: none !important;
+  }
+
+  /* Underline untuk item aktif */
+  .nav-pills-custom .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    bottom: -1px;
+    background-color: #1E6F5C;
+    border-radius: 4px;
+  }
+
+  /* Jarak antar nav item biar mirip gambar */
+  .nav-pills-custom .nav-item {
+    margin-right: 20px;
+  }
+  /* other */
   .about-pops-section {
     position: relative;
     padding: 60px 0;
