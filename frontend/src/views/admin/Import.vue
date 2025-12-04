@@ -90,163 +90,162 @@
             </ul>
           </div>
 
-          <!-- Panel tab-->
           <div class="tab-content" id="myTabContent">
             <!-- Import Anak -->
-            <div v-if="formOpen" class="card p-3 my-3">
-              <div class="d-flex justify-content-between">
-                <h3>Form Gizi Anak</h3>
-                <button class="btn btn-outline-danger" @click="formOpen=!formOpen">
+            <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
+              <div v-if="formOpen" class="card p-3 my-3">
+                <div class="d-flex justify-content-between">
+                  <h3>Form Gizi Anak</h3>
+                  <button class="btn btn-outline-danger" @click="formOpen=!formOpen">
+                    X
+                  </button>
+                </div>
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <label>NIK</label>
+                    <input type="text" class="form-control" v-model="form.nik" readonly>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Nama Anak</label>
+                    <input type="text" class="form-control" v-model="form.nama_anak" :readonly="form.mode === 'input'">
+                  </div>
+
+                  <div v-if="form.mode === 'update'" class="col-md-4">
+                    <label>Nama Orang Tua</label>
+                    <input type="text" class="form-control" v-model="form.nama_ortu">
+                  </div>
+
+                  <div v-if="form.mode === 'input'" class="col-md-4">
+                    <label>Tanggal Pengukuran</label>
+                    <input type="date" class="form-control" v-model="form.tgl_pengukuran">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Berat Badan (kg)</label>
+                    <input type="text" class="form-control" v-model="form.bb">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Tinggi Badan (cm)</label>
+                    <input type="text" class="form-control" v-model="form.tb">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Lingkar Kepala</label>
+                    <input type="text" class="form-control" v-model="form.lika">
+                  </div>
+                  <input type="hidden" v-model="form.tgl_lahir">
+                  <input type="hidden" v-model="form.gender">
+
+                  <div class="col-12">
+                    <button class="btn btn-primary mt-3" @click="submitUpdate">
+                      <i class="bi bi-pencil-square"></i> {{ form.mode == 'update'? 'Ubah Data' : 'Rekam Baru'}}
+                    </button>
+                    <button class="btn btn-secondary mt-3 ms-2" @click="resetForm">
+                      <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="isUploadOpen" class="card p-3 my-3">
+                <div class="d-flex justify-content-between align-item-center">
+                  <h5>Upload Data</h5>
+                  <button
+                    @click="isUploadOpen = !isUploadOpen"
+                    class="btn btn-sm btn-outline-danger mb-2"
+                  >
                   X
-                </button>
-              </div>
-              <div class="row g-2">
-                <div class="col-md-4">
-                  <label>NIK</label>
-                  <input type="text" class="form-control" v-model="form.nik" readonly>
-                </div>
-
-                <div class="col-md-4">
-                  <label>Nama Anak</label>
-                  <input type="text" class="form-control" v-model="form.nama_anak" :readonly="form.mode === 'input'">
-                </div>
-
-                <div v-if="form.mode === 'update'" class="col-md-4">
-                  <label>Nama Orang Tua</label>
-                  <input type="text" class="form-control" v-model="form.nama_ortu">
-                </div>
-
-                <div v-if="form.mode === 'input'" class="col-md-4">
-                  <label>Tanggal Pengukuran</label>
-                  <input type="date" class="form-control" v-model="form.tgl_pengukuran">
-                </div>
-
-                <div class="col-md-4">
-                  <label>Berat Badan (kg)</label>
-                  <input type="text" class="form-control" v-model="form.bb">
-                </div>
-
-                <div class="col-md-4">
-                  <label>Tinggi Badan (cm)</label>
-                  <input type="text" class="form-control" v-model="form.tb">
-                </div>
-
-                <div class="col-md-4">
-                  <label>Lingkar Kepala</label>
-                  <input type="text" class="form-control" v-model="form.lika">
-                </div>
-                <input type="hidden" v-model="form.tgl_lahir">
-                <input type="hidden" v-model="form.gender">
-
-                <div class="col-12">
-                  <button class="btn btn-primary mt-3" @click="submitUpdate">
-                    <i class="bi bi-pencil-square"></i> {{ form.mode == 'update'? 'Ubah Data' : 'Rekam Baru'}}
-                  </button>
-                  <button class="btn btn-secondary mt-3 ms-2" @click="resetForm">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
                   </button>
                 </div>
-              </div>
-            </div>
 
-            <div v-if="isUploadOpen" class="card p-3 my-3">
-              <div class="d-flex justify-content-between align-item-center">
-                <h5>Upload Data</h5>
-                <button
-                  @click="isUploadOpen = !isUploadOpen"
-                  class="btn btn-sm btn-outline-danger mb-2"
-                >
-                X
-                </button>
-              </div>
+                <div class="row g-2">
+                  <div class="alert alert-success">
+                    <ul>
+                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data sudah lengkap sebelum di import</li>
+                      <li>
+                        Silahkan unduh contoh dengan klik
+                        <a href="/example_kunjungan_posyandu.csv">Example.csv</a>
+                      </li>
+                    </ul>
+                  </div>
 
-              <div class="row g-2">
-                <div class="alert alert-success">
-                  <ul>
-                    <li>Pastikan data yang diimport, berformat csv</li>
-                    <li>Pastikan data sudah lengkap sebelum di import</li>
-                    <li>
-                      Silahkan unduh contoh dengan klik
-                      <a href="/example_kunjungan_posyandu.csv">Example.csv</a>
-                    </li>
-                  </ul>
-                </div>
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".csv,text/csv"
+                    class="form-control"
+                    @change="handleFileChange($event)"
+                  />
 
-                <input
-                  ref="fileInput"
-                  type="file"
-                  accept=".csv,text/csv"
-                  class="form-control"
-                  @change="handleFileChange($event)"
-                />
+                  <!-- Preview / status -->
+                  <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div v-if="filePreviewTable.length" class="mt-3">
+                      <p class="fw-bold mb-1 text-danger">
+                        *Preview (2 baris pertama):
+                      </p>
+                      <div class="table-responsive">
+                        <table class="table table-bordered table-sm small border-danger">
+                          <thead>
+                            <tr>
+                              <th v-for="(col, index) in filePreviewTable[0]" :key="'h'+index" width="120" class="text-danger">
+                                {{ col }}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, rIndex) in filePreviewTable.slice(1)" :key="'r'+rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                                {{ col }}
+                              </td>
+                            </tr>
+                            <tr v-for="(row, rIndex) in filePreviewTable.slice(2)" :key="'r'+rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                                ...
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
 
-                <!-- Preview / status -->
-                <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                  <div v-if="filePreviewTable.length" class="mt-3">
-                    <p class="fw-bold mb-1 text-danger">
-                      *Preview (2 baris pertama):
-                    </p>
-                    <div class="table-responsive">
-                      <table class="table table-bordered table-sm small border-danger">
-                        <thead>
-                          <tr>
-                            <th v-for="(col, index) in filePreviewTable[0]" :key="'h'+index" width="120" class="text-danger">
-                              {{ col }}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(row, rIndex) in filePreviewTable.slice(1)" :key="'r'+rIndex">
-                            <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
-                              {{ col }}
-                            </td>
-                          </tr>
-                          <tr v-for="(row, rIndex) in filePreviewTable.slice(2)" :key="'r'+rIndex">
-                            <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
-                              ...
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
                     </div>
 
+                    <div v-else class="text-muted small">Belum ada file dipilih</div>
                   </div>
 
-                  <div v-else class="text-muted small">Belum ada file dipilih</div>
-                </div>
+                  <div v-if="fileError" class="mt-2 text-danger small">
+                    {{ fileError }}
+                  </div>
 
-                <div v-if="fileError" class="mt-2 text-danger small">
-                  {{ fileError }}
-                </div>
+                  <div class="d-flex gap-2">
+                    <button
+                      v-if="file && !uploading"
+                      class="btn btn-outline-danger btn-sm"
+                      @click="removeFile"
+                      type="button"
+                    >
+                      <i class="bi bi-trash me-1"></i> Hapus
+                    </button>
 
-                <div class="d-flex gap-2">
-                  <button
-                    v-if="file && !uploading"
-                    class="btn btn-outline-danger btn-sm"
-                    @click="removeFile"
-                    type="button"
-                  >
-                    <i class="bi bi-trash me-1"></i> Hapus
-                  </button>
+                    <button
+                      v-if="file && !uploading"
+                      class="btn btn-success btn-sm"
+                      @click="uploadCSV"
+                      type="button"
+                    >
+                      <i class="bi bi-upload me-1"></i> Upload
+                    </button>
 
-                  <button
-                    v-if="file && !uploading"
-                    class="btn btn-success btn-sm"
-                    @click="uploadCSV"
-                    type="button"
-                  >
-                    <i class="bi bi-upload me-1"></i> Upload
-                  </button>
-
-                  <div v-if="uploading" class="d-flex align-items-center gap-2">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                    <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                    <div v-if="uploading" class="d-flex align-items-center gap-2">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                      <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
               <div class="card shadow-sm">
                 <div class="card-body">
                   <!-- Search + Button -->
@@ -342,18 +341,18 @@
                   </div>
 
                   <div class="col-md-4">
-                    <label>Nama Anak</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nama_anak" :readonly="form.mode === 'input'">
+                    <label>Nama Ibu</label>
+                    <input type="text" class="form-control" v-model="form_bumil.nama_ibu" :readonly="form.mode === 'input'">
                   </div>
 
                   <div v-if="form.mode === 'update'" class="col-md-4">
-                    <label>Nama Orang Tua</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nama_ortu">
+                    <label>Nama Suami</label>
+                    <input type="text" class="form-control" v-model="form_bumil.nama_suami">
                   </div>
 
                   <div v-if="form.mode === 'input'" class="col-md-4">
-                    <label>Tanggal Pengukuran</label>
-                    <input type="date" class="form-control" v-model="form_bumil.tgl_pengukuran">
+                    <label>Tanggal Pendampingan</label>
+                    <input type="date" class="form-control" v-model="form_bumil.tanggal_pendampingan">
                   </div>
 
                   <div class="col-md-4">
@@ -367,11 +366,9 @@
                   </div>
 
                   <div class="col-md-4">
-                    <label>Lingkar Kepala</label>
-                    <input type="text" class="form-control" v-model="form_bumil.lika">
+                    <label>Lingkar Lengan</label>
+                    <input type="text" class="form-control" v-model="form_bumil.lila">
                   </div>
-                  <input type="hidden" v-model="form_bumil.tgl_lahir">
-                  <input type="hidden" v-model="form_bumil.gender">
 
                   <div class="col-12">
                     <button class="btn btn-primary mt-3" @click="submitUpdate">
@@ -513,6 +510,40 @@
                   <div class="mt-3">
 
                     <!-- Search + Row Per Page -->
+                    <easy-data-table
+                      :headers="headers_bumil"
+                      :items="items_bumil"
+                      :sortable="true"
+                      :search-value="searchQuery_bumil"
+                      :rows-per-page="perPage"
+                      :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index
+                      alternating
+                      border-cell
+                    >
+
+                      <template
+                        #item-action="items"
+                      >
+                        <div class="action-wrapper d-flex gap-1 m-1 text-center">
+                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip" title="Tambah">
+                            <i class="bi bi-plus-square"></i>
+                          </button>
+                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip" title="Ubah">
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
+                          <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </template>
+
+                    </easy-data-table>
+                    <!-- Search + Row Per Page -->
                     <!-- <easy-data-table
                       :headers="headers_bumil"
                       :items="items_bumil"
@@ -527,10 +558,229 @@
                       show-index
                       alternating
                       border-cell
-                    > -->
+                    >
 
-                      <!-- ACTION BUTTONS -->
-                      <!-- <template
+                      <template #item-action="{ item }">
+                        <div class="action-wrapper d-flex gap-1 m-1 text-center">
+                          <button @click="inputItem(item)" class="btn btn-primary" title="Tambah">
+                            <i class="bi bi-plus-square"></i>
+                          </button>
+                          <button @click="editItem(item)" class="btn btn-secondary" title="Ubah">
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
+                          <button @click="delItem(item)" class="btn btn-danger" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </template>
+
+                    </easy-data-table> -->
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Import Catin -->
+            <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
+              <div v-if="formOpen_catin" class="card p-3 my-3">
+                <div class="d-flex justify-content-between">
+                  <h3>Form Calon Pengantin</h3>
+                  <button class="btn btn-outline-danger" @click="formOpen_catin=!formOpen_catin">
+                    X
+                  </button>
+                </div>
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <label>NIK</label>
+                    <input type="text" class="form-control" v-model="form_catin.nik" readonly>
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Nama Calon Perempuan</label>
+                    <input type="text" class="form-control" v-model="form_catin.nama_perempuan" :readonly="form.mode === 'input'">
+                  </div>
+
+                  <div v-if="form.mode === 'update'" class="col-md-4">
+                    <label>Nama Pasangan</label>
+                    <input type="text" class="form-control" v-model="form_catin.nama_laki">
+                  </div>
+
+                  <div v-if="form.mode === 'input'" class="col-md-4">
+                    <label>Tanggal Pendampingan</label>
+                    <input type="date" class="form-control" v-model="form_catin.tanggal_pendampingan">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Berat Badan (kg)</label>
+                    <input type="text" class="form-control" v-model="form_catin.berat_perempuan">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Tinggi Badan (cm)</label>
+                    <input type="text" class="form-control" v-model="form_catin.tinggi_perempuan">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Hb</label>
+                    <input type="text" class="form-control" v-model="form_catin.kadar_hb">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Lingkar Lengan</label>
+                    <input type="text" class="form-control" v-model="form_catin.lila_perempuan">
+                  </div>
+
+                  <div class="col-12">
+                    <button class="btn btn-primary mt-3" @click="submitUpdate">
+                      <i class="bi bi-pencil-square"></i> {{ form_catin.mode == 'update'? 'Ubah Data' : 'Rekam Baru'}}
+                    </button>
+                    <button class="btn btn-secondary mt-3 ms-2" @click="resetForm">
+                      <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="isUploadOpen_catin" class="card p-3 my-3">
+                <div class="d-flex justify-content-between align-item-center">
+                  <h5>Upload Data</h5>
+                  <button
+                    @click="isUploadOpen_catin = !isUploadOpen__catin"
+                    class="btn btn-sm btn-outline-danger mb-2"
+                  >
+                  X
+                  </button>
+                </div>
+
+                <div class="row g-2">
+                  <div class="alert alert-success">
+                    <ul>
+                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data sudah lengkap sebelum di import</li>
+                      <li>
+                        Silahkan unduh contoh dengan klik
+                        <a href="/example_catin.csv">Example.csv</a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept=".csv,text/csv"
+                    class="form-control"
+                    @change="handleFileChange($event)"
+                  />
+
+                  <!-- Preview / status -->
+                  <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div v-if="filePreviewTable_catin.length" class="mt-3">
+                      <p class="fw-bold mb-1 text-danger">
+                        *Preview (2 baris pertama):
+                      </p>
+                      <div class="table-responsive">
+                        <table class="table table-bordered table-sm small border-danger">
+                          <thead>
+                            <tr>
+                              <th v-for="(col, index) in PreviewTable_catin" :key="'h'+index" width="120" class="text-danger">
+                                {{ col }}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(1)" :key="'r'+rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                                {{ col }}
+                              </td>
+                            </tr>
+                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(2)" :key="'r'+rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                                ...
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                    </div>
+
+                    <div v-else class="text-muted small">Belum ada file dipilih</div>
+                  </div>
+
+                  <div v-if="fileError" class="mt-2 text-danger small">
+                    {{ fileError }}
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button
+                      v-if="file && !uploading"
+                      class="btn btn-outline-danger btn-sm"
+                      @click="removeFile"
+                      type="button"
+                    >
+                      <i class="bi bi-trash me-1"></i> Hapus
+                    </button>
+
+                    <button
+                      v-if="file && !uploading"
+                      class="btn btn-success btn-sm"
+                      @click="uploadCSV"
+                      type="button"
+                    >
+                      <i class="bi bi-upload me-1"></i> Upload
+                    </button>
+
+                    <div v-if="uploading" class="d-flex align-items-center gap-2">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                      <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <!-- Search + Button -->
+                  <div class="d-flex align-items-center justify-content-end gap-2">
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      style="width: 220px;"
+                      placeholder="Ketik NIK atau Nama"
+                      v-model="searchQuery_catin"
+                    >
+
+                    <button
+                      class="btn btn-primary btn-sm"
+                      type="button"
+                      @click="isUploadOpen_catin = !isUploadOpen_catin"
+                    >
+                      <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
+                    </button>
+                  </div>
+                  <!-- Table -->
+                  <div class="mt-3">
+
+                    <!-- Search + Row Per Page -->
+                    <easy-data-table
+                      :headers="headers_catin"
+                      :items="items_catin"
+                      :sortable="true"
+                      :search-value="searchQuery_catin"
+                      :rows-per-page="perPage"
+                      :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index
+                      alternating
+                      border-cell
+                    >
+
+                      <template
                         #item-action="items"
                       >
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
@@ -544,17 +794,13 @@
                             <i class="bi bi-trash"></i>
                           </button>
                         </div>
-                      </template> -->
+                      </template>
 
-                    <!-- </easy-data-table> -->
+                    </easy-data-table>
                   </div>
 
                 </div>
               </div>
-            </div>
-            <!-- Import Catin -->
-            <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
-              CATIN
             </div>
           </div>
 
@@ -686,6 +932,8 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      formOpen_bumil: '',
+      formOpen_catin: '',
       isLoadingImport: false,
       importProgress: 0,
       animatedProgress: 0,
@@ -704,17 +952,98 @@ export default {
         gender: "",
         tgl_lahir: "",
       },
+      form_bumil: {
+        mode:"",
+        tanggal_pendampingan:"",
+        nik: "",
+        nama: "",
+        nama_ortu: "",
+        bb: "",
+        tb: "",
+        lika:"",
+        unit_posyandu: "",
+        gender: "",
+        tgl_lahir: "",
+      },
+      form_catin: {
+        mode:"",
+        tanggal_pendampingan:"",
+        nik: "",
+        kadar_hb:"",
+        nama_perempuan: "",
+        nama_laki:"",
+        berat_perempuan: "",
+        tinggi_perempuan: "",
+        lika_perempuan:"",
+      },
       sortKey: '',
       sortOrder: 'asc',
-
-      headers_bumil: [
-        { text: "Nama", key: "nama", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Kehamilan ke", key: "ke", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: 'Hb', value: 'action', width: 120, align: "center", class: "align-middle text-center cursor-pointer" },
-        { text: 'Lingkar Lengan', value: 'action', width: 120, align: "center", class: "align-middle text-center cursor-pointer" },
-        { text: "Usia (Tahun)", key: "usia", sortable: true, class: "align-middle text-center cursor-pointer", width: "100px" },
-        { text: "HPL", key: "hpl", sortable: true, class: "align-middle text-center cursor-pointer" },
+      headers_catin: [
+        {
+          text: 'NIK Perempuan',
+          value: 'nik',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'Nama Perempuan',
+          value: 'nama_perempuan',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'Nama Laki-laki',
+          value: 'nama_laki',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'Usia Perempuan',
+          value: 'usia_perempuan',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'BB Perempuan',
+          value: 'bb',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'TB Perempuan',
+          value: 'tb',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'Hb Perempuan',
+          value: 'hb_perempuan',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'Lila Perempuan',
+          value: 'lila_perempuan',
+          sortable: true,
+          align: 'center',
+        },
+        {
+          text: 'Tanggal Menikah',
+          value: 'tanggal_menikah',
+          sortable: true,
+          align: 'center',
+        },
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
+      ],
+      headers_bumil: [
+        { text: "NIK", key: "nik_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Nama", key: "nama_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Kehamilan ke", key: "kehamilan_ke", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Hb", key: "kadar_hb", sortable: true, align: "center", class: "align-middle text-center cursor-pointer" },
+        { text: "Lingkar Lengan", key: "lila", sortable: true, width: 120, align: "center", class: "align-middle text-center cursor-pointer" },
+        { text: "Usia (Tahun)", key: "usia_ibu", sortable: true, width: "100px", class: "align-middle text-center cursor-pointer" },
+        { text: "HPL", key: "hpl", sortable: true, align: "center", width: 120, class: "align-middle text-center cursor-pointer" },
+        { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
         { text: 'NIK', value: 'nik', sortable: true },
@@ -730,10 +1059,13 @@ export default {
       formOpen : false,
       searchQuery_kunAn:"",
       searchQuery_bumil: "",
+      searchQuery_catin: "",
       currentPage: 1,
       perPage: 10,
       perPageOptions: [5, 10, 25, 50],
       isUploadOpen: false,
+      isUploadOpen_bumil: false,
+      isUploadOpen_catin: false,
       tableOptions: {
         responsive: true,
         pageLength: 10,
@@ -761,7 +1093,9 @@ export default {
       ACCEPTED_EXT: ['csv'],
       ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
       MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
-      filePreviewTable: []
+      filePreviewTable: [],
+      filePreviewTable_catin: [],
+      filePreviewTable_bumil: []
     }
   },
   created() {
@@ -780,80 +1114,95 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   computed: {
-    filteredData() {
-      //console.log('filter data: ', this.paginatedData[1]);
+    // ==================== CATIN ====================
+    filteredCatin() {
+      if (!this.dataLoad[1]) return [];
+      const arr = Array.isArray(this.dataLoad[1])
+        ? this.dataLoad[1]
+        : Object.values(this.dataLoad[1]);
 
-      if (!this.paginatedData[1]) {
-        return []
-      }
-
-      if (Array.isArray(this.paginatedData[1])) {
-        console.warn("dataLoad is ARRAY, expected OBJECT mapping NIK → Data!")
-      }
-
-      const arr = Object.values(this.paginatedData[1])
-      const q = this.searchQuery.toLowerCase()
-      const result = arr.filter(item => {
-        const match =
-          item.nama_perempuan?.toLowerCase().includes(q) ||
-          item.nama_laki?.toLowerCase().includes(q) ||
-          item.nik_perempuan?.includes(q) ||
-          item.nik_laki?.includes(q)
-
-        return match
-      })
-      return result
-    },
-
-    filteredBumil() {
-      if (!this.dataLoad) return [];
-      console.log('bumil', this.dataLoad);
-
-      const arr = Array.isArray(this.dataLoad)
-        ? this.dataLoad
-        : Object.values(this.dataLoad);
-
-      const q = this.searchQuery_bumil?.toLowerCase() ?? '';
+      const q = this.searchQuery_catin?.toLowerCase()?.trim() ?? '';
 
       return arr.filter(item => {
+        const namaP = item.nama_perempuan?.toLowerCase() ?? "";
+        const namaL = item.nama_laki?.toLowerCase() ?? "";
+        const nikP = item.nik_perempuan ?? "";
+        const nikL = item.nik_laki ?? "";
+
         return (
-          item.nama_ibu?.toLowerCase().includes(q) ||
-          item.nik_ibu?.includes(q)
+          namaP.includes(q) ||
+          namaL.includes(q) ||
+          nikP.includes(q) ||
+          nikL.includes(q)
         );
       });
     },
-    items_bumil(){
-      return this.filteredBumil.map((item) => ({
-        nik: item.nik_ibu ?? "-",
-        nama_ibu: item.nama_ibu ?? "-",
-        kehamilan_ke: item.kehamilan_ke ?? "-",
-        hb: item.hb ?? "-",
-        lila: item.lila ?? "-",
-        usia: item.usia ?? "-",
-        hpl: item.hpl ?? "-",
-        // 🔥 INI YANG PENTING
+
+    items_catin() {
+      return this.filteredCatin.map(item => ({
+        nik: item.nik_perempuan ?? "-",
+        nama_perempuan: item.nama_perempuan ?? "-",
+        nama_laki: item.nama_laki ?? "-",
+        usia_perempuan: item.usia_perempuan ?? "-",
+        bb: item.riwayat_pemeriksaan?.[0]?.berat_perempuan ?? "-",
+        tb: item.riwayat_pemeriksaan?.[0]?.tinggi_perempuan ?? "-",
+        hb_perempuan: item.riwayat_pemeriksaan?.[0]?.hb_perempuan ?? "-",
+        lila_perempuan: item.riwayat_pemeriksaan?.[0]?.lila_perempuan ?? "-",
+        tanggal_menikah: this.formatDate(item.tgl_pernikahan) ?? "-",
         action: { ...item }
       }));
     },
 
-    filteredAnak() {
+    // ==================== BUMIL ====================
+    /* filteredBumil() {
       if (!this.dataLoad) return [];
+      console.log('bumil:', this.dataLoad);
 
       const arr = Array.isArray(this.dataLoad)
         ? this.dataLoad
         : Object.values(this.dataLoad);
 
-      const q = this.searchQuery_kunAn?.toLowerCase() ?? "";
+      const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
 
       return arr.filter(item => {
-        return (
-          item.nama?.toLowerCase().includes(q) ||
-          item.nik?.toString().includes(q)
-        );
+        const nama = item.nama_ibu?.toLowerCase() ?? "";
+        const nik  = item.nik_ibu ?? "";
+        return nama.includes(q) || nik.includes(q);
       });
     },
-    items_kunAn() {
-      return this.filteredAnak.map((item) => ({
+
+    items_bumil() {
+      return this.filteredBumil.map(item => ({
+        nik_ibu: item.nik_ibu ?? "-",
+        nama_ibu: item.nama_ibu ?? "-",
+        kehamilan_ke: item.kehamilan_ke ?? "-",
+        kadar_hb: item.kadar_hb ?? "-",
+        lila: item.lila ?? "-",
+        usia_ibu: item.usia_ibu ?? "-",
+        hpl: item.hpl ?? "-",
+        action: { ...item }
+      }));
+    }, */
+    filteredBumil() {
+      if (!this.dataLoad) return [];
+      console.log('bumil:', this.dataLoad);
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+        if (this.searchQuery_bumil) {
+          const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
+          return arr.filter(item => {
+            const nama = item.nama?.toLowerCase() ?? "";
+            return nama.includes(q) || item.nik?.toString().includes(q);
+          });
+        }
+        return arr;
+    },
+
+    items_bumil() {
+      return this.dataLoad.map(item => ({
         nik: item.nik ?? "-",
         nama_anak: item.nama ?? "-",
         nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
@@ -862,12 +1211,45 @@ export default {
         bb: item.posyandu?.[0]?.bb ?? "-",
         tb: item.posyandu?.[0]?.tb ?? "-",
         unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
-        // 🔥 INI YANG PENTING
+        action: { ...item }
+      }));
+    },
+
+    // ==================== ANAK ====================
+    filteredAnak() {
+      if (!this.dataLoad) return [];
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+      const q = this.searchQuery_kunAn?.toLowerCase()?.trim() ?? "";
+
+      return arr.filter(item => {
+        const nama = item.nama?.toLowerCase() ?? "";
+        return nama.includes(q) || item.nik?.toString().includes(q);
+      });
+    },
+
+    items_kunAn() {
+      return this.filteredAnak.map(item => ({
+        nik: item.nik ?? "-",
+        nama_anak: item.nama ?? "-",
+        nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
+        gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
+        tgl_lahir: this.formatDate(item.kelahiran?.[0]?.tgl_lahir),
+        bb: item.posyandu?.[0]?.bb ?? "-",
+        tb: item.posyandu?.[0]?.tb ?? "-",
+        unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
         action: { ...item }
       }));
     }
   },
   methods: {
+    handleFileChange(e) {
+      const file = e.target.files[0]
+      this.loadFilePreview(file)
+    },
     resetForm(){
       this.formOpen = false;
       this.form = {
@@ -902,12 +1284,12 @@ export default {
         modal.show()
       })
     },
-    /* showConfirm(message) {
+    showConfirm(message) {
       this.confirmMessage = message || 'Apakah anda yakin?'
       // eslint-disable-next-line no-undef
       const modal = new bootstrap.Modal(document.getElementById('warningModal'))
       modal.show()
-    }, */
+    },
     showSuccess(message) {
       this.successMessage = message || 'Berhasil tersimpan.'
       // eslint-disable-next-line no-undef
@@ -937,36 +1319,91 @@ export default {
     },
     // Prefill form
     editItem(item) {
-      this.formOpen = true;
+      switch (this.activeMenu) {
+          case 'anak':
+            this.formOpen = true;
+            this.form = {
+              ...this.form,
+              mode:'update',
+              nik: item.nik ?? "",
+              nama_anak: item.nama_anak ?? "",
+              nama_ortu: item.nama_ortu ?? "",
+              bb: item.bb ?? "",
+              tb: item.tb ?? "",
+              unit_posyandu: item.unit_posyandu ?? "",
+              gender: item.gender ?? "",
+              tgl_lahir: item.tgl_lahir ?? ""
+            };
+            break;
+          case 'bumil':
+            /* res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
+            payload = res.data?.data || [];
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload); */
+            break;
 
-      this.form = {
-        ...this.form,
-        mode:'update',
-        nik: item.nik ?? "",
-        nama_anak: item.nama_anak ?? "",
-        nama_ortu: item.nama_ortu ?? "",
-        bb: item.bb ?? "",
-        tb: item.tb ?? "",
-        unit_posyandu: item.unit_posyandu ?? "",
-        gender: item.gender ?? "",
-        tgl_lahir: item.tgl_lahir ?? ""
-      };
+          case 'catin':
+
+            this.formOpen_catin = true;
+            this.form_catin = {
+              ...this.form_catin,
+              mode:'input',
+              nik: item.nik ?? "",
+              tanggal_pendampingan: item.tanggal_pendampingan ?? "",
+              nama_perempuan: item.nama_perempuan ?? "",
+              nama_laki:item.nama_laki ?? "",
+              kadar_hb:item.hb_perempuan ?? "",
+              berat_perempuan: item.bb ?? "",
+              tinggi_perempuan: item.tb ?? "",
+              lila_perempuan:item.lila_perempuan ?? "",
+            };
+            break;
+          default:
+            return;
+      }
     },
     inputItem(item) {
-      this.formOpen = true;
+      switch (this.activeMenu) {
+          case 'anak':
+            this.formOpen = true;
+            this.form = {
+              ...this.form,
+              mode:'input',
+              nik: item.nik ?? "",
+              nama_anak: item.nama_anak ?? "",
+              nama_ortu: item.nama_ortu ?? "",
+              //bb: item.bb ?? "",
+              //tb: item.tb ?? "",
+              unit_posyandu: item.unit_posyandu ?? "",
+              gender: item.gender ?? "",
+              tgl_lahir: item.tgl_lahir ?? ""
+            };
+            break;
+          case 'bumil':
+            /* res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
+            payload = res.data?.data || [];
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload); */
+            break;
 
-      this.form = {
-        ...this.form,
-        mode:'input',
-        nik: item.nik ?? "",
-        nama_anak: item.nama_anak ?? "",
-        nama_ortu: item.nama_ortu ?? "",
-        //bb: item.bb ?? "",
-        //tb: item.tb ?? "",
-        unit_posyandu: item.unit_posyandu ?? "",
-        gender: item.gender ?? "",
-        tgl_lahir: item.tgl_lahir ?? ""
-      };
+          case 'catin':
+            console.log(item);
+
+            this.formOpen_catin = true;
+            this.form_catin = {
+              ...this.form_catin,
+              mode:'input',
+              nik: item.nik ?? "",
+              tanggal_pendampingan: item.tanggal_pendampingan ?? "",
+              nama_perempuan: item.nama_perempuan ?? "",
+              nama_laki:item.nama_laki ?? "",
+              kadar_hb:item.kadar_hb ?? "",
+              /* berat_perempuan: item.berat_perempuan ?? "",
+              tinggi_perempuan: item.tinggi_perempuan ?? "",
+              lila_perempuan:item.lila_perempuan ?? "", */
+            };
+            break;
+          default:
+            return;
+      }
     },
     async submitUpdate() {
       this.isLoadingImport = true
@@ -1250,6 +1687,7 @@ export default {
           }
         })
 
+        this.showSuccess(res.message || "Data berhasil dihapus!")
         // ✅ Respons sukses
         console.log('Upload berhasil:', res.data)
         if (this.$bvToast) {
@@ -1271,24 +1709,6 @@ export default {
         this.uploadProgress = 0
       }
     },
-    /* triggerFileDialog() {
-      this.$refs.fileInput.click()
-    },
-    handleFileChange(e) {
-      const file = e.target.files[0]
-      this.loadFilePreview(file)
-    },
-    handleDrop(e) {
-      const file = e.dataTransfer.files[0]
-      this.loadFilePreview(file)
-      this.isDataDrag = false
-    },
-    onDragOver() {
-      this.isDataDrag = true
-    },
-    onDragLeave() {
-      this.isDataDrag = false
-    }, */
     removeFile() {
       this.file = null
       this.fileName = ''
@@ -1321,26 +1741,63 @@ export default {
       // Ambil 3 baris pertama
       const rawLines = text.split(/\r?\n/).filter(Boolean).slice(0, 3)
 
-      if (rawLines.length === 0) {
-        this.filePreviewTable = []
-        return
+      switch (this.activeMenu) {
+        case 'anak':
+          if (rawLines.length === 0) {
+            this.filePreviewTable = []
+            return
+          }
+
+          // Deteksi delimiter otomatis
+          // eslint-disable-next-line no-case-declarations
+          const delimiter = rawLines[0].includes(';') ? ';' : ','
+
+          // Parse CSV
+          // eslint-disable-next-line no-case-declarations
+          let table = rawLines.map(line => line.split(delimiter))
+
+          // === CROP KOLOM ===
+          table = table.map(row => {
+            if (row.length > 6) {
+              return [...row.slice(0, 10), '...'] // max 5 + "..."
+            }
+            return row
+          })
+
+          this.filePreviewTable = table
+            break;
+          case 'bumil':
+            break;
+          case 'catin':
+             if (rawLines.length === 0) {
+            this.filePreviewTable = []
+            return
+          }
+
+          // Deteksi delimiter otomatis
+          // eslint-disable-next-line no-case-declarations
+          const delimiter_catin = rawLines[0].includes(';') ? ';' : ','
+
+          // Parse CSV
+          // eslint-disable-next-line no-case-declarations
+          let table_catin = rawLines.map(line => line.split(delimiter_catin))
+
+          // === CROP KOLOM ===
+          // eslint-disable-next-line no-unused-vars
+          table_catin = table_catin.map(row => {
+            if (row.length > 6) {
+              return [...row.slice(0, 10), '...'] // max 5 + "..."
+            }
+            return row
+          })
+
+          // eslint-disable-next-line no-undef
+          this.filePreviewTable_catin = PreviewTable_catin
+            break;
+          default:
+            return;
       }
 
-      // Deteksi delimiter otomatis
-      const delimiter = rawLines[0].includes(';') ? ';' : ','
-
-      // Parse CSV
-      let table = rawLines.map(line => line.split(delimiter))
-
-      // === CROP KOLOM ===
-      table = table.map(row => {
-        if (row.length > 6) {
-          return [...row.slice(0, 10), '...'] // max 5 + "..."
-        }
-        return row
-      })
-
-      this.filePreviewTable = table
     },
     formatDate(dateString) {
       if (!dateString) return '-'
@@ -1370,6 +1827,7 @@ export default {
             payload = res.data?.data || [];
             this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
             break;
+
           case 'catin':
             res = await axios.get(`${baseURL}/api/bride`, { headers });
             payload = res.data ?? {};

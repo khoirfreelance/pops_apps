@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/children/{nik}', [ChildrenController::class, 'delete']);
     Route::put('/children/{nik}', [ChildrenController::class, 'update']);
     Route::get('/children/status', [ChildrenController::class, 'status']);
+    Route::get('/detail', [ChildrenController::class, 'detail']);
+    Route::get('/umur', [ChildrenController::class, 'umur']);
     Route::get('/children/tren', [ChildrenController::class, 'tren']);
     Route::get('/children/case', [ChildrenController::class, 'case']);
     Route::get('/children/info-boxes', [ChildrenController::class, 'infoBoxes']);

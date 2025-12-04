@@ -2743,6 +2743,116 @@ class ChildrenController extends Controller
         ], 200);
     }
 
+    public function detail(Request $request)
+    {
+        $tipe = $request->tipe;
+
+        $mapKategori = [
+            'bbu' => [
+                'field' => 'bb_u',
+                'cats' => [
+                    'Severely Underweight',
+                    'Underweight',
+                    'Normal',
+                    'Risiko BB Lebih'
+                ]
+            ],
+            'tbu' => [
+                'field' => 'tb_u',
+                'cats' => [
+                    'Severely Stunted',
+                    'Stunted',
+                    'Normal',
+                    'Tinggi'
+                ]
+            ],
+            'bbtb' => [
+                'field' => 'bb_tb',
+                'cats' => [
+                    'Severely Wasted',
+                    'Wasted',
+                    'Normal',
+                    'Overweight'
+                ]
+            ]
+        ];
+
+        if (!isset($mapKategori[$tipe])) {
+            return response()->json(['error' => 'Tipe tidak valid'], 400);
+        }
+
+        $field = $mapKategori[$tipe]['field'];
+        $categories = $mapKategori[$tipe]['cats'];
+
+        // ✅ HANYA 2 BULAN TERAKHIR
+        $endDate = now()->subMonths(1)->endOfMonth();
+        $startDate = now()->subMonths(2)->startOfMonth();
+
+        // ✅ generate bulan (YYYY-MM)
+        $period = new \DatePeriod(
+            $startDate,
+            new \DateInterval('P1M'),
+            $endDate->copy()->addMonth()
+        );
+
+        $months = [];
+        foreach ($period as $p) {
+            $months[$p->format('Y-m')] = 0;
+        }
+
+        $result = [
+            'L' => [],
+            'P' => [],
+            'total' => [],
+            'start' => $startDate,
+            'end' => $endDate
+        ];
+
+        foreach ($categories as $cat) {
+            $result['L'][$cat] = $this->getCountPerMonth($field, $cat, 'L', $startDate, $endDate, $months);
+            $result['P'][$cat] = $this->getCountPerMonth($field, $cat, 'P', $startDate, $endDate, $months);
+            $result['total'][$cat] = $this->getCountPerMonth($field, $cat, null, $startDate, $endDate, $months);
+        }
+
+        return response()->json([
+            "data" => $result
+        ], 200);
+    }
+
+    /**
+     * Helper: ambil count per bulan sesuai kategori.
+     */
+    private function getCountPerMonth($field, $category, $jk, $startDate, $endDate, $months)
+    {
+        $query = Kunjungan::query()
+            ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
+            ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
+            ->where($field, $category);
+
+        if ($jk) {
+            $query->where('jk', $jk);
+        }
+
+        // ✅ DISTINCT PER NIK PER BULAN
+        $data = $query
+            ->groupByRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m'), nik")
+            ->get()
+            ->groupBy('bulan');
+
+        // isi default 0
+        $result = $months;
+
+        foreach ($data as $bulan => $rows) {
+            $result[$bulan] = $rows->count();
+        }
+
+        return array_values($result);
+    }
+
+    public function umur(Request $request)
+    {
+
+    }
     // CRUD
     public function delete($nik)
     {

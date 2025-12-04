@@ -1,860 +1,1129 @@
-<!-- Tab 1 -->
+<template>
+  <div class="wrapper">
+    <!-- 🔄 Spinner Overlay -->
+    <transition name="fade">
+      <div
+        v-if="isLoading"
+        class="spinner-overlay d-flex justify-content-center align-items-center"
+      >
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Header -->
+    <HeaderAdmin />
+
+    <div
+      class="content flex-grow-1 d-flex flex-column flex-md-row"
+      :class="{
+        'sidebar-collapsed': isCollapsed,
+        'sidebar-expanded': !isCollapsed
+      }"
+    >
+      <!-- Sidebar -->
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"   />
+
+      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+        <!-- Content -->
+        <div class="py-4 container-fluid" >
+
+          <!-- Welcome Card -->
+          <Welcome />
+
+          <!-- Nav Tab-->
+          <div class="container-fluid my-2 d-flex justify-content-center">
+            <ul
+              class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100"
+              id="myTab"
+              role="tablist"
+              style="max-width: 800px;"
+            >
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button
+                  class="nav-link active w-100 text-truncate"
+                  id="anak-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#anak-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="anak-tab-pane"
+                  aria-selected="true"
+                  @click="menu('anak')"
+                >
+                  Gizi Anak
+                </button>
+              </li>
+
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button
+                  class="nav-link w-100 text-truncate"
+                  id="bumil-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#bumil-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="bumil-tab-pane"
+                  aria-selected="false"
+                  @click="menu('bumil')"
+                >
+                  Ibu Hamil
+                </button>
+              </li>
+
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button
+                  class="nav-link w-100 text-truncate"
+                  id="catin-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#catin-tab-pane"
+                  type="button"
+                  role="tab"
+                  aria-controls="catin-tab-pane"
+                  aria-selected="false"
+                  @click="menu('catin')"
+                >
+                  Calon Pengantin
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Panel tab-->
+          <div class="tab-content" id="myTabContent">
+            <!-- Import Anak -->
+
+            <div v-if="formOpen" class="card p-3 my-3">
+              <h5>Form Update Anak</h5>
+
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label>NIK</label>
+                  <input type="text" class="form-control" v-model="form.nik" readonly>
+                </div>
+
+                <div class="col-md-4">
+                  <label>Nama Anak</label>
+                  <input type="text" class="form-control" v-model="form.nama_anak">
+                </div>
+
+                <div class="col-md-4">
+                  <label>Nama Orang Tua</label>
+                  <input type="text" class="form-control" v-model="form.nama_ortu">
+                </div>
+
+                <div class="col-md-4">
+                  <label>BB</label>
+                  <input type="text" class="form-control" v-model="form.bb">
+                </div>
+
+                <div class="col-md-4">
+                  <label>TB</label>
+                  <input type="text" class="form-control" v-model="form.tb">
+                </div>
+
+                <div class="col-12">
+                  <button class="btn btn-primary mt-3" @click="submitUpdate">
+                    Update Data
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
-              <!-- Issue and Stat Card -->
-              <div class="container-fluid my-2 row">
-                <!-- RINGKASAN STATUS GIZI -->
-                <div class="col-md-8 d-flex flex-column">
-                  <!-- judul tetap di atas -->
-                  <h5 class="fw-bold text-success mb-3">Ringkasan Status Gizi Bulan Ini</h5>
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <ul class="nav nav-tabs mb-2" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="kunjungan-tab" data-bs-toggle="tab" data-bs-target="#kunjungan" type="button" role="tab" aria-controls="kunjungan" aria-selected="true" @click="aktifitas_anak='kunjungan'">Kunjungan Posyandu</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="pendampingan-tab" data-bs-toggle="tab" data-bs-target="#pendampingan" type="button" role="tab" aria-controls="pendampingan" aria-selected="false" @click="aktifitas_anak='pendampingan'">Pendampingan TPK</button>
+                    </li>
+                  </ul>
+                  <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="kunjungan" role="tabpanel" aria-labelledby="kunjungan-tab">
+                      <!-- Label + Button -->
+                      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <!-- Label -->
+                        <label class="form-label fw-semibold mb-0">
 
-                  <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1 align-items-center">
-                    <!-- GIZI CARDS -->
-                    <div class="col-lg-8 col-xl-10 col-md-6 col-sm-12">
-                      <div class="row justify-content-center">
-                        <div
-                          v-for="(item, index) in gizi"
-                          :key="index"
-                          class="col-xl-4 col-lg-6 col-sm-6 col-12 mb-3"
-                        >
+                        </label>
+
+                        <!-- Search + Button -->
+                        <div class="d-flex align-items-center gap-2">
+                          <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            style="width: 220px;"
+                            placeholder="Ketik NIK atau Nama"
+                            v-model="searchQuery_kunAn"
+                          >
+
+                          <button
+                            class="btn btn-primary btn-sm"
+                            type="button"
+                            @click="isUploadOpen = !isUploadOpen"
+                          >
+                            <i class="bi bi-filetype-csv me-1"></i> Unggah Data
+                          </button>
+                        </div>
+
+                      </div>
+                      <!-- Collapsible Dropzone -->
+                      <transition name="slide">
+                        <div v-show="isUploadOpen">
+                          <div class="alert alert-success">
+                            <ul>
+                              <li>Pastikan data yang diimport, berformat csv</li>
+                              <li>Pastikan data sudah lengkap sebelum di import</li>
+                              <li>
+                                Silahkan unduh contoh dengan klik
+                                <a href="/example_kunjungan_posyandu.csv">Example.csv</a>
+                              </li>
+                            </ul>
+                          </div>
+
                           <div
-                            class="card shadow-sm border-0 rounded-3 overflow-hidden"
-                            :class="`border-start border-4 border-${item.color}`"
+                            class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                            :class="{
+                              'border-primary bg-light': isDataDrag,
+                              'border-danger': fileError
+                            }"
+                            @click="triggerFileDialog"
+                            @dragover.prevent="onDragOver"
+                            @dragleave.prevent="onDragLeave"
+                            @drop.prevent="handleDrop($event)"
+                            role="button"
+                            tabindex="0"
+                            @keydown.enter.prevent="triggerFileDialog"
+                            @keydown.space.prevent="triggerFileDialog"
                           >
-                            <div class="card-body py-3 d-flex justify-content-between">
-                              <div>
-                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                                <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
-                              </div>
-                              <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                            </div>
+                            <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                            <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                            <small class="text-muted">atau klik untuk pilih file</small>
 
-                            <!-- SVG LINE CHART -->
-                            <div class="card-footer bg-transparent border-0 pt-0">
-                              <svg
-                                viewBox="0 0 100 30"
-                                class="svg-line"
-                                preserveAspectRatio="none"
-                                :class="`stroke-${item.color}`"
-                              >
-                                <polyline
-                                  fill="none"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- TOTAL ANAK -->
-                    <div class="col-lg-4 col-xl-2 col-md-6 col-sm-12 d-flex align-items-end">
-                      <div class="card text-center shadow-sm border p-2 w-100">
-                        <h6 class="text-muted my-4 fw-bold">Total Anak Balita</h6>
-                        <div class="flex-grow-1 d-flex flex-column justify-content-center">
-                          <h2 class="fw-bold text-success mb-0">{{totalAnak}}</h2>
-                        </div>
-                        <i class="bi bi-people fs-3 text-dark mt-2 mb-3"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- INFO BOXES -->
-                <div class="col-md-4 mt-3 d-flex flex-column">
-                  <div
-                    v-for="(box, idx) in infoBoxes"
-                    :key="idx"
-                    class="alert mb-2"
-                    :class="`alert-${box.type}`"
-                  >
-                    <strong>{{ box.title }}</strong><br />
-                    <span v-html="box.desc"></span> <!-- pakai v-html -->
-                  </div>
-                </div>
-              </div>
-
-              <!-- Pie Chart-->
-              <div class="container-fluid row">
-                <div class="col-md-12">
-                  <h5 class="fw-bold text-primary">Ringkasan Status Gizi Bulan Ini</h5>
-                </div>
-                <div class="col-12 col-xl-8">
-                  <!-- Berat Badan / Usia -->
-                  <div class="card border border-primary shadow p-3 my-3">
-                    <h6 class="fw-bold text-primary">Berat Badan / Usia</h6>
-                    <div class="row">
-                      <!-- Table -->
-                      <div class="col-12 col-xl-7 table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <tbody>
-                            <tr>
-                              <td class="text-additional fw-semibold">Status</td>
-                              <td class="text-additional fw-semibold">Jumlah</td>
-                              <td class="text-additional fw-semibold">Persen</td>
-                              <td class="text-additional fw-semibold">Tren</td>
-                            </tr>
-                            <tr v-for="(row, index) in dataTable_bb" :key="index">
-                              <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah }}</td>
-                              <td class="text-additional small">{{ row.persen }} %</td>
-                              <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                          <tfoot>
-                            <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail?tipe=bbu">Lihat Grafik Selengkapnya</a></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-
-                      <!-- Chart -->
-                      <div class="col-12 col-xl-5 table-responsive text-center">
-                        <canvas ref="pieChart_bb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Tinggi Badan / Usia -->
-                  <div class="card border border-primary shadow p-3 my-3">
-                    <h6 class="fw-bold text-primary">Tinggi Badan / Usia</h6>
-                    <div class="row">
-                      <div class="col-12 col-xl-7 table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <tbody>
-                            <tr>
-                              <td class="text-additional fw-bold">Status</td>
-                              <td class="text-additional fw-bold">Jumlah</td>
-                              <td class="text-additional fw-bold">Persen</td>
-                              <td class="text-additional fw-bold">Tren</td>
-                            </tr>
-                            <tr v-for="(row, index) in dataTable_tb" :key="index">
-                              <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah }}</td>
-                              <td class="text-additional small">{{ row.persen }} %</td>
-                              <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                          <tfoot>
-                            <tr>
-                              <td colspan="4" class="pt-4"><a href="/admin/dashboard/detail?tipe=tbu">Lihat Grafik Selengkapnya</a></td>
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
-                      <div class="col-12 col-xl-5 table-responsive text-center">
-                        <canvas ref="pieChart_tb" class="mx-auto" style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"></canvas>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-12 col-xl-4">
-                  <!-- Berat Badan / Tinggi Badan -->
-                  <div class="card border border-primary shadow p-3 my-3">
-                    <h6 class="fw-bold text-primary">Berat Badan / Tinggi Badan</h6>
-                    <div class="row">
-                      <div class="col-12 table-responsive">
-                        <table class="table table-borderless align-middle">
-                          <tbody>
-                            <tr>
-                              <td class="text-additional fw-bold">Status</td>
-                              <td class="text-additional fw-bold">Jumlah</td>
-                              <td class="text-additional fw-bold">Persen</td>
-                              <td class="text-additional fw-bold">Tren</td>
-                            </tr>
-                            <tr v-for="(row, index) in dataTable_status" :key="index">
-                              <td class="text-additional small">{{ row.status }}</td>
-                              <td class="text-additional small">{{ row.jumlah }}</td>
-                              <td class="text-additional small">{{ row.persen }} %</td>
-                              <td class="small" :class="row.trenClass">
-                                <span v-if="row.tren !== '-'">
-                                  <i :class="row.trenIcon"></i> {{ row.tren }}
-                                </span>
-                                <span v-else>-</span>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="col-12 table-responsive text-center">
-                        <canvas
-                          ref="pieChart_status"
-                          class="mx-auto"
-                          style="max-width: 300px; max-height: 300px; min-width: 200px; min-height: 200px;"
-                        ></canvas>
-                        <div class="d-flex flex-wrap justify-content-between mt-3">
-                          <a href="/admin/dashboard/detail?tipe=bbtb">Lihat Grafik Selengkapnya</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Ringkasan -->
-              <div class="container-fluid mt-3">
-                <div class="row">
-                  <div class="col-12 d-flex justify-content-between mb-2">
-                    <h5 class="fw-bold text-primary">Anak Dengan Masalah Gizi Ganda</h5>
-                    <select v-model="filterPeriode" @change="renderRingkasan(filterPeriode)" class="form-select w-auto">
-                      <option :value="3">3 Bulan Terakhir</option>
-                      <option :value="6">6 Bulan Terakhir</option>
-                      <option :value="9">9 Bulan Terakhir</option>
-                      <option :value="12">1 Tahun Terakhir</option>
-                    </select>
-                  </div>
-
-                  <!-- CARD UTAMA -->
-                  <div class="col-12">
-                    <div class="card shadow-sm border-0 rounded-4">
-
-                     <!-- HEADER -->
-                      <div class="text-center position-relative mb-0">
-                        <h6
-                          class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
-                          style="width: 55% !important;"
-                        >
-                          {{ totalAnak }} dengan Masalah Gizi Ganda
-                        </h6>
-
-                        <!-- TAB NAV -->
-                        <div class="container position-relative" style="margin-top: -2.5rem;">
-                          <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
-                            <button
-                              class="w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                              style="border-bottom-width: 5px !important;"
-                              @click="toggleSudah(false)"
-                            >
-                              Anak belum dapat Intervensi <br> {{ belum }}
-                            </button>
-
-                            <button
-                              class="w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                              style="border-bottom-width: 5px !important;"
-                              @click="toggleSudah(true)"
-                            >
-                              Anak sudah dapat Intervensi <br> {{ sudah }}
-                            </button>
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <!-- ISI GRID -->
-                      <div class="row g-3 mt-3">
-                        <!-- KIRI ATAS -->
-                        <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <div>
-                              <h6 class="text-center text-success mb-2">
-                                Jumlah anak tidak membaik<br />
-                                <span class="fw-semibold">dalam {{ filterPeriode }} bulan terakhir</span>
-                              </h6>
-                            </div>
-                            <div class="chart-placeholder text-muted text-center mt-auto">
-                              <canvas ref="lineChart" style="max-height: 250px;"></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- TENGAH ATAS -->
-                        <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
-                            <div class="chart-placeholder text-muted text-center py-4">
-                              <canvas v-if="isSudah" ref="sudahChart"></canvas>
-                              <canvas v-else ref="funnelChart"></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- KANAN ATAS -->
-                        <div class="col-md-4 col-sm-12">
-                          <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                            <h6 class="text-center text-success mb-2">
-                              Top 5 Posyandu<br />
-                              <span class="fw-semibold">dengan anak tidak membaik dalam {{filterPeriode}} bulan terakhir</span>
-                            </h6>
-                            <div class="chart-placeholder text-muted text-center py-4">
-                              <canvas ref="barChart"></canvas>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- BAWAH: TABEL -->
-                        <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
-                          <div v-if="isSudah">
-                            <table class="table table-striped table-sm align-middle p-2">
-                              <thead class="table-success">
-                                <tr>
-                                  <th class="text-center p-2">No</th>
-                                  <th class="text-center p-2" width="300">Nama</th>
-                                  <th class="text-center p-2">Jenis Intervensi</th>
-                                  <th class="text-center p-2">Stunting</th>
-                                  <th class="text-center p-2">Wasting</th>
-                                  <th class="text-center p-2">Underweight</th>
-                                  <th class="text-center p-2">BB Sangat</th>
-                                  <th class="text-center p-2">Overweight</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(anak, i) in paginatedChildren" :key="i">
-                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                  <td>{{ anak.nama }}</td>
-                                  <td class="text-center">{{ anak.rumusan }}</td>
-                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
-                                </tr>
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <td colspan="100%" class="text-end">
-                                    <button
-                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportToCSV(true)"
-                                    >
-                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Export CSV
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                            <!-- Pagination -->
-                            <nav>
-                              <ul class="pagination justify-content-center">
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button class="page-link" @click="currentPage--">Previous</button>
-                                </li>
-                                <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
-                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
-                                </li>
-                                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                                  <button class="page-link" @click="currentPage++">Next</button>
-                                </li>
-                              </ul>
-                            </nav>
-                          </div>
-                          <div v-else>
-                            <table class="table table-striped table-sm align-middle p-2">
-                              <thead class="table-success">
-                                <tr>
-                                  <th class="text-center p-2">No</th>
-                                  <th class="text-center p-2" width="300">Nama</th>
-                                  <th class="text-center p-2">Jenis Intervensi</th>
-                                  <th class="text-center p-2">Stunting</th>
-                                  <th class="text-center p-2">Wasting</th>
-                                  <th class="text-center p-2">Underweight</th>
-                                  <th class="text-center p-2">BB Sangat</th>
-                                  <th class="text-center p-2">Overweight</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr v-for="(anak, i) in paginatedChildren_belum" :key="i">
-                                  <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                  <td>{{ anak.nama }}</td>
-                                  <td class="text-center">{{ anak.rumusan }}</td>
-                                  <td class="text-center"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
-                                  <td class="text-center"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
-                                </tr>
-                              </tbody>
-                              <tfoot>
-                                <tr>
-                                  <td colspan="100%" class="text-end">
-                                    <button
-                                      class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                      @click="exportToCSV(false)"
-                                    >
-                                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                      Export CSV
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                            <!-- Pagination -->
-                            <nav>
-                              <ul class="pagination justify-content-center">
-                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                  <button class="page-link" @click="currentPage--">Previous</button>
-                                </li>
-                                <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
-                                  <button class="page-link" @click="currentPage = page">{{ page }}</button>
-                                </li>
-                                <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
-                                  <button class="page-link" @click="currentPage++">Next</button>
-                                </li>
-                              </ul>
-                            </nav>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Tab 2 -->
-            <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
-              <!-- Issue and Stat Card -->
-              <div class="container-fluid my-2 row">
-                <div class="d-flex flex-column">
-                  <!-- judul tetap di atas -->
-                  <h5 class="fw-bold text-primary mb-3">Ringkasan Status Gizi Bulan Ini</h5>
-
-                  <!-- row isi gizi & total anak -->
-                  <div class="row flex-grow-1 align-items-center">
-                    <!-- GIZI CARDS -->
-                    <div class="row justify-content-center">
-                      <div
-                        v-for="(item, index) in kesehatan_bumil"
-                        :key="index"
-                        class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12 mb-3"
-                      >
-                        <div
-                          class="card shadow-sm border-0 rounded-3 overflow-hidden h-50"
-                          :class="`border-start border-4 border-${item.color}`"
-                        >
-                          <div class="card-body d-flex justify-content-between">
-                            <div>
-                              <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                              <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
-                            </div>
-                            <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                          </div>
-
-                          <!-- SVG LINE CHART -->
-                          <div class="card-footer bg-transparent border-0 pt-0">
-                            <svg
-                              viewBox="0 0 100 30"
-                              class="svg-line"
-                              preserveAspectRatio="none"
-                              :class="`stroke-${item.color}`"
-                            >
-                              <polyline
-                                fill="none"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- TOTAL IBU HAMIL -->
-                      <div class="col-xl-4 col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
-                        <div class="card text-center shadow-sm border rounded-3 h-100">
-                          <div class="card-body d-flex flex-column justify-content-center">
-                            <h6 class="text-muted fw-bold mb-2">Total Ibu Hamil</h6>
-                            <h2 class="fw-bold text-success mb-2">{{ totalBumil }}</h2>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div class="container-fluid">
-                  <h5 class="fw-bold text-primary mb-3">Status Kesehatan Ibu Hamil</h5>
-
-                  <!-- Row utama: tabel & chart berdampingan -->
-                  <div class="row g-3">
-                    <!-- Table -->
-                    <div class="col-12 col-xl-8">
-                      <div class="card border border-primary shadow p-3 h-100">
-                        <div class="table-responsive">
-                          <table class="table table-borderless align-middle">
-                            <thead>
-                              <tr class="fw-semibold text-additional">
-                                <th class="text-additional">Status</th>
-                                <th class="text-additional">Jumlah</th>
-                                <th class="text-additional">Persen</th>
-                                <th class="text-additional">Tren</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(row, index) in dataTable_bumil" :key="index">
-                                <td class="text-additional small">{{ row.status }}</td>
-                                <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
-                                <td class="text-additional small">
-                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
-                                </td>
-                                <td class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'">
-                                    <i :class="row.trenIcon"></i> {{ row.tren }}
-                                  </span>
-                                  <span v-else>-</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Canvas Chart -->
-                    <div class="col-12 col-xl-4">
-                      <div class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
-                        <canvas ref="bumilChart" style="width: 100%; height: 280px !important;"></canvas>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Tabel tambahan bawah -->
-                  <div class="row mt-4">
-                    <div class="col-12">
-                      <div class="card border border-primary shadow p-3">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-sm align-middle text-center mb-0">
-                            <thead class="table-light">
-                              <tr>
-                                <th>Indikator</th>
-                                <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(values, indikator) in indikatorData" :key="indikator">
-                                <td class="fw-bold">{{ indikator }}</td>
-                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Ringkasan -->
-                <div class="container-fluid mt-3">
-                  <div class="row">
-                    <div class="col-12 d-flex justify-content-start mb-2">
-                      <h5 class="fw-bold text-primary">Ibu Hamil dengan masalah Kesehatan Ganda</h5>
-                    </div>
-
-                    <!-- CARD UTAMA -->
-                    <div class="col-12">
-                      <div class="card shadow-sm border-0 rounded-4">
-
-                      <!-- HEADER -->
-                        <div class="text-center position-relative mb-0">
-                          <h6
-                            class="fw-bold text-white pt-2 pb-5 px-2 rounded-bottom-5 d-inline-block bg-primary "
-                            style="width: 55% !important;"
-                          >
-                            {{ totalBumil }} dengan Masalah Gizi Ganda
-                          </h6>
-
-                          <!-- TAB NAV -->
-                          <div class="container position-relative" style="margin-top: -2.5rem;">
-                            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
-                              <button
-                                class="w-25 text-truncate fw-semibold rounded-pill border border-danger bg-light shadow-sm btn btn-outline-danger text-danger"
-                                style="border-bottom-width: 5px !important;"
-                                @click="toggleSudahBumil(false)"
-                              >
-                                Ibu Hamil belum dapat Intervensi <br> {{ belumBumil }}
-                              </button>
-
-                              <button
-                                class="w-25 text-truncate fw-semibold rounded-pill border border-primary bg-light shadow-sm btn btn-outline-primary text-primary"
-                                style="border-bottom-width: 5px !important;"
-                                @click="toggleSudahBumil(true)"
-                              >
-                                Ibu Hamil sudah dapat Intervensi <br> {{ sudahBumil }}
-                              </button>
-                            </div>
-                          </div>
-
-                        </div>
-
-                        <!-- ISI GRID -->
-                        <div class="row g-2 mt-3">
-                          <!-- KIRI ATAS -->
-                          <div class="col-md-6 col-sm-12">
-                            <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                              <div>
-                                <h6 class="text-center text-success mb-2">
-                                  Grafik tren Ibu Hamil
-                                </h6>
-                              </div>
-                              <div class="chart-placeholder text-muted text-center mt-auto">
-                                <canvas ref="bumilTrendChart" style="max-height: 280px; min-height: 200px !important;height: 100% !important;width: 100% !important;"></canvas>
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- TENGAH ATAS -->
-                          <div class="col-md-6 col-sm-12">
-                            <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
-                              <h6 class="text-center text-success mb-2">Diagram Intervensi</h6>
-                              <div class="chart-placeholder text-muted text-center py-4">
-                                <canvas v-if="isSudahBumil" ref="sudahBumilChart" style="max-height: 280px; min-height: 200px !important;height: 100% !important;width: 100% !important;"></canvas>
-                                <canvas v-else ref="belumBumilChart" style="max-height: 280px; min-height: 200px !important;height: 100% !important;width: 100% !important;"></canvas>
-                              </div>
-                            </div>
-                          </div>
-
-                          <!-- BAWAH: TABEL -->
-                          <div class="card shadow-sm border-0 h-100 p-3 table-responsive">
-                            <div v-if="isSudah">
-                              <table class="table table-striped table-sm align-middle p-2">
-                                <thead class="table-success">
-                                  <tr>
-                                    <th class="text-center p-2">No</th>
-                                    <th class="text-center p-2" width="300">Nama</th>
-                                    <th class="text-center p-2">Anemia</th>
-                                    <th class="text-center p-2">Kehamilan Berisiko</th>
-                                    <th class="text-center p-2">KEK</th>
-                                    <th class="text-center p-2">Intervensi</th>
-                                    <th class="text-center p-2">RT</th>
-                                    <th class="text-center p-2">RW</th>
-                                    <th class="text-center p-2">Usia (Tahun)</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr v-for="(ibu, i) in paginatedBumil" :key="i">
-                                    <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                    <td>{{ ibu.nama }}</td>
-                                    <td class="text-center"><i v-if="ibu.anemia" class="bi bi-check2"></i></td>
-                                    <td class="text-center"><i v-if="ibu.berisiko" class="bi bi-check2"></i></td>
-                                    <td class="text-center"><i v-if="ibu.kek" class="bi bi-check2"></i></td>
-                                    <td class="text-center">{{ ibu.intervensi }}</td>
-                                    <td class="text-center">{{ ibu.rt }}</td>
-                                    <td class="text-center">{{ibu.rw}}</td>
-                                    <td class="text-center">{{ibu.usia}}</td>
-                                  </tr>
-                                </tbody>
-                                <tfoot>
-                                  <tr>
-                                    <td colspan="100%" class="text-end">
-                                      <button
-                                        class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportToCSV(true)"
-                                      >
-                                        <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                        Export CSV
-                                      </button>
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </table>
-                              <!-- Pagination -->
-                              <nav>
-                                <ul class="pagination justify-content-center">
-                                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                    <button class="page-link" @click="currentPage--">Previous</button>
-                                  </li>
-                                  <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: currentPage === page }">
-                                    <button class="page-link" @click="currentPage = page">{{ page }}</button>
-                                  </li>
-                                  <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                                    <button class="page-link" @click="currentPage++">Next</button>
-                                  </li>
-                                </ul>
-                              </nav>
-                            </div>
-                            <div v-else>
-                              <table class="table table-striped table-sm align-middle p-2">
-                                <thead class="table-success">
-                                  <tr>
-                                    <th class="text-center p-2">No</th>
-                                    <th class="text-center p-2" width="300">Nama</th>
-                                    <th class="text-center p-2">Jenis Intervensi</th>
-                                    <th class="text-center p-2">Anemia</th>
-                                    <th class="text-center p-2">Kehamilan Berisiko</th>
-                                    <th class="text-center p-2">KEK</th>
-                                    <th class="text-center p-2">RT</th>
-                                    <th class="text-center p-2">RW</th>
-                                    <th class="text-center p-2">Usia <span class="fw-normal">(Tahun)</span></th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr v-for="(bumil, i) in paginatedBumil" :key="i">
-                                    <td class="text-center">{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                                    <td>{{ bumil.nama }}</td>
-                                    <td class="text-center">{{ bumil.intervensi }}</td>
-                                    <td class="text-center"><i v-if="bumil.anemia" class="bi bi-check2"></i><span v-else>-</span></td>
-                                    <td class="text-center"><i v-if="bumil.risiko" class="bi bi-check2"></i><span v-else>-</span></td>
-                                    <td class="text-center"><i v-if="bumil.kek" class="bi bi-check2"></i><span v-else>-</span></td>
-                                    <td class="text-center">{{bumil.rt}}</td>
-                                    <td class="text-center">{{bumil.rw}}</td>
-                                    <td class="text-center">{{bumil.usia}}</td>
-                                  </tr>
-                                </tbody>
-                                <tfoot>
-                                  <tr>
-                                    <td colspan="100%" class="text-end">
-                                      <button
-                                        class="btn btn-sm btn-outline-primary p-2 mt-2"
-                                        @click="exportToCSV(false)"
-                                      >
-                                        <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                                        Export CSV
-                                      </button>
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </table>
-                              <!-- Pagination -->
-                              <nav>
-                                <!-- <ul class="pagination justify-content-center">
-                                  <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                    <button class="page-link" @click="currentPage--">Previous</button>
-                                  </li>
-                                  <li class="page-item" v-for="page in totalPages_belum" :key="page" :class="{ active: currentPage === page }">
-                                    <button class="page-link" @click="currentPage = page">{{ page }}</button>
-                                  </li>
-                                  <li class="page-item" :class="{ disabled: currentPage === totalPages_belum }">
-                                    <button class="page-link" @click="currentPage++">Next</button>
-                                  </li>
-                                </ul> -->
-                              </nav>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Tab 3 -->
-            <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
-              <!-- Issue and Stat Card -->
-              <div class="container-fluid my-2 row">
-                <!-- judul tetap di atas -->
-                <h5 class="fw-bold text-success mb-3 text-center">Ringkasan Status Kesehatan Calon Pengantin</h5>
-
-                <!-- row isi gizi & total anak -->
-                <div class="row flex-grow-1 align-items-center">
-                  <!-- GIZI CARDS -->
-                  <div class="row justify-content-center">
-                    <div
-                      v-for="(item, index) in kesehatan_catin"
-                      :key="index"
-                      class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12 mb-3"
-                    >
-                      <div
-                        class="card shadow-sm border-0 rounded-3 overflow-hidden h-100"
-                        :class="`border-start border-4 border-${item.color}`"
-                      >
-                        <div class="card-body d-flex justify-content-between">
-                          <div>
-                            <h6 class="fw-bold mb-1">{{ item.title }}</h6>
-                            <p class="mb-2 small" :class="`text-${item.color}`">{{ item.percent }}</p>
-                          </div>
-                          <h3 class="fw-bold mb-0" :class="`text-${item.color}`">{{ item.value }}</h3>
-                        </div>
-
-                        <!-- SVG LINE CHART -->
-                        <div class="card-footer bg-transparent border-0 pt-0">
-                          <svg
-                            viewBox="0 0 100 30"
-                            class="svg-line"
-                            preserveAspectRatio="none"
-                            :class="`stroke-${item.color}`"
-                          >
-                            <polyline
-                              fill="none"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              points="0,20 15,15 30,18 45,10 60,12 75,8 90,15 100,10"
+                            <input
+                              ref="fileInput"
+                              type="file"
+                              accept=".csv,text/csv"
+                              class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                              @change="handleFileChange($event)"
                             />
-                          </svg>
+                          </div>
+
+                          <!-- Preview / status -->
+                          <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div v-if="file">
+                              <div><strong>Nama:</strong> {{ fileName }}</div>
+                              <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                              <div v-if="filePreviewLines" class="text-muted small">
+                                Contoh baris pertama: <code>{{ filePreviewLines }}</code>
+                              </div>
+                            </div>
+
+                            <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                            <div class="d-flex gap-2">
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-outline-danger btn-sm"
+                                @click="removeFile"
+                                type="button"
+                              >
+                                <i class="bi bi-trash me-1"></i> Hapus
+                              </button>
+
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-success btn-sm"
+                                @click="uploadCSV"
+                                type="button"
+                              >
+                                <i class="bi bi-upload me-1"></i> Upload
+                              </button>
+
+                              <div v-if="uploading" class="d-flex align-items-center gap-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div v-if="fileError" class="mt-2 text-danger small">
+                            {{ fileError }}
+                          </div>
+                        </div>
+                      </transition>
+                    </div>
+                    <div class="tab-pane fade" id="pendampingan" role="tabpanel" aria-labelledby="pendampingan-tab">
+                      <!-- Label + Button -->
+                      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                        <!-- Label -->
+                        <label class="form-label fw-semibold mb-0">
+
+                        </label>
+
+                        <!-- Search + Button -->
+                        <div class="d-flex align-items-center gap-2">
+                          <button
+                            class="btn btn-primary"
+                            type="button"
+                            @click="isUploadOpen = !isUploadOpen"
+                          >
+                            <i class="bi bi-filetype-csv me-1"></i> Unggah Data
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
+                      <!-- Collapsible Dropzone -->
+                      <transition name="slide">
+                        <div v-show="isUploadOpen">
+                          <div class="alert alert-success">
+                            <ul>
+                              <li>Pastikan data yang diimport, berformat csv</li>
+                              <li>Pastikan data sudah lengkap sebelum di import</li>
+                              <li>
+                                Silahkan unduh contoh dengan klik
+                                <a href="/example_pendampingan_anak.csv">Example.csv</a>
+                              </li>
+                            </ul>
+                          </div>
 
-                <div class="container-fluid">
-                  <h5 class="fw-bold text-primary mb-3">Status Kesehatan Calon Pengantin</h5>
+                          <div
+                            class="dropzone-full position-relative p-4 rounded-3 border text-center"
+                            :class="{
+                              'border-primary bg-light': isDataDrag,
+                              'border-danger': fileError
+                            }"
+                            @click="triggerFileDialog"
+                            @dragover.prevent="onDragOver"
+                            @dragleave.prevent="onDragLeave"
+                            @drop.prevent="handleDrop($event)"
+                            role="button"
+                            tabindex="0"
+                            @keydown.enter.prevent="triggerFileDialog"
+                            @keydown.space.prevent="triggerFileDialog"
+                          >
+                            <i class="bi bi-cloud-upload fs-1 text-primary"></i>
+                            <p class="mb-1 fw-medium">Drag & drop file CSV di sini</p>
+                            <small class="text-muted">atau klik untuk pilih file</small>
 
-                  <!-- Row utama: tabel & chart berdampingan -->
-                  <div class="row g-3">
-                    <!-- Table -->
-                    <div class="col-12">
-                      <div class="card border border-primary shadow p-3 h-100">
-                        <div class="table-responsive">
-                          <table class="table table-borderless align-middle">
-                            <thead>
-                              <tr class="fw-semibold text-additional">
-                                <th class="text-additional">Status</th>
-                                <th class="text-additional">Jumlah</th>
-                                <th class="text-additional">Persen</th>
-                                <th class="text-additional">Tren</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(row, index) in dataTable_catin" :key="index">
-                                <td class="text-additional small">{{ row.status }}</td>
-                                <td class="text-additional small">{{ row.jumlah ?? 0 }}</td>
-                                <td class="text-additional small">
-                                  {{ row.persen ? row.persen + ' %' : '0 %' }}
-                                </td>
-                                <td class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'">
-                                    <i :class="row.trenIcon"></i> {{ row.tren }}
-                                  </span>
-                                  <span v-else>-</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
+                            <input
+                              ref="fileInput"
+                              type="file"
+                              accept=".csv,text/csv"
+                              class="position-absolute w-100 h-100 top-0 start-0 opacity-0"
+                              @change="handleFileChange($event)"
+                            />
+                          </div>
+
+                          <!-- Preview / status -->
+                          <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div v-if="file">
+                              <div><strong>Nama:</strong> {{ fileName }}</div>
+                              <div><strong>Ukuran:</strong> {{ humanFileSize(fileSize) }}</div>
+                              <div v-if="filePreviewLines" class="text-muted small">
+                                Contoh baris pertama: <code>{{ filePreviewLines }}</code>
+                              </div>
+                            </div>
+
+                            <div v-else class="text-muted small">Belum ada file dipilih</div>
+
+                            <div class="d-flex gap-2">
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-outline-danger btn-sm"
+                                @click="removeFile"
+                                type="button"
+                              >
+                                <i class="bi bi-trash me-1"></i> Hapus
+                              </button>
+
+                              <button
+                                v-if="file && !uploading"
+                                class="btn btn-success btn-sm"
+                                @click="uploadCSV"
+                                type="button"
+                              >
+                                <i class="bi bi-upload me-1"></i> Upload
+                              </button>
+
+                              <div v-if="uploading" class="d-flex align-items-center gap-2">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div v-if="fileError" class="mt-2 text-danger small">
+                            {{ fileError }}
+                          </div>
                         </div>
-                      </div>
+                      </transition>
+
                     </div>
                   </div>
 
-                  <!-- Tabel tambahan bawah -->
-                  <div class="row mt-4">
-                    <div class="col-12">
-                      <div class="card border border-primary shadow p-3">
-                        <div class="table-responsive">
-                          <table class="table table-bordered table-sm align-middle text-center mb-0">
-                            <thead class="table-light">
-                              <tr>
-                                <th>Indikator</th>
-                                <th v-for="(bulan, idx) in bulanLabels" :key="idx">{{ bulan }}</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(values, indikator) in indikatorCatin" :key="indikator">
-                                <td class="fw-bold">{{ indikator }}</td>
-                                <td v-for="(val, idx) in values" :key="idx">{{ val }}</td>
-                              </tr>
-                            </tbody>
-                          </table>
+                  <!-- Table -->
+                  <div class="mt-3">
+
+                    <!-- Search + Row Per Page -->
+                    <easy-data-table
+                      class="data_anak"
+                      :headers="headers_kunAn"
+                      :items="items_kunAn"
+                      :search-value="searchQuery_kunAn"
+                      :rows-per-page="perPage"
+                      :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'"
+                      show-index
+                      alternating
+                      border-cell
+                    >
+
+                      <!-- ACTION BUTTONS -->
+                      <template #item-action="items">
+                        <div class="d-flex gap-1">
+                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip" title="Tambah">
+                            <i class="bi bi-plus-square"></i>
+                          </button>
+                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip" title="Ubah">
+                            <i class="bi bi-pencil-square"></i>
+                          </button>
+                          <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                          </button>
                         </div>
-                      </div>
-                    </div>
+                      </template>
+
+                    </easy-data-table>
                   </div>
+
                 </div>
               </div>
             </div>
+            <!-- Import Bumil -->
+            <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
+              BUMIL
+            </div>
+            <!-- Import Catin -->
+            <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
+              CATIN
+            </div>
+          </div>
+
+        </div>
+        <CopyRight class="mt-auto" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import CopyRight from '@/components/CopyRight.vue'
+import HeaderAdmin from '@/components/HeaderAdmin.vue'
+import NavbarAdmin from '@/components/NavbarAdmin.vue'
+import axios from 'axios'
+import Welcome from '@/components/Welcome.vue'
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
+
+//import { ref, computed } from 'vue'
+
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+// inisialisasi DataTables agar pakai styling Bootstrap 5
+
+export default {
+  // eslint-disable-next-line vue/multi-word-component-names
+  name: 'Import',
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
+  data() {
+    return {
+      form: {
+        mode:"",
+        nik: "",
+        nama_anak: "",
+        nama_ortu: "",
+        bb: "",
+        tb: "",
+        unit_posyandu: "",
+        gender: "",
+        tgl_lahir: "",
+      },
+      headers_kunAn: [
+        { text: 'NIK', value: 'nik' },
+        { text: 'Nama Anak', value: 'nama_anak' },
+        { text: 'Nama Orang Tua', value: 'nama_ortu' },
+        { text: 'L/P', value: 'gender' },
+        { text: 'Tanggal Lahir', value: 'tgl_lahir' },
+        { text: 'BB', value: 'bb' },
+        { text: 'TB', value: 'tb' },
+        { text: 'Unit Posyandu', value: 'unit_posyandu' },
+        { text: 'Action', value: 'action' },
+      ],
+      formOpen : false,
+      searchQuery_kunAn:"",
+      searchQuery: "",
+      currentPage: 1,
+      perPage: 10,
+      perPageOptions: [5, 10, 25, 50],
+      isUploadOpen: false,
+      columns: [
+        { title: 'Nama Anak', data: 'nama_anak' },
+        { title: 'Nama Orang Tua', data: 'nama_ortu' },
+        { title: 'JK', data: 'jk' },
+        { title: 'Tanggal Lahir', data: 'tgl_lahir' },
+        { title: 'BB Lahir', data: 'bb_lahir' },
+        { title: 'TB Lahir', data: 'tb_lahir' },
+        { title: 'Alamat', data: 'alamat' },
+        {
+          title: 'Kelola',
+          data: null,
+          render: (data, type, row) => `
+            <button class="btn btn-sm btn-outline-primary me-1" data-id="${row.id}" onclick="editKunjungan(${row.id})">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" data-id="${row.id}" onclick="hapusKunjungan(${row.id})">Hapus</button>
+          `
+        }
+      ],
+      tableOptions: {
+        responsive: true,
+        pageLength: 10,
+        destroy: true, // penting agar bisa di-refresh
+      },
+      aktifitas_anak:'kunjungan',
+      isLoading: true,
+      isCollapsed: false,
+      username: '',
+      today: '',
+      thisMonth: '',
+      kelurahan: '',
+      windowWidth: window.innerWidth,
+      configCacheKey: 'site_config_cache',
+      activeMenu: 'anak', // default tampilan awal
+      dataLoad:[],
+      file: null,
+      fileName: '',
+      fileSize: 0,
+      filePreviewLines: '',
+      fileError: '',
+      uploading: false,
+      uploadProgress: 0,
+      // config
+      ACCEPTED_EXT: ['csv'],
+      ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
+      MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
+    }
+  },
+  created() {
+    const storedEmail = localStorage.getItem('userEmail')
+    if (storedEmail) {
+      let namePart = storedEmail.split('@')[0]
+      namePart = namePart.replace(/[._]/g, ' ')
+      this.username = namePart
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ')
+    } else {
+      this.username = 'User'
+    }
+    this.today = this.getTodayDate()
+    this.thisMonth = this.getThisMonth()
+  },
+  computed: {
+    filteredData() {
+      //console.log('filter data: ', this.paginatedData[1]);
+
+      if (!this.paginatedData[1]) {
+        return []
+      }
+
+      if (Array.isArray(this.paginatedData[1])) {
+        console.warn("dataLoad is ARRAY, expected OBJECT mapping NIK → Data!")
+      }
+
+      const arr = Object.values(this.paginatedData[1])
+      const q = this.searchQuery.toLowerCase()
+      const result = arr.filter(item => {
+        const match =
+          item.nama_perempuan?.toLowerCase().includes(q) ||
+          item.nama_laki?.toLowerCase().includes(q) ||
+          item.nik_perempuan?.includes(q) ||
+          item.nik_laki?.includes(q)
+
+        return match
+      })
+      return result
+    },
+    filteredBumil() {
+      if (!this.dataLoad) return [];
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+      const q = this.searchQuery?.toLowerCase() ?? '';
+
+      //console.log();
+
+      return arr.filter(item => {
+        return (
+          item.nama_ibu?.toLowerCase().includes(q) ||
+          item.nik_ibu?.includes(q) ||
+          item.kehamilan_ke?.toString().includes(q)
+        );
+      });
+    },
+    filteredAnak() {
+      if (!this.dataLoad) return [];
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+      const q = this.searchQuery_kunAn?.toLowerCase() ?? "";
+
+      return arr.filter(item => {
+        return (
+          item.nama?.toLowerCase().includes(q) ||
+          item.nik?.toString().includes(q)
+        );
+      });
+    },
+    paginatedBumil() {
+      const filtered = this.filteredBumil;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    },
+    /* paginatedAnak() {
+      const filtered = this.filteredAnak;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    }, */
+    paginatedCatin() {
+      const filtered = this.filteredData;
+      const start = (this.currentPage - 1) * this.perPage;
+      return filtered.slice(start, start + this.perPage);
+    },
+    paginatedData() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return this.dataLoad.slice(start, start + this.perPage);
+    },
+    totalPagesCatin() {
+      return Math.ceil(this.filteredData.length / this.perPage);
+    },
+    totalPagesBumil() {
+      return Math.ceil(this.filteredBumil.length / this.perPage);
+    },
+    /* totalPagesAnak() {
+      return Math.ceil(this.filteredAnak.length / this.perPage);
+    }, */
+    paginationNumbers() {
+      const pages = [];
+      const total = this.totalPagesCatin;
+
+      if (total <= 3) {
+        // Jika halaman ≤ 3, tampilkan semua
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      // Jika lebih dari 3 halaman
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (this.currentPage >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      // Di tengah
+      return [1, "...", this.currentPage - 1, this.currentPage, this.currentPage + 1, "...", total];
+    },
+    paginationNumbersBumil() {
+      const pages = [];
+      const total = this.totalPagesBumil;
+
+      if (total <= 3) {
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (this.currentPage >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      return [
+        1,
+        "...",
+        this.currentPage - 1,
+        this.currentPage,
+        this.currentPage + 1,
+        "...",
+        total
+      ];
+    },
+    /* paginationNumbersAnak() {
+      const pages = [];
+      const total = this.totalPagesAnak;
+
+      if (total <= 3) {
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, "...", total];
+      }
+
+      if (this.currentPage >= total - 2) {
+        return [1, "...", total - 2, total - 1, total];
+      }
+
+      return [
+        1,
+        "...",
+        this.currentPage - 1,
+        this.currentPage,
+        this.currentPage + 1,
+        "...",
+        total
+      ];
+    }, */
+    items_kunAn() {
+      return this.filteredAnak.map((item) => ({
+        nik: item.nik ?? "-",
+        nama_anak: item.nama ?? "-",
+        nama_ortu: item.keluarga?.[0]?.nama_ibu
+          ? item.keluarga[0].nama_ibu
+          : item.keluarga?.[0]?.nama_ayah ?? "-",
+        gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
+        tgl_lahir: this.formatDate(item.kelahiran?.[0]?.tgl_lahir),
+        bb: item.posyandu?.[0]?.bb ?? "-",
+        tb: item.posyandu?.[0]?.tb ?? "-",
+        unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
+        // 🔥 INI YANG PENTING
+        action: { ...item }
+      }));
+    }
+
+  },
+  methods: {
+    // Prefill form
+    editItem(item) {
+      this.formOpen = true;
+
+      this.form = {
+        ...this.form,
+        mode:'edit',
+        nik: item.nik ?? "",
+        nama_anak: item.nama_anak ?? "",
+        nama_ortu: item.nama_ortu ?? "",
+        bb: item.bb ?? "",
+        tb: item.tb ?? "",
+        unit_posyandu: item.unit_posyandu ?? "",
+        gender: item.gender ?? "",
+        tgl_lahir: item.tgl_lahir ?? ""
+      };
+    },
+    inputItem(item) {
+      this.formOpen = true;
+
+      this.form = {
+        ...this.form,
+        mode:'input',
+        nik: item.nik ?? "",
+        nama_anak: item.nama_anak ?? "",
+        nama_ortu: item.nama_ortu ?? "",
+        //bb: item.bb ?? "",
+        //tb: item.tb ?? "",
+        unit_posyandu: item.unit_posyandu ?? "",
+        gender: item.gender ?? "",
+        tgl_lahir: item.tgl_lahir ?? ""
+      };
+    },
+    // Kirim ke backend
+    async submitUpdate() {
+      try {
+        await fetch(`/api/anak/${this.form.nik}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.form),
+        })
+        alert("Data berhasil diupdate!")
+      } catch (e) {
+        console.error(e)
+        alert("Gagal update data")
+      }
+    },
+    // Delete via backend
+    async delItem(item) {
+      const nik = item.nik
+      if (!confirm("Yakin ingin menghapus data ini?")) return
+
+      try {
+        await fetch(`/api/anak/${nik}`, { method: "DELETE" })
+        alert("Data berhasil dihapus!")
+      } catch (e) {
+        console.error(e)
+        alert("Gagal menghapus")
+      }
+    },
+    //Mandatory
+    goToPage(p) {
+      if (p !== "...") {
+        this.currentPage = p;
+      }
+    },
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
+    },
+    menu(type) {
+      this.activeMenu = type
+      this.loadData();
+    },
+    async loadConfigWithCache() {
+      try {
+        // cek di localStorage
+        const cached = localStorage.getItem(this.configCacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          this.logoSrc = parsed.logo || null
+          return
+        }
+         // kalau belum ada cache, fetch dari API
+        const res = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data?.data
+        if (data) {
+          this.logoSrc = data.logo || null
+          // simpan di localStorage untuk load cepat di page berikutnya
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+      }catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoLoaded = false
+      }
+    },
+    async getWilayahUser() {
+      try {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const data = res.data
+        this.kelurahan = data.kelurahan
+        // Setelah dapet id_wilayah, langsung fetch posyandu
+        //await this.fetchPosyanduByWilayah(this.id_wilayah)
+      } catch (error) {
+        console.error('Gagal ambil data wilayah user:', error)
+        //this.kelurahan = '-'
+      }
+    },
+    getTodayDate() {
+      const hari = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu',
+        'Kamis', 'Jumat', 'Sabtu'
+      ]
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+      const now = new Date()
+      return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
+    },
+    getThisMonth() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April',
+        'Mei', 'Juni', 'Juli', 'Agustus',
+        'September', 'Oktober', 'November', 'Desember'
+      ]
+
+      const now = new Date()
+      let monthIndex = now.getMonth() - 1
+      let year = now.getFullYear()
+
+      // kalau sekarang Januari (0), berarti mundur ke Desember tahun sebelumnya
+      if (monthIndex < 0) {
+        monthIndex = 11
+        year -= 1
+      }
+
+      return `${bulan[monthIndex]} ${year}`
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
+    },
+    setFile(file) {
+      this.fileError = ''
+      // validasi
+      const valid = this.validateFile(file)
+      if (!valid.valid) {
+        this.file = null
+        this.fileName = ''
+        this.fileSize = 0
+        this.filePreviewLines = ''
+        this.fileError = valid.message
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      // baca beberapa byte pertama untuk preview (opsional)
+      this.previewFileContent(file)
+    },
+    validateFile(file) {
+      // ext
+      const nameParts = (file.name || '').split('.')
+      const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
+      if (!this.ACCEPTED_EXT.includes(ext)) {
+        return { valid: false, message: 'Format file tidak didukung. Hanya .csv yang diperbolehkan.' }
+      }
+
+      // mime (beberapa browser pakai text/plain)
+      if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
+        // dimungkinkan file.type kosong di beberapa OS, jadi jangan terlalu strict
+        return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
+      }
+
+      if (file.size > this.MAX_FILE_SIZE) {
+        return { valid: false, message: `Ukuran file terlalu besar. Maks ${this.humanFileSize(this.MAX_FILE_SIZE)}.` }
+      }
+
+      return { valid: true }
+    },
+    previewFileContent(file) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const text = (ev.target.result || '').toString()
+        // ambil 1-2 baris pertama untuk preview, sanitasi
+        const lines = text.split(/\r?\n/).filter(Boolean)
+        this.filePreviewLines = lines.length ? lines.slice(0,2).join(' | ') : ''
+      }
+      // baca sebagian saja untuk efisiensi (readAsText membaca seluruh file — acceptable untuk CSV kecil)
+      reader.readAsText(file.slice(0, 2000))
+    },
+    async uploadCSV() {
+      //console.log(this.aktifitas_anak);
+
+      if (!this.file) {
+        this.fileError = 'Tidak ada file untuk di-upload.'
+        return
+      }
+
+      // 🧭 Tentukan endpoint sesuai menu aktif
+      let UPLOAD_URL = ''
+      if (this.activeMenu === 'anak') {
+        UPLOAD_URL = `${baseURL}/api/children/${
+          this.aktifitas_anak === 'kunjungan'
+            ? 'import_kunjungan'
+            : 'import_pendampingan'
+        }`
+      } else if (this.activeMenu === 'bumil') {
+        UPLOAD_URL = `${baseURL}/api/pregnancy/import`
+      } else if (this.activeMenu === 'catin') {
+        UPLOAD_URL = `${baseURL}/api/bride/import`
+      } else {
+        this.fileError = 'Menu tidak dikenal. Pastikan kamu memilih menu yang benar.'
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('file', this.file)
+
+      try {
+        this.uploading = true
+        this.uploadProgress = 0
+        this.fileError = ''
+
+        const res = await axios.post(UPLOAD_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.lengthComputable) {
+              this.uploadProgress = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              )
+            }
+          }
+        })
+
+        // ✅ Respons sukses
+        console.log('Upload berhasil:', res.data)
+        if (this.$bvToast) {
+          this.$bvToast.toast('Upload CSV berhasil diproses.', {
+            variant: 'success',
+            solid: true
+          })
+        }
+
+        // 🔄 Reset input file setelah upload
+        this.removeFile()
+      } catch (err) {
+        console.error('Upload error:', err)
+        this.fileError =
+          (err.response && err.response.data && err.response.data.message) ||
+          'Gagal upload file. Periksa format CSV atau koneksi server.'
+      } finally {
+        this.uploading = false
+        this.uploadProgress = 0
+      }
+    },
+    triggerFileDialog() {
+      this.$refs.fileInput.click()
+    },
+    handleFileChange(e) {
+      const file = e.target.files[0]
+      this.loadFilePreview(file)
+    },
+    handleDrop(e) {
+      const file = e.dataTransfer.files[0]
+      this.loadFilePreview(file)
+      this.isDataDrag = false
+    },
+    onDragOver() {
+      this.isDataDrag = true
+    },
+    onDragLeave() {
+      this.isDataDrag = false
+    },
+    removeFile() {
+      this.file = null
+      this.fileName = ''
+      this.fileSize = 0
+      this.filePreviewLines = ''
+      this.$refs.fileInput.value = ''
+    },
+    humanFileSize(size) {
+      const i = Math.floor(Math.log(size) / Math.log(1024))
+      return (
+        (size / Math.pow(1024, i)).toFixed(2) * 1 +
+        ' ' +
+        ['B', 'kB', 'MB', 'GB', 'TB'][i]
+      )
+    },
+    async loadFilePreview(file) {
+      if (!file) return
+      if (!file.name.endsWith('.csv')) {
+        this.fileError = 'Hanya file CSV yang diperbolehkan.'
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      const text = await file.text()
+      const lines = text.split('\n').slice(0, 2).join(' | ')
+      this.filePreviewLines = lines
+    },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    },
+    async loadData() {
+      try {
+        let res = null;
+
+        const headers = {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        };
+
+        var payload;
+        switch (this.activeMenu) {
+          case 'anak':
+            res = await axios.get(`${baseURL}/api/children`, { headers });
+            payload = res.data.data_anak ?? {};
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
+            break;
+          case 'bumil':
+            res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
+            payload = res.data?.data || []
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
+            break;
+          case 'catin':
+            res = await axios.get(`${baseURL}/api/bride`, { headers });
+            payload = res.data ?? {};
+            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
+            break;
+          default:
+            return;
+        }
+        //console.log(this.dataLoad);
+
+      } catch (e) {
+        console.error('Gagal ambil data:', e);
+        //this.paginatedData = [];
+      }
+    }
+  },
+  async mounted() {
+    this.isLoading = true
+    try {
+      await Promise.all([
+        this.loadConfigWithCache(),
+        this.loadData(),
+        this.getWilayahUser(),
+        this.handleResize(),
+
+        window.addEventListener('resize', this.handleResize)
+      ])
+    } catch (err) {
+      console.error('Error loading data:', err)
+    } finally {
+      this.isLoading = false
+    }
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize)
+  },
+}
+</script>
+
+<style scoped>
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.25s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+</style>
