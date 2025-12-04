@@ -1286,8 +1286,8 @@
                               <thead class="table-secondary">
                                 <tr>
                                   <th>Tanggal</th>
-                                  <th>BB</th>
-                                  <th>TB</th>
+                                  <th>Status BB</th>
+                                  <th>Status TB</th>
                                   <th>Status BB/TB</th>
                                 </tr>
                               </thead>
@@ -1297,13 +1297,25 @@
                                   :key="'penimbangan-' + i"
                                 >
                                   <td>{{ riwayat.tanggal }}</td>
-                                  <td>{{ riwayat.bb }}</td>
-                                  <td>{{ riwayat.tb }}</td>
                                   <td
                                     :class="{
-                                      'text-danger fw-bold': riwayat.bbtb === 'Stunting',
-                                      'text-warning fw-bold': riwayat.bbtb === 'Underweight',
-                                      'text-success fw-bold': riwayat.bbtb === 'Normal',
+                                      'text-danger': riwayat.bbu === 'Severely Underweight',
+                                      'text-secondary': riwayat.bbu === 'Underweight'
+                                    }"
+                                  >
+                                    {{ riwayat.bbu }}
+                                  </td>
+                                  <td
+                                    :class="{
+                                      'text-danger': riwayat.tbu === 'Severely Stunted',
+                                      'text-secondary': riwayat.tbu === 'Stunted'
+                                    }"
+                                  >
+                                  {{ riwayat.tbu }}</td>
+                                  <td
+                                    :class="{
+                                      'text-danger': riwayat.bbtb === 'Severely Wasted',
+                                      'text-secondary': riwayat.bbtb === 'Wasted'
                                     }"
                                   >
                                     {{ riwayat.bbtb }}
@@ -1345,7 +1357,7 @@
                                   TB/U
                                 </button>
                               </li>
-                              <!-- <li class="nav-item" role="presentation">
+                              <li class="nav-item" role="presentation">
                                 <button
                                   class="nav-link"
                                   id="bbtb-tab"
@@ -1358,7 +1370,7 @@
                                 >
                                   BB/TB
                                 </button>
-                              </li> -->
+                              </li>
                             </ul>
 
                             <!-- Tabs Content -->
@@ -1569,7 +1581,6 @@ export default {
       currentWeight: 12,
       currentHeight: 87,
       gender: 'male',
-
       kmsColors: {
         top: '#F2D803',
         midTop: '#84BA24',
@@ -1578,6 +1589,35 @@ export default {
         midBottom: '#80B626',
         bottom: '#DCBF1E',
       },
+      whfaBoys: [
+        { h: 65, median: 7.0, sd: 0.5 },
+        { h: 70, median: 8.0, sd: 0.6 },
+        { h: 75, median: 9.2, sd: 0.7 },
+        { h: 80, median: 10.3, sd: 0.8 },
+        { h: 85, median: 11.5, sd: 0.9 },
+        { h: 90, median: 12.7, sd: 1.0 },
+        { h: 95, median: 14.0, sd: 1.1 },
+        { h: 100, median: 15.3, sd: 1.2 },
+        { h: 105, median: 16.7, sd: 1.25 },
+        { h: 110, median: 18.0, sd: 1.3 },
+        { h: 115, median: 19.4, sd: 1.35 },
+        { h: 120, median: 20.7, sd: 1.4 },
+      ],
+      whfaGirls: [
+        { h: 65, median: 6.8, sd: 0.5 },
+        { h: 70, median: 7.7, sd: 0.6 },
+        { h: 75, median: 8.8, sd: 0.7 },
+        { h: 80, median: 9.8, sd: 0.8 },
+        { h: 85, median: 11.0, sd: 0.9 },
+        { h: 90, median: 12.2, sd: 1.0 },
+        { h: 95, median: 13.4, sd: 1.1 },
+        { h: 100, median: 14.7, sd: 1.2 },
+        { h: 105, median: 16.0, sd: 1.25 },
+        { h: 110, median: 17.3, sd: 1.3 },
+        { h: 115, median: 18.6, sd: 1.35 },
+        { h: 120, median: 19.8, sd: 1.4 },
+      ],
+
       wfaBoys: [
         { m: 0, median: 3.3, sd: 0.3 },
         { m: 1, median: 4.5, sd: 0.35 },
@@ -2302,6 +2342,17 @@ export default {
           return `rgba(${r},${g},${b},${alpha})`
         }
 
+        const expandWH = (arr) => ({
+          tinggi: arr.map((d) => d.h),
+          median: arr.map((d) => d.median),
+          sd1: arr.map((d) => d.median + 1 * d.sd),
+          sd2: arr.map((d) => d.median + 2 * d.sd),
+          sd3: arr.map((d) => d.median + 3 * d.sd),
+          sd_1: arr.map((d) => d.median - 1 * d.sd),
+          sd_2: arr.map((d) => d.median - 2 * d.sd),
+          sd_3: arr.map((d) => d.median - 3 * d.sd),
+        })
+
         // === Ekspansi WHO dataset ===
         const expandWHO = (arr) => ({
           usia: arr.map((d) => d.m),
@@ -2316,6 +2367,7 @@ export default {
 
         const bbData = expandWHO(wfa)
         const tbData = expandWHO(hfa)
+        const bbTbData = expandWH(gender === 'L' ? this.whfaBoys : this.whfaGirls)
 
         // === Kurva area (dengan warna) ===
         const makeDatasets = (D, C) => [
@@ -2392,6 +2444,33 @@ export default {
         ]
 
         // === Titik anak ===
+        const makePointHeight = (D, tinggi, nilai) => {
+          let nearestIndex = 0
+          let minDiff = Infinity
+          D.tinggi.forEach((t, i) => {
+            const diff = Math.abs(t - tinggi)
+            if (diff < minDiff) {
+              minDiff = diff
+              nearestIndex = i
+            }
+          })
+
+          const pointData = Array(D.tinggi.length).fill(null)
+          pointData[nearestIndex] = nilai
+
+          return {
+            label: 'Anak',
+            data: pointData,
+            borderColor: '#fff',
+            backgroundColor: gender === 'L' ? '#007bff' : '#ff4b5c',
+            pointRadius: 8,
+            borderWidth: 2,
+            pointStyle: 'circle',
+            showLine: false,
+            order: 9999,
+          }
+        }
+
         // eslint-disable-next-line no-unused-vars
         const makePoint = (D, usiaAnak, nilai, labelY) => {
           // Cari usia terdekat
@@ -2493,6 +2572,47 @@ export default {
           if (this.chartTB) this.chartTB.destroy()
           this.chartTB = buildChart(ctxTB, tbData, 'Tinggi Badan (cm)', tbAnak, usiaAnak, 45, 120)
         }
+
+        // === BB/TB Chart ===
+        const ctxBBTB = this.$refs.chartBBTB?.getContext('2d')
+          if (ctxBBTB) {
+            if (this.chartBBTB) this.chartBBTB.destroy()
+
+            this.chartBBTB = new Chart(ctxBBTB, {
+              type: 'line',
+              data: {
+                labels: bbTbData.tinggi,
+                datasets: [
+                  ...makeDatasets(bbTbData, C),
+                  makePointHeight(bbTbData, tbAnak, bbAnak) // tinggi → bb
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  datalabels:{ display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: () => `TB: ${tbAnak} cm, BB: ${bbAnak} kg`,
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    title: { display: true, text: 'Tinggi Badan (cm)' },
+                  },
+                  y: {
+                    title: { display: true, text: 'Berat Badan (kg)' },
+                    min: 0,
+                    max: 25,
+                  },
+                },
+              },
+            })
+          }
+
       })
     },
   },
