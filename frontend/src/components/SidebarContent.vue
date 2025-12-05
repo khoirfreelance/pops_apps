@@ -62,7 +62,7 @@
       <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"
-        title="Import"
+        title="Kelola"
         ref="tooltipItem"
       >
         <router-link
@@ -71,10 +71,10 @@
           :class="{ active: isActive('/admin/import') }"
         >
             <i class="bi bi-cloud-upload-fill"></i>
-          <span v-if="!isCollapsed"> Import</span>
+          <span v-if="!isCollapsed"> Kelola</span>
         </router-link>
       </li>
-      <li
+      <!-- <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"
         title="Intervensi"
@@ -88,7 +88,7 @@
           <i class="bi bi-calendar-check"></i>
           <span v-if="!isCollapsed">Intervensi</span>
         </router-link>
-      </li>
+      </li> -->
       <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"

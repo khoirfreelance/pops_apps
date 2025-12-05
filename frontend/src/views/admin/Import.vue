@@ -151,7 +151,7 @@
 
               <div v-if="isUploadOpen" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
-                  <h5>Upload Data</h5>
+                  <h5>Kelola Data</h5>
                   <button
                     @click="isUploadOpen = !isUploadOpen"
                     class="btn btn-sm btn-outline-danger mb-2"
@@ -167,7 +167,7 @@
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a href="/example_kunjungan_posyandu.csv">Example.csv</a>
+                        <a :href="exampleFile">Example.csv</a>
                       </li>
                     </ul>
                   </div>
@@ -184,7 +184,7 @@
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div v-if="filePreviewTable.length" class="mt-3">
                       <p class="fw-bold mb-1 text-danger">
-                        *Preview (2 baris pertama):
+                        *Preview:
                       </p>
                       <div class="table-responsive">
                         <table class="table table-bordered table-sm small border-danger">
@@ -262,21 +262,21 @@
                     <button
                       class="btn btn-primary btn-sm"
                       type="button"
-                      @click="isUploadOpen = !isUploadOpen"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas='kunjungan'"
                     >
                       <i class="bi bi-filetype-csv me-1"></i> Import Kunjungan
                     </button>
                     <button
                       class="btn btn-success btn-sm"
                       type="button"
-                      @click="isUploadOpen = !isUploadOpen"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas='pendampingan_anak'"
                     >
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
                     <button
                       class="btn btn-outline-primary btn-sm"
                       type="button"
-                      @click="isUploadOpen = !isUploadOpen"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas='intervensi_anak'"
                     >
                       <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                     </button>
@@ -383,7 +383,7 @@
 
               <div v-if="isUploadOpen_bumil" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
-                  <h5>Upload Data</h5>
+                  <h5>Kelola Data</h5>
                   <button
                     @click="isUploadOpen_bumil = !isUploadOpen_bumil"
                     class="btn btn-sm btn-outline-danger mb-2"
@@ -399,7 +399,7 @@
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a href="/example_kunjungan_posyandu.csv">Example.csv</a>
+                        <a :href="exampleFile">Example.csv</a>
                       </li>
                     </ul>
                   </div>
@@ -416,7 +416,7 @@
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div v-if="filePreviewTable_bumil.length" class="mt-3">
                       <p class="fw-bold mb-1 text-danger">
-                        *Preview (2 baris pertama):
+                        *Preview:
                       </p>
                       <div class="table-responsive">
                         <table class="table table-bordered table-sm small border-danger">
@@ -494,14 +494,14 @@
                     <button
                       class="btn btn-primary btn-sm"
                       type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil"
+                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas='pendampingan_bumil'"
                     >
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
                     <button
                       class="btn btn-outline-primary btn-sm"
                       type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil"
+                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas='intervensi_bumil'"
                     >
                       <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                     </button>
@@ -543,38 +543,6 @@
                       </template>
 
                     </easy-data-table>
-                    <!-- Search + Row Per Page -->
-                    <!-- <easy-data-table
-                      :headers="headers_bumil"
-                      :items="items_bumil"
-                      :sortable="true"
-                      :search-value="searchQuery_bumil"
-                      :rows-per-page="perPage"
-                      :rows-items="perPageOptions"
-                      :rows-per-page-text="'Rows per page'"
-                      header-text-direction="center"
-                      table-class-name="my-custom-table"
-                      header-class-name="my-custom-header"
-                      show-index
-                      alternating
-                      border-cell
-                    >
-
-                      <template #item-action="{ item }">
-                        <div class="action-wrapper d-flex gap-1 m-1 text-center">
-                          <button @click="inputItem(item)" class="btn btn-primary" title="Tambah">
-                            <i class="bi bi-plus-square"></i>
-                          </button>
-                          <button @click="editItem(item)" class="btn btn-secondary" title="Ubah">
-                            <i class="bi bi-pencil-square"></i>
-                          </button>
-                          <button @click="delItem(item)" class="btn btn-danger" title="Hapus">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </template>
-
-                    </easy-data-table> -->
 
                   </div>
 
@@ -645,9 +613,9 @@
 
               <div v-if="isUploadOpen_catin" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
-                  <h5>Upload Data</h5>
+                  <h5>Kelola Data</h5>
                   <button
-                    @click="isUploadOpen_catin = !isUploadOpen__catin"
+                    @click="isUploadOpen_catin = !isUploadOpen_catin"
                     class="btn btn-sm btn-outline-danger mb-2"
                   >
                   X
@@ -661,7 +629,7 @@
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a href="/example_catin.csv">Example.csv</a>
+                        <a :href="exampleFile">Example.csv</a>
                       </li>
                     </ul>
                   </div>
@@ -678,10 +646,10 @@
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div v-if="filePreviewTable_catin.length" class="mt-3">
                       <p class="fw-bold mb-1 text-danger">
-                        *Preview (2 baris pertama):
+                        *Preview:
                       </p>
-                      <div class="table-responsive">
-                        <table class="table table-bordered table-sm small border-danger">
+                      <div class="table-scroll-x">
+                        <table class="table table-bordered table-sm border-danger" style="font-size: 80%;">
                           <thead>
                             <tr>
                               <th v-for="(col, index) in PreviewTable_catin" :key="'h'+index" width="120" class="text-danger">
@@ -690,12 +658,12 @@
                             </tr>
                           </thead>
                           <tbody>
-                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(1)" :key="'r'+rIndex">
+                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(0)" :key="'r'+rIndex">
                               <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
                                 {{ col }}
                               </td>
                             </tr>
-                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(2)" :key="'r'+rIndex">
+                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(1)" :key="'r'+rIndex">
                               <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
                                 ...
                               </td>
@@ -755,7 +723,7 @@
                     <button
                       class="btn btn-primary btn-sm"
                       type="button"
-                      @click="isUploadOpen_catin = !isUploadOpen_catin"
+                      @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas='pendampingan_catin'"
                     >
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
@@ -957,13 +925,11 @@ export default {
         tanggal_pendampingan:"",
         nik: "",
         nama: "",
-        nama_ortu: "",
+        hb: "",
         bb: "",
         tb: "",
         lika:"",
         unit_posyandu: "",
-        gender: "",
-        tgl_lahir: "",
       },
       form_catin: {
         mode:"",
@@ -1036,13 +1002,12 @@ export default {
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
       headers_bumil: [
-        { text: "NIK", key: "nik_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Nama", key: "nama_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Kehamilan ke", key: "kehamilan_ke", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Hb", key: "kadar_hb", sortable: true, align: "center", class: "align-middle text-center cursor-pointer" },
-        { text: "Lingkar Lengan", key: "lila", sortable: true, width: 120, align: "center", class: "align-middle text-center cursor-pointer" },
-        { text: "Usia (Tahun)", key: "usia_ibu", sortable: true, width: "100px", class: "align-middle text-center cursor-pointer" },
-        { text: "HPL", key: "hpl", sortable: true, align: "center", width: 120, class: "align-middle text-center cursor-pointer" },
+        { text: "NIK", value: "nik_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Nama", value: "nama_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Kehamilan ke", value: "kehamilan_ke", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Hb", value: "kadar_hb", sortable: true, align: "center", class: "align-middle text-center cursor-pointer" },
+        { text: "Lingkar Lengan", value: "lila", sortable: true, width: 150, align: "center", class: "align-middle text-center cursor-pointer" },
+        { text: "Usia (Tahun)", value: "usia_ibu", sortable: true, width: "100px", class: "align-middle text-center cursor-pointer" },
         { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
@@ -1071,7 +1036,7 @@ export default {
         pageLength: 10,
         destroy: true, // penting agar bisa di-refresh
       },
-      aktifitas_anak:'kunjungan',
+      aktifitas:'kunjungan',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1114,105 +1079,23 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   computed: {
-    // ==================== CATIN ====================
-    filteredCatin() {
-      if (!this.dataLoad[1]) return [];
-      const arr = Array.isArray(this.dataLoad[1])
-        ? this.dataLoad[1]
-        : Object.values(this.dataLoad[1]);
-
-      const q = this.searchQuery_catin?.toLowerCase()?.trim() ?? '';
-
-      return arr.filter(item => {
-        const namaP = item.nama_perempuan?.toLowerCase() ?? "";
-        const namaL = item.nama_laki?.toLowerCase() ?? "";
-        const nikP = item.nik_perempuan ?? "";
-        const nikL = item.nik_laki ?? "";
-
-        return (
-          namaP.includes(q) ||
-          namaL.includes(q) ||
-          nikP.includes(q) ||
-          nikL.includes(q)
-        );
-      });
-    },
-
-    items_catin() {
-      return this.filteredCatin.map(item => ({
-        nik: item.nik_perempuan ?? "-",
-        nama_perempuan: item.nama_perempuan ?? "-",
-        nama_laki: item.nama_laki ?? "-",
-        usia_perempuan: item.usia_perempuan ?? "-",
-        bb: item.riwayat_pemeriksaan?.[0]?.berat_perempuan ?? "-",
-        tb: item.riwayat_pemeriksaan?.[0]?.tinggi_perempuan ?? "-",
-        hb_perempuan: item.riwayat_pemeriksaan?.[0]?.hb_perempuan ?? "-",
-        lila_perempuan: item.riwayat_pemeriksaan?.[0]?.lila_perempuan ?? "-",
-        tanggal_menikah: this.formatDate(item.tgl_pernikahan) ?? "-",
-        action: { ...item }
-      }));
-    },
-
-    // ==================== BUMIL ====================
-    /* filteredBumil() {
-      if (!this.dataLoad) return [];
-      console.log('bumil:', this.dataLoad);
-
-      const arr = Array.isArray(this.dataLoad)
-        ? this.dataLoad
-        : Object.values(this.dataLoad);
-
-      const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
-
-      return arr.filter(item => {
-        const nama = item.nama_ibu?.toLowerCase() ?? "";
-        const nik  = item.nik_ibu ?? "";
-        return nama.includes(q) || nik.includes(q);
-      });
-    },
-
-    items_bumil() {
-      return this.filteredBumil.map(item => ({
-        nik_ibu: item.nik_ibu ?? "-",
-        nama_ibu: item.nama_ibu ?? "-",
-        kehamilan_ke: item.kehamilan_ke ?? "-",
-        kadar_hb: item.kadar_hb ?? "-",
-        lila: item.lila ?? "-",
-        usia_ibu: item.usia_ibu ?? "-",
-        hpl: item.hpl ?? "-",
-        action: { ...item }
-      }));
-    }, */
-    filteredBumil() {
-      if (!this.dataLoad) return [];
-      console.log('bumil:', this.dataLoad);
-
-      const arr = Array.isArray(this.dataLoad)
-        ? this.dataLoad
-        : Object.values(this.dataLoad);
-
-        if (this.searchQuery_bumil) {
-          const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
-          return arr.filter(item => {
-            const nama = item.nama?.toLowerCase() ?? "";
-            return nama.includes(q) || item.nik?.toString().includes(q);
-          });
-        }
-        return arr;
-    },
-
-    items_bumil() {
-      return this.dataLoad.map(item => ({
-        nik: item.nik ?? "-",
-        nama_anak: item.nama ?? "-",
-        nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
-        gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
-        tgl_lahir: this.formatDate(item.kelahiran?.[0]?.tgl_lahir),
-        bb: item.posyandu?.[0]?.bb ?? "-",
-        tb: item.posyandu?.[0]?.tb ?? "-",
-        unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
-        action: { ...item }
-      }));
+    exampleFile() {
+      switch (this.aktifitas) {
+        case "kunjungan":
+          return "/example_kunjungan_posyandu.csv";
+        case "pendampingan_anak":
+          return "/example_pendampingan_anak.csv";
+        case "intervensi_anak":
+          return "/example_intervensi_anak.csv";
+        case "pendampingan_bumil":
+          return "/example_bumil.csv";
+        case "intervensi_bumil":
+          return "/example_intervensi_bumil.csv";
+        case "pendampingan_catin":
+          return "/example_catin.csv";
+        default:
+          return "#";
+      }
     },
 
     // ==================== ANAK ====================
@@ -1243,7 +1126,92 @@ export default {
         unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
         action: { ...item }
       }));
-    }
+    },
+
+    // ==================== BUMIL ====================
+    filteredBumil() {
+      if (!this.dataLoad) return [];
+      //console.log('bumil:', this.dataLoad);
+
+      const arr = Array.isArray(this.dataLoad)
+        ? this.dataLoad
+        : Object.values(this.dataLoad);
+
+        const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
+          return arr.filter(item => {
+            const nama = item.nama_ibu?.toLowerCase() ?? "";
+            return nama.includes(q) || item.nik?.toString().includes(q);
+          });
+    },
+
+    items_bumil() {
+      return this.filteredBumil.map(item => ({
+        nik_ibu: item.nik_ibu ?? "-",
+        nama_ibu: item.nama_ibu ?? "-",
+        nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
+        kehamilan_ke: item.kehamilan_ke ?? "-",
+        kadar_hb: item.riwayat_pemeriksaan?.[0]?.kadar_hb ?? "-",
+        lila: item.riwayat_pemeriksaan?.[0]?.lila ?? "-",
+        usia_ibu: item.usia_ibu ?? "-",
+        jml_anak: item.jumlah_anak ?? "-",
+        action: { ...item }
+      }));
+    },
+
+    // ==================== CATIN ====================
+    filteredCatin() {
+      if (!this.dataLoad[1]) return [];
+
+      let arr = Array.isArray(this.dataLoad[1])
+        ? this.dataLoad[1]
+        : Object.values(this.dataLoad[1]);
+
+      // 🔒 FILTER WAJIB: buang null / undefined / bukan object
+      arr = arr.filter(item => item && typeof item === "object");
+
+      if (this.searchQuery_catin) {
+        const q = this.searchQuery_catin.toLowerCase().trim();
+
+        return arr.filter(item => {
+          const namaP = item.nama_perempuan?.toLowerCase() ?? "";
+          const namaL = item.nama_laki?.toLowerCase() ?? "";
+          const nikP = item.nik_perempuan ?? "";
+          const nikL = item.nik_laki ?? "";
+
+          return (
+            namaP.includes(q) ||
+            namaL.includes(q) ||
+            nikP.includes(q) ||
+            nikL.includes(q)
+          );
+        });
+      }
+
+      return arr;
+    },
+
+
+    items_catin() {
+      return this.filteredCatin.map(item => {
+        const pemeriksaan = Array.isArray(item.riwayat_pemeriksaan)
+          ? item.riwayat_pemeriksaan[0]
+          : null;
+
+        return {
+          nik: item.nik_perempuan ?? "-",
+          nama_perempuan: item.nama_perempuan ?? "-",
+          nama_laki: item.nama_laki ?? "-",
+          usia_perempuan: item.usia_perempuan ?? "-",
+          bb: pemeriksaan?.berat_perempuan ?? "-",
+          tb: pemeriksaan?.tinggi_perempuan ?? "-",
+          hb_perempuan: pemeriksaan?.hb_perempuan ?? "-",
+          lila_perempuan: pemeriksaan?.lila_perempuan ?? "-",
+          tanggal_menikah: this.formatDate(item.tgl_pernikahan) ?? "-",
+          action: { ...item }
+        };
+      });
+    },
+
   },
   methods: {
     handleFileChange(e) {
@@ -1411,6 +1379,31 @@ export default {
       this.animatedProgress = 0
 
       try {
+        switch (this.activeMenu) {
+          case 'anak':
+            switch (this.aktifitas) {
+              case 'kunjungan':
+
+                break;
+              case 'pendampingan_anak':
+
+                break;
+              case 'intervensi_anak':
+
+                break;
+              default:
+                break;
+            }
+            break;
+          case 'bumil':
+
+            break;
+          case 'catin':
+
+            break;
+          default:
+            break;
+        }
         // MODE UPDATE → PUT
         if (this.form.mode === 'update') {
           const res = await axios.put(
@@ -1449,6 +1442,7 @@ export default {
           this.showSuccess(res.data.message)
           setTimeout(() => (this.showSuccess(res.data.message)), 3000)
         }
+
       } catch (e) {
         //console.error(e)
         this.showError(e)
@@ -1471,7 +1465,7 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           }
         })
-        this.showSuccess(res.message || "Data berhasil dihapus!")
+        this.showSuccess(res.data.message || "Data berhasil dihapus!")
         //alert("Data berhasil dihapus!")
       } catch (e) {
         //console.error(e)
@@ -1487,9 +1481,18 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    menu(type) {
-      this.activeMenu = type
-      this.loadData();
+    async menu(type) {
+      this.isLoading = true
+      try {
+        await Promise.all([
+          this.activeMenu = type,
+          this.loadData()
+        ])
+      } catch (err) {
+        console.error('Error loading data:', err)
+      } finally {
+        this.isLoading = false
+      }
     },
     async loadConfigWithCache() {
       try {
@@ -1641,7 +1644,7 @@ export default {
       reader.readAsText(file.slice(0, 2000))
     },
     async uploadCSV() {
-      //console.log(this.aktifitas_anak);
+      //console.log(this.aktifitas);
 
       if (!this.file) {
         this.fileError = 'Tidak ada file untuk di-upload.'
@@ -1649,20 +1652,41 @@ export default {
       }
 
       // 🧭 Tentukan endpoint sesuai menu aktif
-      let UPLOAD_URL = ''
-      if (this.activeMenu === 'anak') {
-        UPLOAD_URL = `${baseURL}/api/children/${
-          this.aktifitas_anak === 'kunjungan'
-            ? 'import_kunjungan'
-            : 'import_pendampingan'
-        }`
-      } else if (this.activeMenu === 'bumil') {
-        UPLOAD_URL = `${baseURL}/api/pregnancy/import`
-      } else if (this.activeMenu === 'catin') {
-        UPLOAD_URL = `${baseURL}/api/bride/import`
-      } else {
-        this.fileError = 'Menu tidak dikenal. Pastikan kamu memilih menu yang benar.'
-        return
+      let UPLOAD_URL
+      switch (this.activeMenu) {
+        case 'anak':
+          switch (this.aktifitas) {
+            case 'kunjungan':
+              UPLOAD_URL = `${baseURL}/api/children/${
+                this.aktifitas === 'kunjungan'
+                  ? 'kunjungan'
+                  : 'pendampingan_anak'
+              }`
+              break;
+            case 'intervensi_anak':
+              UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
+              break;
+            default:
+              break;
+          }
+          break;
+        case 'bumil':
+          switch (this.aktifitas) {
+            case 'pendampingan_bumil':
+              UPLOAD_URL = `${baseURL}/api/pregnancy/import`
+              break;
+            case 'intervensi_bumil':
+              UPLOAD_URL = `${baseURL}/api/pregnancy/import_intervensi`
+              break;
+            default:
+              break;
+          }
+          break;
+        case 'catin':
+          UPLOAD_URL = `${baseURL}/api/bride/import`
+          break;
+        default:
+          break;
       }
 
       const formData = new FormData()
@@ -1687,9 +1711,12 @@ export default {
           }
         })
 
-        this.showSuccess(res.message || "Data berhasil dihapus!")
+        this.showSuccess(res.data.message || "Data berhasil diimport!")
+        this.formOpen = false
+        this.formOpen_bumil = false
+        this.formOpen_catin = false
         // ✅ Respons sukses
-        console.log('Upload berhasil:', res.data)
+        //console.log('Upload berhasil:', res.data)
         if (this.$bvToast) {
           this.$bvToast.toast('Upload CSV berhasil diproses.', {
             variant: 'success',
@@ -1714,6 +1741,8 @@ export default {
       this.fileName = ''
       this.fileSize = 0
       this.filePreviewTable = ''
+      this.filePreviewTable_catin = ''
+      this.filePreviewTable_bumil = ''
       this.$refs.fileInput.value = ''
     },
     humanFileSize(size) {
@@ -1767,32 +1796,52 @@ export default {
           this.filePreviewTable = table
             break;
           case 'bumil':
+            if (rawLines.length === 0) {
+              this.filePreviewTable_bumil = []
+              return
+            }
+
+            // Deteksi delimiter otomatis
+            // eslint-disable-next-line no-case-declarations
+            const delimiter_bumil = rawLines[0].includes(';') ? ';' : ','
+
+            // Parse CSV
+            // eslint-disable-next-line no-case-declarations
+            let table_bumil = rawLines.map(line => line.split(delimiter_bumil))
+
+            // === CROP KOLOM ===
+            table_bumil = table_bumil.map(row => {
+              if (row.length > 6) {
+                return [...row.slice(0, 10), '...'] // max 5 + "..."
+              }
+              return row
+            })
+
+            this.filePreviewTable_bumil = table_bumil
             break;
           case 'catin':
-             if (rawLines.length === 0) {
-            this.filePreviewTable = []
-            return
-          }
-
-          // Deteksi delimiter otomatis
-          // eslint-disable-next-line no-case-declarations
-          const delimiter_catin = rawLines[0].includes(';') ? ';' : ','
-
-          // Parse CSV
-          // eslint-disable-next-line no-case-declarations
-          let table_catin = rawLines.map(line => line.split(delimiter_catin))
-
-          // === CROP KOLOM ===
-          // eslint-disable-next-line no-unused-vars
-          table_catin = table_catin.map(row => {
-            if (row.length > 6) {
-              return [...row.slice(0, 10), '...'] // max 5 + "..."
+            if (rawLines.length === 0) {
+              this.filePreviewTable_catin = []
+              return
             }
-            return row
-          })
 
-          // eslint-disable-next-line no-undef
-          this.filePreviewTable_catin = PreviewTable_catin
+            // Deteksi delimiter otomatis
+            // eslint-disable-next-line no-case-declarations
+            const delimiter_catin = rawLines[0].includes(';') ? ';' : ','
+
+            // Parse CSV
+            // eslint-disable-next-line no-case-declarations
+            let table_catin = rawLines.map(line => line.split(delimiter_catin))
+
+            // === CROP KOLOM ===
+            table_catin = table_catin.map(row => {
+              if (row.length > 6) {
+                return [...row.slice(0, 10), '...'] // max 5 + "..."
+              }
+              return row
+            })
+
+            this.filePreviewTable_catin = table_catin
             break;
           default:
             return;
@@ -1883,6 +1932,13 @@ export default {
 </script>
 
 <style scoped>
+.table-scroll-x {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  width: 100% !important;
+  display: block !important;
+}
+
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.25s ease;
