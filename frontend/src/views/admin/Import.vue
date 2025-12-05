@@ -337,7 +337,7 @@
                 <div class="row g-2">
                   <div class="col-md-4">
                     <label>NIK</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nik" readonly>
+                    <input type="text" class="form-control" v-model="form_bumil.nik_ibu" readonly>
                   </div>
 
                   <div class="col-md-4">
@@ -345,10 +345,10 @@
                     <input type="text" class="form-control" v-model="form_bumil.nama_ibu" :readonly="form.mode === 'input'">
                   </div>
 
-                  <div v-if="form.mode === 'update'" class="col-md-4">
+                  <!-- <div v-if="form.mode === 'update'" class="col-md-4">
                     <label>Nama Suami</label>
                     <input type="text" class="form-control" v-model="form_bumil.nama_suami">
-                  </div>
+                  </div> -->
 
                   <div v-if="form.mode === 'input'" class="col-md-4">
                     <label>Tanggal Pendampingan</label>
@@ -368,6 +368,11 @@
                   <div class="col-md-4">
                     <label>Lingkar Lengan</label>
                     <input type="text" class="form-control" v-model="form_bumil.lila">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>Hb</label>
+                    <input type="text" class="form-control" v-model="form_bumil.hb">
                   </div>
 
                   <div class="col-12">
@@ -580,22 +585,22 @@
                     <input type="date" class="form-control" v-model="form_catin.tanggal_pendampingan">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label>Berat Badan (kg)</label>
                     <input type="text" class="form-control" v-model="form_catin.berat_perempuan">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label>Tinggi Badan (cm)</label>
                     <input type="text" class="form-control" v-model="form_catin.tinggi_perempuan">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label>Hb</label>
                     <input type="text" class="form-control" v-model="form_catin.kadar_hb">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label>Lingkar Lengan</label>
                     <input type="text" class="form-control" v-model="form_catin.lila_perempuan">
                   </div>
@@ -923,13 +928,13 @@ export default {
       form_bumil: {
         mode:"",
         tanggal_pendampingan:"",
-        nik: "",
-        nama: "",
+        nik_ibu: "",
+        nama_ibu: "",
+        nama_suami: "",
         hb: "",
         bb: "",
         tb: "",
-        lika:"",
-        unit_posyandu: "",
+        lila:"",
       },
       form_catin: {
         mode:"",
@@ -1004,10 +1009,11 @@ export default {
       headers_bumil: [
         { text: "NIK", value: "nik_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Nama", value: "nama_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Kehamilan ke", value: "kehamilan_ke", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Kehamilan ke", value: "kehamilan_ke", sortable: true, width: 130, class: "align-middle text-center cursor-pointer" },
         { text: "Hb", value: "kadar_hb", sortable: true, align: "center", class: "align-middle text-center cursor-pointer" },
-        { text: "Lingkar Lengan", value: "lila", sortable: true, width: 150, align: "center", class: "align-middle text-center cursor-pointer" },
-        { text: "Usia (Tahun)", value: "usia_ibu", sortable: true, width: "100px", class: "align-middle text-center cursor-pointer" },
+        { text: "Lila", value: "lila", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Usia (Thn)", value: "usia_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Tgl Pendampingan", value: "tgl_pendampingan", sortable: true, width: 130, class: "align-middle text-center cursor-pointer" },
         { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
@@ -1140,7 +1146,7 @@ export default {
         const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
           return arr.filter(item => {
             const nama = item.nama_ibu?.toLowerCase() ?? "";
-            return nama.includes(q) || item.nik?.toString().includes(q);
+            return nama.includes(q) || item.nik_ibu?.toString().includes(q);
           });
     },
 
@@ -1153,6 +1159,9 @@ export default {
         kadar_hb: item.riwayat_pemeriksaan?.[0]?.kadar_hb ?? "-",
         lila: item.riwayat_pemeriksaan?.[0]?.lila ?? "-",
         usia_ibu: item.usia_ibu ?? "-",
+        bb:item.riwayat_pemeriksaan?.[0]?.berat_badan ?? "-",
+        tb:item.riwayat_pemeriksaan?.[0]?.tinggi_badan ?? "-",
+        tgl_pendampingan: this.formatDate(item.tanggal_pendampingan) ?? "-",
         jml_anak: item.jumlah_anak ?? "-",
         action: { ...item }
       }));
@@ -1232,6 +1241,14 @@ export default {
         gender: "",
         tgl_lahir: ""
       };
+      this.formOpen_bumil = false;
+      this.form_bumil = {
+        ...this.form_bumil
+      };
+      this.formOpen_catin = false;
+      this.form_catin = {
+        ...this.form_catin
+      };
     },
     confirmModal(message) {
       this.confirmMessage = message || 'Apakah anda yakin?'
@@ -1304,9 +1321,18 @@ export default {
             };
             break;
           case 'bumil':
-            /* res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
-            payload = res.data?.data || [];
-            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload); */
+            this.formOpen_bumil = true;
+            this.form_bumil = {
+              ...this.form_bumil,
+              mode:'input',
+              nik_ibu: item.nik_ibu ?? "",
+              nama_ibu: item.nama_ibu ?? "",
+              nama_suami: item.nama_suami ?? "",
+              bb: item.bb?? "",
+              tb: item.tb ?? "",
+              lila: item.lila ?? "",
+              hb: item.kadar_hb ?? "",
+            };
             break;
 
           case 'catin':
@@ -1347,14 +1373,17 @@ export default {
             };
             break;
           case 'bumil':
-            /* res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
-            payload = res.data?.data || [];
-            this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload); */
+            this.formOpen_bumil = true;
+            this.form_bumil = {
+              ...this.form_bumil,
+              mode:'input',
+              nik_ibu: item.nik_ibu ?? "",
+              nama_ibu: item.nama_ibu ?? "",
+              nama_suami: item.nama_suami ?? ""
+            };
             break;
 
           case 'catin':
-            console.log(item);
-
             this.formOpen_catin = true;
             this.form_catin = {
               ...this.form_catin,
@@ -1364,9 +1393,6 @@ export default {
               nama_perempuan: item.nama_perempuan ?? "",
               nama_laki:item.nama_laki ?? "",
               kadar_hb:item.kadar_hb ?? "",
-              /* berat_perempuan: item.berat_perempuan ?? "",
-              tinggi_perempuan: item.tinggi_perempuan ?? "",
-              lila_perempuan:item.lila_perempuan ?? "", */
             };
             break;
           default:
@@ -1381,66 +1407,127 @@ export default {
       try {
         switch (this.activeMenu) {
           case 'anak':
-            switch (this.aktifitas) {
-              case 'kunjungan':
+            // MODE UPDATE → PUT
+            if (this.form.mode === 'update') {
+              const res = await axios.put(
+                `${baseURL}/api/children/${this.form.nik}`,
+                this.form,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  }
+                }
+              )
 
-                break;
-              case 'pendampingan_anak':
+              await this.loadData()
+              this.resetForm()
+              this.showSuccess(res.data.message)
+              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+            }
+            // MODE INPUT → POST
+            else {
+              const res = await axios.post(
+                `${baseURL}/api/children`,
+                this.form,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  }
+                }
+              )
 
-                break;
-              case 'intervensi_anak':
-
-                break;
-              default:
-                break;
+              await this.loadData()
+              this.resetForm()
+              this.showSuccess(res.data.message)
+              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
             }
             break;
           case 'bumil':
+            // MODE UPDATE → PUT
+            if (this.form_bumil.mode === 'update') {
+              const res = await axios.put(
+                `${baseURL}/api/pregnancy/${this.form_bumil.nik}`,
+                this.form_bumil,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  }
+                }
+              )
 
+              await this.loadData()
+              this.resetForm()
+              this.showSuccess(res.data.message)
+              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+            }
+            // MODE INPUT → POST
+            else {
+              const res = await axios.post(
+                `${baseURL}/api/pregnancy`,
+                this.form_bumil,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  }
+                }
+              )
+
+              await this.loadData()
+              this.resetForm()
+              this.showSuccess(res.data.message)
+              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+            }
             break;
           case 'catin':
+            // MODE UPDATE → PUT
+            if (this.form_catin.mode === 'update') {
+              const res = await axios.put(
+                `${baseURL}/api/bride/${this.form_catin.nik_perempuan}`,
+                this.form_catin,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  }
+                }
+              )
 
+              await this.loadData()
+              this.resetForm()
+              this.showSuccess(res.data.message)
+              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+            }
+            // MODE INPUT → POST
+            else {
+              const res = await axios.post(
+                `${baseURL}/api/pregnancy`,
+                this.form_catin,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  }
+                }
+              )
+
+              await this.loadData()
+              this.resetForm()
+              this.showSuccess(res.data.message)
+              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+            }
             break;
           default:
             break;
-        }
-        // MODE UPDATE → PUT
-        if (this.form.mode === 'update') {
-          const res = await axios.put(
-            `${baseURL}/api/children/${this.form.nik}`,
-            this.form,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-              }
-            }
-          )
-
-          await this.loadData()
-          this.resetForm()
-          this.showSuccess(res.data.message)
-          setTimeout(() => (this.showSuccess(res.data.message)), 3000)
-        }
-        // MODE INPUT → POST
-        else {
-          const res = await axios.post(
-            `${baseURL}/api/children`,
-            this.form,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-              }
-            }
-          )
-
-          await this.loadData()
-          this.resetForm()
-          this.showSuccess(res.data.message)
-          setTimeout(() => (this.showSuccess(res.data.message)), 3000)
         }
 
       } catch (e) {
@@ -1454,30 +1541,47 @@ export default {
     // Delete via backend
     async delItem(item) {
       const nik = item.nik
-      // Pakai modal, bukan confirm()
       const confirmed = await this.confirmModal("Yakin ingin menghapus data ini?")
       if (!confirmed) return
 
+      let res = null // <<< ini penting
+
       try {
-        const res = await axios.delete(`${baseURL}/api/children/${nik}`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          }
-        })
-        this.showSuccess(res.data.message || "Data berhasil dihapus!")
-        //alert("Data berhasil dihapus!")
+        switch (this.activeMenu) {
+          case 'anak':
+            res = await axios.delete(`${baseURL}/api/children/${nik}`, {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              }
+            })
+            break;
+
+          case 'bumil':
+            res = await axios.delete(`${baseURL}/api/pregnancy/${nik}`, {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              }
+            })
+            break;
+
+          case 'catin':
+            res = await axios.delete(`${baseURL}/api/bride/${nik}`, {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              }
+            })
+            break;
+        }
+
+        this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
+
       } catch (e) {
-        //console.error(e)
         this.showError(e)
       }
     },
-    //Mandatory
-    /* goToPage(p) {
-      if (p !== "...") {
-        this.currentPage = p;
-      }
-    }, */
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },

@@ -1836,4 +1836,172 @@ class PregnancyController extends Controller
             ],
         ];
     }
+
+    public function delete($nik)
+    {
+        try {
+            // Temukan record berdasarkan NIK
+            $pregnancy = Pregnancy::where('nik_ibu', $nik)->first();
+            $intervensi = Intervensi::where('nik_subjek', $nik)->first();
+            if (!$child && !$intervensi) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data dengan NIK tersebut tidak ditemukan.'
+                ], 404);
+            }
+
+            // Hapus
+            $pregnancy->delete();
+            $intervensi->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // 1. Validasi input
+            $validated = $request->validate([
+                'nik'               => 'required|string',
+                'tgl_pengukuran'    => 'required|date',
+                'tgl_lahir'         => 'required|date',
+                'bb'                => 'required|numeric',
+                'tb'                => 'required|numeric',
+                'lika'              => 'nullable|numeric',
+                'gender'            => 'required|string',
+            ]);
+            $usia = $this->hitungUmurBulan($validated['tgl_lahir'], $validated['tgl_pengukuran']);
+            $jk = $validated['gender'] == 'Perempuan'? 'P':'L';
+            $z_bbu = $this->hitungZScore('BB/U', $jk, $usia, $validated['bb']);
+            $z_tbu = $this->hitungZScore('TB/U', $jk, $usia, $validated['tb']);
+            $z_bbtb = $this->hitungZScore('BB/TB', $jk, $validated['tb'], $validated['bb']);
+
+            // Tentukan status berdasarkan z-score
+            $status_bbu = $this->statusBBU($z_bbu);
+            $status_tbu = $this->statusTBU($z_tbu);
+            $status_bbtb = $this->statusBBTB($z_bbtb);
+
+            // Cek apakah berat naik
+            $naikBB = $this->cekNaikBB($validated['nik'], $validated['bb'], $validated['tgl_pengukuran'], 'kunjungan');
+            $kunjungan = Kunjungan::where('nik', $validated['nik'])
+                ->orderBy('tgl_pengukuran', 'desc')
+                ->first();
+
+            // 2. Simpan data ke tabel kunjungan
+            $data = Kunjungan::create([
+                'petugas'     => $user->name,
+                'nik'         => $validated['nik'],
+                'nama_anak'   => $request->nama_anak,
+                'jk'          => $jk,
+                'tgl_lahir'   => Carbon::parse($validated['tgl_lahir']),
+                'bb_lahir'    => $kunjungan->bb_lahir,
+                'tb_lahir'    => $kunjungan->tb_lahir,
+                'nama_ortu' => $kunjungan->nama_ortu,
+                'peran' => $kunjungan->peran,
+                'nik_ortu'=> $kunjungan->nik_ortu,
+                'alamat'=> $kunjungan->alamat,
+                'provinsi'=> $kunjungan->provinsi,
+                'kota'=> $kunjungan->kota,
+                'kecamatan'=> $kunjungan->kecamatan,
+                'kelurahan'=> $kunjungan->kelurahan,
+                'rw'=> $kunjungan->rw,
+                'rt'=> $kunjungan->rt,
+                'puskesmas'=> $kunjungan->puskesmas,
+                'posyandu'=> $request->unit_posyandu ? $request->unit_posyandu:$kunjungan->posyandu,
+                'tgl_pengukuran' => Carbon::parse($validated['tgl_pengukuran']),
+                'usia_saat_ukur' => $usia,
+                'bb'=> $validated['bb'],
+                'tb'=> $validated['tb'],
+                'lika' => $validated['lika'],
+                'bb_u' => $status_bbu,
+                'zs_bb_u' => $z_bbu,
+                'tb_u' => $status_tbu,
+                'zs_tb_u' => $z_tbu,
+                'bb_tb' => $status_bbtb,
+                'zs_bb_tb' => $z_bbtb,
+                'naik_berat_badan' => $naikBB,
+                'diasuh_oleh'=> $kunjungan->diasuh_oleh,
+                'asi'=> $kunjungan->asi,
+                'imunisasi'=> $kunjungan->imunisasi,
+                'rutin_posyandu'=> $kunjungan->rutin_posyandu,
+                'penyakit_bawaan'=> $kunjungan->penyakit_bawaan,
+                'penyakit_6bulan'=> $kunjungan->penyakit_6bulan,
+                'terpapar_asap_rokok'=> $kunjungan->terpapar_asap_rokok,
+                'penggunaan_jamban_sehat'=> $kunjungan->penggunaan_jamban_sehat,
+                'penggunaan_sab'=> $kunjungan->penggunaan_sab,
+                'memiliki_jaminan'=> $kunjungan->memiliki_jaminan,
+                'kie'=> $kunjungan->kie,
+                'mendapatkan_bantuan'=> $kunjungan->mendapatkan_bantuan,
+                'catatan'=> $kunjungan->puskesmas,
+                'kpsp'=> $kunjungan->kpsp,
+                'no_kk'=> $kunjungan->no_kk
+            ]);
+
+            return response()->json([
+                'message' => 'Data berhasil disimpan',
+                'data'    => $data
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menyimpan data',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $nik)
+    {
+        try {
+            // 1. Validasi input
+            $validated = $request->validate([
+                'nama_ortu'      => 'nullable|string',
+                'bb'             => 'nullable|numeric',
+                'tb'             => 'nullable|numeric',
+                'lika'           => 'nullable|numeric',
+                'gender'         => 'nullable|string',
+            ]);
+
+            // 2. Cari data berdasarkan NIK
+            $data = Kunjungan::where('nik', $nik)->first();
+            if (!$data) {
+                return response()->json([
+                    'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+            // 3. Update field
+            $data->update([
+                'nik'            => $request->nik ?? $data->nik,
+                'nama_ortu'      => $validated['nama_ortu'] ?? $data->nama_ortu,
+                'bb'             => $validated['bb'],
+                'tb'             => $validated['tb'],
+                'lika'           => $validated['lika'] ?? null,
+            ]);
+
+            return response()->json([
+                'message' => 'Data berhasil diperbarui',
+                'data'    => $data
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal update data',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }

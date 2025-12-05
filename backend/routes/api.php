@@ -29,7 +29,7 @@ Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWi
 
 // Children Endpoint
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('children', ChildrenController::class)->only(['index','store','delete']);
+    Route::apiResource('children', ChildrenController::class)->only(['index','store']);
     Route::delete('/children/{nik}', [ChildrenController::class, 'delete']);
     Route::put('/children/{nik}', [ChildrenController::class, 'update']);
     Route::get('/children/status', [ChildrenController::class, 'status']);
@@ -98,6 +98,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bride/{nik_perempuan}', [CatinController::class, 'show']);
     Route::apiResource('bride', CatinController::class)
         ->only(['index']);
+    Route::apiResource('bride', CatinController::class)->only(['index','store']);
+    Route::delete('/bride/{nik}', [CatinController::class, 'delete']);
+    Route::put('/bride/{nik}', [CatinController::class, 'update']);
 });
 
 // Pregnancy Endpoint
@@ -105,6 +108,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/pregnancy/import', [PregnancyController::class, 'import']);
     Route::post('/pregnancy/import_intervensi', [PregnancyController::class, 'import_intervensi']);
     Route::get('/pregnancy', [PregnancyController::class, 'index']);
+    Route::apiResource('/pregnancy', PregnancyController::class)->only(['index','store']);
+    Route::delete('/pregnancy/{nik}', [PregnancyController::class, 'delete']);
+    Route::put('/pregnancy/{nik}', [PregnancyController::class, 'update']);
     Route::get('/pregnancy/case', [PregnancyController::class, 'case']);
     Route::get('/pregnancy/intervensi', [PregnancyController::class, 'intervensi']);
     Route::get('/pregnancy/status', [PregnancyController::class, 'status']);
