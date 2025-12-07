@@ -1469,7 +1469,7 @@
                       <!-- Data TPK -->
                       <div class="tab-pane fade" id="tab-pane-tpk" role="tabpanel">
                         <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Intervensi</h6>
+                          <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Pendampingan TPK</h6>
                           <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle">
                               <thead class="table-secondary">

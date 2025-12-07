@@ -1767,6 +1767,13 @@ export default {
                   : 'pendampingan_anak'
               }`
               break;
+              case 'pendampingan':
+            UPLOAD_URL = `${baseURL}/api/children/${
+              this.aktifitas === 'kunjungan'
+                ? 'kunjungan'
+                : 'pendampingan_anak'
+            }`
+            break;
             case 'intervensi_anak':
               UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
               break;
