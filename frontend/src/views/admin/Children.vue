@@ -1024,7 +1024,7 @@
                           v-for="(r, i) in (selectedAnak.riwayat_penimbangan || []).slice(-3)"
                           :key="i"
                         >
-                          <td>{{ r.tanggal }}</td>
+                          <td>{{ this.formatDate(r.tanggal) }}</td>
                           <td>
                             <span
                               class="badge"
@@ -1087,7 +1087,7 @@
                       </thead>
                       <tbody>
                         <tr v-for="(i, idx) in (selectedAnak.riwayat_intervensi || []).slice(-3)" :key="idx">
-                          <td>{{ i.tanggal }}</td>
+                          <td>{{ this.formatDate(i.tanggal) }}</td>
                           <td>{{ i.kader }}</td>
                           <td>{{ i.intervensi }}</td>
                         </tr>
@@ -1266,7 +1266,7 @@
                                 >
                                   <td>{{ item.no_kia }}</td>
                                   <td>{{ item.tmpt_dilahirkan }}</td>
-                                  <td>{{ item.tgl_lahir }}</td>
+                                  <td>{{ this.formatDate(item.tgl_lahir) }}</td>
                                   <td>{{ item.bb }}</td>
                                   <td>{{ item.pb }}</td>
                                   <td class="text-capitalize">{{ item.jenis }}</td>
@@ -1296,7 +1296,7 @@
                                   v-for="(riwayat, i) in selectedAnak.riwayat_penimbangan"
                                   :key="'penimbangan-' + i"
                                 >
-                                  <td>{{ riwayat.tanggal }}</td>
+                                  <td>{{ this.formatDate(riwayat.tanggal) }}</td>
                                   <td
                                     :class="{
                                       'text-danger': riwayat.bbu === 'Severely Underweight',
@@ -1456,7 +1456,7 @@
                                   v-for="(item, i) in selectedAnak.riwayat_intervensi"
                                   :key="'intervensi-' + i"
                                 >
-                                  <td>{{ item.tanggal }}</td>
+                                  <td>{{ this.formatDate(item.tanggal) }}</td>
                                   <td>{{ item.kader }}</td>
                                   <td>{{ item.intervensi }}</td>
                                 </tr>
@@ -1488,7 +1488,7 @@
                                   v-for="(item, i) in selectedAnak.riwayat_pendampingan"
                                   :key="'pendampingan-' + i"
                                 >
-                                  <td>{{ item.tgl_pendampingan }}</td>
+                                  <td>{{ this.formatDate(item.tgl_pendampingan) }}</td>
                                   <td>{{ item.petugas }}</td>
                                   <td>{{ item.rt }}</td>
                                   <td>{{ item.rw }}</td>
@@ -1874,6 +1874,14 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    },
     async loadChildren() {
       try {
         let { periodeAwal, periodeAkhir } = this.filters;
@@ -1970,7 +1978,7 @@ export default {
           }
         })
 
-        console.log('data: ', this.children);
+        //console.log('data: ', this.children);
 
         // ✅ simpan hasilnya
         this.filteredData = [...this.children]
@@ -2227,16 +2235,36 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
-    showDetail(props) {
-      ////console.log('Klik props:', props)
+    async showDetail(props) {
+      //console.log('Klik props:', props)
+      const nik = props.nik
+      const res = await axios.get(`${baseURL}/api/children/${nik}`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        }
+      })
+      //console.log('detail: ', res.data);
 
-      const raw = props.raw || {}
+      const prop = res.data
+      const raw = prop.raw || {}
 
       const posyanduList = Array.isArray(raw.posyandu) ? raw.posyandu : []
       const intervensiList = Array.isArray(raw.intervensi) ? raw.intervensi : []
-      const pendampinganList = Array.isArray(raw.pendampingan) ? raw.pendampingan : []
-      const kelahiranList = Array.isArray(raw.kelahiran) ? raw.kelahiran : []
+      const pendampinganList = raw.pendampingan
+        ? Array.isArray(raw.pendampingan)
+          ? raw.pendampingan
+          : [raw.pendampingan] // <-- jadikan array
+        : []
+
+      const kelahiranList = raw.kelahiran
+        ? Array.isArray(raw.kelahiran)
+          ? raw.kelahiran
+          : [raw.kelahiran] // <-- jadikan array
+        : []
       const keluargaList = Array.isArray(raw.keluarga) ? raw.keluarga : []
+
+      console.log(kelahiranList[0]);
 
       const lastPosyandu = posyanduList.length
         ? posyanduList.sort((a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)).slice(-1)[0]
@@ -2257,21 +2285,23 @@ export default {
         status_gizi: props.bbtb || '-',
 
         // --- Orang Tua (keluarga[0]) ---
-        nama_ayah: keluargaList[0]?.nama_ayah || '-',
-        nik_ayah: keluargaList[0]?.nik_ayah || '-',
-        nama_ibu: keluargaList[0]?.nama_ibu || '-',
-        nik_ibu: keluargaList[0]?.nik_ibu || '-',
-        no_telp: keluargaList[0]?.no_telp || '-',
+        nama_ayah: keluargaList?.nama_ayah || '-',
+        nik_ayah: keluargaList?.nik_ayah || '-',
+        nama_ibu: keluargaList?.nama_ibu || '-',
+        nik_ibu: keluargaList?.nik_ibu || '-',
+        no_telp: keluargaList?.no_telp || '-',
 
-        // --- Data Kelahiran ---
-        kelahiran: kelahiranList.map((k) => ({
-          no_kia: k.no_kia || '-',
-          tmpt_dilahirkan: k.tmpt_dilahirkan || '-',
-          tgl_lahir: k.tgl_lahir || '-',
-          bb: k.bb_lahir || '-',
-          pb: k.pb_lahir || '-',
-          jenis: k.persalinan || '-',
-        })),
+        kelahiran: kelahiranList.length
+          ? kelahiranList.map(k => ({
+              no_kia: k.no_kia || '-',
+              tmpt_dilahirkan: k.tmpt_dilahirkan || '-',
+              tgl_lahir: k.tgl_lahir || '-',
+              bb: k.bb_lahir || '-',
+              pb: k.pb_lahir || '-',
+              jenis: k.persalinan || '-',
+            }))
+          : [],
+
 
         // --- Riwayat Penimbangan (Posyandu) ---
         riwayat_penimbangan: posyanduList.map((p) => ({
@@ -2304,8 +2334,8 @@ export default {
           usia: p.usia || '-',
           rt: props.rt || '-',
           rw: props.rw || '-',
-          bb_lahir: kelahiranList[0]?.bb_lahir || '-',
-          pb_lahir: kelahiranList[0]?.pb_lahir || '-',
+          bb_lahir: kelahiranList?.bb_lahir || '-',
+          pb_lahir: kelahiranList?.pb_lahir || '-',
           bb: p.bb || '-',
         })),
       }

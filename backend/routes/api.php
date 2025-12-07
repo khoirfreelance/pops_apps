@@ -29,7 +29,8 @@ Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWi
 
 // Children Endpoint
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('children', ChildrenController::class)->only(['index','store','delete']);
+    Route::apiResource('children', ChildrenController::class)->only(['index','store']);
+    Route::get('/children/{nik}', [ChildrenController::class, 'show']);
     Route::delete('/children/{nik}', [ChildrenController::class, 'delete']);
     Route::put('/children/{nik}', [ChildrenController::class, 'update']);
     Route::get('/children/status', [ChildrenController::class, 'status']);
