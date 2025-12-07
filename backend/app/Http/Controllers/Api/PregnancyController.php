@@ -153,14 +153,48 @@ class PregnancyController extends Controller
                 });
             }
 
+            $counts = [
+                [
+                    "title" => "Anemia",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "warning"
+                ],
+                [
+                    "title" => "KEK",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "danger"
+                ],
+                [
+                    "title" => "Berisiko",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "violet"
+                ],
+                [
+                    "title" => "Normal",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "success"
+                ],
+                [
+                    "title" => "Total Ibu Hamil",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "secondary"
+                ],
+            ];
+
             if ($data->isEmpty()) {
                 return response()->json([
                     'message' => 'Tidak ada data kehamilan ditemukan.',
                     'data' => [],
+                    'counts' => $counts
                 ], 200);
             }
             $intervensiList = Intervensi::where('status_subjek', 'bumil')->orderBy('tgl_intervensi')->get();
-
+            //dd($intervensiList);
 
             // ✅ Group data per ibu
             $groupedData = $data->map(function ($group) use ($intervensiList, $dataRaw) {
@@ -251,6 +285,7 @@ class PregnancyController extends Controller
                 return response()->json([
                     'message' => 'Tidak ada data kehamilan ditemukan.',
                     'data' => [],
+                    'counts' => $counts
                 ], 200);
             }
             return $groupedData;
