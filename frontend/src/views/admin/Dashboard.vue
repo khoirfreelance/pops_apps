@@ -482,7 +482,7 @@
                                         </td>
                                       </tr>
                                     </tbody>
-                                    <!-- <tfoot>
+                                    <tfoot>
                                       <tr>
                                         <td colspan="5" class="text-center pt-3">
                                           <a :href="detailLink" class="btn btn-sm btn-outline-primary">
@@ -491,7 +491,7 @@
                                           </a>
                                         </td>
                                       </tr>
-                                    </tfoot> -->
+                                    </tfoot>
                                   </table>
                                 </div>
                               </div>

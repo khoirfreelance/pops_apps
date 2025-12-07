@@ -267,9 +267,10 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
+    // Implement to TREN and JK DEtail
     async loadDetail() {
       try {
-        const res = await axios.get(`${baseURL}/api/detail`, {
+        const res = await axios.get(`${baseURL}/api/detail-tren`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -287,6 +288,7 @@ export default {
         console.error('LOAD DETAIL ERROR:', e)
       }
     },
+
     async loadConfigWithCache() {
       try {
         // cek di localStorage
@@ -315,9 +317,10 @@ export default {
         this.logoLoaded = false
       }
     },
+    // Implement to Chart UMUR
     async loadUmur() {
       try {
-        const res = await axios.get(`${baseURL}/api/umur`, {
+        const res = await axios.get(`${baseURL}/api/detail-umur`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -326,6 +329,23 @@ export default {
         })
         this.detailRaw = res.data.data
         console.log(this.detailRaw);
+      } catch (e) {
+        console.error('LOAD DETAIL ERROR:', e)
+      }
+    },
+
+    // Implement to Indikator
+    async loadIndikator() {
+      try {
+        const res = await axios.get(`${baseURL}/api/detail-indikator`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          params: this.filters,
+        })
+        this.detailRaw = res.data.data
+        //console.log(this.detailRaw);
       } catch (e) {
         console.error('LOAD DETAIL ERROR:', e)
       }
