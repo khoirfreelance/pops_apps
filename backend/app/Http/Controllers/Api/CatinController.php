@@ -163,12 +163,39 @@ class CatinController extends Controller
                 });
             }
 
-            if ($data->isEmpty()) {
-                return response()->json([
-                    'message' => 'Tidak ada data catin ditemukan.',
-                    'data' => [],
-                ], 200);
-            }
+            $counts = [
+                [
+                    "title" => "Anemia",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "danger"
+                ],
+                [
+                    "title" => "KEK",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "warning"
+                ],
+                [
+                    "title" => "Risiko Usia",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "violet"
+                ],
+                [
+                    "title" => "Total Kasus",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "success"
+                ],
+                [
+                    "title" => "Total Calon Pengantin",
+                    "value" => 0,
+                    "percent" => "0%",
+                    "color" => "secondary"
+                ],
+            ];
+
 
             $grouped = $data->groupBy('nik_perempuan')->sortBy('tanggal_pemeriksaan')->map(function ($items) {
 
