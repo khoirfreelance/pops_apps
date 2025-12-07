@@ -160,9 +160,13 @@ class PregnancyController extends Controller
                 ], 200);
             }
             $intervensiList = Intervensi::where('status_subjek', 'bumil')->orderBy('tgl_intervensi')->get();
+
+
             // ✅ Group data per ibu
             $groupedData = $data->map(function ($group) use ($intervensiList, $dataRaw) {
+
                 $intervensi = $intervensiList->Where('nik_subjek', $group->nik_ibu)->map(function ($item) {
+
                     return [
                         'kader' => $item->petugas,
                         'tanggal' => $item->tgl_intervensi,
@@ -242,6 +246,7 @@ class PregnancyController extends Controller
                 });
             }
 
+            //dd($groupedData);
             if ($groupedData->isEmpty()) {
                 return response()->json([
                     'message' => 'Tidak ada data kehamilan ditemukan.',
