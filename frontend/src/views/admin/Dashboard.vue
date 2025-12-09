@@ -245,7 +245,7 @@
                     <div class="col-md-12 d-flex flex-column">
                       <!-- Judul -->
                       <h2 class="ringkasan-header text-success mb-4">
-                        Ringkasan Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
+                        Ringkasan Status Gizi Bulan {{ bulanIni }}
                       </h2>
 
                       <!-- Row isi -->
@@ -279,16 +279,24 @@
 
                         <!-- TOTAL ANAK -->
                         <div class="col-12 col-md-2 d-flex">
-                          <div
-                            class="card-body d-flex flex-column justify-content-between border  shadow-sm p-2">
-                            <!-- Judul selalu di atas -->
-                            <h5 class="fw-bold mb-3">Total Anak Balita</h5>
-                            <div class="d-flex justify-content-between align-items-center gap-3">
-                              <i class="bi bi-people display-6 text-dark mt-2"></i>
+                          <div class="card h-100 shadow-sm border w-100">
+                            <div class="card-body d-flex flex-column justify-content-between py-4">
 
-                              <h1 class="fw-bold display-5 mb-0 text-secondary">
+                              <!-- Judul -->
+                              <h2 class="fw-bold text-center mb-0">
+                                Total <br> Anak Balita
+                              </h2>
+
+                              <!-- Angka besar -->
+                              <h3 class="fw-bold text-success display-4 text-center my-4">
                                 {{ totalAnak }}
-                              </h1>
+                              </h3>
+
+                              <!-- Icon di bawah -->
+                              <div class="text-center">
+                                <i class="bi bi-people-fill display-5 text-dark"></i>
+                              </div>
+
                             </div>
                           </div>
                         </div>
@@ -323,7 +331,7 @@
                 <div class="container-fluid">
                   <!-- Header -->
                   <h2 class="ringkasan-header text-success mb-4">
-                    Komposisi Status Gizi Bulan {{ filters.periode ? periodeLabel : 'Ini' }}
+                    Komposisi Status Gizi Bulan {{ bulanIni }}
                   </h2>
 
                   <!-- ========================================= -->
@@ -431,7 +439,7 @@
                   <!-- SECTION 2: Detail Section (Conditional) -->
                   <!-- ========================================= -->
                   <transition name="slide-down">
-                    <div v-if="selectedChart" class="row">
+                    <div v-if="selectedChart" class="row" id="detail-section">
                       <div class="col-12">
                         <div class="card border-success shadow-lg">
                           <div
@@ -2050,6 +2058,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      bulanIni: 'Ini',
       showDetail_bb: false,
       showDetail_tb: false,
       showDetail_bbtb: false,
@@ -2132,7 +2141,7 @@ export default {
       showFilterMobile: false,
       isMobile: false,
       mobileFilterOpen: false,
-      // periodeLabel: '',
+      periodeLabel: '',
       chartInstances: {
         bb: null,
         bb_detail: null,
@@ -2144,6 +2153,15 @@ export default {
     }
   },
   methods: {
+    getPeriodeLabel() {
+      if (!this.filters.periode) {
+        return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+      }
+
+      const [year, month] = this.filters.periode.split('-')
+      const date = new Date(year, month - 1, 1)
+      return date.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
+    },
     toggle(idx) {
       this.infoBoxes[idx].open = !this.infoBoxes[idx].open
     },
@@ -2566,6 +2584,9 @@ export default {
       }
       this.isLoading = true
       try {
+        // UPDATE PERIODE LABEL DI SINI ← !!!
+        this.periodeLabel = this.getPeriodeLabel()
+        this.bulanIni = this.periodeLabel
         await Promise.all([
           this.hitungStatistik(),
           this.generateDataTable(),
@@ -3331,20 +3352,18 @@ export default {
     selectChart(type) {
       this.selectedChart = type
 
-      // Scroll ke detail section
       this.$nextTick(() => {
         this.renderDetailChart()
 
-        // Smooth scroll ke detail
         setTimeout(() => {
-          const detailSection = document.querySelector('.card.border-success')
-          if (detailSection) {
-            detailSection.scrollIntoView({
+          const detailEl = document.getElementById('detail-section')
+          if (detailEl) {
+            detailEl.scrollIntoView({
               behavior: 'smooth',
               block: 'start'
             })
           }
-        }, 100)
+        }, 150)
       })
     },
 
@@ -4541,7 +4560,7 @@ export default {
 
       return [1, '...', this.currentPage - 1, this.currentPage, this.currentPage + 1, '...', total]
     },
-    periodeLabel() {
+    /* periodeLabel() {
       // Jika user pilih ALL → tampilkan bulan berjalan
       if (!this.filters.periode) {
         return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })
@@ -4550,7 +4569,7 @@ export default {
       const [year, month] = this.filters.periode.split('-')
       const date = new Date(year, month - 1, 1)
       return date.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
-    },
+    }, */
 
     filteredAnakGabungan() {
       if (!this.dataLoad) return []
@@ -4671,7 +4690,7 @@ export default {
 
     try {
       // await this.$nextTick()
-
+      this.periodeLabel = this.getPeriodeLabel()
       this.$nextTick(() => {
         this.renderChart(
           'pieChart_bb',
