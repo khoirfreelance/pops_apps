@@ -1829,6 +1829,39 @@ export default {
     }
   },
   methods: {
+    /* formatToNamaBulan(periode) {
+      // input: "2025-03"
+      const [year, month] = periode.split('-')
+
+      const bulanNama = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ]
+
+      const nama = bulanNama[parseInt(month) - 1]
+
+      return `${nama} ${year}`  // output: "Maret 2025"
+    },
+
+    getRangeFromBulanTahun(bulanTahun) {
+      // input: "Maret 2025"
+      const [bulanNama, tahun] = bulanTahun.split(" ")
+
+      const bulanMap = {
+        Januari: 0, Februari: 1, Maret: 2, April: 3, Mei: 4, Juni: 5,
+        Juli: 6, Agustus: 7, September: 8, Oktober: 9, November: 10, Desember: 11
+      }
+
+      const monthIndex = bulanMap[bulanNama]
+
+      const start = new Date(tahun, monthIndex, 1)
+      const end = new Date(tahun, monthIndex + 1, 0)
+
+      return {
+        startDate: start.toISOString().slice(0, 10),
+        endDate: end.toISOString().slice(0, 10)
+      }
+    }, */
     downloadRiwayat() {
       if (!this.selectedAnak) {
         alert('Silakan pilih anak terlebih dahulu.')
@@ -2737,13 +2770,13 @@ export default {
       // 🔥 Load children dulu
       await this.loadChildren()
 
-      // Ambil query param
-      const { tipe, status } = this.$route.query
-
       // Copy semua children
       this.filteredData = [...this.children]
 
-      // Terapkan filter dari chart
+      const q = this.$route.query
+      const { tipe, status } = q
+
+      // 1. Mapping FILTER STATUS
       if (tipe && status) {
         this.filters.bbu = []
         this.filters.tbu = []
@@ -2752,14 +2785,33 @@ export default {
         if (tipe === 'BB/U') this.filters.bbu = [status]
         else if (tipe === 'TB/U') this.filters.tbu = [status]
         else if (tipe === 'BB/TB') this.filters.bbtb = [status]
-
-        // Pastikan dropdown reactive ter-update sebelum applyFilter
-        await this.$nextTick()
-
-        if (typeof this.applyFilter === 'function') {
-          this.applyFilter()
-        }
       }
+
+      // 2. Mapping wilayah
+      this.filters.posyandu = q.posyandu || ''
+      this.filters.rw = q.rw || ''
+      this.filters.rt = q.rt || ''
+
+      // 3. PERIODE (format chart = 2025-03 → ubah ke "Maret 2025")
+      if (q.periode) {
+        const [year, month] = q.periode.split('-')
+
+        const bulanNama = [
+          "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+          "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ]
+
+        const nama = bulanNama[parseInt(month) - 1]
+
+        // Format harus sama dengan periodeOptions
+        const formatted = `${nama} ${year}`
+
+        this.filters.periodeAwal = formatted
+        this.filters.periodeAkhir = formatted
+      }
+
+      await this.$nextTick()
+      this.applyFilter && this.applyFilter()
 
       this.handleResize()
       window.addEventListener('resize', this.handleResize)

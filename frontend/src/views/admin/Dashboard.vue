@@ -3543,7 +3543,7 @@ export default {
 
             this.$router.push({
               path: '/admin/anak',
-              query: { tipe, status }
+              query: { tipe, status, ...this.filters }
             })
           }
         },
