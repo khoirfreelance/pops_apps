@@ -1577,10 +1577,10 @@ export default {
       chartBBTB: null,
       chartBB: null,
       chartTB: null,
-      ageMonths: 24,
-      currentWeight: 12,
-      currentHeight: 87,
-      gender: 'male',
+      //ageMonths: 24,
+      //currentWeight: 12,
+      //currentHeight: 87,
+      //gender: 'male',
       kmsColors: {
         top: '#F2D803',
         midTop: '#84BA24',
@@ -1589,91 +1589,568 @@ export default {
         midBottom: '#80B626',
         bottom: '#DCBF1E',
       },
-      whfaBoys: [
-        { h: 65, median: 7.0, sd: 0.5 },
-        { h: 70, median: 8.0, sd: 0.6 },
-        { h: 75, median: 9.2, sd: 0.7 },
-        { h: 80, median: 10.3, sd: 0.8 },
-        { h: 85, median: 11.5, sd: 0.9 },
-        { h: 90, median: 12.7, sd: 1.0 },
-        { h: 95, median: 14.0, sd: 1.1 },
-        { h: 100, median: 15.3, sd: 1.2 },
-        { h: 105, median: 16.7, sd: 1.25 },
-        { h: 110, median: 18.0, sd: 1.3 },
-        { h: 115, median: 19.4, sd: 1.35 },
-        { h: 120, median: 20.7, sd: 1.4 },
-      ],
-      whfaGirls: [
-        { h: 65, median: 6.8, sd: 0.5 },
-        { h: 70, median: 7.7, sd: 0.6 },
-        { h: 75, median: 8.8, sd: 0.7 },
-        { h: 80, median: 9.8, sd: 0.8 },
-        { h: 85, median: 11.0, sd: 0.9 },
-        { h: 90, median: 12.2, sd: 1.0 },
-        { h: 95, median: 13.4, sd: 1.1 },
-        { h: 100, median: 14.7, sd: 1.2 },
-        { h: 105, median: 16.0, sd: 1.25 },
-        { h: 110, median: 17.3, sd: 1.3 },
-        { h: 115, median: 18.6, sd: 1.35 },
-        { h: 120, median: 19.8, sd: 1.4 },
-      ],
+      wfa:{
+        "L": [
+          { "month": 0, "sd3neg": 2.1, "sd2neg": 2.5, "sd1neg": 2.9, "median": 3.3, "sd1": 3.9, "sd2": 4.4, "sd3": 5.0 },
+          { "month": 1, "sd3neg": 2.9, "sd2neg": 3.4, "sd1neg": 3.9, "median": 4.5, "sd1": 5.1, "sd2": 5.8, "sd3": 6.6 },
+          { "month": 2, "sd3neg": 3.8, "sd2neg": 4.3, "sd1neg": 4.9, "median": 5.6, "sd1": 6.4, "sd2": 7.2, "sd3": 8.0 },
+          { "month": 3, "sd3neg": 4.4, "sd2neg": 5.0, "sd1neg": 5.7, "median": 6.4, "sd1": 7.2, "sd2": 8.0, "sd3": 8.9 },
+          { "month": 4, "sd3neg": 4.9, "sd2neg": 5.6, "sd1neg": 6.2, "median": 7.0, "sd1": 7.8, "sd2": 8.7, "sd3": 9.6 },
+          { "month": 5, "sd3neg": 5.3, "sd2neg": 6.0, "sd1neg": 6.7, "median": 7.5, "sd1": 8.4, "sd2": 9.2, "sd3": 10.4 },
+          { "month": 6, "sd3neg": 5.7, "sd2neg": 6.4, "sd1neg": 7.1, "median": 7.9, "sd1": 8.8, "sd2": 9.7, "sd3": 10.9 },
+          { "month": 7, "sd3neg": 5.9, "sd2neg": 6.7, "sd1neg": 7.4, "median": 8.3, "sd1": 9.2, "sd2": 10.2, "sd3": 11.4 },
+          { "month": 8, "sd3neg": 6.2, "sd2neg": 6.9, "sd1neg": 7.7, "median": 8.6, "sd1": 9.6, "sd2": 10.5, "sd3": 11.9 },
+          { "month": 9, "sd3neg": 6.4, "sd2neg": 7.1, "sd1neg": 8.0, "median": 8.9, "sd1": 9.9, "sd2": 10.9, "sd3": 12.3 },
+          { "month": 10, "sd3neg": 6.6, "sd2neg": 7.4, "sd1neg": 8.2, "median": 9.2, "sd1": 10.2, "sd2": 11.2, "sd3": 12.7 },
+          { "month": 11, "sd3neg": 6.8, "sd2neg": 7.6, "sd1neg": 8.4, "median": 9.4, "sd1": 10.5, "sd2": 11.5, "sd3": 13.0 },
 
-      wfaBoys: [
-        { m: 0, median: 3.3, sd: 0.3 },
-        { m: 1, median: 4.5, sd: 0.35 },
-        { m: 2, median: 5.6, sd: 0.4 },
-        { m: 3, median: 6.4, sd: 0.45 },
-        { m: 4, median: 7.0, sd: 0.5 },
-        { m: 5, median: 7.5, sd: 0.55 },
-        { m: 6, median: 7.9, sd: 0.6 },
-        { m: 12, median: 9.6, sd: 0.8 },
-        { m: 24, median: 12.2, sd: 1.1 },
-        { m: 36, median: 14.3, sd: 1.4 },
-        { m: 48, median: 16.3, sd: 1.6 },
-        { m: 60, median: 18.3, sd: 1.8 },
-      ],
-      wfaGirls: [
-        { m: 0, median: 3.2, sd: 0.3 },
-        { m: 1, median: 4.2, sd: 0.35 },
-        { m: 2, median: 5.1, sd: 0.4 },
-        { m: 3, median: 5.8, sd: 0.45 },
-        { m: 4, median: 6.4, sd: 0.5 },
-        { m: 5, median: 6.9, sd: 0.55 },
-        { m: 6, median: 7.3, sd: 0.6 },
-        { m: 12, median: 8.9, sd: 0.8 },
-        { m: 24, median: 11.5, sd: 1.1 },
-        { m: 36, median: 13.9, sd: 1.4 },
-        { m: 48, median: 16.0, sd: 1.6 },
-        { m: 60, median: 18.2, sd: 1.8 },
-      ],
-      hfaBoys: [
-        { m: 0, median: 49.9, sd: 1.9 },
-        { m: 1, median: 54.7, sd: 2.0 },
-        { m: 2, median: 58.4, sd: 2.1 },
-        { m: 3, median: 61.4, sd: 2.2 },
-        { m: 4, median: 63.9, sd: 2.3 },
-        { m: 5, median: 65.9, sd: 2.4 },
-        { m: 6, median: 67.6, sd: 2.5 },
-        { m: 12, median: 75.7, sd: 2.9 },
-        { m: 24, median: 87.8, sd: 3.2 },
-        { m: 36, median: 96.1, sd: 3.4 },
-        { m: 48, median: 103.3, sd: 3.6 },
-        { m: 60, median: 110.0, sd: 3.8 },
-      ],
-      hfaGirls: [
-        { m: 0, median: 49.1, sd: 1.9 },
-        { m: 1, median: 53.7, sd: 2.0 },
-        { m: 2, median: 57.1, sd: 2.1 },
-        { m: 3, median: 59.8, sd: 2.2 },
-        { m: 4, median: 62.1, sd: 2.3 },
-        { m: 5, median: 64.0, sd: 2.4 },
-        { m: 6, median: 65.7, sd: 2.5 },
-        { m: 12, median: 74.0, sd: 2.8 },
-        { m: 24, median: 86.4, sd: 3.2 },
-        { m: 36, median: 95.1, sd: 3.4 },
-        { m: 48, median: 102.7, sd: 3.6 },
-        { m: 60, median: 109.4, sd: 3.8 },
-      ],
+          { "month": 12, "sd3neg": 6.9, "sd2neg": 7.7, "sd1neg": 8.6, "median": 9.6, "sd1": 10.8, "sd2": 11.8, "sd3": 13.3 },
+          { "month": 13, "sd3neg": 7.1, "sd2neg": 7.9, "sd1neg": 8.8, "median": 9.9, "sd1": 11.0, "sd2": 12.1, "sd3": 13.7 },
+          { "month": 14, "sd3neg": 7.2, "sd2neg": 8.1, "sd1neg": 9.0, "median": 10.1, "sd1": 11.3, "sd2": 12.4, "sd3": 14.0 },
+          { "month": 15, "sd3neg": 7.4, "sd2neg": 8.3, "sd1neg": 9.2, "median": 10.3, "sd1": 11.5, "sd2": 12.7, "sd3": 14.3 },
+          { "month": 16, "sd3neg": 7.5, "sd2neg": 8.4, "sd1neg": 9.4, "median": 10.5, "sd1": 11.7, "sd2": 12.9, "sd3": 14.6 },
+          { "month": 17, "sd3neg": 7.7, "sd2neg": 8.6, "sd1neg": 9.5, "median": 10.7, "sd1": 11.9, "sd2": 13.2, "sd3": 14.9 },
+
+          { "month": 18, "sd3neg": 7.8, "sd2neg": 8.7, "sd1neg": 9.7, "median": 10.9, "sd1": 12.1, "sd2": 13.4, "sd3": 15.2 },
+          { "month": 19, "sd3neg": 7.9, "sd2neg": 8.9, "sd1neg": 9.8, "median": 11.1, "sd1": 12.3, "sd2": 13.6, "sd3": 15.5 },
+          { "month": 20, "sd3neg": 8.1, "sd2neg": 9.0, "sd1neg": 10.0, "median": 11.3, "sd1": 12.5, "sd2": 13.8, "sd3": 15.8 },
+
+          { "month": 21, "sd3neg": 8.2, "sd2neg": 9.2, "sd1neg": 10.1, "median": 11.5, "sd1": 12.7, "sd2": 14.0, "sd3": 16.1 },
+          { "month": 22, "sd3neg": 8.3, "sd2neg": 9.3, "sd1neg": 10.3, "median": 11.7, "sd1": 12.9, "sd2": 14.3, "sd3": 16.4 },
+          { "month": 23, "sd3neg": 8.4, "sd2neg": 9.4, "sd1neg": 10.4, "median": 11.9, "sd1": 13.1, "sd2": 14.5, "sd3": 16.7 },
+
+          { "month": 24, "sd3neg": 8.5, "sd2neg": 9.5, "sd1neg": 10.5, "median": 12.1, "sd1": 13.3, "sd2": 14.7, "sd3": 17.0 }
+        ],
+        "P": [
+          { "month": 0,  "sd3neg": 2.0, "sd2neg": 2.4, "sd1neg": 2.8, "median": 3.2, "sd1": 3.7, "sd2": 4.2, "sd3": 4.8 },
+          { "month": 1,  "sd3neg": 2.7, "sd2neg": 3.2, "sd1neg": 3.6, "median": 4.2, "sd1": 4.8, "sd2": 5.4, "sd3": 6.1 },
+          { "month": 2,  "sd3neg": 3.4, "sd2neg": 3.9, "sd1neg": 4.5, "median": 5.1, "sd1": 5.8, "sd2": 6.6, "sd3": 7.3 },
+          { "month": 3,  "sd3neg": 4.0, "sd2neg": 4.5, "sd1neg": 5.1, "median": 5.8, "sd1": 6.6, "sd2": 7.5, "sd3": 8.3 },
+          { "month": 4,  "sd3neg": 4.4, "sd2neg": 5.0, "sd1neg": 5.6, "median": 6.4, "sd1": 7.3, "sd2": 8.2, "sd3": 9.1 },
+          { "month": 5,  "sd3neg": 4.8, "sd2neg": 5.4, "sd1neg": 6.0, "median": 6.9, "sd1": 7.8, "sd2": 8.8, "sd3": 9.8 },
+          { "month": 6,  "sd3neg": 5.1, "sd2neg": 5.7, "sd1neg": 6.4, "median": 7.3, "sd1": 8.2, "sd2": 9.3, "sd3": 10.4 },
+          { "month": 7,  "sd3neg": 5.3, "sd2neg": 6.0, "sd1neg": 6.7, "median": 7.6, "sd1": 8.6, "sd2": 9.8, "sd3": 10.9 },
+          { "month": 8,  "sd3neg": 5.6, "sd2neg": 6.3, "sd1neg": 7.0, "median": 8.0, "sd1": 9.0, "sd2": 10.2, "sd3": 11.4 },
+          { "month": 9,  "sd3neg": 5.8, "sd2neg": 6.5, "sd1neg": 7.3, "median": 8.3, "sd1": 9.3, "sd2": 10.6, "sd3": 11.9 },
+          { "month": 10, "sd3neg": 5.9, "sd2neg": 6.7, "sd1neg": 7.5, "median": 8.6, "sd1": 9.6, "sd2": 10.9, "sd3": 12.3 },
+          { "month": 11, "sd3neg": 6.1, "sd2neg": 6.9, "sd1neg": 7.7, "median": 8.9, "sd1": 9.9, "sd2": 11.3, "sd3": 12.7 },
+
+          { "month": 12, "sd3neg": 6.3, "sd2neg": 7.0, "sd1neg": 7.9, "median": 9.2, "sd1": 10.2, "sd2": 11.6, "sd3": 13.0 },
+          { "month": 13, "sd3neg": 6.4, "sd2neg": 7.2, "sd1neg": 8.1, "median": 9.4, "sd1": 10.5, "sd2": 11.9, "sd3": 13.4 },
+          { "month": 14, "sd3neg": 6.6, "sd2neg": 7.4, "sd1neg": 8.3, "median": 9.7, "sd1": 10.7, "sd2": 12.2, "sd3": 13.7 },
+          { "month": 15, "sd3neg": 6.7, "sd2neg": 7.6, "sd1neg": 8.5, "median": 9.9, "sd1": 11.0, "sd2": 12.5, "sd3": 14.0 },
+          { "month": 16, "sd3neg": 6.9, "sd2neg": 7.7, "sd1neg": 8.7, "median": 10.1, "sd1": 11.2, "sd2": 12.7, "sd3": 14.3 },
+          { "month": 17, "sd3neg": 7.0, "sd2neg": 7.9, "sd1neg": 8.8, "median": 10.3, "sd1": 11.4, "sd2": 13.0, "sd3": 14.6 },
+
+          { "month": 18, "sd3neg": 7.1, "sd2neg": 8.1, "sd1neg": 9.0, "median": 10.5, "sd1": 11.7, "sd2": 13.3, "sd3": 14.9 },
+          { "month": 19, "sd3neg": 7.3, "sd2neg": 8.2, "sd1neg": 9.2, "median": 10.7, "sd1": 11.9, "sd2": 13.5, "sd3": 15.2 },
+          { "month": 20, "sd3neg": 7.4, "sd2neg": 8.4, "sd1neg": 9.3, "median": 10.9, "sd1": 12.1, "sd2": 13.7, "sd3": 15.5 },
+
+          { "month": 21, "sd3neg": 7.5, "sd2neg": 8.5, "sd1neg": 9.5, "median": 11.1, "sd1": 12.3, "sd2": 14.0, "sd3": 15.7 },
+          { "month": 22, "sd3neg": 7.6, "sd2neg": 8.7, "sd1neg": 9.7, "median": 11.3, "sd1": 12.5, "sd2": 14.2, "sd3": 16.0 },
+          { "month": 23, "sd3neg": 7.8, "sd2neg": 8.8, "sd1neg": 9.8, "median": 11.5, "sd1": 12.7, "sd2": 14.5, "sd3": 16.3 },
+
+          { "month": 24, "sd3neg": 7.9, "sd2neg": 8.9, "sd1neg": 10.0, "median": 11.7, "sd1": 12.9, "sd2": 14.7, "sd3": 16.6 },
+          { "month": 25, "sd3neg": 8.0, "sd2neg": 9.1, "sd1neg": 10.1, "median": 11.9, "sd1": 13.1, "sd2": 14.9, "sd3": 16.8 },
+          { "month": 26, "sd3neg": 8.1, "sd2neg": 9.2, "sd1neg": 10.3, "median": 12.0, "sd1": 13.3, "sd2": 15.2, "sd3": 17.1 },
+          { "month": 27, "sd3neg": 8.2, "sd2neg": 9.3, "sd1neg": 10.4, "median": 12.2, "sd1": 13.5, "sd2": 15.4, "sd3": 17.3 },
+          { "month": 28, "sd3neg": 8.3, "sd2neg": 9.4, "sd1neg": 10.6, "median": 12.4, "sd1": 13.7, "sd2": 15.6, "sd3": 17.6 },
+          { "month": 29, "sd3neg": 8.4, "sd2neg": 9.6, "sd1neg": 10.7, "median": 12.5, "sd1": 13.9, "sd2": 15.8, "sd3": 17.8 },
+
+          { "month": 30, "sd3neg": 8.5, "sd2neg": 9.7, "sd1neg": 10.8, "median": 12.7, "sd1": 14.1, "sd2": 16.0, "sd3": 18.1 },
+          { "month": 31, "sd3neg": 8.6, "sd2neg": 9.8, "sd1neg": 11.0, "median": 12.9, "sd1": 14.3, "sd2": 16.3, "sd3": 18.4 },
+          { "month": 32, "sd3neg": 8.7, "sd2neg": 9.9, "sd1neg": 11.1, "median": 13.0, "sd1": 14.5, "sd2": 16.5, "sd3": 18.6 },
+          { "month": 33, "sd3neg": 8.8, "sd2neg": 10.0, "sd1neg": 11.3, "median": 13.2, "sd1": 14.7, "sd2": 16.7, "sd3": 18.9 },
+          { "month": 34, "sd3neg": 8.9, "sd2neg": 10.1, "sd1neg": 11.4, "median": 13.4, "sd1": 14.9, "sd2": 16.9, "sd3": 19.1 },
+          { "month": 35, "sd3neg": 9.0, "sd2neg": 10.3, "sd1neg": 11.6, "median": 13.5, "sd1": 15.1, "sd2": 17.1, "sd3": 19.4 },
+
+          { "month": 36, "sd3neg": 9.1, "sd2neg": 10.4, "sd1neg": 11.7, "median": 13.7, "sd1": 15.3, "sd2": 17.3, "sd3": 19.6 },
+          { "month": 37, "sd3neg": 9.2, "sd2neg": 10.5, "sd1neg": 11.8, "median": 13.9, "sd1": 15.5, "sd2": 17.5, "sd3": 19.9 },
+          { "month": 38, "sd3neg": 9.3, "sd2neg": 10.6, "sd1neg": 12.0, "median": 14.0, "sd1": 15.7, "sd2": 17.7, "sd3": 20.1 },
+          { "month": 39, "sd3neg": 9.4, "sd2neg": 10.7, "sd1neg": 12.1, "median": 14.2, "sd1": 15.9, "sd2": 17.9, "sd3": 20.4 },
+
+          { "month": 40, "sd3neg": 9.5, "sd2neg": 10.8, "sd1neg": 12.2, "median": 14.3, "sd1": 16.1, "sd2": 18.1, "sd3": 20.6 },
+          { "month": 41, "sd3neg": 9.6, "sd2neg": 10.9, "sd1neg": 12.4, "median": 14.5, "sd1": 16.3, "sd2": 18.3, "sd3": 20.9 },
+          { "month": 42, "sd3neg": 9.7, "sd2neg": 11.0, "sd1neg": 12.5, "median": 14.7, "sd1": 16.5, "sd2": 18.5, "sd3": 21.1 },
+          { "month": 43, "sd3neg": 9.8, "sd2neg": 11.2, "sd1neg": 12.6, "median": 14.8, "sd1": 16.7, "sd2": 18.7, "sd3": 21.4 },
+          { "month": 44, "sd3neg": 9.9, "sd2neg": 11.3, "sd1neg": 12.8, "median": 15.0, "sd1": 16.9, "sd2": 18.9, "sd3": 21.6 },
+          { "month": 45, "sd3neg": 10.0, "sd2neg": 11.4, "sd1neg": 12.9, "median": 15.2, "sd1": 17.1, "sd2": 19.1, "sd3": 21.9 },
+
+          { "month": 46, "sd3neg": 10.1, "sd2neg": 11.5, "sd1neg": 13.0, "median": 15.3, "sd1": 17.3, "sd2": 19.3, "sd3": 22.1 },
+          { "month": 47, "sd3neg": 10.2, "sd2neg": 11.6, "sd1neg": 13.2, "median": 15.5, "sd1": 17.5, "sd2": 19.5, "sd3": 22.4 },
+          { "month": 48, "sd3neg": 10.3, "sd2neg": 11.7, "sd1neg": 13.3, "median": 15.7, "sd1": 17.7, "sd2": 19.7, "sd3": 22.6 },
+          { "month": 49, "sd3neg": 10.4, "sd2neg": 11.8, "sd1neg": 13.4, "median": 15.8, "sd1": 17.9, "sd2": 19.9, "sd3": 22.9 },
+
+          { "month": 50, "sd3neg": 10.5, "sd2neg": 11.9, "sd1neg": 13.6, "median": 16.0, "sd1": 18.1, "sd2": 20.1, "sd3": 23.1 },
+          { "month": 51, "sd3neg": 10.6, "sd2neg": 12.0, "sd1neg": 13.7, "median": 16.2, "sd1": 18.3, "sd2": 20.3, "sd3": 23.4 },
+          { "month": 52, "sd3neg": 10.7, "sd2neg": 12.1, "sd1neg": 13.8, "median": 16.3, "sd1": 18.5, "sd2": 20.5, "sd3": 23.6 },
+          { "month": 53, "sd3neg": 10.8, "sd2neg": 12.2, "sd1neg": 14.0, "median": 16.5, "sd1": 18.7, "sd2": 20.7, "sd3": 23.9 },
+          { "month": 54, "sd3neg": 10.9, "sd2neg": 12.3, "sd1neg": 14.1, "median": 16.7, "sd1": 18.9, "sd2": 20.9, "sd3": 24.1 },
+          { "month": 55, "sd3neg": 11.0, "sd2neg": 12.4, "sd1neg": 14.2, "median": 16.8, "sd1": 19.1, "sd2": 21.1, "sd3": 24.4 },
+
+          { "month": 56, "sd3neg": 11.1, "sd2neg": 12.5, "sd1neg": 14.3, "median": 17.0, "sd1": 19.3, "sd2": 21.3, "sd3": 24.6 },
+          { "month": 57, "sd3neg": 11.2, "sd2neg": 12.6, "sd1neg": 14.5, "median": 17.2, "sd1": 19.5, "sd2": 21.5, "sd3": 24.9 },
+          { "month": 58, "sd3neg": 11.3, "sd2neg": 12.7, "sd1neg": 14.6, "median": 17.3, "sd1": 19.7, "sd2": 21.7, "sd3": 25.1 },
+          { "month": 59, "sd3neg": 11.4, "sd2neg": 12.8, "sd1neg": 14.7, "median": 17.5, "sd1": 19.9, "sd2": 21.9, "sd3": 25.4 },
+          { "month": 60, "sd3neg": 11.5, "sd2neg": 12.9, "sd1neg": 14.8, "median": 17.7, "sd1": 20.1, "sd2": 22.1, "sd3": 25.6 }
+        ]
+      },
+      hfa:{
+        "L": [
+          { "month": 0,  "sd3neg": 44.2, "sd2neg": 46.1, "sd1neg": 48.0, "median": 49.9, "sd1": 51.8, "sd2": 53.7, "sd3": 55.6 },
+          { "month": 1,  "sd3neg": 48.9, "sd2neg": 50.8, "sd1neg": 52.8, "median": 54.7, "sd1": 56.7, "sd2": 58.6, "sd3": 60.6 },
+          { "month": 2,  "sd3neg": 52.4, "sd2neg": 54.4, "sd1neg": 56.4, "median": 58.4, "sd1": 60.4, "sd2": 62.5, "sd3": 64.5 },
+          { "month": 3,  "sd3neg": 55.3, "sd2neg": 57.3, "sd1neg": 59.3, "median": 61.4, "sd1": 63.5, "sd2": 65.5, "sd3": 67.6 },
+          { "month": 4,  "sd3neg": 57.6, "sd2neg": 59.7, "sd1neg": 61.8, "median": 64.0, "sd1": 66.2, "sd2": 68.3, "sd3": 70.5 },
+          { "month": 5,  "sd3neg": 59.6, "sd2neg": 61.7, "sd1neg": 63.9, "median": 66.0, "sd1": 68.1, "sd2": 70.3, "sd3": 72.5 },
+          { "month": 6,  "sd3neg": 61.2, "sd2neg": 63.3, "sd1neg": 65.6, "median": 67.6, "sd1": 69.9, "sd2": 72.2, "sd3": 74.4 },
+          { "month": 7,  "sd3neg": 62.7, "sd2neg": 64.8, "sd1neg": 67.1, "median": 69.2, "sd1": 71.3, "sd2": 73.7, "sd3": 75.9 },
+          { "month": 8,  "sd3neg": 64.0, "sd2neg": 66.2, "sd1neg": 68.5, "median": 70.6, "sd1": 72.8, "sd2": 75.2, "sd3": 77.5 },
+          { "month": 9,  "sd3neg": 65.2, "sd2neg": 67.5, "sd1neg": 69.7, "median": 72.0, "sd1": 74.1, "sd2": 76.5, "sd3": 78.9 },
+          { "month": 10, "sd3neg": 66.4, "sd2neg": 68.7, "sd1neg": 71.0, "median": 73.3, "sd1": 75.6, "sd2": 78.0, "sd3": 80.3 },
+          { "month": 11, "sd3neg": 67.6, "sd2neg": 69.9, "sd1neg": 72.1, "median": 74.5, "sd1": 76.9, "sd2": 79.3, "sd3": 81.7 },
+
+          { "month": 12, "sd3neg": 68.6, "sd2neg": 71.0, "sd1neg": 73.3, "median": 75.7, "sd1": 78.1, "sd2": 80.6, "sd3": 83.0 },
+          { "month": 13, "sd3neg": 69.6, "sd2neg": 72.0, "sd1neg": 74.4, "median": 76.7, "sd1": 79.3, "sd2": 81.8, "sd3": 84.2 },
+          { "month": 14, "sd3neg": 70.6, "sd2neg": 73.0, "sd1neg": 75.4, "median": 77.8, "sd1": 80.4, "sd2": 83.0, "sd3": 85.4 },
+          { "month": 15, "sd3neg": 71.6, "sd2neg": 74.0, "sd1neg": 76.4, "median": 78.8, "sd1": 81.4, "sd2": 84.2, "sd3": 86.5 },
+          { "month": 16, "sd3neg": 72.5, "sd2neg": 75.0, "sd1neg": 77.4, "median": 79.7, "sd1": 82.4, "sd2": 85.2, "sd3": 87.6 },
+          { "month": 17, "sd3neg": 73.3, "sd2neg": 75.8, "sd1neg": 78.3, "median": 80.6, "sd1": 83.3, "sd2": 86.2, "sd3": 88.6 },
+
+          { "month": 18, "sd3neg": 74.2, "sd2neg": 76.7, "sd1neg": 79.2, "median": 81.5, "sd1": 84.2, "sd2": 87.1, "sd3": 89.6 },
+          { "month": 19, "sd3neg": 75.0, "sd2neg": 77.5, "sd1neg": 80.1, "median": 82.3, "sd1": 85.0, "sd2": 88.0, "sd3": 90.5 },
+          { "month": 20, "sd3neg": 75.8, "sd2neg": 78.3, "sd1neg": 80.9, "median": 83.2, "sd1": 85.8, "sd2": 88.8, "sd3": 91.4 },
+
+          { "month": 21, "sd3neg": 76.5, "sd2neg": 79.1, "sd1neg": 81.7, "median": 84.0, "sd1": 86.6, "sd2": 89.6, "sd3": 92.3 },
+          { "month": 22, "sd3neg": 77.2, "sd2neg": 79.8, "sd1neg": 82.5, "median": 84.7, "sd1": 87.4, "sd2": 90.4, "sd3": 93.1 },
+          { "month": 23, "sd3neg": 77.9, "sd2neg": 80.5, "sd1neg": 83.2, "median": 85.5, "sd1": 88.1, "sd2": 91.2, "sd3": 94.0 },
+
+          { "month": 24, "sd3neg": 78.6, "sd2neg": 81.2, "sd1neg": 84.0, "median": 86.2, "sd1": 88.8, "sd2": 92.0, "sd3": 94.8 },
+          { "month": 25, "sd3neg": 79.3, "sd2neg": 81.9, "sd1neg": 84.7, "median": 86.9, "sd1": 89.6, "sd2": 92.7, "sd3": 95.6 },
+          { "month": 26, "sd3neg": 79.9, "sd2neg": 82.6, "sd1neg": 85.4, "median": 87.6, "sd1": 90.3, "sd2": 93.5, "sd3": 96.4 },
+          { "month": 27, "sd3neg": 80.5, "sd2neg": 83.2, "sd1neg": 86.1, "median": 88.3, "sd1": 91.0, "sd2": 94.2, "sd3": 97.1 },
+          { "month": 28, "sd3neg": 81.1, "sd2neg": 83.8, "sd1neg": 86.7, "median": 88.9, "sd1": 91.7, "sd2": 94.9, "sd3": 97.9 },
+          { "month": 29, "sd3neg": 81.7, "sd2neg": 84.4, "sd1neg": 87.4, "median": 89.6, "sd1": 92.4, "sd2": 95.7, "sd3": 98.6 },
+
+          { "month": 30, "sd3neg": 82.2, "sd2neg": 85.0, "sd1neg": 88.0, "median": 90.2, "sd1": 93.1, "sd2": 96.4, "sd3": 99.4 },
+          { "month": 31, "sd3neg": 82.8, "sd2neg": 85.6, "sd1neg": 88.7, "median": 90.9, "sd1": 93.8, "sd2": 97.1, "sd3": 100.1 },
+          { "month": 32, "sd3neg": 83.4, "sd2neg": 86.2, "sd1neg": 89.3, "median": 91.5, "sd1": 94.4, "sd2": 97.8, "sd3": 100.8 },
+          { "month": 33, "sd3neg": 83.9, "sd2neg": 86.7, "sd1neg": 89.9, "median": 92.1, "sd1": 95.0, "sd2": 98.4, "sd3": 101.5 },
+          { "month": 34, "sd3neg": 84.4, "sd2neg": 87.3, "sd1neg": 90.5, "median": 92.7, "sd1": 95.7, "sd2": 99.1, "sd3": 102.2 },
+          { "month": 35, "sd3neg": 85.0, "sd2neg": 87.8, "sd1neg": 91.1, "median": 93.3, "sd1": 96.3, "sd2": 99.7, "sd3": 102.9 },
+
+          { "month": 36, "sd3neg": 85.5, "sd2neg": 88.4, "sd1neg": 91.7, "median": 94.0, "sd1": 97.0, "sd2": 100.4, "sd3": 103.6 },
+          { "month": 37, "sd3neg": 86.0, "sd2neg": 88.9, "sd1neg": 92.3, "median": 94.6, "sd1": 97.6, "sd2": 101.0, "sd3": 104.3 },
+          { "month": 38, "sd3neg": 86.5, "sd2neg": 89.4, "sd1neg": 92.9, "median": 95.2, "sd1": 98.2, "sd2": 101.7, "sd3": 105.0 },
+          { "month": 39, "sd3neg": 87.0, "sd2neg": 90.0, "sd1neg": 93.4, "median": 95.7, "sd1": 98.8, "sd2": 102.3, "sd3": 105.7 },
+
+          { "month": 40, "sd3neg": 87.5, "sd2neg": 90.5, "sd1neg": 94.0, "median": 96.3, "sd1": 99.4, "sd2": 102.9, "sd3": 106.3 },
+          { "month": 41, "sd3neg": 88.0, "sd2neg": 91.0, "sd1neg": 94.5, "median": 96.9, "sd1": 100.0, "sd2": 103.5, "sd3": 107.0 },
+          { "month": 42, "sd3neg": 88.4, "sd2neg": 91.4, "sd1neg": 95.0, "median": 97.4, "sd1": 100.5, "sd2": 104.1, "sd3": 107.7 },
+          { "month": 43, "sd3neg": 88.9, "sd2neg": 91.9, "sd1neg": 95.5, "median": 97.9, "sd1": 101.1, "sd2": 104.7, "sd3": 108.3 },
+          { "month": 44, "sd3neg": 89.3, "sd2neg": 92.4, "sd1neg": 96.0, "median": 98.5, "sd1": 101.6, "sd2": 105.3, "sd3": 109.0 },
+          { "month": 45, "sd3neg": 89.8, "sd2neg": 92.9, "sd1neg": 96.5, "median": 99.0, "sd1": 102.2, "sd2": 105.9, "sd3": 109.7 },
+
+          { "month": 46, "sd3neg": 90.2, "sd2neg": 93.3, "sd1neg": 96.9, "median": 99.5, "sd1": 102.7, "sd2": 106.5, "sd3": 110.3 },
+          { "month": 47, "sd3neg": 90.7, "sd2neg": 93.8, "sd1neg": 97.4, "median": 100.0, "sd1": 103.2, "sd2": 107.0, "sd3": 111.0 },
+          { "month": 48, "sd3neg": 91.1, "sd2neg": 94.2, "sd1neg": 97.8, "median": 100.5, "sd1": 103.7, "sd2": 107.6, "sd3": 111.6 },
+          { "month": 49, "sd3neg": 91.6, "sd2neg": 94.7, "sd1neg": 98.3, "median": 101.0, "sd1": 104.2, "sd2": 108.2, "sd3": 112.3 },
+
+          { "month": 50, "sd3neg": 92.0, "sd2neg": 95.1, "sd1neg": 98.7, "median": 101.5, "sd1": 104.8, "sd2": 108.7, "sd3": 112.9 },
+          { "month": 51, "sd3neg": 92.4, "sd2neg": 95.6, "sd1neg": 99.2, "median": 102.0, "sd1": 105.3, "sd2": 109.3, "sd3": 113.6 },
+          { "month": 52, "sd3neg": 92.9, "sd2neg": 96.0, "sd1neg": 99.6, "median": 102.5, "sd1": 105.8, "sd2": 109.9, "sd3": 114.2 },
+          { "month": 53, "sd3neg": 93.3, "sd2neg": 96.4, "sd1neg": 100.0, "median": 103.0, "sd1": 106.3, "sd2": 110.4, "sd3": 114.9 },
+          { "month": 54, "sd3neg": 93.7, "sd2neg": 96.9, "sd1neg": 100.5, "median": 103.5, "sd1": 106.8, "sd2": 111.0, "sd3": 115.5 },
+          { "month": 55, "sd3neg": 94.1, "sd2neg": 97.3, "sd1neg": 100.9, "median": 103.9, "sd1": 107.3, "sd2": 111.6, "sd3": 116.1 },
+          { "month": 56, "sd3neg": 94.5, "sd2neg": 97.7, "sd1neg": 101.3, "median": 104.4, "sd1": 107.8, "sd2": 112.1, "sd3": 116.7 },
+          { "month": 57, "sd3neg": 95.0, "sd2neg": 98.1, "sd1neg": 101.8, "median": 104.9, "sd1": 108.3, "sd2": 112.7, "sd3": 117.4 },
+          { "month": 58, "sd3neg": 95.4, "sd2neg": 98.6, "sd1neg": 102.2, "median": 105.4, "sd1": 108.8, "sd2": 113.2, "sd3": 118.0 },
+          { "month": 59, "sd3neg": 95.8, "sd2neg": 99.0, "sd1neg": 102.6, "median": 105.8, "sd1": 109.3, "sd2": 113.8, "sd3": 118.6 },
+          { "month": 60, "sd3neg": 96.2, "sd2neg": 99.4, "sd1neg": 103.1, "median": 106.3, "sd1": 109.8, "sd2": 114.3, "sd3": 119.2 }
+        ],
+        "P": [
+          { "month": 0,  "sd3neg": 43.6, "sd2neg": 45.4, "sd1neg": 47.3, "median": 49.1, "sd1": 51.0, "sd2": 52.9, "sd3": 54.7 },
+          { "month": 1,  "sd3neg": 47.8, "sd2neg": 49.8, "sd1neg": 51.7, "median": 53.7, "sd1": 55.6, "sd2": 57.6, "sd3": 59.5 },
+          { "month": 2,  "sd3neg": 51.0, "sd2neg": 53.0, "sd1neg": 55.0, "median": 57.1, "sd1": 59.1, "sd2": 61.1, "sd3": 63.2 },
+          { "month": 3,  "sd3neg": 53.5, "sd2neg": 55.6, "sd1neg": 57.7, "median": 59.8, "sd1": 61.9, "sd2": 64.0, "sd3": 66.1 },
+          { "month": 4,  "sd3neg": 55.6, "sd2neg": 57.8, "sd1neg": 59.9, "median": 62.1, "sd1": 64.3, "sd2": 66.4, "sd3": 68.6 },
+          { "month": 5,  "sd3neg": 57.4, "sd2neg": 59.6, "sd1neg": 61.8, "median": 64.0, "sd1": 66.2, "sd2": 68.5, "sd3": 70.7 },
+          { "month": 6,  "sd3neg": 58.9, "sd2neg": 61.1, "sd1neg": 63.3, "median": 65.7, "sd1": 68.0, "sd2": 70.3, "sd3": 72.5 },
+          { "month": 7,  "sd3neg": 60.3, "sd2neg": 62.6, "sd1neg": 64.9, "median": 67.3, "sd1": 69.7, "sd2": 72.0, "sd3": 74.3 },
+          { "month": 8,  "sd3neg": 61.7, "sd2neg": 64.0, "sd1neg": 66.3, "median": 68.7, "sd1": 71.1, "sd2": 73.5, "sd3": 75.9 },
+          { "month": 9,  "sd3neg": 62.9, "sd2neg": 65.2, "sd1neg": 67.6, "median": 70.0, "sd1": 72.5, "sd2": 74.8, "sd3": 77.4 },
+          { "month": 10, "sd3neg": 64.1, "sd2neg": 66.4, "sd1neg": 68.9, "median": 71.3, "sd1": 73.7, "sd2": 76.1, "sd3": 78.8 },
+          { "month": 11, "sd3neg": 65.2, "sd2neg": 67.6, "sd1neg": 70.1, "median": 72.5, "sd1": 75.0, "sd2": 77.4, "sd3": 80.2 },
+          { "month": 12, "sd3neg": 66.3, "sd2neg": 68.6, "sd1neg": 71.2, "median": 73.7, "sd1": 76.2, "sd2": 78.7, "sd3": 81.5 },
+
+          { "month": 13, "sd3neg": 67.3, "sd2neg": 69.7, "sd1neg": 72.3, "median": 74.9, "sd1": 77.4, "sd2": 80.0, "sd3": 82.9 },
+          { "month": 14, "sd3neg": 68.3, "sd2neg": 70.7, "sd1neg": 73.3, "median": 76.0, "sd1": 78.6, "sd2": 81.2, "sd3": 84.2 },
+          { "month": 15, "sd3neg": 69.3, "sd2neg": 71.7, "sd1neg": 74.4, "median": 77.2, "sd1": 79.7, "sd2": 82.4, "sd3": 85.5 },
+          { "month": 16, "sd3neg": 70.2, "sd2neg": 72.7, "sd1neg": 75.4, "median": 78.2, "sd1": 80.8, "sd2": 83.6, "sd3": 86.7 },
+          { "month": 17, "sd3neg": 71.1, "sd2neg": 73.7, "sd1neg": 76.4, "median": 79.3, "sd1": 81.9, "sd2": 84.7, "sd3": 88.0 },
+          { "month": 18, "sd3neg": 72.0, "sd2neg": 74.6, "sd1neg": 77.4, "median": 80.3, "sd1": 83.0, "sd2": 85.8, "sd3": 89.2 },
+
+          { "month": 19, "sd3neg": 72.8, "sd2neg": 75.4, "sd1neg": 78.3, "median": 81.3, "sd1": 84.0, "sd2": 86.9, "sd3": 90.4 },
+          { "month": 20, "sd3neg": 73.6, "sd2neg": 76.3, "sd1neg": 79.2, "median": 82.3, "sd1": 85.0, "sd2": 88.0, "sd3": 91.5 },
+
+          { "month": 21, "sd3neg": 74.4, "sd2neg": 77.1, "sd1neg": 80.1, "median": 83.2, "sd1": 86.0, "sd2": 89.1, "sd3": 92.7 },
+          { "month": 22, "sd3neg": 75.1, "sd2neg": 77.9, "sd1neg": 80.9, "median": 84.2, "sd1": 87.0, "sd2": 90.2, "sd3": 93.9 },
+          { "month": 23, "sd3neg": 75.8, "sd2neg": 78.6, "sd1neg": 81.8, "median": 85.1, "sd1": 88.0, "sd2": 91.2, "sd3": 95.0 },
+
+          { "month": 24, "sd3neg": 76.4, "sd2neg": 79.3, "sd1neg": 82.5, "median": 85.9, "sd1": 88.9, "sd2": 92.1, "sd3": 96.1 },
+
+          { "month": 25, "sd3neg": 76.9, "sd2neg": 79.8, "sd1neg": 83.1, "median": 86.6, "sd1": 89.7, "sd2": 93.0, "sd3": 97.0 },
+          { "month": 26, "sd3neg": 77.5, "sd2neg": 80.5, "sd1neg": 83.8, "median": 87.4, "sd1": 90.6, "sd2": 93.9, "sd3": 98.0 },
+          { "month": 27, "sd3neg": 78.0, "sd2neg": 81.0, "sd1neg": 84.4, "median": 88.1, "sd1": 91.4, "sd2": 94.7, "sd3": 98.9 },
+          { "month": 28, "sd3neg": 78.6, "sd2neg": 81.7, "sd1neg": 85.1, "median": 88.8, "sd1": 92.1, "sd2": 95.6, "sd3": 99.9 },
+          { "month": 29, "sd3neg": 79.1, "sd2neg": 82.2, "sd1neg": 85.7, "median": 89.5, "sd1": 92.9, "sd2": 96.4, "sd3": 100.8 },
+
+          { "month": 30, "sd3neg": 79.6, "sd2neg": 82.7, "sd1neg": 86.3, "median": 90.2, "sd1": 93.6, "sd2": 97.2, "sd3": 101.7 },
+
+          { "month": 31, "sd3neg": 80.1, "sd2neg": 83.3, "sd1neg": 86.9, "median": 90.9, "sd1": 94.4, "sd2": 98.0, "sd3": 102.6 },
+          { "month": 32, "sd3neg": 80.6, "sd2neg": 83.8, "sd1neg": 87.5, "median": 91.5, "sd1": 95.1, "sd2": 98.8, "sd3": 103.4 },
+          { "month": 33, "sd3neg": 81.1, "sd2neg": 84.3, "sd1neg": 88.1, "median": 92.2, "sd1": 95.8, "sd2": 99.6, "sd3": 104.3 },
+          { "month": 34, "sd3neg": 81.6, "sd2neg": 84.8, "sd1neg": 88.6, "median": 92.8, "sd1": 96.5, "sd2": 100.3, "sd3": 105.1 },
+          { "month": 35, "sd3neg": 82.1, "sd2neg": 85.3, "sd1neg": 89.2, "median": 93.4, "sd1": 97.1, "sd2": 101.1, "sd3": 105.9 },
+
+          { "month": 36, "sd3neg": 82.5, "sd2neg": 85.8, "sd1neg": 89.7, "median": 94.0, "sd1": 97.7, "sd2": 101.8, "sd3": 106.7 },
+
+          { "month": 37, "sd3neg": 83.0, "sd2neg": 86.3, "sd1neg": 90.3, "median": 94.6, "sd1": 98.4, "sd2": 102.5, "sd3": 107.5 },
+          { "month": 38, "sd3neg": 83.5, "sd2neg": 86.8, "sd1neg": 90.8, "median": 95.2, "sd1": 99.0, "sd2": 103.3, "sd3": 108.3 },
+          { "month": 39, "sd3neg": 84.0, "sd2neg": 87.3, "sd1neg": 91.4, "median": 95.8, "sd1": 99.7, "sd2": 104.0, "sd3": 109.1 },
+
+          { "month": 40, "sd3neg": 84.4, "sd2neg": 87.7, "sd1neg": 91.9, "median": 96.4, "sd1": 100.3, "sd2": 104.7, "sd3": 109.8 },
+
+          { "month": 41, "sd3neg": 84.9, "sd2neg": 88.2, "sd1neg": 92.4, "median": 96.9, "sd1": 100.9, "sd2": 105.4, "sd3": 110.6 },
+          { "month": 42, "sd3neg": 85.3, "sd2neg": 88.7, "sd1neg": 93.0, "median": 97.5, "sd1": 101.5, "sd2": 106.1, "sd3": 111.3 },
+          { "month": 43, "sd3neg": 85.8, "sd2neg": 89.1, "sd1neg": 93.5, "median": 98.0, "sd1": 102.1, "sd2": 106.8, "sd3": 112.0 },
+          { "month": 44, "sd3neg": 86.2, "sd2neg": 89.6, "sd1neg": 94.0, "median": 98.6, "sd1": 102.7, "sd2": 107.5, "sd3": 112.7 },
+          { "month": 45, "sd3neg": 86.7, "sd2neg": 90.0, "sd1neg": 94.5, "median": 99.1, "sd1": 103.3, "sd2": 108.1, "sd3": 113.4 },
+
+          { "month": 46, "sd3neg": 87.1, "sd2neg": 90.5, "sd1neg": 95.0, "median": 99.7, "sd1": 103.8, "sd2": 108.8, "sd3": 114.1 },
+          { "month": 47, "sd3neg": 87.6, "sd2neg": 90.9, "sd1neg": 95.5, "median": 100.2, "sd1": 104.4, "sd2": 109.4, "sd3": 114.8 },
+          { "month": 48, "sd3neg": 88.0, "sd2neg": 91.4, "sd1neg": 96.0, "median": 100.7, "sd1": 105.0, "sd2": 110.1, "sd3": 115.5 },
+          { "month": 49, "sd3neg": 88.4, "sd2neg": 91.8, "sd1neg": 96.5, "median": 101.2, "sd1": 105.6, "sd2": 110.7, "sd3": 116.1 },
+
+          { "month": 50, "sd3neg": 88.9, "sd2neg": 92.3, "sd1neg": 96.9, "median": 101.7, "sd1": 106.1, "sd2": 111.3, "sd3": 116.8 },
+
+          { "month": 51, "sd3neg": 89.3, "sd2neg": 92.7, "sd1neg": 97.4, "median": 102.2, "sd1": 106.7, "sd2": 112.0, "sd3": 117.4 },
+          { "month": 52, "sd3neg": 89.7, "sd2neg": 93.2, "sd1neg": 97.9, "median": 102.7, "sd1": 107.2, "sd2": 112.6, "sd3": 118.1 },
+          { "month": 53, "sd3neg": 90.1, "sd2neg": 93.6, "sd1neg": 98.3, "median": 103.2, "sd1": 107.8, "sd2": 113.2, "sd3": 118.7 },
+          { "month": 54, "sd3neg": 90.5, "sd2neg": 94.0, "sd1neg": 98.8, "median": 103.7, "sd1": 108.3, "sd2": 113.8, "sd3": 119.4 },
+          { "month": 55, "sd3neg": 90.9, "sd2neg": 94.4, "sd1neg": 99.3, "median": 104.2, "sd1": 108.9, "sd2": 114.4, "sd3": 120.0 },
+
+          { "month": 56, "sd3neg": 91.3, "sd2neg": 94.9, "sd1neg": 99.7, "median": 104.7, "sd1": 109.4, "sd2": 115.0, "sd3": 120.6 },
+          { "month": 57, "sd3neg": 91.7, "sd2neg": 95.3, "sd1neg": 100.2, "median": 105.2, "sd1": 110.0, "sd2": 115.7, "sd3": 121.3 },
+          { "month": 58, "sd3neg": 92.1, "sd2neg": 95.7, "sd1neg": 100.6, "median": 105.7, "sd1": 110.5, "sd2": 116.3, "sd3": 121.9 },
+          { "month": 59, "sd3neg": 92.5, "sd2neg": 96.1, "sd1neg": 101.1, "median": 106.2, "sd1": 111.0, "sd2": 116.9, "sd3": 122.6 },
+          { "month": 60, "sd3neg": 92.9, "sd2neg": 96.5, "sd1neg": 101.5, "median": 106.7, "sd1": 111.6, "sd2": 117.6, "sd3": 123.2 }
+        ]
+      },
+      whfa:{
+        "baduta":[
+          {
+            "L": [
+              { "length": 45.0, "sd3neg": 1.9, "sd2neg": 2.1, "sd1neg": 2.4, "median": 2.8, "sd1": 3.2, "sd2": 3.7, "sd3": 4.2 },
+              { "length": 45.5, "sd3neg": 2.0, "sd2neg": 2.2, "sd1neg": 2.5, "median": 2.9, "sd1": 3.3, "sd2": 3.8, "sd3": 4.4 },
+              { "length": 46.0, "sd3neg": 2.0, "sd2neg": 2.3, "sd1neg": 2.6, "median": 3.0, "sd1": 3.4, "sd2": 3.9, "sd3": 4.5 },
+              { "length": 46.5, "sd3neg": 2.1, "sd2neg": 2.4, "sd1neg": 2.7, "median": 3.1, "sd1": 3.5, "sd2": 4.0, "sd3": 4.6 },
+              { "length": 47.0, "sd3neg": 2.1, "sd2neg": 2.5, "sd1neg": 2.8, "median": 3.2, "sd1": 3.6, "sd2": 4.1, "sd3": 4.8 },
+              { "length": 47.5, "sd3neg": 2.2, "sd2neg": 2.6, "sd1neg": 2.9, "median": 3.3, "sd1": 3.7, "sd2": 4.2, "sd3": 4.9 },
+              { "length": 48.0, "sd3neg": 2.2, "sd2neg": 2.7, "sd1neg": 3.0, "median": 3.4, "sd1": 3.8, "sd2": 4.3, "sd3": 5.0 },
+              { "length": 48.5, "sd3neg": 2.3, "sd2neg": 2.8, "sd1neg": 3.1, "median": 3.5, "sd1": 3.9, "sd2": 4.4, "sd3": 5.1 },
+              { "length": 49.0, "sd3neg": 2.3, "sd2neg": 2.9, "sd1neg": 3.2, "median": 3.6, "sd1": 4.0, "sd2": 4.5, "sd3": 5.2 },
+              { "length": 49.5, "sd3neg": 2.4, "sd2neg": 2.9, "sd1neg": 3.3, "median": 3.7, "sd1": 4.1, "sd2": 4.6, "sd3": 5.4 },
+              { "length": 50.0, "sd3neg": 2.4, "sd2neg": 3.0, "sd1neg": 3.4, "median": 3.8, "sd1": 4.2, "sd2": 4.7, "sd3": 5.5 },
+              { "length": 50.5, "sd3neg": 2.5, "sd2neg": 3.1, "sd1neg": 3.5, "median": 3.9, "sd1": 4.3, "sd2": 4.8, "sd3": 5.6 },
+              { "length": 51.0, "sd3neg": 2.5, "sd2neg": 3.2, "sd1neg": 3.6, "median": 4.0, "sd1": 4.4, "sd2": 4.9, "sd3": 5.7 },
+              { "length": 51.5, "sd3neg": 2.6, "sd2neg": 3.3, "sd1neg": 3.7, "median": 4.1, "sd1": 4.5, "sd2": 5.0, "sd3": 5.8 },
+              { "length": 52.0, "sd3neg": 2.7, "sd2neg": 3.4, "sd1neg": 3.8, "median": 4.2, "sd1": 4.6, "sd2": 5.1, "sd3": 5.9 },
+              { "length": 52.5, "sd3neg": 2.7, "sd2neg": 3.4, "sd1neg": 3.9, "median": 4.3, "sd1": 4.7, "sd2": 5.2, "sd3": 6.0 },
+              { "length": 53.0, "sd3neg": 2.8, "sd2neg": 3.5, "sd1neg": 4.0, "median": 4.4, "sd1": 4.8, "sd2": 5.3, "sd3": 6.1 },
+              { "length": 53.5, "sd3neg": 2.9, "sd2neg": 3.6, "sd1neg": 4.1, "median": 4.5, "sd1": 4.9, "sd2": 5.4, "sd3": 6.2 },
+              { "length": 54.0, "sd3neg": 3.0, "sd2neg": 3.7, "sd1neg": 4.2, "median": 4.7, "sd1": 5.1, "sd2": 5.6, "sd3": 6.4 },
+              { "length": 54.5, "sd3neg": 3.0, "sd2neg": 3.8, "sd1neg": 4.3, "median": 4.8, "sd1": 5.2, "sd2": 5.7, "sd3": 6.5 },
+              { "length": 55.0, "sd3neg": 3.1, "sd2neg": 3.9, "sd1neg": 4.4, "median": 4.9, "sd1": 5.3, "sd2": 5.8, "sd3": 6.6 },
+              { "length": 55.5, "sd3neg": 3.2, "sd2neg": 4.0, "sd1neg": 4.5, "median": 5.0, "sd1": 5.4, "sd2": 5.9, "sd3": 6.7 },
+              { "length": 56.0, "sd3neg": 3.3, "sd2neg": 4.1, "sd1neg": 4.6, "median": 5.1, "sd1": 5.5, "sd2": 6.0, "sd3": 6.8 },
+              { "length": 56.5, "sd3neg": 3.4, "sd2neg": 4.1, "sd1neg": 4.7, "median": 5.2, "sd1": 5.6, "sd2": 6.1, "sd3": 7.0 },
+              { "length": 57.0, "sd3neg": 3.5, "sd2neg": 4.2, "sd1neg": 4.8, "median": 5.3, "sd1": 5.7, "sd2": 6.2, "sd3": 7.1 },
+              { "length": 57.5, "sd3neg": 3.6, "sd2neg": 4.3, "sd1neg": 4.9, "median": 5.4, "sd1": 5.8, "sd2": 6.3, "sd3": 7.2 },
+              { "length": 58.0, "sd3neg": 3.7, "sd2neg": 4.4, "sd1neg": 5.0, "median": 5.5, "sd1": 5.9, "sd2": 6.4, "sd3": 7.3 },
+              { "length": 58.5, "sd3neg": 3.8, "sd2neg": 4.5, "sd1neg": 5.1, "median": 5.6, "sd1": 6.0, "sd2": 6.5, "sd3": 7.5 },
+              { "length": 59.0, "sd3neg": 3.9, "sd2neg": 4.6, "sd1neg": 5.2, "median": 5.7, "sd1": 6.1, "sd2": 6.6, "sd3": 7.6 },
+              { "length": 59.5, "sd3neg": 4.0, "sd2neg": 4.7, "sd1neg": 5.3, "median": 5.8, "sd1": 6.2, "sd2": 6.7, "sd3": 7.7 },
+              { "length": 60.0, "sd3neg": 4.1, "sd2neg": 4.8, "sd1neg": 5.4, "median": 5.9, "sd1": 6.3, "sd2": 6.8, "sd3": 7.8 },
+
+              { "length": 60.5, "sd3neg": 4.2, "sd2neg": 4.9, "sd1neg": 5.5, "median": 6.0, "sd1": 6.4, "sd2": 6.9, "sd3": 7.9 },
+              { "length": 61.0, "sd3neg": 4.3, "sd2neg": 5.0, "sd1neg": 5.6, "median": 6.1, "sd1": 6.5, "sd2": 7.0, "sd3": 8.0 },
+              { "length": 61.5, "sd3neg": 4.4, "sd2neg": 5.1, "sd1neg": 5.7, "median": 6.2, "sd1": 6.6, "sd2": 7.1, "sd3": 8.1 },
+              { "length": 62.0, "sd3neg": 4.5, "sd2neg": 5.2, "sd1neg": 5.8, "median": 6.3, "sd1": 6.7, "sd2": 7.2, "sd3": 8.2 },
+              { "length": 62.5, "sd3neg": 4.6, "sd2neg": 5.3, "sd1neg": 5.9, "median": 6.4, "sd1": 6.8, "sd2": 7.3, "sd3": 8.3 },
+              { "length": 63.0, "sd3neg": 4.6, "sd2neg": 5.4, "sd1neg": 6.0, "median": 6.5, "sd1": 6.9, "sd2": 7.4, "sd3": 8.4 },
+              { "length": 63.5, "sd3neg": 4.7, "sd2neg": 5.5, "sd1neg": 6.1, "median": 6.6, "sd1": 7.0, "sd2": 7.5, "sd3": 8.5 },
+              { "length": 64.0, "sd3neg": 4.8, "sd2neg": 5.6, "sd1neg": 6.2, "median": 6.7, "sd1": 7.1, "sd2": 7.6, "sd3": 8.6 },
+              { "length": 64.5, "sd3neg": 4.9, "sd2neg": 5.7, "sd1neg": 6.3, "median": 6.8, "sd1": 7.2, "sd2": 7.7, "sd3": 8.7 },
+              { "length": 65.0, "sd3neg": 5.0, "sd2neg": 5.8, "sd1neg": 6.4, "median": 6.9, "sd1": 7.3, "sd2": 7.8, "sd3": 8.8 },
+
+              { "length": 65.5, "sd3neg": 5.1, "sd2neg": 5.9, "sd1neg": 6.5, "median": 7.0, "sd1": 7.4, "sd2": 7.9, "sd3": 8.9 },
+              { "length": 66.0, "sd3neg": 5.2, "sd2neg": 6.0, "sd1neg": 6.6, "median": 7.1, "sd1": 7.5, "sd2": 8.0, "sd3": 9.0 },
+              { "length": 66.5, "sd3neg": 5.3, "sd2neg": 6.1, "sd1neg": 6.7, "median": 7.2, "sd1": 7.6, "sd2": 8.1, "sd3": 9.1 },
+              { "length": 67.0, "sd3neg": 5.4, "sd2neg": 6.2, "sd1neg": 6.8, "median": 7.3, "sd1": 7.7, "sd2": 8.2, "sd3": 9.2 },
+              { "length": 67.5, "sd3neg": 5.5, "sd2neg": 6.3, "sd1neg": 6.9, "median": 7.4, "sd1": 7.8, "sd2": 8.3, "sd3": 9.3 },
+              { "length": 68.0, "sd3neg": 5.6, "sd2neg": 6.4, "sd1neg": 7.0, "median": 7.5, "sd1": 7.9, "sd2": 8.4, "sd3": 9.4 },
+              { "length": 68.5, "sd3neg": 5.7, "sd2neg": 6.5, "sd1neg": 7.1, "median": 7.6, "sd1": 8.0, "sd2": 8.5, "sd3": 9.5 },
+              { "length": 69.0, "sd3neg": 5.8, "sd2neg": 6.6, "sd1neg": 7.2, "median": 7.7, "sd1": 8.1, "sd2": 8.6, "sd3": 9.6 },
+              { "length": 69.5, "sd3neg": 5.9, "sd2neg": 6.7, "sd1neg": 7.3, "median": 7.8, "sd1": 8.2, "sd2": 8.7, "sd3": 9.7 },
+              { "length": 70.0, "sd3neg": 6.0, "sd2neg": 6.8, "sd1neg": 7.4, "median": 7.9, "sd1": 8.3, "sd2": 8.8, "sd3": 9.8 },
+
+              { "length": 70.5, "sd3neg": 6.1, "sd2neg": 6.9, "sd1neg": 7.5, "median": 8.0, "sd1": 8.4, "sd2": 8.9, "sd3": 9.9 },
+              { "length": 71.0, "sd3neg": 6.2, "sd2neg": 7.0, "sd1neg": 7.6, "median": 8.1, "sd1": 8.5, "sd2": 9.0, "sd3": 10.0 },
+              { "length": 71.5, "sd3neg": 6.3, "sd2neg": 7.1, "sd1neg": 7.7, "median": 8.2, "sd1": 8.6, "sd2": 9.1, "sd3": 10.1 },
+              { "length": 72.0, "sd3neg": 6.4, "sd2neg": 7.2, "sd1neg": 7.8, "median": 8.3, "sd1": 8.7, "sd2": 9.2, "sd3": 10.2 },
+              { "length": 72.5, "sd3neg": 6.5, "sd2neg": 7.3, "sd1neg": 7.9, "median": 8.4, "sd1": 8.8, "sd2": 9.3, "sd3": 10.3 },
+              { "length": 73.0, "sd3neg": 6.6, "sd2neg": 7.4, "sd1neg": 8.0, "median": 8.5, "sd1": 8.9, "sd2": 9.4, "sd3": 10.4 },
+              { "length": 73.5, "sd3neg": 6.7, "sd2neg": 7.5, "sd1neg": 8.1, "median": 8.6, "sd1": 9.0, "sd2": 9.5, "sd3": 10.5 },
+              { "length": 74.0, "sd3neg": 6.8, "sd2neg": 7.6, "sd1neg": 8.2, "median": 8.7, "sd1": 9.1, "sd2": 9.6, "sd3": 10.6 },
+              { "length": 74.5, "sd3neg": 6.9, "sd2neg": 7.7, "sd1neg": 8.3, "median": 8.8, "sd1": 9.2, "sd2": 9.7, "sd3": 10.7 },
+              { "length": 75.0, "sd3neg": 7.0, "sd2neg": 7.8, "sd1neg": 8.4, "median": 8.9, "sd1": 9.3, "sd2": 9.8, "sd3": 10.8 },
+
+              { "length": 75.5, "sd3neg": 7.1, "sd2neg": 7.9, "sd1neg": 8.5, "median": 9.0, "sd1": 9.4, "sd2": 9.9, "sd3": 10.9 },
+              { "length": 76.0, "sd3neg": 7.2, "sd2neg": 8.0, "sd1neg": 8.6, "median": 9.1, "sd1": 9.5, "sd2": 10.0, "sd3": 11.0 },
+              { "length": 76.5, "sd3neg": 7.3, "sd2neg": 8.1, "sd1neg": 8.7, "median": 9.2, "sd1": 9.6, "sd2": 10.1, "sd3": 11.1 },
+              { "length": 77.0, "sd3neg": 7.4, "sd2neg": 8.2, "sd1neg": 8.8, "median": 9.3, "sd1": 9.7, "sd2": 10.2, "sd3": 11.2 },
+              { "length": 77.5, "sd3neg": 7.5, "sd2neg": 8.3, "sd1neg": 8.9, "median": 9.4, "sd1": 9.8, "sd2": 10.3, "sd3": 11.3 },
+              { "length": 78.0, "sd3neg": 7.6, "sd2neg": 8.4, "sd1neg": 9.0, "median": 9.5, "sd1": 9.9, "sd2": 10.4, "sd3": 11.4 },
+              { "length": 78.5, "sd3neg": 7.7, "sd2neg": 8.5, "sd1neg": 9.1, "median": 9.6, "sd1": 10.0, "sd2": 10.5, "sd3": 11.5 },
+              { "length": 79.0, "sd3neg": 7.8, "sd2neg": 8.6, "sd1neg": 9.2, "median": 9.7, "sd1": 10.1, "sd2": 10.6, "sd3": 11.6 },
+              { "length": 79.5, "sd3neg": 7.9, "sd2neg": 8.7, "sd1neg": 9.3, "median": 9.8, "sd1": 10.2, "sd2": 10.7, "sd3": 11.7 },
+              { "length": 80.0, "sd3neg": 8.0, "sd2neg": 8.8, "sd1neg": 9.4, "median": 9.9, "sd1": 10.3, "sd2": 10.8, "sd3": 11.8 },
+
+              { "length": 80.5, "sd3neg": 8.1, "sd2neg": 8.9, "sd1neg": 9.5, "median": 10.0, "sd1": 10.4, "sd2": 10.9, "sd3": 11.9 },
+              { "length": 81.0, "sd3neg": 8.2, "sd2neg": 9.0, "sd1neg": 9.6, "median": 10.1, "sd1": 10.5, "sd2": 11.0, "sd3": 12.0 },
+              { "length": 81.5, "sd3neg": 8.3, "sd2neg": 9.1, "sd1neg": 9.7, "median": 10.2, "sd1": 10.6, "sd2": 11.1, "sd3": 12.1 },
+              { "length": 82.0, "sd3neg": 8.4, "sd2neg": 9.2, "sd1neg": 9.8, "median": 10.3, "sd1": 10.7, "sd2": 11.2, "sd3": 12.2 },
+              { "length": 82.5, "sd3neg": 8.5, "sd2neg": 9.3, "sd1neg": 9.9, "median": 10.4, "sd1": 10.8, "sd2": 11.3, "sd3": 12.3 },
+              { "length": 83.0, "sd3neg": 8.6, "sd2neg": 9.4, "sd1neg": 10.0, "median": 10.5, "sd1": 10.9, "sd2": 11.4, "sd3": 12.4 },
+              { "length": 83.5, "sd3neg": 8.7, "sd2neg": 9.5, "sd1neg": 10.1, "median": 10.6, "sd1": 11.0, "sd2": 11.5, "sd3": 12.5 },
+              { "length": 84.0, "sd3neg": 8.8, "sd2neg": 9.6, "sd1neg": 10.2, "median": 10.7, "sd1": 11.1, "sd2": 11.6, "sd3": 12.6 },
+              { "length": 84.5, "sd3neg": 8.9, "sd2neg": 9.7, "sd1neg": 10.3, "median": 10.8, "sd1": 11.2, "sd2": 11.7, "sd3": 12.7 },
+              { "length": 85.0, "sd3neg": 9.0, "sd2neg": 9.8, "sd1neg": 10.4, "median": 10.9, "sd1": 11.3, "sd2": 11.8, "sd3": 12.8 },
+
+              { "length": 85.5, "sd3neg": 9.1, "sd2neg": 9.9, "sd1neg": 10.5, "median": 11.0, "sd1": 11.4, "sd2": 11.9, "sd3": 12.9 },
+              { "length": 86.0, "sd3neg": 9.2, "sd2neg": 10.0, "sd1neg": 10.6, "median": 11.1, "sd1": 11.5, "sd2": 12.0, "sd3": 13.0 },
+              { "length": 86.5, "sd3neg": 9.3, "sd2neg": 10.1, "sd1neg": 10.7, "median": 11.2, "sd1": 11.6, "sd2": 12.1, "sd3": 13.1 },
+              { "length": 87.0, "sd3neg": 9.4, "sd2neg": 10.2, "sd1neg": 10.8, "median": 11.3, "sd1": 11.7, "sd2": 12.2, "sd3": 13.2 },
+              { "length": 87.5, "sd3neg": 9.5, "sd2neg": 10.3, "sd1neg": 10.9, "median": 11.4, "sd1": 11.8, "sd2": 12.3, "sd3": 13.3 },
+              { "length": 88.0, "sd3neg": 9.6, "sd2neg": 10.4, "sd1neg": 11.0, "median": 11.5, "sd1": 11.9, "sd2": 12.4, "sd3": 13.4 },
+              { "length": 88.5, "sd3neg": 9.7, "sd2neg": 10.5, "sd1neg": 11.1, "median": 11.6, "sd1": 12.0, "sd2": 12.5, "sd3": 13.5 },
+              { "length": 89.0, "sd3neg": 9.8, "sd2neg": 10.6, "sd1neg": 11.2, "median": 11.7, "sd1": 12.1, "sd2": 12.6, "sd3": 13.6 },
+              { "length": 89.5, "sd3neg": 9.9, "sd2neg": 10.7, "sd1neg": 11.3, "median": 11.8, "sd1": 12.2, "sd2": 12.7, "sd3": 13.7 },
+              { "length": 90.0, "sd3neg": 10.0, "sd2neg": 10.8, "sd1neg": 11.4, "median": 11.9, "sd1": 12.3, "sd2": 12.8, "sd3": 13.8 },
+
+              { "length": 90.5, "sd3neg": 10.1, "sd2neg": 10.9, "sd1neg": 11.5, "median": 12.0, "sd1": 12.4, "sd2": 12.9, "sd3": 13.9 },
+              { "length": 91.0, "sd3neg": 10.2, "sd2neg": 11.0, "sd1neg": 11.6, "median": 12.1, "sd1": 12.5, "sd2": 13.0, "sd3": 14.0 },
+              { "length": 91.5, "sd3neg": 10.3, "sd2neg": 11.1, "sd1neg": 11.7, "median": 12.2, "sd1": 12.6, "sd2": 13.1, "sd3": 14.1 },
+              { "length": 92.0, "sd3neg": 10.4, "sd2neg": 11.2, "sd1neg": 11.8, "median": 12.3, "sd1": 12.7, "sd2": 13.2, "sd3": 14.2 },
+              { "length": 92.5, "sd3neg": 10.5, "sd2neg": 11.3, "sd1neg": 11.9, "median": 12.4, "sd1": 12.8, "sd2": 13.3, "sd3": 14.3 },
+              { "length": 93.0, "sd3neg": 10.6, "sd2neg": 11.4, "sd1neg": 12.0, "median": 12.5, "sd1": 12.9, "sd2": 13.4, "sd3": 14.4 },
+              { "length": 93.5, "sd3neg": 10.7, "sd2neg": 11.5, "sd1neg": 12.1, "median": 12.6, "sd1": 13.0, "sd2": 13.5, "sd3": 14.5 },
+              { "length": 94.0, "sd3neg": 10.8, "sd2neg": 11.6, "sd1neg": 12.2, "median": 12.7, "sd1": 13.1, "sd2": 13.6, "sd3": 14.6 },
+              { "length": 94.5, "sd3neg": 10.9, "sd2neg": 11.7, "sd1neg": 12.3, "median": 12.8, "sd1": 13.2, "sd2": 13.7, "sd3": 14.7 },
+              { "length": 95.0, "sd3neg": 11.0, "sd2neg": 11.8, "sd1neg": 12.4, "median": 12.9, "sd1": 13.3, "sd2": 13.8, "sd3": 14.8 },
+
+              { "length": 95.5, "sd3neg": 11.1, "sd2neg": 11.9, "sd1neg": 12.5, "median": 13.0, "sd1": 13.4, "sd2": 13.9, "sd3": 14.9 },
+              { "length": 96.0, "sd3neg": 11.2, "sd2neg": 12.0, "sd1neg": 12.6, "median": 13.1, "sd1": 13.5, "sd2": 14.0, "sd3": 15.0 },
+              { "length": 96.5, "sd3neg": 11.3, "sd2neg": 12.1, "sd1neg": 12.7, "median": 13.2, "sd1": 13.6, "sd2": 14.1, "sd3": 15.1 },
+              { "length": 97.0, "sd3neg": 11.4, "sd2neg": 12.2, "sd1neg": 12.8, "median": 13.3, "sd1": 13.7, "sd2": 14.2, "sd3": 15.2 },
+              { "length": 97.5, "sd3neg": 11.5, "sd2neg": 12.3, "sd1neg": 12.9, "median": 13.4, "sd1": 13.8, "sd2": 14.3, "sd3": 15.3 },
+              { "length": 98.0, "sd3neg": 11.6, "sd2neg": 12.4, "sd1neg": 13.0, "median": 13.5, "sd1": 13.9, "sd2": 14.4, "sd3": 15.4 },
+              { "length": 98.5, "sd3neg": 11.7, "sd2neg": 12.5, "sd1neg": 13.1, "median": 13.6, "sd1": 14.0, "sd2": 14.5, "sd3": 15.5 },
+              { "length": 99.0, "sd3neg": 11.8, "sd2neg": 12.6, "sd1neg": 13.2, "median": 13.7, "sd1": 14.1, "sd2": 14.6, "sd3": 15.6 },
+              { "length": 99.5, "sd3neg": 11.9, "sd2neg": 12.7, "sd1neg": 13.3, "median": 13.8, "sd1": 14.2, "sd2": 14.7, "sd3": 15.7 },
+              { "length": 100.0, "sd3neg": 12.0, "sd2neg": 12.8, "sd1neg": 13.4, "median": 13.9, "sd1": 14.3, "sd2": 14.8, "sd3": 15.8 },
+
+              { "length": 100.5, "sd3neg": 12.1, "sd2neg": 12.9, "sd1neg": 13.5, "median": 14.0, "sd1": 14.4, "sd2": 14.9, "sd3": 15.9 },
+              { "length": 101.0, "sd3neg": 12.2, "sd2neg": 13.0, "sd1neg": 13.6, "median": 14.1, "sd1": 14.5, "sd2": 15.0, "sd3": 16.0 },
+              { "length": 101.5, "sd3neg": 12.3, "sd2neg": 13.1, "sd1neg": 13.7, "median": 14.2, "sd1": 14.6, "sd2": 15.1, "sd3": 16.1 },
+              { "length": 102.0, "sd3neg": 12.4, "sd2neg": 13.2, "sd1neg": 13.8, "median": 14.3, "sd1": 14.7, "sd2": 15.2, "sd3": 16.2 },
+              { "length": 102.5, "sd3neg": 12.5, "sd2neg": 13.3, "sd1neg": 13.9, "median": 14.4, "sd1": 14.8, "sd2": 15.3, "sd3": 16.3 },
+              { "length": 103.0, "sd3neg": 12.6, "sd2neg": 13.4, "sd1neg": 14.0, "median": 14.5, "sd1": 14.9, "sd2": 15.4, "sd3": 16.4 },
+              { "length": 103.5, "sd3neg": 12.7, "sd2neg": 13.5, "sd1neg": 14.1, "median": 14.6, "sd1": 15.0, "sd2": 15.5, "sd3": 16.5 },
+              { "length": 104.0, "sd3neg": 12.8, "sd2neg": 13.6, "sd1neg": 14.2, "median": 14.7, "sd1": 15.1, "sd2": 15.6, "sd3": 16.6 },
+              { "length": 104.5, "sd3neg": 12.9, "sd2neg": 13.7, "sd1neg": 14.3, "median": 14.8, "sd1": 15.2, "sd2": 15.7, "sd3": 16.7 },
+              { "length": 105.0, "sd3neg": 13.0, "sd2neg": 13.8, "sd1neg": 14.4, "median": 14.9, "sd1": 15.3, "sd2": 15.8, "sd3": 16.8 },
+
+              { "length": 105.5, "sd3neg": 13.1, "sd2neg": 13.9, "sd1neg": 14.5, "median": 15.0, "sd1": 15.4, "sd2": 15.9, "sd3": 16.9 },
+              { "length": 106.0, "sd3neg": 13.2, "sd2neg": 14.0, "sd1neg": 14.6, "median": 15.1, "sd1": 15.5, "sd2": 16.0, "sd3": 17.0 },
+              { "length": 106.5, "sd3neg": 13.3, "sd2neg": 14.1, "sd1neg": 14.7, "median": 15.2, "sd1": 15.6, "sd2": 16.1, "sd3": 17.1 },
+              { "length": 107.0, "sd3neg": 13.4, "sd2neg": 14.2, "sd1neg": 14.8, "median": 15.3, "sd1": 15.7, "sd2": 16.2, "sd3": 17.2 },
+              { "length": 107.5, "sd3neg": 13.5, "sd2neg": 14.3, "sd1neg": 14.9, "median": 15.4, "sd1": 15.8, "sd2": 16.3, "sd3": 17.3 },
+              { "length": 108.0, "sd3neg": 13.6, "sd2neg": 14.4, "sd1neg": 15.0, "median": 15.5, "sd1": 15.9, "sd2": 16.4, "sd3": 17.4 },
+              { "length": 108.5, "sd3neg": 13.7, "sd2neg": 14.5, "sd1neg": 15.1, "median": 15.6, "sd1": 16.0, "sd2": 16.5, "sd3": 17.5 },
+              { "length": 109.0, "sd3neg": 13.8, "sd2neg": 14.6, "sd1neg": 15.2, "median": 15.7, "sd1": 16.1, "sd2": 16.6, "sd3": 17.6 },
+              { "length": 109.5, "sd3neg": 13.9, "sd2neg": 14.7, "sd1neg": 15.3, "median": 15.8, "sd1": 16.2, "sd2": 16.7, "sd3": 17.7 },
+              { "length": 110.0, "sd3neg": 12.6, "sd2neg": 13.9, "sd1neg": 15.3, "median": 17.0, "sd1": 19.0, "sd2": 21.3, "sd3": 23.9 }
+            ],
+            "P": [
+              { "length": 45.0, "sd3neg": 1.8, "sd2neg": 2.0, "sd1neg": 2.3, "median": 2.7, "sd1": 3.1, "sd2": 3.6, "sd3": 4.1 },
+              { "length": 45.5, "sd3neg": 1.9, "sd2neg": 2.1, "sd1neg": 2.4, "median": 2.8, "sd1": 3.2, "sd2": 3.7, "sd3": 4.3 },
+              { "length": 46.0, "sd3neg": 2.0, "sd2neg": 2.2, "sd1neg": 2.5, "median": 2.9, "sd1": 3.3, "sd2": 3.8, "sd3": 4.4 },
+              { "length": 46.5, "sd3neg": 2.0, "sd2neg": 2.3, "sd1neg": 2.6, "median": 3.0, "sd1": 3.4, "sd2": 3.9, "sd3": 4.5 },
+              { "length": 47.0, "sd3neg": 2.1, "sd2neg": 2.4, "sd1neg": 2.7, "median": 3.1, "sd1": 3.5, "sd2": 4.0, "sd3": 4.7 },
+              { "length": 47.5, "sd3neg": 2.1, "sd2neg": 2.5, "sd1neg": 2.8, "median": 3.2, "sd1": 3.6, "sd2": 4.2, "sd3": 4.8 },
+              { "length": 48.0, "sd3neg": 2.2, "sd2neg": 2.6, "sd1neg": 2.9, "median": 3.3, "sd1": 3.7, "sd2": 4.3, "sd3": 5.0 },
+              { "length": 48.5, "sd3neg": 2.3, "sd2neg": 2.7, "sd1neg": 3.0, "median": 3.4, "sd1": 3.9, "sd2": 4.4, "sd3": 5.1 },
+              { "length": 49.0, "sd3neg": 2.3, "sd2neg": 2.8, "sd1neg": 3.1, "median": 3.5, "sd1": 4.0, "sd2": 4.6, "sd3": 5.3 },
+              { "length": 49.5, "sd3neg": 2.4, "sd2neg": 2.9, "sd1neg": 3.2, "median": 3.6, "sd1": 4.1, "sd2": 4.7, "sd3": 5.4 },
+              { "length": 50.0, "sd3neg": 2.5, "sd2neg": 3.0, "sd1neg": 3.3, "median": 3.7, "sd1": 4.2, "sd2": 4.8, "sd3": 5.6 },
+              { "length": 50.5, "sd3neg": 2.6, "sd2neg": 3.1, "sd1neg": 3.4, "median": 3.8, "sd1": 4.3, "sd2": 5.0, "sd3": 5.7 },
+              { "length": 51.0, "sd3neg": 2.6, "sd2neg": 3.2, "sd1neg": 3.5, "median": 3.9, "sd1": 4.4, "sd2": 5.1, "sd3": 5.9 },
+              { "length": 51.5, "sd3neg": 2.7, "sd2neg": 3.3, "sd1neg": 3.6, "median": 4.0, "sd1": 4.5, "sd2": 5.2, "sd3": 6.0 },
+              { "length": 52.0, "sd3neg": 2.8, "sd2neg": 3.4, "sd1neg": 3.7, "median": 4.1, "sd1": 4.6, "sd2": 5.3, "sd3": 6.2 },
+              { "length": 52.5, "sd3neg": 2.9, "sd2neg": 3.5, "sd1neg": 3.8, "median": 4.2, "sd1": 4.7, "sd2": 5.5, "sd3": 6.3 },
+              { "length": 53.0, "sd3neg": 3.0, "sd2neg": 3.6, "sd1neg": 3.9, "median": 4.3, "sd1": 4.8, "sd2": 5.6, "sd3": 6.5 },
+              { "length": 53.5, "sd3neg": 3.1, "sd2neg": 3.7, "sd1neg": 4.1, "median": 4.4, "sd1": 5.0, "sd2": 5.7, "sd3": 6.6 },
+              { "length": 54.0, "sd3neg": 3.2, "sd2neg": 3.8, "sd1neg": 4.2, "median": 4.6, "sd1": 5.1, "sd2": 5.9, "sd3": 6.8 },
+              { "length": 54.5, "sd3neg": 3.3, "sd2neg": 3.9, "sd1neg": 4.3, "median": 4.7, "sd1": 5.2, "sd2": 6.0, "sd3": 7.0 },
+              { "length": 55.0, "sd3neg": 3.4, "sd2neg": 4.0, "sd1neg": 4.4, "median": 4.8, "sd1": 5.3, "sd2": 6.2, "sd3": 7.1 },
+              { "length": 55.5, "sd3neg": 3.5, "sd2neg": 4.1, "sd1neg": 4.5, "median": 4.9, "sd1": 5.4, "sd2": 6.3, "sd3": 7.3 },
+              { "length": 56.0, "sd3neg": 3.6, "sd2neg": 4.2, "sd1neg": 4.6, "median": 5.0, "sd1": 5.6, "sd2": 6.5, "sd3": 7.5 },
+              { "length": 56.5, "sd3neg": 3.7, "sd2neg": 4.3, "sd1neg": 4.8, "median": 5.2, "sd1": 5.7, "sd2": 6.6, "sd3": 7.6 },
+              { "length": 57.0, "sd3neg": 3.8, "sd2neg": 4.4, "sd1neg": 4.9, "median": 5.3, "sd1": 5.8, "sd2": 6.8, "sd3": 7.8 },
+              { "length": 57.5, "sd3neg": 3.9, "sd2neg": 4.5, "sd1neg": 5.0, "median": 5.4, "sd1": 5.9, "sd2": 6.9, "sd3": 8.0 },
+              { "length": 58.0, "sd3neg": 4.0, "sd2neg": 4.6, "sd1neg": 5.1, "median": 5.5, "sd1": 6.0, "sd2": 7.1, "sd3": 8.1 },
+              { "length": 58.5, "sd3neg": 4.1, "sd2neg": 4.7, "sd1neg": 5.2, "median": 5.7, "sd1": 6.2, "sd2": 7.2, "sd3": 8.3 },
+              { "length": 59.0, "sd3neg": 4.2, "sd2neg": 4.8, "sd1neg": 5.4, "median": 5.8, "sd1": 6.3, "sd2": 7.4, "sd3": 8.5 },
+              { "length": 59.5, "sd3neg": 4.3, "sd2neg": 4.9, "sd1neg": 5.5, "median": 5.9, "sd1": 6.4, "sd2": 7.5, "sd3": 8.7 },
+              { "length": 60.0, "sd3neg": 4.4, "sd2neg": 5.0, "sd1neg": 5.6, "median": 6.0, "sd1": 6.5, "sd2": 7.7, "sd3": 8.8 },
+              { "length": 60.5, "sd3neg": 4.5, "sd2neg": 5.1, "sd1neg": 5.7, "median": 6.2, "sd1": 6.7, "sd2": 7.8, "sd3": 9.0 },
+              { "length": 61.0, "sd3neg": 4.6, "sd2neg": 5.2, "sd1neg": 5.8, "median": 6.3, "sd1": 6.8, "sd2": 8.0, "sd3": 9.2 },
+              { "length": 61.5, "sd3neg": 4.7, "sd2neg": 5.3, "sd1neg": 5.9, "median": 6.4, "sd1": 6.9, "sd2": 8.1, "sd3": 9.3 },
+              { "length": 62.0, "sd3neg": 4.8, "sd2neg": 5.4, "sd1neg": 6.0, "median": 6.5, "sd1": 7.0, "sd2": 8.3, "sd3": 9.5 },
+              { "length": 62.5, "sd3neg": 4.9, "sd2neg": 5.5, "sd1neg": 6.2, "median": 6.7, "sd1": 7.2, "sd2": 8.4, "sd3": 9.7 },
+              { "length": 63.0, "sd3neg": 5.0, "sd2neg": 5.6, "sd1neg": 6.3, "median": 6.8, "sd1": 7.3, "sd2": 8.6, "sd3": 9.8 },
+              { "length": 63.5, "sd3neg": 5.1, "sd2neg": 5.7, "sd1neg": 6.4, "median": 6.9, "sd1": 7.4, "sd2": 8.7, "sd3": 10.0 },
+              { "length": 64.0, "sd3neg": 5.2, "sd2neg": 5.8, "sd1neg": 6.5, "median": 7.0, "sd1": 7.5, "sd2": 8.9, "sd3": 10.2 },
+              { "length": 64.5, "sd3neg": 5.3, "sd2neg": 5.9, "sd1neg": 6.6, "median": 7.1, "sd1": 7.6, "sd2": 9.0, "sd3": 10.3 },
+              { "length": 65.0, "sd3neg": 5.4, "sd2neg": 6.0, "sd1neg": 6.7, "median": 7.3, "sd1": 7.8, "sd2": 9.2, "sd3": 10.5 },
+              { "length": 65.5, "sd3neg": 5.5, "sd2neg": 6.1, "sd1neg": 6.8, "median": 7.4, "sd1": 7.9, "sd2": 9.3, "sd3": 10.7 },
+              { "length": 66.0, "sd3neg": 5.6, "sd2neg": 6.2, "sd1neg": 6.9, "median": 7.5, "sd1": 8.0, "sd2": 9.5, "sd3": 10.9 },
+              { "length": 66.5, "sd3neg": 5.7, "sd2neg": 6.3, "sd1neg": 7.0, "median": 7.6, "sd1": 8.2, "sd2": 9.6, "sd3": 11.0 },
+              { "length": 67.0, "sd3neg": 5.8, "sd2neg": 6.4, "sd1neg": 7.1, "median": 7.7, "sd1": 8.3, "sd2": 9.8, "sd3": 11.2 },
+              { "length": 67.5, "sd3neg": 5.9, "sd2neg": 6.5, "sd1neg": 7.2, "median": 7.9, "sd1": 8.4, "sd2": 9.9, "sd3": 11.4 },
+              { "length": 68.0, "sd3neg": 6.0, "sd2neg": 6.6, "sd1neg": 7.4, "median": 8.0, "sd1": 8.6, "sd2": 10.1, "sd3": 11.6 },
+              { "length": 68.5, "sd3neg": 6.1, "sd2neg": 6.7, "sd1neg": 7.5, "median": 8.1, "sd1": 8.7, "sd2": 10.3, "sd3": 11.7 },
+              { "length": 69.0, "sd3neg": 6.2, "sd2neg": 6.8, "sd1neg": 7.6, "median": 8.2, "sd1": 8.8, "sd2": 10.4, "sd3": 11.9 },
+              { "length": 69.5, "sd3neg": 6.3, "sd2neg": 6.9, "sd1neg": 7.7, "median": 8.3, "sd1": 8.9, "sd2": 10.6, "sd3": 12.1 },
+              { "length": 70.0, "sd3neg": 6.4, "sd2neg": 7.0, "sd1neg": 7.8, "median": 8.4, "sd1": 9.1, "sd2": 10.7, "sd3": 12.3 },
+              { "length": 70.5, "sd3neg": 6.5, "sd2neg": 7.1, "sd1neg": 7.9, "median": 8.6, "sd1": 9.2, "sd2": 10.9, "sd3": 12.5 },
+              { "length": 71.0, "sd3neg": 6.6, "sd2neg": 7.2, "sd1neg": 8.0, "median": 8.7, "sd1": 9.3, "sd2": 11.0, "sd3": 12.7 },
+              { "length": 71.5, "sd3neg": 6.7, "sd2neg": 7.3, "sd1neg": 8.1, "median": 8.8, "sd1": 9.5, "sd2": 11.2, "sd3": 12.9 },
+              { "length": 72.0, "sd3neg": 6.8, "sd2neg": 7.4, "sd1neg": 8.2, "median": 8.9, "sd1": 9.6, "sd2": 11.3, "sd3": 13.1 },
+              { "length": 72.5, "sd3neg": 6.9, "sd2neg": 7.5, "sd1neg": 8.3, "median": 9.0, "sd1": 9.7, "sd2": 11.5, "sd3": 13.3 },
+              { "length": 73.0, "sd3neg": 7.0, "sd2neg": 7.6, "sd1neg": 8.4, "median": 9.2, "sd1": 9.9, "sd2": 11.6, "sd3": 13.5 },
+              { "length": 73.5, "sd3neg": 7.1, "sd2neg": 7.7, "sd1neg": 8.5, "median": 9.3, "sd1": 10.0, "sd2": 11.8, "sd3": 13.7 },
+              { "length": 74.0, "sd3neg": 7.2, "sd2neg": 7.8, "sd1neg": 8.6, "median": 9.4, "sd1": 10.1, "sd2": 12.0, "sd3": 13.9 },
+              { "length": 74.5, "sd3neg": 7.3, "sd2neg": 7.9, "sd1neg": 8.7, "median": 9.6, "sd1": 10.3, "sd2": 12.1, "sd3": 14.1 },
+              { "length": 75.0, "sd3neg": 7.4, "sd2neg": 8.0, "sd1neg": 8.8, "median": 9.7, "sd1": 10.4, "sd2": 12.3, "sd3": 14.3 },
+              { "length": 75.5, "sd3neg": 7.5, "sd2neg": 8.1, "sd1neg": 8.9, "median": 9.8, "sd1": 10.6, "sd2": 12.5, "sd3": 14.6 },
+              { "length": 76.0, "sd3neg": 7.6, "sd2neg": 8.3, "sd1neg": 9.1, "median": 10.0, "sd1": 10.7, "sd2": 12.7, "sd3": 14.8 },
+              { "length": 76.5, "sd3neg": 7.7, "sd2neg": 8.4, "sd1neg": 9.2, "median": 10.1, "sd1": 10.9, "sd2": 12.9, "sd3": 15.0 },
+              { "length": 77.0, "sd3neg": 7.8, "sd2neg": 8.5, "sd1neg": 9.3, "median": 10.3, "sd1": 11.0, "sd2": 13.0, "sd3": 15.2 },
+              { "length": 77.5, "sd3neg": 7.9, "sd2neg": 8.6, "sd1neg": 9.4, "median": 10.4, "sd1": 11.2, "sd2": 13.2, "sd3": 15.4 },
+              { "length": 78.0, "sd3neg": 8.0, "sd2neg": 8.7, "sd1neg": 9.5, "median": 10.6, "sd1": 11.3, "sd2": 13.4, "sd3": 15.6 },
+              { "length": 78.5, "sd3neg": 8.1, "sd2neg": 8.8, "sd1neg": 9.6, "median": 10.7, "sd1": 11.5, "sd2": 13.6, "sd3": 15.9 },
+              { "length": 79.0, "sd3neg": 8.2, "sd2neg": 8.9, "sd1neg": 9.7, "median": 10.9, "sd1": 11.7, "sd2": 13.7, "sd3": 16.1 },
+              { "length": 79.5, "sd3neg": 8.3, "sd2neg": 9.0, "sd1neg": 9.8, "median": 11.0, "sd1": 11.8, "sd2": 13.9, "sd3": 16.3 },
+              { "length": 80.0, "sd3neg": 8.4, "sd2neg": 9.1, "sd1neg": 9.9, "median": 11.2, "sd1": 12.0, "sd2": 14.1, "sd3": 16.6 },
+              { "length": 80.5, "sd3neg": 8.5, "sd2neg": 9.2, "sd1neg": 10.1, "median": 11.3, "sd1": 12.1, "sd2": 14.3, "sd3": 16.8 },
+              { "length": 81.0, "sd3neg": 8.6, "sd2neg": 9.3, "sd1neg": 10.2, "median": 11.5, "sd1": 12.3, "sd2": 14.5, "sd3": 17.1 },
+              { "length": 81.5, "sd3neg": 8.7, "sd2neg": 9.4, "sd1neg": 10.3, "median": 11.6, "sd1": 12.4, "sd2": 14.7, "sd3": 17.3 },
+              { "length": 82.0, "sd3neg": 8.8, "sd2neg": 9.6, "sd1neg": 10.4, "median": 11.8, "sd1": 12.6, "sd2": 14.8, "sd3": 17.6 },
+              { "length": 82.5, "sd3neg": 8.9, "sd2neg": 9.7, "sd1neg": 10.6, "median": 11.9, "sd1": 12.7, "sd2": 15.0, "sd3": 17.8 },
+              { "length": 83.0, "sd3neg": 9.0, "sd2neg": 9.8, "sd1neg": 10.7, "median": 12.1, "sd1": 12.9, "sd2": 15.2, "sd3": 18.1 },
+              { "length": 83.5, "sd3neg": 9.1, "sd2neg": 9.9, "sd1neg": 10.8, "median": 12.2, "sd1": 13.1, "sd2": 15.4, "sd3": 18.4 },
+              { "length": 84.0, "sd3neg": 9.2, "sd2neg": 10.0, "sd1neg": 10.9, "median": 12.4, "sd1": 13.3, "sd2": 15.6, "sd3": 18.6 },
+              { "length": 84.5, "sd3neg": 9.3, "sd2neg": 10.1, "sd1neg": 11.1, "median": 12.5, "sd1": 13.4, "sd2": 15.8, "sd3": 18.9 },
+              { "length": 85.0, "sd3neg": 9.4, "sd2neg": 10.2, "sd1neg": 11.2, "median": 12.7, "sd1": 13.6, "sd2": 16.0, "sd3": 19.2 },
+              { "length": 85.5, "sd3neg": 9.5, "sd2neg": 10.3, "sd1neg": 11.3, "median": 12.8, "sd1": 13.8, "sd2": 16.2, "sd3": 19.5 },
+              { "length": 86.0, "sd3neg": 9.6, "sd2neg": 10.4, "sd1neg": 11.5, "median": 13.0, "sd1": 14.0, "sd2": 16.4, "sd3": 19.7 },
+              { "length": 86.5, "sd3neg": 9.7, "sd2neg": 10.5, "sd1neg": 11.6, "median": 13.1, "sd1": 14.2, "sd2": 16.7, "sd3": 20.0 },
+              { "length": 87.0, "sd3neg": 9.8, "sd2neg": 10.6, "sd1neg": 11.7, "median": 13.3, "sd1": 14.4, "sd2": 16.9, "sd3": 20.3 },
+              { "length": 87.5, "sd3neg": 9.9, "sd2neg": 10.7, "sd1neg": 11.8, "median": 13.4, "sd1": 14.6, "sd2": 17.1, "sd3": 20.6 },
+              { "length": 88.0, "sd3neg": 10.0, "sd2neg": 10.8, "sd1neg": 12.0, "median": 13.6, "sd1": 14.8, "sd2": 17.3, "sd3": 20.9 },
+              { "length": 88.5, "sd3neg": 10.1, "sd2neg": 10.9, "sd1neg": 12.1, "median": 13.7, "sd1": 14.9, "sd2": 17.6, "sd3": 21.2 },
+              { "length": 89.0, "sd3neg": 10.2, "sd2neg": 11.1, "sd1neg": 12.2, "median": 13.9, "sd1": 15.1, "sd2": 17.8, "sd3": 21.4 },
+              { "length": 89.5, "sd3neg": 10.4, "sd2neg": 11.2, "sd1neg": 12.4, "median": 14.0, "sd1": 15.3, "sd2": 18.0, "sd3": 21.7 },
+              { "length": 90.0, "sd3neg": 10.5, "sd2neg": 11.3, "sd1neg": 12.5, "median": 14.2, "sd1": 15.5, "sd2": 18.2, "sd3": 22.0 },
+              { "length": 90.5, "sd3neg": 10.6, "sd2neg": 11.4, "sd1neg": 12.7, "median": 14.3, "sd1": 15.7, "sd2": 18.4, "sd3": 22.3 },
+              { "length": 91.0, "sd3neg": 10.7, "sd2neg": 11.5, "sd1neg": 12.8, "median": 14.5, "sd1": 15.9, "sd2": 18.7, "sd3": 22.6 },
+              { "length": 91.5, "sd3neg": 10.9, "sd2neg": 11.7, "sd1neg": 13.0, "median": 14.6, "sd1": 16.0, "sd2": 18.9, "sd3": 22.9 },
+              { "length": 92.0, "sd3neg": 11.0, "sd2neg": 11.8, "sd1neg": 13.1, "median": 14.8, "sd1": 16.2, "sd2": 19.1, "sd3": 23.2 },
+              { "length": 92.5, "sd3neg": 11.1, "sd2neg": 11.9, "sd1neg": 13.3, "median": 15.0, "sd1": 16.4, "sd2": 19.4, "sd3": 23.5 },
+              { "length": 93.0, "sd3neg": 11.3, "sd2neg": 12.1, "sd1neg": 13.4, "median": 15.1, "sd1": 16.6, "sd2": 19.6, "sd3": 23.8 },
+              { "length": 93.5, "sd3neg": 11.4, "sd2neg": 12.2, "sd1neg": 13.6, "median": 15.3, "sd1": 16.8, "sd2": 19.9, "sd3": 24.1 },
+              { "length": 94.0, "sd3neg": 11.5, "sd2neg": 12.3, "sd1neg": 13.7, "median": 15.5, "sd1": 17.0, "sd2": 20.1, "sd3": 24.4 },
+              { "length": 94.5, "sd3neg": 11.7, "sd2neg": 12.5, "sd1neg": 13.9, "median": 15.6, "sd1": 17.2, "sd2": 20.3, "sd3": 24.7 },
+              { "length": 95.0, "sd3neg": 11.8, "sd2neg": 12.6, "sd1neg": 14.0, "median": 15.8, "sd1": 17.4, "sd2": 20.6, "sd3": 25.0 },
+              { "length": 95.5, "sd3neg": 11.9, "sd2neg": 12.7, "sd1neg": 14.2, "median": 16.0, "sd1": 17.6, "sd2": 20.8, "sd3": 25.3 },
+              { "length": 96.0, "sd3neg": 12.1, "sd2neg": 12.9, "sd1neg": 14.3, "median": 16.1, "sd1": 17.8, "sd2": 21.1, "sd3": 25.7 },
+              { "length": 96.5, "sd3neg": 12.2, "sd2neg": 13.0, "sd1neg": 14.5, "median": 16.3, "sd1": 18.0, "sd2": 21.3, "sd3": 26.0 },
+              { "length": 97.0, "sd3neg": 12.4, "sd2neg": 13.2, "sd1neg": 14.7, "median": 16.5, "sd1": 18.2, "sd2": 21.6, "sd3": 26.3 },
+              { "length": 97.5, "sd3neg": 12.5, "sd2neg": 13.3, "sd1neg": 14.8, "median": 16.7, "sd1": 18.4, "sd2": 21.8, "sd3": 26.6 },
+              { "length": 98.0, "sd3neg": 12.7, "sd2neg": 13.5, "sd1neg": 15.0, "median": 16.9, "sd1": 18.7, "sd2": 22.1, "sd3": 27.0 },
+              { "length": 98.5, "sd3neg": 12.8, "sd2neg": 13.6, "sd1neg": 15.2, "median": 17.1, "sd1": 18.9, "sd2": 22.4, "sd3": 27.3 },
+              { "length": 99.0, "sd3neg": 13.0, "sd2neg": 13.8, "sd1neg": 15.3, "median": 17.3, "sd1": 19.1, "sd2": 22.6, "sd3": 27.6 },
+              { "length": 99.5, "sd3neg": 13.1, "sd2neg": 13.9, "sd1neg": 15.5, "median": 17.5, "sd1": 19.3, "sd2": 22.9, "sd3": 28.0 },
+              { "length": 100.0, "sd3neg": 13.3, "sd2neg": 14.1, "sd1neg": 15.7, "median": 17.7, "sd1": 19.6, "sd2": 23.2, "sd3": 28.3 },
+              { "length": 100.5, "sd3neg": 13.5, "sd2neg": 14.2, "sd1neg": 15.9, "median": 17.9, "sd1": 19.8, "sd2": 23.5, "sd3": 28.7 },
+              { "length": 101.0, "sd3neg": 13.6, "sd2neg": 14.4, "sd1neg": 16.0, "median": 18.1, "sd1": 20.0, "sd2": 23.8, "sd3": 29.0 },
+              { "length": 101.5, "sd3neg": 13.8, "sd2neg": 14.5, "sd1neg": 16.2, "median": 18.3, "sd1": 20.3, "sd2": 24.0, "sd3": 29.4 },
+              { "length": 102.0, "sd3neg": 14.0, "sd2neg": 14.7, "sd1neg": 16.4, "median": 18.5, "sd1": 20.5, "sd2": 24.3, "sd3": 29.7 },
+              { "length": 102.5, "sd3neg": 14.1, "sd2neg": 14.8, "sd1neg": 16.6, "median": 18.7, "sd1": 20.7, "sd2": 24.6, "sd3": 30.1 },
+              { "length": 103.0, "sd3neg": 14.3, "sd2neg": 15.0, "sd1neg": 16.7, "median": 18.9, "sd1": 21.0, "sd2": 24.9, "sd3": 30.4 },
+              { "length": 103.5, "sd3neg": 14.5, "sd2neg": 15.1, "sd1neg": 16.9, "median": 19.1, "sd1": 21.2, "sd2": 25.2, "sd3": 30.8 },
+              { "length": 104.0, "sd3neg": 14.6, "sd2neg": 15.3, "sd1neg": 17.1, "median": 19.3, "sd1": 21.4, "sd2": 25.5, "sd3": 31.1 },
+              { "length": 104.5, "sd3neg": 14.8, "sd2neg": 15.4, "sd1neg": 17.3, "median": 19.5, "sd1": 21.7, "sd2": 25.8, "sd3": 31.5 },
+              { "length": 105.0, "sd3neg": 15.0, "sd2neg": 15.6, "sd1neg": 17.4, "median": 19.7, "sd1": 21.9, "sd2": 26.1, "sd3": 31.8 },
+              { "length": 105.5, "sd3neg": 15.2, "sd2neg": 15.8, "sd1neg": 17.6, "median": 19.9, "sd1": 22.1, "sd2": 26.4, "sd3": 32.2 },
+              { "length": 106.0, "sd3neg": 15.3, "sd2neg": 15.9, "sd1neg": 17.8, "median": 20.1, "sd1": 22.4, "sd2": 26.7, "sd3": 32.6 },
+              { "length": 106.5, "sd3neg": 15.5, "sd2neg": 16.1, "sd1neg": 18.0, "median": 20.3, "sd1": 22.6, "sd2": 27.0, "sd3": 33.0 },
+              { "length": 107.0, "sd3neg": 15.7, "sd2neg": 16.2, "sd1neg": 18.2, "median": 20.5, "sd1": 22.9, "sd2": 27.3, "sd3": 33.4 },
+              { "length": 107.5, "sd3neg": 15.9, "sd2neg": 16.4, "sd1neg": 18.3, "median": 20.8, "sd1": 23.1, "sd2": 27.6, "sd3": 33.8 },
+              { "length": 108.0, "sd3neg": 16.1, "sd2neg": 16.6, "sd1neg": 18.5, "median": 21.0, "sd1": 23.4, "sd2": 27.9, "sd3": 34.2 },
+              { "length": 108.5, "sd3neg": 16.3, "sd2neg": 16.7, "sd1neg": 18.7, "median": 21.2, "sd1": 23.6, "sd2": 28.2, "sd3": 34.6 },
+              { "length": 109.0, "sd3neg": 16.5, "sd2neg": 16.9, "sd1neg": 18.9, "median": 21.4, "sd1": 23.9, "sd2": 28.5, "sd3": 35.0 },
+              { "length": 109.5, "sd3neg": 16.6, "sd2neg": 17.1, "sd1neg": 19.1, "median": 21.7, "sd1": 24.1, "sd2": 28.8, "sd3": 35.4 },
+              { "length": 110.0, "sd3neg": 16.8, "sd2neg": 17.2, "sd1neg": 19.3, "median": 22.0, "sd1": 24.4, "sd2": 29.2, "sd3": 35.8 }
+            ]
+          }
+        ],
+        "balita":[
+          {
+            "L": [
+              { "length": 45.0, "sd3neg": 1.9, "sd2neg": 2.1, "sd1neg": 2.4, "median": 2.8, "sd1": 3.2, "sd2": 3.7, "sd3": 4.2 },
+              { "length": 45.5, "sd3neg": 2.0, "sd2neg": 2.2, "sd1neg": 2.5, "median": 2.9, "sd1": 3.3, "sd2": 3.8, "sd3": 4.4 },
+              { "length": 46.0, "sd3neg": 2.0, "sd2neg": 2.3, "sd1neg": 2.6, "median": 3.0, "sd1": 3.4, "sd2": 3.9, "sd3": 4.5 },
+              { "length": 46.5, "sd3neg": 2.1, "sd2neg": 2.4, "sd1neg": 2.7, "median": 3.1, "sd1": 3.5, "sd2": 4.0, "sd3": 4.6 },
+              { "length": 47.0, "sd3neg": 2.1, "sd2neg": 2.5, "sd1neg": 2.8, "median": 3.2, "sd1": 3.6, "sd2": 4.1, "sd3": 4.8 },
+              ...
+              { "length": 110.0, "sd3neg": 12.6, "sd2neg": 13.9, "sd1neg": 15.3, "median": 17.0, "sd1": 19.0, "sd2": 21.3, "sd3": 23.9 }
+            ],
+            "P": [
+              { "length": 45.0, "sd3neg": 1.8, "sd2neg": 2.0, "sd1neg": 2.3, "median": 2.7, "sd1": 3.1, "sd2": 3.6, "sd3": 4.1 },
+              { "length": 45.5, "sd3neg": 1.9, "sd2neg": 2.1, "sd1neg": 2.4, "median": 2.8, "sd1": 3.2, "sd2": 3.7, "sd3": 4.3 },
+              { "length": 46.0, "sd3neg": 2.0, "sd2neg": 2.2, "sd1neg": 2.5, "median": 2.9, "sd1": 3.3, "sd2": 3.8, "sd3": 4.4 },
+              { "length": 46.5, "sd3neg": 2.0, "sd2neg": 2.3, "sd1neg": 2.6, "median": 3.0, "sd1": 3.4, "sd2": 3.9, "sd3": 4.5 },
+              { "length": 47.0, "sd3neg": 2.1, "sd2neg": 2.4, "sd1neg": 2.7, "median": 3.1, "sd1": 3.5, "sd2": 4.0, "sd3": 4.7 },
+              ...
+              { "length": 110.0, "sd3neg": 12.0, "sd2neg": 13.2, "sd1neg": 14.5, "median": 16.1, "sd1": 17.9, "sd2": 20.0, "sd3": 22.3 }
+            ]
+          }
+        ]
+      },
 
       /* Wajib ada */
       file: null,
@@ -2268,6 +2745,12 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
+    calcSD(L, M, S, sd) {
+      if (L === 0) {
+        return M * Math.exp(S * sd);
+      }
+      return M * Math.pow(1 + L * S * sd, 1 / L);
+    },
     async showDetail(props) {
       //console.log('Klik props:', props)
       const nik = props.nik
@@ -2297,7 +2780,7 @@ export default {
         : []
       const keluargaList = Array.isArray(raw.keluarga) ? raw.keluarga : []
 
-      console.log(kelahiranList[0]);
+      //console.log(kelahiranList[0]);
 
       const lastPosyandu = posyanduList.length
         ? posyanduList.sort((a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)).slice(-1)[0]
@@ -2339,11 +2822,15 @@ export default {
         // --- Riwayat Penimbangan (Posyandu) ---
         riwayat_penimbangan: posyanduList.map((p) => ({
           tanggal: p.tgl_ukur || '-',
+          usia: p.usia || 0,
           bb: p.bb || '-',
           tb: p.tb || '-',
           bbu: p.bbu || '-',
           tbu: p.tbu || '-',
           bbtb: p.bbtb || '-',
+          zs_bbu: p.zs_bbu,
+          zs_tbu: p.zs_tbu,
+          zs_bbtb: p.zs_bbtb,
         })),
 
         // ambil status terakhir
@@ -2373,11 +2860,191 @@ export default {
         })),
       }
 
-      this.renderKMSChart()
+      this.$nextTick(() => {
+        this.renderKMSChart('bbu')
+        this.renderKMSChart('tbu')
+        this.renderKMSChart('bbtb')
+      })
+
+      //this.renderKMSChart()
       //console.log('selectedAnak detail:', this.selectedAnak)
     },
-    // KMS Chart (BB/U & TB/U)
-    renderKMSChart() {
+    renderKMSChart(type) {
+      const data = this.selectedAnak.riwayat_penimbangan || []
+
+      const labels = data.map(d => d.usia)
+
+      // ============================
+      // Ambil SD sesuai grafik
+      // ============================
+      let minus3SD, minus2SD, minus1SD, medianSD, plus1SD, plus2SD, plus3SD, real
+
+      if (type === 'bbu') {
+        minus3SD = data.map(d => d.sd_bbu_min3)
+        minus2SD = data.map(d => d.sd_bbu_min2)
+        minus1SD = data.map(d => d.sd_bbu_min1)
+        medianSD = data.map(d => d.sd_bbu_med)
+        plus1SD  = data.map(d => d.sd_bbu_plus1)
+        plus2SD  = data.map(d => d.sd_bbu_plus2)
+        plus3SD  = data.map(d => d.sd_bbu_plus3)
+        real     = data.map(d => d.bb)
+      }
+
+      if (type === 'tbu') {
+        minus3SD = data.map(d => d.sd_tbu_min3)
+        minus2SD = data.map(d => d.sd_tbu_min2)
+        minus1SD = data.map(d => d.sd_tbu_min1)
+        medianSD = data.map(d => d.sd_tbu_med)
+        plus1SD  = data.map(d => d.sd_tbu_plus1)
+        plus2SD  = data.map(d => d.sd_tbu_plus2)
+        plus3SD  = data.map(d => d.sd_tbu_plus3)
+        real     = data.map(d => d.tb)
+      }
+
+      if (type === 'bbtb') {
+        minus3SD = data.map(d => d.sd_bbtb_min3)
+        minus2SD = data.map(d => d.sd_bbtb_min2)
+        minus1SD = data.map(d => d.sd_bbtb_min1)
+        medianSD = data.map(d => d.sd_bbtb_med)
+        plus1SD  = data.map(d => d.sd_bbtb_plus1)
+        plus2SD  = data.map(d => d.sd_bbtb_plus2)
+        plus3SD  = data.map(d => d.sd_bbtb_plus3)
+        real     = data.map(d => d.bb)
+      }
+
+      // ============================
+      // Destroy chart lama
+      // ============================
+      if (this.chartInstance) {
+        this.chartInstance.destroy()
+      }
+
+      const ctx = this.$refs[`chart_${type}`].getContext('2d')
+
+      // ============================
+      // Dataset Model KMS WHO
+      // ============================
+      const datasets = [
+
+        // ===== ZONA MERAH (-3 → -2) =====
+        {
+          data: minus3SD,
+          backgroundColor: 'rgba(255, 0, 0, 0.12)',
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: '+1'
+        },
+
+        {
+          label: '-2 SD',
+          data: minus2SD,
+          borderColor: '#cc0000',
+          borderWidth: 1,
+          pointRadius: 0,
+          fill: false
+        },
+
+        // ===== ZONA KUNING (-2 → -1) =====
+        {
+          data: minus2SD,
+          backgroundColor: 'rgba(255, 193, 7, 0.18)',
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: '+1'
+        },
+
+        {
+          label: '-1 SD',
+          data: minus1SD,
+          borderColor: '#e6a800',
+          borderWidth: 1,
+          pointRadius: 0,
+          fill: false
+        },
+
+        // ===== ZONA HIJAU (-1 → +1) =====
+        {
+          data: minus1SD,
+          backgroundColor: 'rgba(0, 200, 83, 0.18)',
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: '+2' // sampai +1 SD
+        },
+
+        {
+          label: '0 SD',
+          data: medianSD,
+          borderColor: '#4caf50',
+          borderWidth: 1,
+          pointRadius: 0,
+        },
+
+        {
+          label: '+1 SD',
+          data: plus1SD,
+          borderColor: '#ffcc00',
+          borderWidth: 1,
+          pointRadius: 0,
+          fill: false
+        },
+
+        // ===== Tambahan Garis SD Atas =====
+        {
+          label: '+2 SD',
+          data: plus2SD,
+          borderColor: '#999',
+          borderWidth: 1,
+          pointRadius: 0,
+        },
+        {
+          label: '+3 SD',
+          data: plus3SD,
+          borderColor: '#777',
+          borderWidth: 1,
+          pointRadius: 0,
+        },
+
+        // ===== GARIS ANAK =====
+        {
+          label: (type === 'bbu' ? 'BB' : type === 'tbu' ? 'TB' : 'BB/TB'),
+          data: real,
+          borderColor: '#0066ff',
+          backgroundColor: '#0066ff',
+          borderWidth: 3,
+          pointRadius: 5,
+          tension: 0.3
+        }
+      ]
+
+      // ============================
+      // CREATE CHART
+      // ============================
+      this.chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { usePointStyle: true }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              grid: { color: '#eee' }
+            },
+            x: {
+              grid: { color: '#eee' }
+            }
+          }
+        }
+      })
+    }
+
+    /* renderKMSChart() {
       if (!this.selectedAnak?.riwayat_penimbangan?.length) return
 
       this.$nextTick(() => {
@@ -2406,30 +3073,33 @@ export default {
         }
 
         const expandWH = (arr) => ({
-          tinggi: arr.map((d) => d.h),
-          median: arr.map((d) => d.median),
-          sd1: arr.map((d) => d.median + 1 * d.sd),
-          sd2: arr.map((d) => d.median + 2 * d.sd),
-          sd3: arr.map((d) => d.median + 3 * d.sd),
-          sd_1: arr.map((d) => d.median - 1 * d.sd),
-          sd_2: arr.map((d) => d.median - 2 * d.sd),
-          sd_3: arr.map((d) => d.median - 3 * d.sd),
+          tinggi: arr.map(d => d.h),
+          sd_3: arr.map(d => this.calcSD(d.L, d.M, d.S, -3)),
+          sd_2: arr.map(d => this.calcSD(d.L, d.M, d.S, -2)),
+          sd_1: arr.map(d => this.calcSD(d.L, d.M, d.S, -1)),
+          median: arr.map(d => this.calcSD(d.L, d.M, d.S, 0)),
+          sd1: arr.map(d => this.calcSD(d.L, d.M, d.S, 1)),
+          sd2: arr.map(d => this.calcSD(d.L, d.M, d.S, 2)),
+          sd3: arr.map(d => this.calcSD(d.L, d.M, d.S, 3)),
         })
+
 
         // === Ekspansi WHO dataset ===
         const expandWHO = (arr) => ({
-          usia: arr.map((d) => d.m),
-          median: arr.map((d) => d.median),
-          sd1: arr.map((d) => d.median + 1 * d.sd),
-          sd2: arr.map((d) => d.median + 2 * d.sd),
-          sd3: arr.map((d) => d.median + 3 * d.sd),
-          sd_1: arr.map((d) => d.median - 1 * d.sd),
-          sd_2: arr.map((d) => d.median - 2 * d.sd),
-          sd_3: arr.map((d) => d.median - 3 * d.sd),
+          usia: arr.map(d => d.m),
+          sd_3: arr.map(d => this.calcSD(d.L, d.M, d.S, -3)),
+          sd_2: arr.map(d => this.calcSD(d.L, d.M, d.S, -2)),
+          sd_1: arr.map(d => this.calcSD(d.L, d.M, d.S, -1)),
+          median: arr.map(d => this.calcSD(d.L, d.M, d.S, 0)),
+          sd1: arr.map(d => this.calcSD(d.L, d.M, d.S, 1)),
+          sd2: arr.map(d => this.calcSD(d.L, d.M, d.S, 2)),
+          sd3: arr.map(d => this.calcSD(d.L, d.M, d.S, 3)),
         })
+
 
         const bbData = expandWHO(wfa)
         const tbData = expandWHO(hfa)
+        // eslint-disable-next-line no-undef
         const bbTbData = expandWH(gender === 'L' ? this.whfaBoys : this.whfaGirls)
 
         // === Kurva area (dengan warna) ===
@@ -2677,7 +3347,7 @@ export default {
           }
 
       })
-    },
+    }, */
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')

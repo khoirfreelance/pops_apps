@@ -2408,9 +2408,10 @@ class ChildrenController extends Controller
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'tgl_ukur' => $item->tgl_pengukuran ?? null,
-                        'bb'    => $item->bb,
-                        'tb'    => $item->tb,
+                        'tgl_ukur'  => $item->tgl_pengukuran ?? null,
+                        'jk'        => $item->jk,
+                        'bb'        => $item->bb,
+                        'tb'        => $item->tb,
                         'bbu'       => $item->bb_u,
                         'tbu'       => $item->tb_u,
                         'bbtb'      => $item->bb_tb,
