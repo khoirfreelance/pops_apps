@@ -1,0 +1,154 @@
+{
+    "hfa":{
+        "L": [
+            { "month": 0,  "sd3neg": 44.2, "sd2neg": 46.1, "sd1neg": 48.0, "median": 49.9, "sd1": 51.8, "sd2": 53.7, "sd3": 55.6 },
+            { "month": 1,  "sd3neg": 48.9, "sd2neg": 50.8, "sd1neg": 52.8, "median": 54.7, "sd1": 56.7, "sd2": 58.6, "sd3": 60.6 },
+            { "month": 2,  "sd3neg": 52.4, "sd2neg": 54.4, "sd1neg": 56.4, "median": 58.4, "sd1": 60.4, "sd2": 62.5, "sd3": 64.5 },
+            { "month": 3,  "sd3neg": 55.3, "sd2neg": 57.3, "sd1neg": 59.3, "median": 61.4, "sd1": 63.5, "sd2": 65.5, "sd3": 67.6 },
+            { "month": 4,  "sd3neg": 57.6, "sd2neg": 59.7, "sd1neg": 61.8, "median": 64.0, "sd1": 66.2, "sd2": 68.3, "sd3": 70.5 },
+            { "month": 5,  "sd3neg": 59.6, "sd2neg": 61.7, "sd1neg": 63.9, "median": 66.0, "sd1": 68.1, "sd2": 70.3, "sd3": 72.5 },
+            { "month": 6,  "sd3neg": 61.2, "sd2neg": 63.3, "sd1neg": 65.6, "median": 67.6, "sd1": 69.9, "sd2": 72.2, "sd3": 74.4 },
+            { "month": 7,  "sd3neg": 62.7, "sd2neg": 64.8, "sd1neg": 67.1, "median": 69.2, "sd1": 71.3, "sd2": 73.7, "sd3": 75.9 },
+            { "month": 8,  "sd3neg": 64.0, "sd2neg": 66.2, "sd1neg": 68.5, "median": 70.6, "sd1": 72.8, "sd2": 75.2, "sd3": 77.5 },
+            { "month": 9,  "sd3neg": 65.2, "sd2neg": 67.5, "sd1neg": 69.7, "median": 72.0, "sd1": 74.1, "sd2": 76.5, "sd3": 78.9 },
+            { "month": 10, "sd3neg": 66.4, "sd2neg": 68.7, "sd1neg": 71.0, "median": 73.3, "sd1": 75.6, "sd2": 78.0, "sd3": 80.3 },
+            { "month": 11, "sd3neg": 67.6, "sd2neg": 69.9, "sd1neg": 72.1, "median": 74.5, "sd1": 76.9, "sd2": 79.3, "sd3": 81.7 },
+
+            { "month": 12, "sd3neg": 68.6, "sd2neg": 71.0, "sd1neg": 73.3, "median": 75.7, "sd1": 78.1, "sd2": 80.6, "sd3": 83.0 },
+            { "month": 13, "sd3neg": 69.6, "sd2neg": 72.0, "sd1neg": 74.4, "median": 76.7, "sd1": 79.3, "sd2": 81.8, "sd3": 84.2 },
+            { "month": 14, "sd3neg": 70.6, "sd2neg": 73.0, "sd1neg": 75.4, "median": 77.8, "sd1": 80.4, "sd2": 83.0, "sd3": 85.4 },
+            { "month": 15, "sd3neg": 71.6, "sd2neg": 74.0, "sd1neg": 76.4, "median": 78.8, "sd1": 81.4, "sd2": 84.2, "sd3": 86.5 },
+            { "month": 16, "sd3neg": 72.5, "sd2neg": 75.0, "sd1neg": 77.4, "median": 79.7, "sd1": 82.4, "sd2": 85.2, "sd3": 87.6 },
+            { "month": 17, "sd3neg": 73.3, "sd2neg": 75.8, "sd1neg": 78.3, "median": 80.6, "sd1": 83.3, "sd2": 86.2, "sd3": 88.6 },
+
+            { "month": 18, "sd3neg": 74.2, "sd2neg": 76.7, "sd1neg": 79.2, "median": 81.5, "sd1": 84.2, "sd2": 87.1, "sd3": 89.6 },
+            { "month": 19, "sd3neg": 75.0, "sd2neg": 77.5, "sd1neg": 80.1, "median": 82.3, "sd1": 85.0, "sd2": 88.0, "sd3": 90.5 },
+            { "month": 20, "sd3neg": 75.8, "sd2neg": 78.3, "sd1neg": 80.9, "median": 83.2, "sd1": 85.8, "sd2": 88.8, "sd3": 91.4 },
+
+            { "month": 21, "sd3neg": 76.5, "sd2neg": 79.1, "sd1neg": 81.7, "median": 84.0, "sd1": 86.6, "sd2": 89.6, "sd3": 92.3 },
+            { "month": 22, "sd3neg": 77.2, "sd2neg": 79.8, "sd1neg": 82.5, "median": 84.7, "sd1": 87.4, "sd2": 90.4, "sd3": 93.1 },
+            { "month": 23, "sd3neg": 77.9, "sd2neg": 80.5, "sd1neg": 83.2, "median": 85.5, "sd1": 88.1, "sd2": 91.2, "sd3": 94.0 },
+
+            { "month": 24, "sd3neg": 78.6, "sd2neg": 81.2, "sd1neg": 84.0, "median": 86.2, "sd1": 88.8, "sd2": 92.0, "sd3": 94.8 },
+            { "month": 25, "sd3neg": 79.3, "sd2neg": 81.9, "sd1neg": 84.7, "median": 86.9, "sd1": 89.6, "sd2": 92.7, "sd3": 95.6 },
+            { "month": 26, "sd3neg": 79.9, "sd2neg": 82.6, "sd1neg": 85.4, "median": 87.6, "sd1": 90.3, "sd2": 93.5, "sd3": 96.4 },
+            { "month": 27, "sd3neg": 80.5, "sd2neg": 83.2, "sd1neg": 86.1, "median": 88.3, "sd1": 91.0, "sd2": 94.2, "sd3": 97.1 },
+            { "month": 28, "sd3neg": 81.1, "sd2neg": 83.8, "sd1neg": 86.7, "median": 88.9, "sd1": 91.7, "sd2": 94.9, "sd3": 97.9 },
+            { "month": 29, "sd3neg": 81.7, "sd2neg": 84.4, "sd1neg": 87.4, "median": 89.6, "sd1": 92.4, "sd2": 95.7, "sd3": 98.6 },
+
+            { "month": 30, "sd3neg": 82.2, "sd2neg": 85.0, "sd1neg": 88.0, "median": 90.2, "sd1": 93.1, "sd2": 96.4, "sd3": 99.4 },
+            { "month": 31, "sd3neg": 82.8, "sd2neg": 85.6, "sd1neg": 88.7, "median": 90.9, "sd1": 93.8, "sd2": 97.1, "sd3": 100.1 },
+            { "month": 32, "sd3neg": 83.4, "sd2neg": 86.2, "sd1neg": 89.3, "median": 91.5, "sd1": 94.4, "sd2": 97.8, "sd3": 100.8 },
+            { "month": 33, "sd3neg": 83.9, "sd2neg": 86.7, "sd1neg": 89.9, "median": 92.1, "sd1": 95.0, "sd2": 98.4, "sd3": 101.5 },
+            { "month": 34, "sd3neg": 84.4, "sd2neg": 87.3, "sd1neg": 90.5, "median": 92.7, "sd1": 95.7, "sd2": 99.1, "sd3": 102.2 },
+            { "month": 35, "sd3neg": 85.0, "sd2neg": 87.8, "sd1neg": 91.1, "median": 93.3, "sd1": 96.3, "sd2": 99.7, "sd3": 102.9 },
+
+            { "month": 36, "sd3neg": 85.5, "sd2neg": 88.4, "sd1neg": 91.7, "median": 94.0, "sd1": 97.0, "sd2": 100.4, "sd3": 103.6 },
+            { "month": 37, "sd3neg": 86.0, "sd2neg": 88.9, "sd1neg": 92.3, "median": 94.6, "sd1": 97.6, "sd2": 101.0, "sd3": 104.3 },
+            { "month": 38, "sd3neg": 86.5, "sd2neg": 89.4, "sd1neg": 92.9, "median": 95.2, "sd1": 98.2, "sd2": 101.7, "sd3": 105.0 },
+            { "month": 39, "sd3neg": 87.0, "sd2neg": 90.0, "sd1neg": 93.4, "median": 95.7, "sd1": 98.8, "sd2": 102.3, "sd3": 105.7 },
+
+            { "month": 40, "sd3neg": 87.5, "sd2neg": 90.5, "sd1neg": 94.0, "median": 96.3, "sd1": 99.4, "sd2": 102.9, "sd3": 106.3 },
+            { "month": 41, "sd3neg": 88.0, "sd2neg": 91.0, "sd1neg": 94.5, "median": 96.9, "sd1": 100.0, "sd2": 103.5, "sd3": 107.0 },
+            { "month": 42, "sd3neg": 88.4, "sd2neg": 91.4, "sd1neg": 95.0, "median": 97.4, "sd1": 100.5, "sd2": 104.1, "sd3": 107.7 },
+            { "month": 43, "sd3neg": 88.9, "sd2neg": 91.9, "sd1neg": 95.5, "median": 97.9, "sd1": 101.1, "sd2": 104.7, "sd3": 108.3 },
+            { "month": 44, "sd3neg": 89.3, "sd2neg": 92.4, "sd1neg": 96.0, "median": 98.5, "sd1": 101.6, "sd2": 105.3, "sd3": 109.0 },
+            { "month": 45, "sd3neg": 89.8, "sd2neg": 92.9, "sd1neg": 96.5, "median": 99.0, "sd1": 102.2, "sd2": 105.9, "sd3": 109.7 },
+
+            { "month": 46, "sd3neg": 90.2, "sd2neg": 93.3, "sd1neg": 96.9, "median": 99.5, "sd1": 102.7, "sd2": 106.5, "sd3": 110.3 },
+            { "month": 47, "sd3neg": 90.7, "sd2neg": 93.8, "sd1neg": 97.4, "median": 100.0, "sd1": 103.2, "sd2": 107.0, "sd3": 111.0 },
+            { "month": 48, "sd3neg": 91.1, "sd2neg": 94.2, "sd1neg": 97.8, "median": 100.5, "sd1": 103.7, "sd2": 107.6, "sd3": 111.6 },
+            { "month": 49, "sd3neg": 91.6, "sd2neg": 94.7, "sd1neg": 98.3, "median": 101.0, "sd1": 104.2, "sd2": 108.2, "sd3": 112.3 },
+
+            { "month": 50, "sd3neg": 92.0, "sd2neg": 95.1, "sd1neg": 98.7, "median": 101.5, "sd1": 104.8, "sd2": 108.7, "sd3": 112.9 },
+            { "month": 51, "sd3neg": 92.4, "sd2neg": 95.6, "sd1neg": 99.2, "median": 102.0, "sd1": 105.3, "sd2": 109.3, "sd3": 113.6 },
+            { "month": 52, "sd3neg": 92.9, "sd2neg": 96.0, "sd1neg": 99.6, "median": 102.5, "sd1": 105.8, "sd2": 109.9, "sd3": 114.2 },
+            { "month": 53, "sd3neg": 93.3, "sd2neg": 96.4, "sd1neg": 100.0, "median": 103.0, "sd1": 106.3, "sd2": 110.4, "sd3": 114.9 },
+            { "month": 54, "sd3neg": 93.7, "sd2neg": 96.9, "sd1neg": 100.5, "median": 103.5, "sd1": 106.8, "sd2": 111.0, "sd3": 115.5 },
+            { "month": 55, "sd3neg": 94.1, "sd2neg": 97.3, "sd1neg": 100.9, "median": 103.9, "sd1": 107.3, "sd2": 111.6, "sd3": 116.1 },
+            { "month": 56, "sd3neg": 94.5, "sd2neg": 97.7, "sd1neg": 101.3, "median": 104.4, "sd1": 107.8, "sd2": 112.1, "sd3": 116.7 },
+            { "month": 57, "sd3neg": 95.0, "sd2neg": 98.1, "sd1neg": 101.8, "median": 104.9, "sd1": 108.3, "sd2": 112.7, "sd3": 117.4 },
+            { "month": 58, "sd3neg": 95.4, "sd2neg": 98.6, "sd1neg": 102.2, "median": 105.4, "sd1": 108.8, "sd2": 113.2, "sd3": 118.0 },
+            { "month": 59, "sd3neg": 95.8, "sd2neg": 99.0, "sd1neg": 102.6, "median": 105.8, "sd1": 109.3, "sd2": 113.8, "sd3": 118.6 },
+            { "month": 60, "sd3neg": 96.2, "sd2neg": 99.4, "sd1neg": 103.1, "median": 106.3, "sd1": 109.8, "sd2": 114.3, "sd3": 119.2 }
+        ],
+        "P": [
+            { "month": 0,  "sd3neg": 43.6, "sd2neg": 45.4, "sd1neg": 47.3, "median": 49.1, "sd1": 51.0, "sd2": 52.9, "sd3": 54.7 },
+            { "month": 1,  "sd3neg": 47.8, "sd2neg": 49.8, "sd1neg": 51.7, "median": 53.7, "sd1": 55.6, "sd2": 57.6, "sd3": 59.5 },
+            { "month": 2,  "sd3neg": 51.0, "sd2neg": 53.0, "sd1neg": 55.0, "median": 57.1, "sd1": 59.1, "sd2": 61.1, "sd3": 63.2 },
+            { "month": 3,  "sd3neg": 53.5, "sd2neg": 55.6, "sd1neg": 57.7, "median": 59.8, "sd1": 61.9, "sd2": 64.0, "sd3": 66.1 },
+            { "month": 4,  "sd3neg": 55.6, "sd2neg": 57.8, "sd1neg": 59.9, "median": 62.1, "sd1": 64.3, "sd2": 66.4, "sd3": 68.6 },
+            { "month": 5,  "sd3neg": 57.4, "sd2neg": 59.6, "sd1neg": 61.8, "median": 64.0, "sd1": 66.2, "sd2": 68.5, "sd3": 70.7 },
+            { "month": 6,  "sd3neg": 58.9, "sd2neg": 61.1, "sd1neg": 63.3, "median": 65.7, "sd1": 68.0, "sd2": 70.3, "sd3": 72.5 },
+            { "month": 7,  "sd3neg": 60.3, "sd2neg": 62.6, "sd1neg": 64.9, "median": 67.3, "sd1": 69.7, "sd2": 72.0, "sd3": 74.3 },
+            { "month": 8,  "sd3neg": 61.7, "sd2neg": 64.0, "sd1neg": 66.3, "median": 68.7, "sd1": 71.1, "sd2": 73.5, "sd3": 75.9 },
+            { "month": 9,  "sd3neg": 62.9, "sd2neg": 65.2, "sd1neg": 67.6, "median": 70.0, "sd1": 72.5, "sd2": 74.8, "sd3": 77.4 },
+            { "month": 10, "sd3neg": 64.1, "sd2neg": 66.4, "sd1neg": 68.9, "median": 71.3, "sd1": 73.7, "sd2": 76.1, "sd3": 78.8 },
+            { "month": 11, "sd3neg": 65.2, "sd2neg": 67.6, "sd1neg": 70.1, "median": 72.5, "sd1": 75.0, "sd2": 77.4, "sd3": 80.2 },
+            { "month": 12, "sd3neg": 66.3, "sd2neg": 68.6, "sd1neg": 71.2, "median": 73.7, "sd1": 76.2, "sd2": 78.7, "sd3": 81.5 },
+
+            { "month": 13, "sd3neg": 67.3, "sd2neg": 69.7, "sd1neg": 72.3, "median": 74.9, "sd1": 77.4, "sd2": 80.0, "sd3": 82.9 },
+            { "month": 14, "sd3neg": 68.3, "sd2neg": 70.7, "sd1neg": 73.3, "median": 76.0, "sd1": 78.6, "sd2": 81.2, "sd3": 84.2 },
+            { "month": 15, "sd3neg": 69.3, "sd2neg": 71.7, "sd1neg": 74.4, "median": 77.2, "sd1": 79.7, "sd2": 82.4, "sd3": 85.5 },
+            { "month": 16, "sd3neg": 70.2, "sd2neg": 72.7, "sd1neg": 75.4, "median": 78.2, "sd1": 80.8, "sd2": 83.6, "sd3": 86.7 },
+            { "month": 17, "sd3neg": 71.1, "sd2neg": 73.7, "sd1neg": 76.4, "median": 79.3, "sd1": 81.9, "sd2": 84.7, "sd3": 88.0 },
+            { "month": 18, "sd3neg": 72.0, "sd2neg": 74.6, "sd1neg": 77.4, "median": 80.3, "sd1": 83.0, "sd2": 85.8, "sd3": 89.2 },
+
+            { "month": 19, "sd3neg": 72.8, "sd2neg": 75.4, "sd1neg": 78.3, "median": 81.3, "sd1": 84.0, "sd2": 86.9, "sd3": 90.4 },
+            { "month": 20, "sd3neg": 73.6, "sd2neg": 76.3, "sd1neg": 79.2, "median": 82.3, "sd1": 85.0, "sd2": 88.0, "sd3": 91.5 },
+
+            { "month": 21, "sd3neg": 74.4, "sd2neg": 77.1, "sd1neg": 80.1, "median": 83.2, "sd1": 86.0, "sd2": 89.1, "sd3": 92.7 },
+            { "month": 22, "sd3neg": 75.1, "sd2neg": 77.9, "sd1neg": 80.9, "median": 84.2, "sd1": 87.0, "sd2": 90.2, "sd3": 93.9 },
+            { "month": 23, "sd3neg": 75.8, "sd2neg": 78.6, "sd1neg": 81.8, "median": 85.1, "sd1": 88.0, "sd2": 91.2, "sd3": 95.0 },
+
+            { "month": 24, "sd3neg": 76.4, "sd2neg": 79.3, "sd1neg": 82.5, "median": 85.9, "sd1": 88.9, "sd2": 92.1, "sd3": 96.1 },
+
+            { "month": 25, "sd3neg": 76.9, "sd2neg": 79.8, "sd1neg": 83.1, "median": 86.6, "sd1": 89.7, "sd2": 93.0, "sd3": 97.0 },
+            { "month": 26, "sd3neg": 77.5, "sd2neg": 80.5, "sd1neg": 83.8, "median": 87.4, "sd1": 90.6, "sd2": 93.9, "sd3": 98.0 },
+            { "month": 27, "sd3neg": 78.0, "sd2neg": 81.0, "sd1neg": 84.4, "median": 88.1, "sd1": 91.4, "sd2": 94.7, "sd3": 98.9 },
+            { "month": 28, "sd3neg": 78.6, "sd2neg": 81.7, "sd1neg": 85.1, "median": 88.8, "sd1": 92.1, "sd2": 95.6, "sd3": 99.9 },
+            { "month": 29, "sd3neg": 79.1, "sd2neg": 82.2, "sd1neg": 85.7, "median": 89.5, "sd1": 92.9, "sd2": 96.4, "sd3": 100.8 },
+
+            { "month": 30, "sd3neg": 79.6, "sd2neg": 82.7, "sd1neg": 86.3, "median": 90.2, "sd1": 93.6, "sd2": 97.2, "sd3": 101.7 },
+
+            { "month": 31, "sd3neg": 80.1, "sd2neg": 83.3, "sd1neg": 86.9, "median": 90.9, "sd1": 94.4, "sd2": 98.0, "sd3": 102.6 },
+            { "month": 32, "sd3neg": 80.6, "sd2neg": 83.8, "sd1neg": 87.5, "median": 91.5, "sd1": 95.1, "sd2": 98.8, "sd3": 103.4 },
+            { "month": 33, "sd3neg": 81.1, "sd2neg": 84.3, "sd1neg": 88.1, "median": 92.2, "sd1": 95.8, "sd2": 99.6, "sd3": 104.3 },
+            { "month": 34, "sd3neg": 81.6, "sd2neg": 84.8, "sd1neg": 88.6, "median": 92.8, "sd1": 96.5, "sd2": 100.3, "sd3": 105.1 },
+            { "month": 35, "sd3neg": 82.1, "sd2neg": 85.3, "sd1neg": 89.2, "median": 93.4, "sd1": 97.1, "sd2": 101.1, "sd3": 105.9 },
+
+            { "month": 36, "sd3neg": 82.5, "sd2neg": 85.8, "sd1neg": 89.7, "median": 94.0, "sd1": 97.7, "sd2": 101.8, "sd3": 106.7 },
+
+            { "month": 37, "sd3neg": 83.0, "sd2neg": 86.3, "sd1neg": 90.3, "median": 94.6, "sd1": 98.4, "sd2": 102.5, "sd3": 107.5 },
+            { "month": 38, "sd3neg": 83.5, "sd2neg": 86.8, "sd1neg": 90.8, "median": 95.2, "sd1": 99.0, "sd2": 103.3, "sd3": 108.3 },
+            { "month": 39, "sd3neg": 84.0, "sd2neg": 87.3, "sd1neg": 91.4, "median": 95.8, "sd1": 99.7, "sd2": 104.0, "sd3": 109.1 },
+
+            { "month": 40, "sd3neg": 84.4, "sd2neg": 87.7, "sd1neg": 91.9, "median": 96.4, "sd1": 100.3, "sd2": 104.7, "sd3": 109.8 },
+
+            { "month": 41, "sd3neg": 84.9, "sd2neg": 88.2, "sd1neg": 92.4, "median": 96.9, "sd1": 100.9, "sd2": 105.4, "sd3": 110.6 },
+            { "month": 42, "sd3neg": 85.3, "sd2neg": 88.7, "sd1neg": 93.0, "median": 97.5, "sd1": 101.5, "sd2": 106.1, "sd3": 111.3 },
+            { "month": 43, "sd3neg": 85.8, "sd2neg": 89.1, "sd1neg": 93.5, "median": 98.0, "sd1": 102.1, "sd2": 106.8, "sd3": 112.0 },
+            { "month": 44, "sd3neg": 86.2, "sd2neg": 89.6, "sd1neg": 94.0, "median": 98.6, "sd1": 102.7, "sd2": 107.5, "sd3": 112.7 },
+            { "month": 45, "sd3neg": 86.7, "sd2neg": 90.0, "sd1neg": 94.5, "median": 99.1, "sd1": 103.3, "sd2": 108.1, "sd3": 113.4 },
+
+            { "month": 46, "sd3neg": 87.1, "sd2neg": 90.5, "sd1neg": 95.0, "median": 99.7, "sd1": 103.8, "sd2": 108.8, "sd3": 114.1 },
+            { "month": 47, "sd3neg": 87.6, "sd2neg": 90.9, "sd1neg": 95.5, "median": 100.2, "sd1": 104.4, "sd2": 109.4, "sd3": 114.8 },
+            { "month": 48, "sd3neg": 88.0, "sd2neg": 91.4, "sd1neg": 96.0, "median": 100.7, "sd1": 105.0, "sd2": 110.1, "sd3": 115.5 },
+            { "month": 49, "sd3neg": 88.4, "sd2neg": 91.8, "sd1neg": 96.5, "median": 101.2, "sd1": 105.6, "sd2": 110.7, "sd3": 116.1 },
+
+            { "month": 50, "sd3neg": 88.9, "sd2neg": 92.3, "sd1neg": 96.9, "median": 101.7, "sd1": 106.1, "sd2": 111.3, "sd3": 116.8 },
+
+            { "month": 51, "sd3neg": 89.3, "sd2neg": 92.7, "sd1neg": 97.4, "median": 102.2, "sd1": 106.7, "sd2": 112.0, "sd3": 117.4 },
+            { "month": 52, "sd3neg": 89.7, "sd2neg": 93.2, "sd1neg": 97.9, "median": 102.7, "sd1": 107.2, "sd2": 112.6, "sd3": 118.1 },
+            { "month": 53, "sd3neg": 90.1, "sd2neg": 93.6, "sd1neg": 98.3, "median": 103.2, "sd1": 107.8, "sd2": 113.2, "sd3": 118.7 },
+            { "month": 54, "sd3neg": 90.5, "sd2neg": 94.0, "sd1neg": 98.8, "median": 103.7, "sd1": 108.3, "sd2": 113.8, "sd3": 119.4 },
+            { "month": 55, "sd3neg": 90.9, "sd2neg": 94.4, "sd1neg": 99.3, "median": 104.2, "sd1": 108.9, "sd2": 114.4, "sd3": 120.0 },
+
+            { "month": 56, "sd3neg": 91.3, "sd2neg": 94.9, "sd1neg": 99.7, "median": 104.7, "sd1": 109.4, "sd2": 115.0, "sd3": 120.6 },
+            { "month": 57, "sd3neg": 91.7, "sd2neg": 95.3, "sd1neg": 100.2, "median": 105.2, "sd1": 110.0, "sd2": 115.7, "sd3": 121.3 },
+            { "month": 58, "sd3neg": 92.1, "sd2neg": 95.7, "sd1neg": 100.6, "median": 105.7, "sd1": 110.5, "sd2": 116.3, "sd3": 121.9 },
+            { "month": 59, "sd3neg": 92.5, "sd2neg": 96.1, "sd1neg": 101.1, "median": 106.2, "sd1": 111.0, "sd2": 116.9, "sd3": 122.6 },
+            { "month": 60, "sd3neg": 92.9, "sd2neg": 96.5, "sd1neg": 101.5, "median": 106.7, "sd1": 111.6, "sd2": 117.6, "sd3": 123.2 }
+        ]
+}
+}
