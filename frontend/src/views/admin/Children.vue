@@ -1386,8 +1386,8 @@
                                 <div class="col-12">
                                   <div class="card border-0 shadow-sm h-100">
                                     <div class="card-body">
-                                      <h6 class="mb-2">BB/U (0–60 bln)</h6>
-                                      <div style="height: 200px;">
+                                      <h6 class="mb-2">Grafik BB/U</h6>
+                                      <div style="height: 350px;">
                                         <canvas ref="chart_bbu"></canvas>
                                       </div>
                                     </div>
@@ -1405,8 +1405,8 @@
                                 <div class="col-12">
                                   <div class="card border-0 shadow-sm h-100">
                                     <div class="card-body">
-                                      <h6 class="mb-2">TB/U (0–60 bln)</h6>
-                                      <div style="height: 200px;">
+                                      <h6 class="mb-2">Grafik TB/U</h6>
+                                      <div style="height: 350px;">
                                         <canvas ref="chart_tbu"></canvas>
                                       </div>
                                     </div>
@@ -1424,8 +1424,8 @@
                                 <div class="col-12">
                                   <div class="card border-0 shadow-sm h-100">
                                     <div class="card-body">
-                                      <h6 class="mb-2">BB/TB</h6>
-                                      <div style="height: 200px;">
+                                      <h6 class="mb-2">Grafik BB/TB</h6>
+                                      <div style="height: 350px;">
                                         <canvas ref="chart_bbtb"></canvas>
                                       </div>
                                     </div>
@@ -1750,39 +1750,6 @@ export default {
     }
   },
   methods: {
-    /* formatToNamaBulan(periode) {
-      // input: "2025-03"
-      const [year, month] = periode.split('-')
-
-      const bulanNama = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-      ]
-
-      const nama = bulanNama[parseInt(month) - 1]
-
-      return `${nama} ${year}`  // output: "Maret 2025"
-    },
-
-    getRangeFromBulanTahun(bulanTahun) {
-      // input: "Maret 2025"
-      const [bulanNama, tahun] = bulanTahun.split(" ")
-
-      const bulanMap = {
-        Januari: 0, Februari: 1, Maret: 2, April: 3, Mei: 4, Juni: 5,
-        Juli: 6, Agustus: 7, September: 8, Oktober: 9, November: 10, Desember: 11
-      }
-
-      const monthIndex = bulanMap[bulanNama]
-
-      const start = new Date(tahun, monthIndex, 1)
-      const end = new Date(tahun, monthIndex + 1, 0)
-
-      return {
-        startDate: start.toISOString().slice(0, 10),
-        endDate: end.toISOString().slice(0, 10)
-      }
-    }, */
     downloadRiwayat() {
       if (!this.selectedAnak) {
         alert('Silakan pilih anak terlebih dahulu.')
@@ -2309,7 +2276,7 @@ export default {
       //this.renderKMSChart()
       //console.log('selectedAnak detail:', this.selectedAnak)
     },
-    getWHO_SD(type, gender, value) {
+    getWHO_SD(type, gender, value, ageInMonths = null) {
       if (!this.whoData) return null;
 
       //console.log(this.whoData, type, gender, value);
@@ -2327,13 +2294,29 @@ export default {
       }
 
       if (type === 'bbtb') {
-        // WFH (weight-for-height) → struktur berbeda
-        // Ambil group 0-24 dulu (asumsi anak < 2 tahun)
 
-        const group =  this.whoData.wfh.wfh["0-24"];
-        if (!group) return null;
+        // VALIDASI wajib
+        if (ageInMonths == null) {
+          console.warn("Age in months is required for BB/TB");
+          return null;
+        }
 
-        const rows = group[gender] || [];
+        let rangeGroup = null;
+
+        //console.log('age: ',ageInMonths);
+        //console.log('rangeGroup: ', this.whoData.wfh.wfh["0-24"]);
+        // Tentukan kelompok berdasarkan usia
+        if (ageInMonths <= 24) {
+          rangeGroup = this.whoData.wfh.wfh["0-24"][0];
+        } else {
+          rangeGroup = this.whoData.wfh.wfh["24-60"][0];
+        }
+
+        console.log(rangeGroup[gender]);
+
+        if (!rangeGroup) return null;
+
+        const rows = rangeGroup[gender] || [];
         return rows.find(r => Number(r.length) === Number(value)) || null;
       }
 
@@ -2352,12 +2335,15 @@ export default {
 
 
       const mapper = (field) =>
-        data.map(d => {
-          const key = type === 'bbtb' ? d.tb : d.usia;
-          return this.getWHO_SD(type, gender, key)?.[field] ?? null;
-        });
+      data.map(d => {
+        const key = type === 'bbtb' ? d.tb : d.usia;
+        const age = d.usia; // usia dalam bulan
 
-        //console.log(mapper);
+        return type === 'bbtb'
+          ? this.getWHO_SD(type, gender, key, age)?.[field] ?? null
+          : this.getWHO_SD(type, gender, key)?.[field] ?? null;
+      });
+
       // WHO curves
       const minus3SD = mapper('sd3neg');
       const minus2SD = mapper('sd2neg');
@@ -2453,7 +2439,8 @@ export default {
           legend: {
             position: 'top',
             labels: { usePointStyle: true }
-          }
+          },
+          datalabels: { display: false },
         },
 
         scales: {
