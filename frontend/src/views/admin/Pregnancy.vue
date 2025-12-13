@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ periodeLabel }}
+                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ periodeTitle }}
               </div>
             </div>
           </div>
@@ -933,6 +933,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
   data() {
     return {
+      periodeTitle: '',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1375,7 +1376,10 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
-      ;(await this.loadPregnancy())
+      (
+        this.periodeTitle = this.periodeLabel,
+        await this.loadPregnancy()
+      )
     },
     async resetFilter() {
       Object.keys(this.filters).forEach((k) => {
@@ -1530,6 +1534,7 @@ export default {
     try {
       await this.getWilayahUser()
       await this.loadPregnancy() // kasih await juga kalau ini async
+      this.periodeTitle = this.periodeLabel
       this.generatePeriodeOptions()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)

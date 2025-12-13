@@ -35,7 +35,8 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ this.filters.periodeAwal.replace('+', ' ') }} - {{ this.filters.periodeAkhir.replace('+', ' ') }}
+                Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ periodeTitle }}
+                <!-- Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ this.filters.periodeAwal.replace('+', ' ') }} - {{ this.filters.periodeAkhir.replace('+', ' ') }} -->
               </div>
             </div>
           </div>
@@ -1579,6 +1580,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon, Welcome },
   data() {
     return {
+      periodeTitle:'',
       chartBBTB: null,
       chartBB: null,
       chartTB: null,
@@ -1935,6 +1937,7 @@ export default {
     async applyFilter() {
       this.isLoading = true
       try {
+        this.periodeTitle = this.filters.periodeAwal.replace('+', ' ')+ ' - '+this.filters.periodeAkhir.replace('+', ' ')
         await this.loadChildren()
         // await this.hitungStatusGizi()
       }catch(e){

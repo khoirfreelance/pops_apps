@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} periode {{ periodeLabel }}
+                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} periode {{ periodeTitle }}
               </div>
             </div>
           </div>
@@ -930,6 +930,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
   data() {
     return {
+      periodeTitle:'',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1257,7 +1258,8 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
-       console.log('Applying filters:');
+       //console.log('Applying filters:');
+      this.periodeTitle = this.periodeLabel
       await this.loadBride()
       //await this.hitungStatusKesehatan()
     },
@@ -1532,7 +1534,7 @@ export default {
         //this.loadConfigWithCache(),
         //this.getPendingData(),
         await this.getWilayahUser(),
-        //this.hitungStatusKesehatan(),
+        this.periodeTitle = this.periodeLabel,
         this.loadBride(),
         this.handleResize(),
         this.generatePeriodeOptions(),
