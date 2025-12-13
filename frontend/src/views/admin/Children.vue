@@ -1107,7 +1107,7 @@
               </div>
 
               <!-- Detail Riwayat Anak -->
-              <div class="col-md-12 mt-4" v-if="selectedAnak">
+              <div class="col-md-12 mt-4" v-if="selectedAnak" id="detailSection">
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
                   <!-- Tombol Close -->
                   <button
@@ -2185,10 +2185,6 @@ export default {
         : []
       const keluargaList = Array.isArray(raw.keluarga) ? raw.keluarga : []
 
-      //console.log(kelahiranList[0]);
-
-      //console.log(wfa);
-
       const lastPosyandu = posyanduList.length
         ? posyanduList.sort((a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)).slice(-1)[0]
         : {}
@@ -2271,10 +2267,14 @@ export default {
         this.renderKMSChart('bbu')
         this.renderKMSChart('tbu')
         this.renderKMSChart('bbtb')
+        const el = document.getElementById('detailSection')
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
       })
-
-      //this.renderKMSChart()
-      //console.log('selectedAnak detail:', this.selectedAnak)
     },
     getWHO_SD(type, gender, value, ageInMonths = null) {
       if (!this.whoData) return null;

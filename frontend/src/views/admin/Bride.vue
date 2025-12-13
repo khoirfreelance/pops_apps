@@ -681,7 +681,7 @@
               </div>
 
               <!-- Detail Riwayat Anak -->
-              <div class="col-md-12 mt-4" v-if="selectedCatin">
+              <div class="col-md-12 mt-4" v-if="selectedCatin" id="detailSection">
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
                   <!-- Tombol Close -->
                   <button
@@ -913,7 +913,7 @@ import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import Welcome from '@/components/Welcome.vue'
 
 // PORT backend kamu
@@ -1153,7 +1153,16 @@ export default {
           riwayat: data.riwayat || [],        // riwayat tabel bawah
           pemeriksaan_terakhir: data.pemeriksaan_terakhir || [] // tabel 3 kolom pertama
         };
+        // tunggu DOM ter-render
+        await nextTick()
 
+        const el = document.getElementById('detailSection')
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
         console.log("selected:", this.selectedCatin);
 
       } catch (error) {
