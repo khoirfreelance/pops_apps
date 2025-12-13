@@ -2295,30 +2295,40 @@ export default {
 
       if (type === 'bbtb') {
 
-        // VALIDASI wajib
-        if (ageInMonths == null) {
-          console.warn("Age in months is required for BB/TB");
-          return null;
-        }
+        if (ageInMonths == null) return null;
 
         let rangeGroup = null;
+        let fieldName = null;
 
-        //console.log('age: ',ageInMonths);
-        //console.log('rangeGroup: ', this.whoData.wfh.wfh["0-24"]);
-        // Tentukan kelompok berdasarkan usia
         if (ageInMonths <= 24) {
           rangeGroup = this.whoData.wfh.wfh["0-24"][0];
+          fieldName = "length";
         } else {
-          rangeGroup = this.whoData.wfh.wfh["24-60"][0];
+          rangeGroup = this.whoData.wfh.wfh["25-60"][0];
+          fieldName = "height";
         }
-
-        console.log(rangeGroup[gender]);
 
         if (!rangeGroup) return null;
 
-        const rows = rangeGroup[gender] || [];
-        return rows.find(r => Number(r.length) === Number(value)) || null;
+        const genderKey = gender === "L" ? "L" : "P";
+        const rows = rangeGroup[genderKey] || [];
+
+        if (!rows.length) return null;
+
+        const target = Number(value);
+
+        // ambil tinggi/panjang TERDEKAT
+        const row = rows.reduce((prev, curr) => {
+          if (!prev) return curr;
+          return Math.abs(curr[fieldName] - target) <
+                Math.abs(prev[fieldName] - target)
+            ? curr
+            : prev;
+        }, null);
+
+        return row;
       }
+
 
       return null;
     },
