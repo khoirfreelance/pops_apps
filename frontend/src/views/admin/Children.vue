@@ -35,7 +35,8 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ this.filters.periodeAwal.replace('+', ' ') }} - {{ this.filters.periodeAkhir.replace('+', ' ') }}
+                Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ periodeTitle }}
+                <!-- Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ this.filters.periodeAwal.replace('+', ' ') }} - {{ this.filters.periodeAkhir.replace('+', ' ') }} -->
               </div>
             </div>
           </div>
@@ -1043,7 +1044,7 @@
               </div>
 
               <!-- Detail Riwayat Anak -->
-              <div class="col-md-12 mt-4" v-if="selectedAnak">
+              <div class="col-md-12 mt-4" v-if="selectedAnak" id="detailSection">
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
                   <!-- Tombol Close -->
                   <button
@@ -1541,6 +1542,7 @@ export default {
         { text: 'RW', value: 'rw', sortable: true, width: 80 },
         { text: 'RT', value: 'rt', sortable: true, width: 80 }
       ],
+      periodeTitle:'',
       chartBBTB: null,
       chartBB: null,
       chartTB: null,
@@ -1913,6 +1915,7 @@ export default {
     async applyFilter() {
       this.isLoading = true
       try {
+        this.periodeTitle = this.filters.periodeAwal.replace('+', ' ')+ ' - '+this.filters.periodeAkhir.replace('+', ' ')
         await this.loadChildren()
         // await this.hitungStatusGizi()
       }catch(e){
@@ -2163,10 +2166,6 @@ export default {
         : []
       const keluargaList = Array.isArray(raw.keluarga) ? raw.keluarga : []
 
-      //console.log(kelahiranList[0]);
-
-      //console.log(wfa);
-
       const lastPosyandu = posyanduList.length
         ? posyanduList.sort((a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)).slice(-1)[0]
         : {}
@@ -2249,10 +2248,14 @@ export default {
         this.renderKMSChart('bbu')
         this.renderKMSChart('tbu')
         this.renderKMSChart('bbtb')
+        const el = document.getElementById('detailSection')
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
       })
-
-      //this.renderKMSChart()
-      //console.log('selectedAnak detail:', this.selectedAnak)
     },
     getWHO_SD(type, gender, value, ageInMonths = null) {
       if (!this.whoData) return null;
@@ -2273,30 +2276,40 @@ export default {
 
       if (type === 'bbtb') {
 
-        // VALIDASI wajib
-        if (ageInMonths == null) {
-          console.warn("Age in months is required for BB/TB");
-          return null;
-        }
+        if (ageInMonths == null) return null;
 
         let rangeGroup = null;
+        let fieldName = null;
 
-        //console.log('age: ',ageInMonths);
-        //console.log('rangeGroup: ', this.whoData.wfh.wfh["0-24"]);
-        // Tentukan kelompok berdasarkan usia
         if (ageInMonths <= 24) {
           rangeGroup = this.whoData.wfh.wfh["0-24"][0];
+          fieldName = "length";
         } else {
-          rangeGroup = this.whoData.wfh.wfh["24-60"][0];
+          rangeGroup = this.whoData.wfh.wfh["25-60"][0];
+          fieldName = "height";
         }
-
-        console.log(rangeGroup[gender]);
 
         if (!rangeGroup) return null;
 
-        const rows = rangeGroup[gender] || [];
-        return rows.find(r => Number(r.length) === Number(value)) || null;
+        const genderKey = gender === "L" ? "L" : "P";
+        const rows = rangeGroup[genderKey] || [];
+
+        if (!rows.length) return null;
+
+        const target = Number(value);
+
+        // ambil tinggi/panjang TERDEKAT
+        const row = rows.reduce((prev, curr) => {
+          if (!prev) return curr;
+          return Math.abs(curr[fieldName] - target) <
+                Math.abs(prev[fieldName] - target)
+            ? curr
+            : prev;
+        }, null);
+
+        return row;
       }
+
 
       return null;
     },

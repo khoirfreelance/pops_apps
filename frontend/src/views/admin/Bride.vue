@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} periode {{ periodeLabel }}
+                Laporan Status Kesehatan Calon Pengantin Desa {{ kelurahan }} periode {{ periodeTitle }}
               </div>
             </div>
           </div>
@@ -611,7 +611,7 @@
               </div>
 
               <!-- Detail Riwayat Anak -->
-              <div class="col-md-12 mt-4" v-if="selectedCatin">
+              <div class="col-md-12 mt-4" v-if="selectedCatin" id="detailSection">
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
                   <!-- Tombol Close -->
                   <button
@@ -855,7 +855,7 @@ import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import Welcome from '@/components/Welcome.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
@@ -900,6 +900,7 @@ export default {
         { text: 'Jamban Sehat', value: 'jamban_sehat', sortable: true, width: 120 },
         { text: 'Air Bersih', value: 'sumber_air_bersih', sortable: true, width: 100 }
       ],
+      periodeTitle:'',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1132,7 +1133,16 @@ export default {
           riwayat: data.riwayat || [],        // riwayat tabel bawah
           pemeriksaan_terakhir: data.pemeriksaan_terakhir || [] // tabel 3 kolom pertama
         };
+        // tunggu DOM ter-render
+        await nextTick()
 
+        const el = document.getElementById('detailSection')
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
         console.log("selected:", this.selectedCatin);
 
       } catch (error) {
@@ -1227,7 +1237,8 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
-       console.log('Applying filters:');
+       //console.log('Applying filters:');
+      this.periodeTitle = this.periodeLabel
       await this.loadBride()
       //await this.hitungStatusKesehatan()
     },
@@ -1502,7 +1513,7 @@ export default {
         //this.loadConfigWithCache(),
         //this.getPendingData(),
         await this.getWilayahUser(),
-        //this.hitungStatusKesehatan(),
+        this.periodeTitle = this.periodeLabel,
         this.loadBride(),
         this.handleResize(),
         this.generatePeriodeOptions(),
