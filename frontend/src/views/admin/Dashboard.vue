@@ -2008,6 +2008,9 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
+import { exportExcel } from "@/utils/exportExcel";
+import { mapDataAnakBerandaToExcel } from "@/mappers/dataAnakBerandaMapper";  
+import { mapDataIbuHamilBerandaToExcel } from "@/mappers/dataIbuHamilBerandaMapper";
 import {
   Chart,
   PieController,
@@ -2224,6 +2227,26 @@ export default {
       const canvasStatusBumil = document.querySelector('#canvas-status-bumil')
       if (infoBoxes) infoBoxes.classList.add('hide-for-pdf')
       if (canvasStatusBumil) infoBoxes.classList.add('canvas-status-bumil')
+
+      if(tagId === 'giziAnakExport'){
+        const excelData = mapDataAnakBerandaToExcel(this.filteredAnakGabungan);
+
+        exportExcel({
+          data: excelData,
+          fileName: "Data_Gizi_Anak_Beranda.xlsx",
+          sheetName: "Gizi Anak Beranda",
+        });
+      }
+
+      if(tagId === 'kesehatanBumilExport'){
+        const excelData = mapDataIbuHamilBerandaToExcel(this.filteredBumil);
+        console.log("excelData", excelData);
+        exportExcel({
+          data: excelData,
+          fileName: "Data_Ibu_Hamil_Beranda.xlsx",
+          sheetName: "Gizi Ibu Hamil Beranda",
+        });
+      }
 
       // const bumilTable = document.querySelector('#bumilTableDashboard')
       // if (bumilTable) bumilTable.classList.add('hide-for-pdf')
@@ -2579,6 +2602,8 @@ export default {
       return labels
     },
     async applyFilter() {
+      console.log("THIS Filter Bumil", this.filteredBumil);
+      
       if (this.isMobile) {
         this.showFilterMobile = false // auto sembunyikan setelah apply
       }
