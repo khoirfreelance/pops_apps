@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ periodeLabel }}
+                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ periodeTitle }}
               </div>
             </div>
           </div>
@@ -338,28 +338,33 @@
                 <div
                   v-for="(item, index) in kesehatan"
                   :key="index"
-                  class="col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3 no-col-padding"
+                  :class="item.title === 'Total Ibu Hamil' ? 'col-xl-2 col-sm-12' : 'col-xl-2 col-lg-2 col-md-4 col-sm-6 col-12 mb-3 no-col-padding'"
                 >
+                  <!-- Card untuk Total Ibu Hamil (tampilan khusus) -->
                   <div
+                    v-if="item.title === 'Total Ibu Hamil'"
+                    class="card border-0 rounded-3 overflow-hidden custom-card-size shadow text-center"
+                    style="width: 108%"
+                  >
+                    <div class="card-body py-3">
+                      <h5 class="text-muted fw-bold mb-3">{{ item.title }}</h5>
+                      <h1 class="fw-bold text-success mb-0 fs-1">{{ item.value }}</h1>
+                    </div>
+                  </div>
+
+                  <!-- Card untuk item lainnya (tampilan normal) -->
+                  <div
+                    v-else
                     class="card border-0 rounded-2 overflow-hidden custom-card-size shadow"
                     :class="`border-start border-4 border-${item.color}`"
                   >
                     <div class="card-body position-relative">
-                      <h5
-                        class="fw-bold mb-1"
-                        :class="{
-                          'text-center w-100': item.title === 'Total Bumil',
-                          'text-start': item.title !== 'Total Bumil',
-                        }"
-                      >
+                      <h5 class="fw-bold mb-1 text-start">
                         {{ item.title }}
                       </h5>
                       <h3
-                        class="fw-bold mb-0 custom-value1"
-                        :class="[
-                          `text-${item.color}`,
-                          item.title === 'Total Bumil' ? 'text-center w-100' : 'text-start',
-                        ]"
+                        class="fw-bold mb-0 custom-value1 text-start"
+                        :class="`text-${item.color}`"
                       >
                         {{ item.value }}
                       </h3>
@@ -381,171 +386,114 @@
             <h5 class="table-name text-success">Data Ibu Hamil</h5>
             <div class="row mt-4">
               <div :class="selectedBumil ? 'col-md-8' : 'col-md-12'">
-                <div class="card bg-light p-2">
-                  <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-success small">
-                        <tr>
-                          <th
-                            @click="sortBy('nama')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            Nama
-                            <SortIcon :field="'nama'" />
-                          </th>
-                          <th
-                            @click="sortBy('anemia')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            Anemia
-                            <SortIcon :field="'anemia'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('berisiko')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            Kehamilan Berisiko
-                            <SortIcon :field="'berisiko'" />
-                          </th>
-                          <th
-                            style="width: 60px"
-                            @click="sortBy('kek')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            KEK
-                            <SortIcon :field="'kek'" />
-                          </th>
-                          <th
-                            @click="sortBy('intervensi')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            Intervensi
-                            <SortIcon :field="'intervensi'" />
-                          </th>
-                          <th @click="sortBy('posyandu')" class="cursor-pointer align-middle text-center">
-                            Posyandu
-                            <SortIcon :field="'posyandu'" />
-                          </th>
-                          <th @click="sortBy('rw')" class="cursor-pointer align-middle text-center">
-                            RW
-                            <SortIcon :field="'rw'" />
-                          </th>
-                          <th @click="sortBy('rt')" class="cursor-pointer align-middle text-center">
-                            RT
-                            <SortIcon :field="'rt'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('usia')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            Usia (Tahun)
-                            <SortIcon :field="'usia'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('tanggal_pemeriksaan_terakhir')"
-                            class="cursor-pointer align-middle text-center"
-                          >
-                            Tanggal Pemeriksaan
-                            <SortIcon :field="'tanggal_pemeriksaan_terakhir'" />
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="bumil in paginatedData" :key="bumil.id" class="small">
-                          <td class="text-start">
-                            <a
-                              href="#"
-                              @click.prevent="showDetail(bumil)"
-                              class="fw-semibold text-decoration-none text-primary"
-                            >
-                              <u>{{ bumil.nama }}</u>
-                            </a>
-                          </td>
-                          <td>
-                            <span
-                              v-if="bumil.anemia === 'Anemia'"
-                              class="badge bg-danger text-white"
-                              >Ya</span
-                            >
-                            <span v-else>{{ bumil.anemia }}</span>
-                          </td>
-                          <td>
-                            <span
-                              v-if="bumil.risiko === 'Berisiko'"
-                              class="badge bg-danger text-white"
-                              >Ya</span
-                            >
-                            <span v-else>{{ bumil.risiko }}</span>
-                          </td>
-                          <td>
-                            <span
-                              v-if="bumil.kek === 'Ya' || bumil.kek === 'KEK'"
-                              class="badge bg-danger text-white"
-                              >Ya</span
-                            >
-                            <span v-else>{{ bumil.kek }}</span>
-                          </td>
-                          <td>
-                            <span
-                              v-if="bumil.intervensi === 'Ya'"
-                              class="badge bg-danger text-white"
-                              >Ya</span
-                            >
-                            <span v-else>{{ bumil.intervensi }}</span>
-                          </td>
-                          <td>{{ bumil.posyandu }}</td>
-                          <td>{{ bumil.rw }}</td>
-                          <td>{{ bumil.rt }}</td>
-                          <td>{{ bumil.usia }}</td>
-                          <td>
-                            {{
-                              new Date(bumil.tanggal_pemeriksaan_terakhir)
-                                .toISOString()
-                                .slice(0, 10)
-                            }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <nav>
-                    <ul id="responsive-pagination" class="pagination justify-content-center">
-                      <!-- Prev -->
-                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">
-                          &laquo;
-                        </a>
-                      </li>
-
-                      <!-- Nomor halaman -->
-                      <li
-                        class="page-item"
-                        v-for="page in visiblePages"
-                        :key="page"
-                        :class="{ active: currentPage === page, disabled: page === '...' }"
+                <div class="card shadow-sm">
+                  <div class="card-body">
+                    <!-- Search + Rows per page control -->
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        style="max-width: 300px;"
+                        placeholder="Cari Nama Ibu Hamil"
+                        v-model="searchQuery"
+                        @input="applySearch"
                       >
-                        <a
-                          v-if="page !== '...'"
-                          class="page-link"
-                          href="#"
-                          @click.prevent="changePage(page)"
-                        >
-                          {{ page }}
-                        </a>
-                        <span v-else class="page-link">...</span>
-                      </li>
+                    </div>
 
-                      <!-- Next -->
-                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">
-                          &raquo;
+                    <!-- Easy Data Table -->
+                    <easy-data-table
+                      :headers="headersBumil"
+                      :items="filteredData"
+                      :search-value="searchQuery"
+                      :rows-per-page="perPage"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index
+                      alternating
+                      border-cell
+                      :loading="isLoading"
+                    >
+                      <!-- Custom column: Nama (with link) -->
+                      <template #item-nama="item">
+                        <a
+                          href="#"
+                          @click.prevent="showDetail(item)"
+                          class="fw-semibold text-decoration-underline text-primary"
+                        >
+                          {{ item.nama }}
                         </a>
-                      </li>
-                    </ul>
-                  </nav>
+                      </template>
+
+                      <!-- Custom column: Anemia -->
+                      <template #item-anemia="{ anemia }">
+                        <span
+                          v-if="anemia === 'Anemia'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          Ya
+                        </span>
+                        <span v-else>{{ anemia }}</span>
+                      </template>
+
+                      <!-- Custom column: Kehamilan Berisiko -->
+                      <template #item-risiko="{ risiko }">
+                        <span
+                          v-if="risiko === 'Berisiko'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          Ya
+                        </span>
+                        <span v-else>{{ risiko }}</span>
+                      </template>
+
+                      <!-- Custom column: KEK -->
+                      <template #item-kek="{ kek }">
+                        <span
+                          v-if="kek === 'Ya' || kek === 'KEK'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          Ya
+                        </span>
+                        <span v-else>{{ kek }}</span>
+                      </template>
+
+                      <!-- Custom column: Intervensi -->
+                      <template #item-intervensi="{ intervensi }">
+                        <span
+                          v-if="intervensi === 'Ya'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          Ya
+                        </span>
+                        <span v-else>{{ intervensi }}</span>
+                      </template>
+
+                      <!-- Custom column: Tanggal Pemeriksaan -->
+                      <template #item-tanggal_pemeriksaan_terakhir="{ tanggal_pemeriksaan_terakhir }">
+                        {{ formatTanggal(tanggal_pemeriksaan_terakhir) }}
+                      </template>
+
+                      <!-- Empty state -->
+                      <template #empty-message>
+                        <div class="text-center py-4">
+                          <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                          <p class="text-muted mt-2">Tidak ada data ibu hamil yang ditemukan</p>
+                        </div>
+                      </template>
+
+                      <!-- Loading state -->
+                      <template #loading>
+                        <div class="text-center py-4">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <p class="text-muted mt-2">Memuat data...</p>
+                        </div>
+                      </template>
+                    </easy-data-table>
+
+                  </div>
                 </div>
               </div>
 
@@ -587,7 +535,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Pemeriksaan</h6>
+                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Status</h6>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -670,7 +618,7 @@
               </div>
 
               <!-- Detail Riwayat Anak -->
-              <div class="col-md-12 mt-4" v-if="selectedBumil">
+              <div class="col-md-12 mt-4" v-if="selectedBumil" id="detailSection">
                 <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
                   <!-- Tombol Close -->
                   <button
@@ -693,213 +641,211 @@
 
                     <!-- BODY CARD -->
                     <div class="card-body">
-                      <!-- Isi Profil Ibu Hamil -->
-                    </div>
-                  </div>
-
-                  <!-- Tabs -->
-                  <div class="p-3">
-                    <ul
-                      class="nav nav-pills justify-content-center mb-4 flex-wrap gap-2"
-                      id="bumilDetailTab"
-                      role="tablist"
-                    >
-                      <li class="nav-item" role="presentation">
-                        <button
-                          class="nav-link active"
-                          id="tab-profile-bumil"
-                          data-bs-toggle="tab"
-                          data-bs-target="#tab-pane-profile-bumil"
-                          type="button"
-                          role="tab"
+                      <!-- Tabs -->
+                      <div class="p-3">
+                        <ul
+                          class="nav nav-pills justify-content-center mb-4 flex-wrap gap-2"
+                          id="bumilDetailTab"
+                          role="tablist"
                         >
-                          <i class="bi bi-person-badge me-1"></i> Profil Ibu Hamil
-                        </button>
-                      </li>
-                      <li class="nav-item" role="presentation">
-                        <button
-                          class="nav-link"
-                          id="tab-kehamilan"
-                          data-bs-toggle="tab"
-                          data-bs-target="#tab-pane-kehamilan"
-                          type="button"
-                          role="tab"
-                        >
-                          <i class="bi bi-clipboard-heart me-1"></i> Data Kehamilan
-                        </button>
-                      </li>
-                    </ul>
+                          <li class="nav-item" role="presentation">
+                            <button
+                              class="nav-link active"
+                              id="tab-profile-bumil"
+                              data-bs-toggle="tab"
+                              data-bs-target="#tab-pane-profile-bumil"
+                              type="button"
+                              role="tab"
+                            >
+                              <i class="bi bi-person-badge me-1"></i> Profil Ibu Hamil
+                            </button>
+                          </li>
+                          <li class="nav-item" role="presentation">
+                            <button
+                              class="nav-link"
+                              id="tab-kehamilan"
+                              data-bs-toggle="tab"
+                              data-bs-target="#tab-pane-kehamilan"
+                              type="button"
+                              role="tab"
+                            >
+                              <i class="bi bi-clipboard-heart me-1"></i> Data Kehamilan
+                            </button>
+                          </li>
+                        </ul>
 
-                    <!-- Tab Content -->
-                    <div class="tab-content" id="bumilDetailTabContent">
-                      <!-- Profile Anak -->
-                      <div
-                        class="tab-pane fade show active"
-                        id="tab-pane-profile-bumil"
-                        role="tabpanel"
-                      >
-                        <div class="row g-3">
-                          <div class="col-md-6">
-                            <div class="card border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Identitas Ibu Hamil</h6>
-                              <table class="table table-borderless mb-0">
-                                <tbody>
-                                  <tr>
-                                    <td class="fw-semibold" style="width: 120px">Nama</td>
-                                    <td>:</td>
-                                    <td>{{ selectedBumil.nama }}</td>
-                                  </tr>
-                                  <tr>
-                                    <td class="fw-semibold">Usia</td>
-                                    <td>:</td>
-                                    <td>{{ selectedBumil.usia }} Tahun</td>
-                                  </tr>
-                                  <tr>
-                                    <td class="fw-semibold">Nama Suami</td>
-                                    <td>:</td>
-                                    <td>{{ selectedBumil.nama_suami }}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="bumilDetailTabContent">
+                          <!-- Profile Anak -->
+                          <div
+                            class="tab-pane fade show active"
+                            id="tab-pane-profile-bumil"
+                            role="tabpanel"
+                          >
+                            <div class="row g-3">
+                              <div class="col-md-6">
+                                <div class="card border-0 shadow-sm p-3 h-100">
+                                  <h6 class="fw-bold mb-3 text-danger">Identitas Ibu Hamil</h6>
+                                  <table class="table table-borderless mb-0">
+                                    <tbody>
+                                      <tr>
+                                        <td class="fw-semibold" style="width: 120px">Nama</td>
+                                        <td>:</td>
+                                        <td>{{ selectedBumil.nama }}</td>
+                                      </tr>
+                                      <tr>
+                                        <td class="fw-semibold">Usia</td>
+                                        <td>:</td>
+                                        <td>{{ selectedBumil.usia }} Tahun</td>
+                                      </tr>
+                                      <tr>
+                                        <td class="fw-semibold">Nama Suami</td>
+                                        <td>:</td>
+                                        <td>{{ selectedBumil.nama_suami }}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="card border-0 shadow-sm p-3 h-100">
+                                  <h6 class="fw-bold mb-3 text-danger">Alamat</h6>
+                                  <table class="table table-borderless mb-0">
+                                    <tbody>
+                                      <tr>
+                                        <td class="fw-semibold" style="width: 120px">Alamat</td>
+                                        <td>:</td>
+                                        <td>
+                                          {{ selectedBumil.provinsi }}, {{ selectedBumil.kota }},
+                                          {{ selectedBumil.kecamatan }}
+                                        </td>
+                                      </tr>
+                                      <tr>
+                                        <td class="fw-semibold">Desa</td>
+                                        <td>:</td>
+                                        <td>{{ selectedBumil.kelurahan }}</td>
+                                      </tr>
+                                      <tr>
+                                        <td class="fw-semibold">RW</td>
+                                        <td>:</td>
+                                        <td>0{{ selectedBumil.rw }}</td>
+                                      </tr>
+                                      <tr>
+                                        <td class="fw-semibold">RT</td>
+                                        <td>:</td>
+                                        <td>0{{ selectedBumil.rt }}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div class="col-md-6">
-                            <div class="card border-0 shadow-sm p-3 h-100">
-                              <h6 class="fw-bold mb-3 text-danger">Alamat</h6>
-                              <table class="table table-borderless mb-0">
-                                <tbody>
-                                  <tr>
-                                    <td class="fw-semibold" style="width: 120px">Alamat</td>
-                                    <td>:</td>
-                                    <td>
-                                      {{ selectedBumil.provinsi }}, {{ selectedBumil.kota }},
-                                      {{ selectedBumil.kecamatan }}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td class="fw-semibold">Desa</td>
-                                    <td>:</td>
-                                    <td>{{ selectedBumil.kelurahan }}</td>
-                                  </tr>
-                                  <tr>
-                                    <td class="fw-semibold">RW</td>
-                                    <td>:</td>
-                                    <td>0{{ selectedBumil.rw }}</td>
-                                  </tr>
-                                  <tr>
-                                    <td class="fw-semibold">RT</td>
-                                    <td>:</td>
-                                    <td>0{{ selectedBumil.rt }}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
 
-                      <!-- Data Kelahiran -->
-                      <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
-                        <div class="card bg-light border-0 shadow-sm p-3">
-                          <h6 class="fw-bold mb-3 text-danger">Data Kehamilan</h6>
-                          <div class="table-responsive">
-                            <table class="table table-sm table-striped align-middle">
-                              <thead>
-                                <tr class="small text-center align-middle">
-                                  <th style="width: 150px">Tanggal</th>
-                                  <th>Kehamilan ke</th>
-                                  <th>Risiko</th>
-                                  <th>TB <span class="fw-normal">(cm)</span></th>
-                                  <th>BB <span class="fw-normal">(kg)</span></th>
-                                  <th>Lila <span class="fw-normal">(cm)</span></th>
-                                  <th>KEK</th>
-                                  <th>Hb</th>
-                                  <th>Anemia</th>
-                                  <th>Terpapar Asap Rokok</th>
-                                  <th>Mendapat Bantuan Sosial</th>
-                                  <th>Jamban Sehat</th>
-                                  <th>Sumber Air Bersih</th>
-                                  <th>Keluhan</th>
-                                  <th>Intervensi</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr
-                                  v-for="(item, i) in selectedBumil.kehamilan"
-                                  :key="'kehamilan-' + i"
-                                  class="small text-center"
-                                >
-                                  <td>{{ item.tgl_pendampingan }}</td>
-                                  <td>{{ item.kehamilan_ke }}</td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
+                          <!-- Data Kelahiran -->
+                          <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
+                            <div class="card bg-light border-0 shadow-sm p-3">
+                              <h6 class="fw-bold mb-3 text-danger">Data Kehamilan</h6>
+                              <div class="table-responsive">
+                                <table class="table table-sm table-striped align-middle">
+                                  <thead>
+                                    <tr class="small text-center align-middle">
+                                      <th style="width: 150px">Tanggal</th>
+                                      <th>Kehamilan ke</th>
+                                      <th>Risiko</th>
+                                      <th>TB <span class="fw-normal">(cm)</span></th>
+                                      <th>BB <span class="fw-normal">(kg)</span></th>
+                                      <th>Lila <span class="fw-normal">(cm)</span></th>
+                                      <th>KEK</th>
+                                      <th>Hb</th>
+                                      <th>Anemia</th>
+                                      <th>Terpapar Asap Rokok</th>
+                                      <th>Mendapat Bantuan Sosial</th>
+                                      <th>Jamban Sehat</th>
+                                      <th>Sumber Air Bersih</th>
+                                      <th>Keluhan</th>
+                                      <th>Intervensi</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr
+                                      v-for="(item, i) in selectedBumil.kehamilan"
+                                      :key="'kehamilan-' + i"
+                                      class="small text-center"
                                     >
-                                      {{ item.risiko || '-' }}
-                                    </span>
-                                  </td>
-                                  <td>{{ item.tb }}</td>
-                                  <td>{{ item.bb }}</td>
-                                  <td>{{ item.lila }}</td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.kek === 'KEK' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.kek || '-' }}
-                                    </span>
-                                  </td>
-                                  <td>{{ item.hb }}</td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.anemia === 'Ya' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.anemia || '-' }}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.asap_rokok === '1' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.asap_rokok === '0' ? 'Ya' : 'Tidak' }}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="
-                                        item.bantuan_sosial === '1' ? 'bg-danger' : 'text-dark'
-                                      "
-                                    >
-                                      {{ item.bantuan_sosial === '0' ? 'Ya' : 'Tidak' }}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="item.jamban_sehat === '0' ? 'bg-danger' : 'text-dark'"
-                                    >
-                                      {{ item.jamban_sehat === '0' ? 'Tidak' : 'Ya' }}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span
-                                      class="badge"
-                                      :class="
-                                        item.sumber_air_bersih === '0' ? 'bg-danger' : 'text-dark'
-                                      "
-                                    >
-                                      {{ item.sumber_air_bersih === '0' ? 'Tidak' : 'Ya' }}
-                                    </span>
-                                  </td>
-                                  <td>{{ item.keluhan }}</td>
-                                  <td>{{ item.intervensi }}</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                                      <td>{{ item.tgl_pendampingan }}</td>
+                                      <td>{{ item.kehamilan_ke }}</td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="item.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
+                                        >
+                                          {{ item.risiko || '-' }}
+                                        </span>
+                                      </td>
+                                      <td>{{ item.tb }}</td>
+                                      <td>{{ item.bb }}</td>
+                                      <td>{{ item.lila }}</td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="item.kek === 'KEK' ? 'bg-danger' : 'text-dark'"
+                                        >
+                                          {{ item.kek || '-' }}
+                                        </span>
+                                      </td>
+                                      <td>{{ item.hb }}</td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="item.anemia === 'Ya' ? 'bg-danger' : 'text-dark'"
+                                        >
+                                          {{ item.anemia || '-' }}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="item.asap_rokok === '1' ? 'bg-danger' : 'text-dark'"
+                                        >
+                                          {{ item.asap_rokok === '0' ? 'Ya' : 'Tidak' }}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="
+                                            item.bantuan_sosial === '1' ? 'bg-danger' : 'text-dark'
+                                          "
+                                        >
+                                          {{ item.bantuan_sosial === '0' ? 'Ya' : 'Tidak' }}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="item.jamban_sehat === '0' ? 'bg-danger' : 'text-dark'"
+                                        >
+                                          {{ item.jamban_sehat === '0' ? 'Tidak' : 'Ya' }}
+                                        </span>
+                                      </td>
+                                      <td>
+                                        <span
+                                          class="badge"
+                                          :class="
+                                            item.sumber_air_bersih === '0' ? 'bg-danger' : 'text-dark'
+                                          "
+                                        >
+                                          {{ item.sumber_air_bersih === '0' ? 'Tidak' : 'Ya' }}
+                                        </span>
+                                      </td>
+                                      <td>{{ item.keluhan }}</td>
+                                      <td>{{ item.intervensi }}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -908,6 +854,15 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
+              @click="exportDataIbuHamilExcel"
+            >
+              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+              Export
+            </button>
           </div>
         </div>
         <CopyRight class="mt-auto" />
@@ -922,8 +877,12 @@ import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import Welcome from '@/components/Welcome.vue'
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
+import { exportExcel } from "@/utils/exportExcel";
+import { mapDataIbuHamilToExcel } from "@/mappers/dataIbuHamilMapper";
 
 const API_PORT = 8000
 const { protocol, hostname } = window.location
@@ -932,9 +891,22 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Pregnancy',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable   },
   data() {
     return {
+      headersBumil: [
+        { text: 'Nama', value: 'nama', sortable: true, width: 200 },
+        { text: 'Anemia', value: 'anemia', sortable: true, width: 100 },
+        { text: 'Kehamilan Berisiko', value: 'risiko', sortable: true, width: 150 },
+        { text: 'KEK', value: 'kek', sortable: true, width: 80 },
+        { text: 'Intervensi', value: 'intervensi', sortable: true },
+        { text: 'Posyandu', value: 'posyandu', sortable: true },
+        { text: 'RW', value: 'rw', sortable: true, width: 80 },
+        { text: 'RT', value: 'rt', sortable: true, width: 80 },
+        { text: 'Usia (Tahun)', value: 'usia', sortable: true, width: 100 },
+        { text: 'Tanggal Pemeriksaan', value: 'tanggal_pemeriksaan_terakhir', sortable: true, width: 150 }
+      ],
+      periodeTitle: '',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -970,7 +942,7 @@ export default {
     }
   },
   setup() {
-    const bumil = ref([])
+    // const bumil = ref([])
     const searchQuery = ref('')
     const currentPage = ref(1)
     const perPage = ref(10)
@@ -980,7 +952,11 @@ export default {
 
     const applySearch = () => {
       const query = searchQuery.value.toLowerCase()
-      filteredData.value = bumil.value.filter((c) =>
+      console.log(" Searching for:", query);
+      console.log("Bumil Value:", window);
+      
+      
+      filteredData.value = window.bumil.filter((c) =>
         Object.values(c).some((v) => String(v).toLowerCase().includes(query)),
       )
       currentPage.value = 1
@@ -1133,6 +1109,25 @@ export default {
     },
   },
   methods: {
+    exportDataIbuHamilExcel(){
+      const excelData = mapDataIbuHamilToExcel(this.filteredData);
+      console.log("Mapped Excel Data:", excelData);
+
+      exportExcel({
+        data: excelData,
+        fileName: "Data_Ibu_Hamil.xlsx",
+        sheetName: "Ibu Hamil",
+      });
+    },
+    formatTanggal(tanggal) {
+      if (!tanggal || tanggal === '-') return '-'
+      try {
+        return new Date(tanggal).toISOString().slice(0, 10)
+      } catch (e) {
+        if(e) return tanggal
+      }
+    },
+
     downloadRiwayat() {
       if (!this.selectedBumil) {
         alert('Silakan pilih ibu hamil terlebih dahulu.')
@@ -1339,8 +1334,16 @@ export default {
           risiko: lastKehamilan.risiko || '-', // ← ini tambahan
         }
 
-        // optional console debug
-        //console.log('selectedBumil:', this.selectedBumil);
+        // tunggu DOM ter-render
+        await nextTick()
+
+        const el = document.getElementById('detailSection')
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
       } catch (error) {
         console.error('Gagal load detail bumil:', error)
         this.selectedBumil = null
@@ -1369,7 +1372,10 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
-      ;(await this.loadPregnancy())
+      (
+        this.periodeTitle = this.periodeLabel,
+        await this.loadPregnancy()
+      )
     },
     async resetFilter() {
       Object.keys(this.filters).forEach((k) => {
@@ -1524,6 +1530,7 @@ export default {
     try {
       await this.getWilayahUser()
       await this.loadPregnancy() // kasih await juga kalau ini async
+      this.periodeTitle = this.periodeLabel
       this.generatePeriodeOptions()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
@@ -1819,5 +1826,35 @@ export default {
 #responsive-pagination .page-item.disabled .page-link {
   pointer-events: none;
   opacity: 0.5;
+}
+
+.my-custom-table {
+  --easy-table-header-background-color: #d1e7dd;
+  --easy-table-border: 1px solid #dee2e6;
+  --easy-table-row-border: 1px solid #dee2e6;
+}
+
+.my-custom-header {
+  background-color: #d1e7dd !important;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Badge styling */
+.badge {
+  font-size: 12px;
+  padding: 4px 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .my-custom-table {
+    font-size: 12px;
+  }
+  
+  .badge {
+    font-size: 10px;
+    padding: 4px 8px !important;
+  }
 }
 </style>
