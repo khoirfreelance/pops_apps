@@ -2490,7 +2490,7 @@ class ChildrenController extends Controller
                 'kecamatan'=> $anak->kecamatan,
                 'kota'     => $anak->kota,
                 'provinsi' => $anak->provinsi,
-
+                'nama_posyandu'=> $anak->posyandu,
                 'raw' => [
                     'posyandu'     => $posyandu,
                     'intervensi'   => $intervensi,

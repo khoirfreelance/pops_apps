@@ -341,7 +341,7 @@
                       <!-- PERCENT -->
                       <p
                         class="position-absolute bottom-0 end-0 mb-1 me-2 small"
-                        :class="`text-${item.color}`" 
+                        :class="`text-${item.color}`"
                         style="font-size: 16px;"
                       >
                         {{ item.percent }}
@@ -546,9 +546,9 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h2 class="fw-bold text-start text-secondary mt-2">Riwayat Status</h2>
+                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Status</h6>
                   <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle text-center">
+                    <table class="table table-bordered table-sm align-middle text-center" style="font-size: 12px !important">
                       <thead class="table-light">
                         <tr>
                           <th rowspan="2">Tanggal</th>
@@ -745,7 +745,7 @@
                         <div class="card bg-light border-0 shadow-sm p-3">
                           <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Pemeriksaan</h6>
                           <div class="table-responsive">
-                            <table class="table table-sm table-striped align-middle">
+                            <table class="table table-sm table-striped align-middle" style="font-size: 12px">
                               <thead class="table-success">
                                 <tr class="text-center align-middle">
                                   <th style="width: 150px">Tanggal</th>
@@ -1690,7 +1690,7 @@ export default {
   .my-custom-table {
     font-size: 11px;
   }
-  
+
   .badge {
     font-size: 10px;
     padding: 4px 8px !important;

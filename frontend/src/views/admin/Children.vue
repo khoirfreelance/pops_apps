@@ -834,7 +834,8 @@
                           :class="{
                             'bg-danger px-3 py-2': tbu === 'Severely Stunted',
                             'bg-warning text-dark px-3 py-2': tbu === 'Stunted',
-                            'bg-light text-dark px-3 py-2': tbu === 'Normal',
+                            'text-dark px-3 py-2': tbu === 'Normal',
+                            'bg-secondary px-3 py-2': tbu === 'Tinggi',
                           }"
                         >
                           {{ tbu }}
@@ -848,7 +849,8 @@
                           :class="{
                             'bg-danger px-3 py-2': bbu === 'Severely Underweight',
                             'bg-warning text-dark px-3 py-2': bbu === 'Underweight',
-                            'bg-light text-dark px-3 py-2': bbu === 'Normal',
+                            'text-dark px-3 py-2': bbu === 'Normal',
+                            'bg-secondary px-3 py-2': bbu === 'Risiko BB Lebih',
                           }"
                         >
                           {{ bbu }}
@@ -862,7 +864,7 @@
                           :class="{
                             'bg-danger px-3 py-2': bbtb === 'Severely Wasted',
                             'bg-warning text-dark px-3 py-2': bbtb === 'Wasted',
-                            'bg-light text-dark px-3 py-2': bbtb === 'Normal',
+                            'text-dark px-3 py-2': bbtb === 'Normal',
                             'bg-secondary px-3 py-2': bbtb !== 'Normal' && bbtb !== 'Wasted' && bbtb !== 'Severely Wasted',
                           }"
                         >
@@ -920,14 +922,14 @@
                   </p>
 
                   <p class="text-muted mb-0 text-capitalize" style="font-size: 14px">
-                    {{ selectedAnak.alamat || 'Desa Wonosari, Kec. Bojong Gede' }}
+                    {{ selectedAnak.alamat || '-' }}
                   </p>
-                  <p class="text-muted" style="font-size: 14px">{{ selectedAnak.posyandu || 'Posyandu Mawar' }}</p>
+                  <p class="text-muted" style="font-size: 14px">{{ selectedAnak.nama_posyandu || '-' }}</p>
 
                   <!-- Badge Status Gizi -->
                   <div class="mb-3">
                     <span
-                      class="badge px-3 py-2 small"
+                      class="badge px-3 py-2"
                       :class="{
                         'bg-danger': ['Severely Wasted', 'Obesitas'].includes(
                           selectedAnak.status_gizi,
@@ -945,9 +947,9 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h2 class="fw-bold text-start text-secondary mt-2">Riwayat Penimbangan</h2>
+                  <p class="fw-bold text-start text-secondary mb-0" style="font-size: 16px">Riwayat Penimbangan</p>
                   <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle text-center">
+                    <table id="riwayat-card" class="table table-bordered table-sm align-middle text-center" style="font-size: 12px">
                       <thead class="table-light">
                         <tr>
                           <th>Tanggal</th>
@@ -970,7 +972,7 @@
                                 'bg-warning text-dark': ['Risiko BB Lebih', 'Underweight'].includes(
                                   r.bbu,
                                 ),
-                                'bg-success': r.bbu === 'Normal',
+                                'text-dark': r.bbu === 'Normal',
                               }"
                             >
                               {{ r.bbu }}
@@ -982,7 +984,7 @@
                               :class="{
                                 'bg-danger': r.tbu === 'Severely Stunted',
                                 'bg-warning text-dark': r.tbu === 'Stunted',
-                                'bg-success': r.tbu === 'Normal',
+                                'text-dark': r.tbu === 'Normal',
                               }"
                             >
                               {{ r.tbu }}
@@ -997,8 +999,9 @@
                                   'Wasted',
                                   'Possible risk of Overweight',
                                   'Overweight',
+                                  'Obesitas',
                                 ].includes(r.bbtb),
-                                'bg-success': r.bbtb === 'Normal',
+                                'text-dark': r.bbtb === 'Normal',
                               }"
                             >
                               {{ r.bbtb }}
@@ -1010,11 +1013,10 @@
                   </div>
 
                   <!-- Riwayat Intervensi -->
-                  <h2 class="fw-bold text-start text-secondary mt-3">
-                    Riwayat Intervensi / Bantuan
-                  </h2>
+                  <p class="fw-bold text-start text-secondary mb-0" style="font-size: 16px">Riwayat Intervensi / Bantuan</p>
+
                   <div class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle text-center">
+                    <table class="table table-bordered table-sm align-middle text-center" style="font-size: 12px">
                       <thead class="table-light">
                         <tr>
                           <th>Tanggal</th>
@@ -1219,7 +1221,61 @@
                         <div class="card bg-light border-0 shadow-sm p-3">
                           <h6 class="tab-pane-sub-title mb-3 text-danger">Riwayat Penimbangan</h6>
                           <div class="table-responsive mb-4">
-                            <table class="table table-sm table-hover align-middle">
+                            <EasyDataTable
+                              :headers="headersRiwayat"
+                              :items="itemsRiwayat"
+                              table-class-name="table table-sm table-hover align-middle"
+                              header-text-direction="center"
+                              header-class-name="my-custom-header"
+                              :rows-per-page="perPage"
+                              :rows-items="perPageOptions"
+                              :rows-per-page-text="'Rows per page'"
+                              show-index
+                              alternating
+                              border-cell
+                            >
+                              <!-- Tanggal -->
+                              <template #item-tanggal="{ tanggal }">
+                                {{ formatDate(tanggal) }}
+                              </template>
+
+                              <!-- Status BB -->
+                              <template #item-bbu="{ bbu }">
+                                <span
+                                  :class="{
+                                    'text-danger': bbu === 'Severely Underweight',
+                                    'text-secondary': bbu === 'Underweight'
+                                  }"
+                                >
+                                  {{ bbu }}
+                                </span>
+                              </template>
+
+                              <!-- Status TB -->
+                              <template #item-tbu="{ tbu }">
+                                <span
+                                  :class="{
+                                    'text-danger': tbu === 'Severely Stunted',
+                                    'text-secondary': tbu === 'Stunted'
+                                  }"
+                                >
+                                  {{ tbu }}
+                                </span>
+                              </template>
+
+                              <!-- Status BB/TB -->
+                              <template #item-bbtb="{ bbtb }">
+                                <span
+                                  :class="{
+                                    'text-danger': bbtb === 'Severely Wasted',
+                                    'text-secondary': bbtb === 'Wasted'
+                                  }"
+                                >
+                                  {{ bbtb }}
+                                </span>
+                              </template>
+                            </EasyDataTable>
+                            <!-- <table class="table table-sm table-hover align-middle">
                               <thead class="table-secondary">
                                 <tr>
                                   <th>Tanggal</th>
@@ -1259,7 +1315,7 @@
                                   </td>
                                 </tr>
                               </tbody>
-                            </table>
+                            </table> -->
                           </div>
 
                           <div class="row g-3">
@@ -1529,6 +1585,12 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome, EasyDataTable },
   data() {
     return {
+      headersRiwayat: [
+        { text: "Tanggal", value: "tanggal" },
+        { text: "Status BB", value: "bbu" },
+        { text: "Status TB", value: "tbu" },
+        { text: "Status BB/TB", value: "bbtb" },
+      ],
       headersChildren: [
         { text: 'Nama', value: 'nama', sortable: true, width: 200 },
         { text: 'Posyandu', value: 'posyandu', sortable: true },
@@ -2183,6 +2245,7 @@ export default {
         provinsi: props.provinsi || '-',
         kota: props.kota || '-',
         status_gizi: props.bbtb || '-',
+        nama_posyandu: prop.nama_posyandu || '-',
 
         // --- Orang Tua (keluarga[0]) ---
         nama_ayah: keluargaList?.nama_ayah || '-',
@@ -2243,6 +2306,7 @@ export default {
           bb: p.bb || '-',
         })),
       }
+      console.log(this.selectedAnak);
 
       this.$nextTick(() => {
         this.renderKMSChart('bbu')
@@ -2501,6 +2565,10 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   computed: {
+    itemsRiwayat() {
+      return [...(this.selectedAnak?.riwayat_penimbangan || [])]
+        .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
+    },
     // eslint-disable-next-line vue/return-in-computed-property
     periodeLabel() {
       // DEFAULT → pakai bulan berjalan
@@ -3027,10 +3095,12 @@ label {
   .my-custom-table {
     font-size: 12px;
   }
-  
+
   .badge {
     font-size: 10px;
     padding: 4px 8px !important;
   }
 }
+
+
 </style>
