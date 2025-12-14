@@ -830,7 +830,7 @@
                       <!-- Custom column: Status TB/U -->
                       <template #item-tbu="{ tbu }">
                         <span
-                          class="badge"
+                          class="badge badge-wrap"
                           :class="{
                             'bg-danger px-3 py-2': tbu === 'Severely Stunted',
                             'bg-warning text-dark px-3 py-2': tbu === 'Stunted',
@@ -845,7 +845,7 @@
                       <!-- Custom column: Status BB/U -->
                       <template #item-bbu="{ bbu }">
                         <span
-                          class="badge"
+                          class="badge badge-wrap"
                           :class="{
                             'bg-danger px-3 py-2': bbu === 'Severely Underweight',
                             'bg-warning text-dark px-3 py-2': bbu === 'Underweight',
@@ -860,7 +860,7 @@
                       <!-- Custom column: Status BB/TB -->
                       <template #item-bbtb="{ bbtb }">
                         <span
-                          class="badge"
+                          class="badge badge-wrap"
                           :class="{
                             'bg-danger px-3 py-2': bbtb === 'Severely Wasted',
                             'bg-warning text-dark px-3 py-2': bbtb === 'Wasted',
@@ -952,7 +952,7 @@
                     <table id="riwayat-card" class="table table-bordered table-sm align-middle text-center" style="font-size: 12px">
                       <thead class="table-light">
                         <tr>
-                          <th>Tanggal</th>
+                          <th width="100">Tanggal</th>
                           <th>Status BB/U</th>
                           <th>Status TB/U</th>
                           <th>Status BB/TB</th>
@@ -966,7 +966,7 @@
                           <td>{{ this.formatDate(r.tanggal) }}</td>
                           <td>
                             <span
-                              class="badge"
+                              class="badge badge-wrap"
                               :class="{
                                 'bg-danger': r.bbu === 'Severely Underweight',
                                 'bg-warning text-dark': ['Risiko BB Lebih', 'Underweight'].includes(
@@ -980,7 +980,7 @@
                           </td>
                           <td>
                             <span
-                              class="badge"
+                              class="badge badge-wrap"
                               :class="{
                                 'bg-danger': r.tbu === 'Severely Stunted',
                                 'bg-warning text-dark': r.tbu === 'Stunted',
@@ -992,7 +992,7 @@
                           </td>
                           <td>
                             <span
-                              class="badge"
+                              class="badge badge-wrap"
                               :class="{
                                 'bg-danger': r.bbtb === 'Severely Wasted',
                                 'bg-warning text-dark': [
@@ -1036,8 +1036,7 @@
 
                   <!-- Tombol Download -->
                   <button
-                    style="background-color: #0d8cff"
-                    class="btn btn-primary rounded-pill px-4 mt-2 fw-semibold"
+                    class="btn btn-gradient rounded-pill px-4 mt-2 fw-semibold"
                     @click="downloadRiwayat"
                   >
                     Download Riwayat
@@ -3102,5 +3101,13 @@ label {
   }
 }
 
+.badge-wrap {
+  white-space: normal !important; /* allow wrap */
+  word-break: break-word;
+  text-align: center;
+  max-width: 110px; /* sesuaikan kolom */
+  display: inline-block;
+  line-height: 1.2;
+}
 
 </style>
