@@ -765,10 +765,8 @@
                   class="card border-0 rounded-3 overflow-hidden custom-card-size shadow text-center"
                   style="width: 108%"
                 >
-                  <h3 class="text-muted fw-bold">Total Anak Balita</h3>
-                  <div class="flex-grow-1 d-flex flex-column justify-content-center">
+                  <h3 class="text-muted fw-bold py-3">Total Anak Balita</h3>
                     <h1 class="fw-bold text-success mb-0">{{ totalAnak }}</h1>
-                  </div>
                 </div>
               </div>
             </div>
@@ -779,180 +777,118 @@
             <h5 class="table-name text-success mb-3">Data Anak</h5>
             <div class="row mt-4">
               <div :class="selectedAnak ? 'col-md-8' : 'col-md-12'">
-                <div class="card bg-light p-2">
-                  <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-success">
-                        <tr>
-                          <th
-                            @click="sortBy('no')"
-                            class="cursor-pointer align-middle text-center frozen-column th-font"
-                            rowspan="2"
-                          >
-                            No <SortIcon :field="'no'" />
-                          </th>
-                          <th
-                            @click="sortBy('nama')"
-                            class="cursor-pointer align-middle text-center frozen-column th-font"
-                            rowspan="2"
-                          >
-                            Nama <SortIcon :field="'nama'" />
-                          </th>
-                          <th
-                            @click="sortBy('posyandu')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            Posyandu <SortIcon :field="'posyandu'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('usia')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            Usia (bln) <SortIcon :field="'usia'" />
-                          </th>
-                          <th
-                            style="width: 60px"
-                            @click="sortBy('gender')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            JK <SortIcon :field="'gender'" />
-                          </th>
-                          <th
-                            @click="sortBy('tgl_ukur')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            Tgl Ukur Terakhir <SortIcon :field="'tgl_ukur'" />
-                          </th>
-                          <th
-                            @click="sortBy('intervensi')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            Intervensi <SortIcon :field="'intervensi'" />
-                          </th>
-                          <th colspan="3" class="text-center th-font">Status</th>
-                          <th
-                            @click="sortBy('rw')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            RW <SortIcon :field="'rw'" />
-                          </th>
-                          <th
-                            @click="sortBy('rt')"
-                            class="cursor-pointer align-middle text-center th-font"
-                            rowspan="2"
-                          >
-                            RT <SortIcon :field="'rt'" />
-                          </th>
-                        </tr>
-                        <tr>
-                          <th @click="sortBy('tbu')" class="cursor-pointer text-center th-font">
-                            TB/U <SortIcon :field="'tbu'" />
-                          </th>
-                          <th @click="sortBy('bbu')" class="cursor-pointer text-center th-font">
-                            BB/U <SortIcon :field="'bbu'" />
-                          </th>
-                          <th @click="sortBy('bbtb')" class="cursor-pointer text-center th-font">
-                            BB/TB <SortIcon :field="'bbtb'" />
-                          </th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        <tr v-for="(anak,i) in paginatedData" :key="anak.id">
-                          <td>{{ (currentPage - 1) * perPage + i + 1 }}</td>
-                          <td class="text-start frozen-column td-font">
-                            <a
-                              href="#"
-                              @click.prevent="showDetail(anak)"
-                              class="fw-semibold text-decoration-underline text-primary td-font"
-                            >
-                              {{ anak.nama }}
-                            </a>
-                          </td>
-                          <td class="td-font">{{ anak.posyandu }}</td>
-                          <td class="td-font">{{ anak.usia }}</td>
-                          <td class="td-font">{{ anak.gender }}</td>
-                          <td class="td-font">{{ anak.tgl_ukur }}</td>
-                          <td class="td-font">{{ anak.intervensi || '-' }}</td>
-                          <td class="td-font">
-                            <span class="td-font"
-                              :class="{
-                                'badge px-3 py-2 bg-danger': anak.tbu === 'Severely Stunted',
-                                'badge px-3 py-2 bg-warning text-dark': anak.tbu === 'Stunted',
-                                'text-dark': anak.tbu === 'Normal',
-                              }"
-                            >
-                              {{ anak.tbu }}
-                            </span>
-                          </td>
-                          <td>
-                            <span class="td-font"
-                              :class="{
-                                'badge px-3 py-2 bg-danger': anak.bbu === 'Severely Underweight',
-                                'badge px-3 py-2 bg-warning text-dark': anak.bbu === 'Underweight',
-                                'text-dark': anak.bbu === 'Normal',
-                              }"
-                            >
-                              {{ anak.bbu }}
-                            </span>
-                          </td>
-                          <td>
-                            <span class="td-font"
-                              :class="{
-                                'badge px-3 py-2 bg-danger': anak.bbtb === 'Severely Wasted',
-                                'badge px-3 py-2 bg-warning text-dark': anak.bbtb === 'Wasted',
-                                'text-dark': anak.bbtb === 'Normal',
-                              }"
-                            >
-                              {{ anak.bbtb }}
-                            </span>
-                          </td>
-                          <td class="td-font">{{ anak.rw }}</td>
-                          <td class="td-font">{{ anak.rt }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <!-- Pagination -->
-                  <nav>
-                    <ul class="pagination justify-content-center">
-                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)"
-                          >Prev</a
-                        >
-                      </li>
-
-                      <li
-                        class="page-item"
-                        v-for="page in visiblePages"
-                        :key="page"
-                        :class="{ active: currentPage === page, disabled: page === '...' }"
+                <div class="card shadow-sm">
+                  <div class="card-body">
+                    <!-- Search + Rows per page control -->
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        style="max-width: 300px;"
+                        placeholder="Ketik Nama atau NIK"
+                        v-model="searchQuery"
+                        @input="applySearch"
                       >
-                        <a
-                          v-if="page !== '...'"
-                          class="page-link"
-                          href="#"
-                          @click.prevent="changePage(page)"
-                          >{{ page }}</a
-                        >
-                        <span v-else class="page-link">...</span>
-                      </li>
+                    </div>
 
-                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)"
-                          >Next</a
+                    <!-- Easy Data Table -->
+                    <easy-data-table
+                      :headers="headersChildren"
+                      :items="filteredData"
+                      :search-value="searchQuery"
+                      :rows-per-page="perPage"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index
+                      alternating
+                      border-cell
+                      :loading="isLoading"
+                    >
+                      <!-- Custom column: Nama (with link) -->
+                      <template #item-nama="{ nama, nik }">
+                        <a
+                          href="#"
+                          @click.prevent="showDetailByNik(nik)"
+                          class="fw-semibold text-decoration-underline text-primary"
                         >
-                      </li>
-                    </ul>
-                  </nav>
+                          {{ nama }}
+                        </a>
+                      </template>
+
+                      <!-- Custom column: Jenis Kelamin -->
+                      <template #item-gender="{ gender }">
+                        <span>{{ gender === 'L' ? 'L' : gender === 'P' ? 'P' : gender }}</span>
+                      </template>
+
+                      <!-- Custom column: Tanggal Ukur -->
+                      <template #item-tgl_ukur="{ tgl_ukur }">
+                        {{ formatDate(tgl_ukur) }}
+                      </template>
+
+                      <!-- Custom column: Status TB/U -->
+                      <template #item-tbu="{ tbu }">
+                        <span
+                          class="badge"
+                          :class="{
+                            'bg-danger px-3 py-2': tbu === 'Severely Stunted',
+                            'bg-warning text-dark px-3 py-2': tbu === 'Stunted',
+                            'bg-light text-dark px-3 py-2': tbu === 'Normal',
+                          }"
+                        >
+                          {{ tbu }}
+                        </span>
+                      </template>
+
+                      <!-- Custom column: Status BB/U -->
+                      <template #item-bbu="{ bbu }">
+                        <span
+                          class="badge"
+                          :class="{
+                            'bg-danger px-3 py-2': bbu === 'Severely Underweight',
+                            'bg-warning text-dark px-3 py-2': bbu === 'Underweight',
+                            'bg-light text-dark px-3 py-2': bbu === 'Normal',
+                          }"
+                        >
+                          {{ bbu }}
+                        </span>
+                      </template>
+
+                      <!-- Custom column: Status BB/TB -->
+                      <template #item-bbtb="{ bbtb }">
+                        <span
+                          class="badge"
+                          :class="{
+                            'bg-danger px-3 py-2': bbtb === 'Severely Wasted',
+                            'bg-warning text-dark px-3 py-2': bbtb === 'Wasted',
+                            'bg-light text-dark px-3 py-2': bbtb === 'Normal',
+                            'bg-secondary px-3 py-2': bbtb !== 'Normal' && bbtb !== 'Wasted' && bbtb !== 'Severely Wasted',
+                          }"
+                        >
+                          {{ bbtb }}
+                        </span>
+                      </template>
+
+                      <!-- Empty state -->
+                      <template #empty-message>
+                        <div class="text-center py-4">
+                          <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                          <p class="text-muted mt-2">Tidak ada data yang ditemukan</p>
+                        </div>
+                      </template>
+
+                      <!-- Loading state -->
+                      <template #loading>
+                        <div class="text-center py-4">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <p class="text-muted mt-2">Memuat data...</p>
+                        </div>
+                      </template>
+                    </easy-data-table>
+
+                  </div>
                 </div>
               </div>
 
@@ -1507,6 +1443,15 @@
               </div>
             </div>
           </div>
+          <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
+              @click="exportDataAnakExcel"
+            >
+              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+              Export
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1526,6 +1471,8 @@ import axios from 'axios'
 import wfa from '@/assets/wfa.json'
 import hfa from '@/assets/hfa.json'
 import wfh from '@/assets/wfh.json'
+import { exportExcel } from "@/utils/exportExcel";
+import { mapDataAnakToExcel } from "@/mappers/dataAnakMapper";
 
 import { ref, computed } from 'vue'
 import {
@@ -1540,6 +1487,8 @@ import {
   Tooltip,
   Filler,
 } from 'chart.js'
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
 
 Chart.register(
   LineController,
@@ -1554,10 +1503,10 @@ Chart.register(
 )
 
 // Simple sort icon component
-const SortIcon = {
-  props: ['field'],
-  template: `<span v-if="$parent.sortKey === field">{{ $parent.sortDir === 'asc' ? '▲' : '▼' }}</span>`,
-}
+// const SortIcon = {
+//   props: ['field'],
+//   template: `<span v-if="$parent.sortKey === field">{{ $parent.sortDir === 'asc' ? '▲' : '▼' }}</span>`,
+// }
 
 // PORT backend kamu
 const API_PORT = 8000
@@ -1576,9 +1525,22 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Children',
-  components: { NavbarAdmin, CopyRight, HeaderAdmin, SortIcon, Welcome },
+  components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome, EasyDataTable },
   data() {
     return {
+      headersChildren: [
+        { text: 'Nama', value: 'nama', sortable: true, width: 200 },
+        { text: 'Posyandu', value: 'posyandu', sortable: true },
+        { text: 'Usia (bln)', value: 'usia', sortable: true, width: 100 },
+        { text: 'JK', value: 'gender', sortable: true, width: 60 },
+        { text: 'Tgl Ukur Terakhir', value: 'tgl_ukur', sortable: true, width: 150 },
+        { text: 'Intervensi', value: 'intervensi', sortable: true },
+        { text: 'TB/U', value: 'tbu', sortable: true, width: 120 },
+        { text: 'BB/U', value: 'bbu', sortable: true, width: 120 },
+        { text: 'BB/TB', value: 'bbtb', sortable: true, width: 120 },
+        { text: 'RW', value: 'rw', sortable: true, width: 80 },
+        { text: 'RT', value: 'rt', sortable: true, width: 80 }
+      ],
       chartBBTB: null,
       chartBB: null,
       chartTB: null,
@@ -1676,6 +1638,8 @@ export default {
 
     const applySearch = () => {
       const query = searchQuery.value.toLowerCase()
+      console.log(" Searching for:", query);
+      console.log("Childern Value:", window);
       filteredData.value = window.children.filter((c) =>
         Object.values(c).some((v) => String(v).toLowerCase().includes(query)),
       )
@@ -1750,6 +1714,21 @@ export default {
     }
   },
   methods: {
+    exportDataAnakExcel(){
+        const excelData = mapDataAnakToExcel(this.filteredData);
+        exportExcel({
+          data: excelData,
+          fileName: "Data_Gizi_Anak.xlsx",
+          sheetName: "Gizi Anak",
+      });
+    },
+    showDetailByNik(nik) {
+      const anak = this.filteredData.find(a => a.nik === nik)
+      if (anak) {
+        this.showDetail(anak)
+      }
+    },
+
     downloadRiwayat() {
       if (!this.selectedAnak) {
         alert('Silakan pilih anak terlebih dahulu.')
@@ -1848,7 +1827,6 @@ export default {
           const keluarga = item.keluarga?.[0] || {};
           const pendamping = item.pendampingan?.at(-1) || {};
           const posyandu = item.posyandu?.at(-1) || {};
-          // eslint-disable-next-line no-unused-vars
           const lastIntervensi = item.intervensi?.at(-1);
 
           return {
@@ -3017,5 +2995,29 @@ label {
 }
 .td-font{
   font-size: 14px;
+}
+
+.my-custom-table {
+  --easy-table-header-background-color: #d1e7dd;
+  --easy-table-border: 1px solid #dee2e6;
+  --easy-table-row-border: 1px solid #dee2e6;
+}
+
+.my-custom-header {
+  background-color: #d1e7dd !important;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .my-custom-table {
+    font-size: 12px;
+  }
+  
+  .badge {
+    font-size: 10px;
+    padding: 4px 8px !important;
+  }
 }
 </style>

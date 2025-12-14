@@ -325,9 +325,10 @@
                 >
                   <div
                     class="card border-0 rounded-3 overflow-hidden custom-card-size shadow"
-                    :class="`border-start border-4 border-${item.color}`"
+                    :class="index < 3 ? `border-start border-4 border-${item.color}` : ''"
                     style="width: 108%"
                   >
+                    <!-- Card untuk index 0-2 (tampilan normal dengan border samping) -->
                     <div v-if="index < 3" class="card-body position-relative">
                       <!-- TITLE -->
                       <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
@@ -337,27 +338,25 @@
                         {{ item.value }}
                       </h3>
 
-                      <!-- PERCENT OR ICON -->
+                      <!-- PERCENT -->
                       <p
                         class="position-absolute bottom-0 end-0 mb-1 me-2 small"
-                        :class="`text-${item.color}`" style="font-size: 16px;"
+                        :class="`text-${item.color}`" 
+                        style="font-size: 16px;"
                       >
                         {{ item.percent }}
                       </p>
                     </div>
 
-                    <div v-else class="card-body position-relative">
+                    <!-- Card untuk index 3+ (tampilan centered tanpa border samping) -->
+                    <div v-else class="card-body pt-3 text-center">
                       <!-- TITLE -->
-                      <h5 class="fw-bold mb-1" style="font-size: 16px;">{{ item.title }}</h5>
+                      <h5 class="fw-bold text-muted mb-3" style="font-size: 16px;">{{ item.title }}</h5>
 
                       <!-- VALUE -->
-                      <h1 class="text-center display-6 fw-bold mb-0" :class="`text-${item.color}`">
+                      <h1 class="fw-bold mb-0 fs-1" :class="`text-${item.color}`">
                         {{ item.value }}
                       </h1>
-
-                      <!-- <p class="position-absolute bottom-0 end-0 mb-1 me-2 small">
-                        <i class="bi bi-people fs-5" :class="`text-${item.color}`"></i>
-                      </p> -->
                     </div>
                   </div>
                 </div>
@@ -370,212 +369,143 @@
             <h5 class="table-name text-success">Data Calon Pengantin</h5>
             <div class="row mt-1">
               <div :class="selectedCatin ? 'col-md-8' : 'col-md-12'">
-                <div class="card bg-light p-2">
-                  <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle text-center">
-                      <thead class="table-primary">
-                        <tr>
-                          <th colspan="2">Nama Pasangan</th>
-                          <th colspan="3">Catatan Berisiko</th>
-                          <th colspan="2">Usia</th>
-                          <th colspan="2">Pekerjaan</th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Posyandu
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">RW</th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">RT</th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Tanggal Kunjungan
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Tanggal Menikah
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            BB <span class="fw-normal">(Perempuan)</span>
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            TB <span class="fw-normal">(Perempuan)</span>
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Lila <span class="fw-normal">(Perempuan)</span>
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Hb <span class="fw-normal">(Perempuan)</span>
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Riwayat Penyakit
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Jamban Sehat
-                          </th>
-                          <th class="cursor-pointer align-middle text-center" rowspan="2">
-                            Sumber Air Bersih
-                          </th>
-                        </tr>
-                        <tr>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('nama_perempuan')"
-                            class="cursor-pointer align-middle text-center fw-normal"
-                          >
-                            Perempuan <SortIcon :field="'nama_perempuan'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('nama_laki')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Laki-laki <SortIcon :field="'nama_laki'" />
-                          </th>
-                          <th
-                            @click="sortBy('anemia')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Anemia <SortIcon :field="'anemia'" />
-                          </th>
-                          <th
-                            style="width: 60px"
-                            @click="sortBy('kek')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            KEK <SortIcon :field="'kek'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('berisiko')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Risiko Usia <SortIcon :field="'berisiko'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('usia_perempuan')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Perempuan <SortIcon :field="'usia_perempuan'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('usia_laki')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Laki-laki <SortIcon :field="'usia_laki'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('pekerjaan_perempuan')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Perempuan <SortIcon :field="'pekerjaan_perempuan'" />
-                          </th>
-                          <th
-                            style="width: 100px"
-                            @click="sortBy('pekerjaan_laki')"
-                            class="cursor-pointer align-middle text-center fw-normal "
-                          >
-                            Laki-laki <SortIcon :field="'pekerjaan_laki'" />
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="catin in paginatedData" :key="catin.id" class="">
+                <div class="card shadow-sm">
+                  <div class="card-body">
+                    <!-- Search + Rows per page control -->
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        style="max-width: 300px;"
+                        placeholder="Cari Nama Calon Pengantin"
+                        v-model="searchQuery"
+                        @input="applySearch"
+                      >
+                    </div>
 
-                          <td class="text-start">
-                            <a
-                              href="#"
-                              @click.prevent="showDetail(catin)"
-                              class="fw-semibold text-primary"
-                            >
-                              {{ catin.nama_perempuan }}
-                            </a>
-                          </td>
-                          <td>{{ catin.nama_laki }}</td>
-                          <td>
-                            <span
-                              v-if="catin.pemeriksaan_terakhir.status_hb === 'Anemia'"
-                              class="badge bg-danger text-white"
-                              >{{ catin.pemeriksaan_terakhir.status_hb }}</span
-                            >
-                            <span v-else>{{ catin.pemeriksaan_terakhir.status_hb }}</span>
-                          </td>
-
-                          <td>
-                            <span
-                              v-if="catin.pemeriksaan_terakhir.status_kek === 'KEK'"
-                              class="badge bg-danger text-white"
-                              >{{ catin.pemeriksaan_terakhir.status_kek }}</span
-                            >
-                            <span v-else>{{ catin.pemeriksaan_terakhir.status_kek }}</span>
-                          </td>
-
-                          <td>
-                            <span
-                              v-if="catin.status_risiko === 'Berisiko'"
-                              class="badge bg-danger text-white"
-                              >{{ catin.status_risiko }}</span
-                            >
-                            <span v-else>{{ catin.status_risiko }}</span>
-                          </td>
-
-                          <td>{{ catin.usia_perempuan }}</td>
-                          <td>{{ catin.usia_laki }}</td>
-
-                          <td>{{ catin.pekerjaan_perempuan }}</td>
-                          <td>{{ catin.pekerjaan_laki }}</td>
-
-                          <td>{{ catin.posyandu }}</td>
-                          <td>{{ catin.rw }}</td>
-                          <td>{{ catin.rt }}</td>
-                          <td>{{ this.formatDate(catin.tgl_kunjungan) }}</td>
-                          <td>{{ this.formatDate(catin.tgl_menikah) }}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.berat_perempuan }}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.tinggi_perempuan }}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.lila_perempuan }}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.hb_perempuan }}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.riwayat_penyakit != ''? 'Ya':'Tidak'}}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.menggunakan_jamban = true ? 'Ya':'Tidak' }}</td>
-                          <td>{{ catin.pemeriksaan_terakhir.sumber_air_bersih = true? 'Ya':'Tidak' }}</td>
-                        </tr>
-                        <!-- ✅ Jika tidak ada data -->
-                        <tr v-if="!paginatedData || paginatedData.length === 0">
-                          <td colspan="21" class="text-center text-muted py-3">
-                            Tidak ada data yang tersedia
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <!-- Pagination -->
-                 <nav>
-                    <ul class="pagination justify-content-center mt-1 mb-0">
-
-                      <!-- Prev -->
-                      <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Prev</a>
-                      </li>
-
-                      <!-- Halaman -->
-                      <li class="page-item"
-                          v-for="page in visiblePages"
-                          :key="page"
-                          :class="{ active: currentPage === page, disabled: page === '...' }">
-
-                        <a v-if="page !== '...'" class="page-link" href="#" @click.prevent="changePage(page)">
-                          {{ page }}
+                    <!-- Easy Data Table -->
+                    <easy-data-table
+                      :headers="headersCatin"
+                      :items="filteredCatin"
+                      :search-value="searchQuery"
+                      :rows-per-page="perPage"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index
+                      alternating
+                      border-cell
+                      :loading="isLoading"
+                    >
+                      <!-- Custom column: Nama Perempuan (with link) -->
+                      <template #item-nama_perempuan="item">
+                        <a
+                          href="#"
+                          @click.prevent="showDetail(item)"
+                          class="fw-semibold text-decoration-underline text-primary"
+                        >
+                          {{ item.nama_perempuan }}
                         </a>
+                      </template>
 
-                        <span v-else class="page-link">...</span>
-                      </li>
+                      <!-- Custom column: Anemia -->
+                      <template #item-anemia="{ pemeriksaan_terakhir }">
+                        <span
+                          v-if="pemeriksaan_terakhir?.status_hb === 'Anemia'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          {{ pemeriksaan_terakhir.status_hb }}
+                        </span>
+                        <span v-else>{{ pemeriksaan_terakhir?.status_hb || '-' }}</span>
+                      </template>
 
-                      <!-- Next -->
-                      <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Next</a>
-                      </li>
+                      <!-- Custom column: KEK -->
+                      <template #item-kek="{ pemeriksaan_terakhir }">
+                        <span
+                          v-if="pemeriksaan_terakhir?.status_kek === 'KEK'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          {{ pemeriksaan_terakhir.status_kek }}
+                        </span>
+                        <span v-else>{{ pemeriksaan_terakhir?.status_kek || '-' }}</span>
+                      </template>
 
-                    </ul>
-                  </nav>
+                      <!-- Custom column: Risiko Usia -->
+                      <template #item-risiko="{ status_risiko }">
+                        <span
+                          v-if="status_risiko === 'Berisiko'"
+                          class="badge bg-danger text-white px-3 py-2"
+                        >
+                          {{ status_risiko }}
+                        </span>
+                        <span v-else>{{ status_risiko }}</span>
+                      </template>
 
+                      <!-- Custom column: Tanggal Kunjungan -->
+                      <template #item-tgl_kunjungan="{ tgl_kunjungan }">
+                        {{ formatDate(tgl_kunjungan) }}
+                      </template>
+
+                      <!-- Custom column: Tanggal Menikah -->
+                      <template #item-tgl_menikah="{ tgl_menikah }">
+                        {{ formatDate(tgl_menikah) }}
+                      </template>
+
+                      <!-- Custom column: BB Perempuan -->
+                      <template #item-bb="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.berat_perempuan || '-' }}
+                      </template>
+
+                      <!-- Custom column: TB Perempuan -->
+                      <template #item-tb="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.tinggi_perempuan || '-' }}
+                      </template>
+
+                      <!-- Custom column: Lila Perempuan -->
+                      <template #item-lila="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.lila_perempuan || '-' }}
+                      </template>
+
+                      <!-- Custom column: Hb Perempuan -->
+                      <template #item-hb="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.hb_perempuan || '-' }}
+                      </template>
+
+                      <!-- Custom column: Riwayat Penyakit -->
+                      <template #item-riwayat_penyakit="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.riwayat_penyakit ? 'Ya' : 'Tidak' }}
+                      </template>
+
+                      <!-- Custom column: Jamban Sehat -->
+                      <template #item-jamban_sehat="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.menggunakan_jamban ? 'Ya' : 'Tidak' }}
+                      </template>
+
+                      <!-- Custom column: Sumber Air Bersih -->
+                      <template #item-sumber_air_bersih="{ pemeriksaan_terakhir }">
+                        {{ pemeriksaan_terakhir?.sumber_air_bersih ? 'Ya' : 'Tidak' }}
+                      </template>
+
+                      <!-- Empty state -->
+                      <template #empty-message>
+                        <div class="text-center py-4">
+                          <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                          <p class="text-muted mt-2">Tidak ada data calon pengantin yang ditemukan</p>
+                        </div>
+                      </template>
+
+                      <!-- Loading state -->
+                      <template #loading>
+                        <div class="text-center py-4">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <p class="text-muted mt-2">Memuat data...</p>
+                        </div>
+                      </template>
+                    </easy-data-table>
+
+                  </div>
                 </div>
               </div>
 
@@ -616,7 +546,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h2 class="fw-bold text-start text-secondary mt-2">Riwayat Pemeriksaan</h2>
+                  <h2 class="fw-bold text-start text-secondary mt-2">Riwayat Status</h2>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -901,6 +831,18 @@
               </div>
             </div>
           </div>
+
+          <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
+              @click="exportDataCatinExcel"
+            >
+              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+              Export
+            </button>
+          </div>
+
+
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -915,6 +857,11 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
 import { ref, computed } from 'vue'
 import Welcome from '@/components/Welcome.vue'
+import EasyDataTable from 'vue3-easy-data-table'
+import 'vue3-easy-data-table/dist/style.css'
+import { exportExcel } from "@/utils/exportExcel";
+import { mapDataCatinToExcel } from "@/mappers/dataCatinMapper";
+
 
 // PORT backend kamu
 const API_PORT = 8000
@@ -927,9 +874,32 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Bride',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable },
   data() {
     return {
+      headersCatin: [
+        { text: 'Nama Perempuan', value: 'nama_perempuan', sortable: true, width: 150 },
+        { text: 'Nama Laki-laki', value: 'nama_laki', sortable: true, width: 150 },
+        { text: 'Anemia', value: 'anemia', sortable: true, width: 100 },
+        { text: 'KEK', value: 'kek', sortable: true, width: 80 },
+        { text: 'Risiko Usia', value: 'risiko', sortable: true, width: 120 },
+        { text: 'Usia P', value: 'usia_perempuan', sortable: true, width: 80 },
+        { text: 'Usia L', value: 'usia_laki', sortable: true, width: 80 },
+        { text: 'Kerja P', value: 'pekerjaan_perempuan', sortable: true, width: 120 },
+        { text: 'Kerja L', value: 'pekerjaan_laki', sortable: true, width: 120 },
+        { text: 'Posyandu', value: 'posyandu', sortable: true },
+        { text: 'RW', value: 'rw', sortable: true, width: 60 },
+        { text: 'RT', value: 'rt', sortable: true, width: 60 },
+        { text: 'Tgl Kunjungan', value: 'tgl_kunjungan', sortable: true, width: 120 },
+        { text: 'Tgl Menikah', value: 'tgl_menikah', sortable: true, width: 120 },
+        { text: 'BB (P)', value: 'bb', sortable: true, width: 80 },
+        { text: 'TB (P)', value: 'tb', sortable: true, width: 80 },
+        { text: 'Lila (P)', value: 'lila', sortable: true, width: 80 },
+        { text: 'Hb (P)', value: 'hb', sortable: true, width: 80 },
+        { text: 'Riwayat Penyakit', value: 'riwayat_penyakit', sortable: true, width: 120 },
+        { text: 'Jamban Sehat', value: 'jamban_sehat', sortable: true, width: 120 },
+        { text: 'Air Bersih', value: 'sumber_air_bersih', sortable: true, width: 100 }
+      ],
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1127,6 +1097,15 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   methods: {
+    exportDataCatinExcel(){
+      const excelData = mapDataCatinToExcel(this.filteredCatin);
+
+      exportExcel({
+        data: excelData,
+        fileName: "Data_sCatin.xlsx",
+        sheetName: "Catin",
+      });
+    },
     formatDate(dateString) {
       if (!dateString) return '-'
       const date = new Date(dateString)
@@ -1675,5 +1654,35 @@ export default {
 .tab-pane-sub-title {
   font-size: 17px;
   font-weight: 600;
+}
+
+.my-custom-table {
+  --easy-table-header-background-color: #cfe2ff;
+  --easy-table-border: 1px solid #dee2e6;
+  --easy-table-row-border: 1px solid #dee2e6;
+}
+
+.my-custom-header {
+  background-color: #cfe2ff !important;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Badge styling */
+.badge {
+  font-size: 11px;
+  padding: 4px 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .my-custom-table {
+    font-size: 11px;
+  }
+  
+  .badge {
+    font-size: 10px;
+    padding: 4px 8px !important;
+  }
 }
 </style>
