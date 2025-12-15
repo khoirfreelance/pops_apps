@@ -253,7 +253,7 @@
                         <!-- g-2 lebih kecil daripada gx-3 gy-3 -->
 
                         <!-- GIZI CARDS -->
-                        <div class="col-12 col-md-10">
+                        <div class="col-12 col-xl-10 col-md-12">
                           <div class="row">
                             <div v-for="(item, index) in kesehatanData.anak" :key="index" class="col-6 col-lg-4 g-3">
                               <div class="card shadow-sm border-0 h-100"
@@ -278,7 +278,7 @@
                         </div>
 
                         <!-- TOTAL ANAK -->
-                        <div class="col-12 col-md-2 d-flex">
+                        <div class="col-12 col-xl-2 col-md-12 d-flex">
                           <div class="card h-100 shadow-sm border w-100">
                             <div class="card-body d-flex flex-column justify-content-between py-4">
 
@@ -4718,11 +4718,23 @@ export default {
 
     detailLink() {
       const linkMap = {
-        'bb': '/admin/dashboard/detail?tipe=bbu',
-        'tb': '/admin/dashboard/detail?tipe=tbu',
-        'bbtb': '/admin/dashboard/detail?tipe=bbtb'
+        bb: '/admin/dashboard/detail?tipe=bbu',
+        tb: '/admin/dashboard/detail?tipe=tbu',
+        bbtb: '/admin/dashboard/detail?tipe=bbtb',
       }
-      return linkMap[this.selectedChart] || '#'
+
+      const base = linkMap[this.selectedChart]
+      if (!base) return '#'
+
+      const params = new URLSearchParams()
+
+      Object.entries(this.filters).forEach(([key, value]) => {
+        if (value !== '' && value !== null && value !== undefined) {
+          params.append(key, value)
+        }
+      })
+
+      return `${base}&${params.toString()}`
     }
   },
   created() {
