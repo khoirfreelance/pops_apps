@@ -1,28 +1,35 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Imports\ChildrenImportKunjungan;
 use App\Models\Child;
 use App\Models\Cadre;
 use App\Models\Kunjungan;
-use App\Models\Wilayah;
-use App\Models\Posyandu;
-use App\Models\Log;
 use App\Models\Intervensi;
-use App\Models\Keluarga;
-use App\Models\AnggotaKeluarga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ChildrenController extends Controller
 {
     const bulan = [
-        '','Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        '',
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember'
     ];
 
     public function index(Request $request)
@@ -44,7 +51,7 @@ class ChildrenController extends Controller
         if (!empty($filters['periodeAwal'])) {
             try {
                 $periodeAwal = explode(' ', $filters['periodeAwal']);
-                if(count($periodeAwal) === 1){
+                if (count($periodeAwal) === 1) {
                     $periodeAwal = explode('+', $filters['periodeAwal']);
                 }
                 $bulanIndex = array_search($periodeAwal[0], self::bulan);
@@ -58,7 +65,7 @@ class ChildrenController extends Controller
         if (!empty($filters['periodeAkhir'])) {
             try {
                 $periodeAkhir = explode(' ', $filters['periodeAkhir']);
-                if(count($periodeAkhir) === 1){
+                if (count($periodeAkhir) === 1) {
                     $periodeAkhir = explode('+', $filters['periodeAkhir']);
                 }
                 $bulanIndex = array_search($periodeAkhir[0], self::bulan);
@@ -160,9 +167,12 @@ class ChildrenController extends Controller
             ];
 
             $problem = 0;
-            if ($item->bb_u != null && $item->bb_u !== 'Normal') $problem++;
-            if ($item->tb_u != null && $item->tb_u !== 'Normal') $problem++;
-            if ($item->bb_tb != null && $item->bb_tb !== 'Normal') $problem++;
+            if ($item->bb_u != null && $item->bb_u !== 'Normal')
+                $problem++;
+            if ($item->tb_u != null && $item->tb_u !== 'Normal')
+                $problem++;
+            if ($item->bb_tb != null && $item->bb_tb !== 'Normal')
+                $problem++;
 
             $h = $intervensi[$item->nik] ?? collect();
             // Default: tidak ada intervensi
@@ -179,16 +189,16 @@ class ChildrenController extends Controller
                 ];
             }
 
-            if ($problem > 0 && $h->count() == 0){
+            if ($problem > 0 && $h->count() == 0) {
                 $grouped[$nik]['intervensi'][] = [
                     'kader' => '-',
                     'jenis' => 'Belum Mendapatkan Intervensi',
-                    'tgl_intervensi' =>  '-',
+                    'tgl_intervensi' => '-',
                     'bantuan' => '-',
                 ];
             }
 
-            if ($problem === 0 && $h->count() == 0){
+            if ($problem === 0 && $h->count() == 0) {
                 $grouped[$nik]['intervensi'][] = [
                     'kader' => '-',
                     'jenis' => 'Normal',
@@ -249,7 +259,7 @@ class ChildrenController extends Controller
             }
         } */
 
-            // 3️⃣ INTERVENSI
+        // 3️⃣ INTERVENSI
         // foreach ($intervensi as $nik => $data) {
         //     if(!isset($grouped[$nik])) continue;
         //     $item = $data->first() ?? collect();
@@ -268,15 +278,16 @@ class ChildrenController extends Controller
 
         $latestData = $filteredData->map(function ($anak) {
             // kalau tidak ada pengukuran → skip
-            if (empty($anak['posyandu'])) return null;
+            if (empty($anak['posyandu']))
+                return null;
 
             // Ambil tgl terbaru
             $latest = collect($anak['posyandu'])->sortByDesc('tgl_ukur')->first();
 
             return [
-                'bbu'   => strtolower($latest['bbu'] ?? ''),
-                'tbu'   => strtolower($latest['tbu'] ?? ''),
-                'bbtb'  => strtolower($latest['bbtb'] ?? ''),
+                'bbu' => strtolower($latest['bbu'] ?? ''),
+                'tbu' => strtolower($latest['tbu'] ?? ''),
+                'bbtb' => strtolower($latest['bbtb'] ?? ''),
                 'naikBB' => $latest['bb_naik'] ?? null,
             ];
         })->filter(); // buang null
@@ -327,7 +338,7 @@ class ChildrenController extends Controller
         $result = [];
         foreach ($count as $title => $value) {
 
-            $color = match($title) {
+            $color = match ($title) {
                 'Stunting' => 'danger',
                 'Wasting' => 'warning',
                 'Underweight' => 'violet',
@@ -339,10 +350,10 @@ class ChildrenController extends Controller
             $percent = $total ? round(($value / $total) * 100, 1) : 0;
 
             $result[] = [
-                'title'   => $title,
-                'value'   => $value,
+                'title' => $title,
+                'value' => $value,
                 'percent' => "{$percent}%",
-                'color'   => $color,
+                'color' => $color,
                 //'trend'   => $trendCount[$title] ?? [],
             ];
         }
@@ -383,16 +394,24 @@ class ChildrenController extends Controller
             // 2. Tentukan periode
             // ================================
             $filters = $request->only([
-                'posyandu', 'rw', 'rt', 'bbu', 'tbu', 'bbtb', 'stagnan', 'periodeAwal', 'periodeAkhir'
+                'posyandu',
+                'rw',
+                'rt',
+                'bbu',
+                'tbu',
+                'bbtb',
+                'stagnan',
+                'periodeAwal',
+                'periodeAkhir'
             ]);
 
             if ($request->filled('periode')) {
                 $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
-                $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             } else {
                 $tanggal = now()->subMonth();
-                $filters['periodeAwal']  = $tanggal->copy()->startOfMonth()->format('Y-m-d');
+                $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             }
 
@@ -454,14 +473,18 @@ class ChildrenController extends Controller
             ];
 
             foreach ($data as $a) {
-                if (str_contains($a['tbu'], 'stunted')) $count['Stunting']++;
-                if (str_contains($a['bbtb'], 'wasted')) $count['Wasting']++;
-                if (str_contains($a['bbu'], 'underweight')) $count['Underweight']++;
+                if (str_contains($a['tbu'], 'stunted'))
+                    $count['Stunting']++;
+                if (str_contains($a['bbtb'], 'wasted'))
+                    $count['Wasting']++;
+                if (str_contains($a['bbu'], 'underweight'))
+                    $count['Underweight']++;
                 if ($a['bbu'] === 'normal' && $a['tbu'] === 'normal' && $a['bbtb'] === 'normal')
                     $count['Normal']++;
                 if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obes'))
                     $count['Overweight']++;
-                if (is_null($a['naikBB']) || $a['naikBB'] == 0) $count['BB Stagnan']++;
+                if (is_null($a['naikBB']) || $a['naikBB'] == 0)
+                    $count['BB Stagnan']++;
             }
 
             // ================================
@@ -503,14 +526,21 @@ class ChildrenController extends Controller
                         $tbu = strtolower($row->tb_u ?? '');
                         $bbtb = strtolower($row->bb_tb ?? '');
 
-                        if ($status === 'Stunting' && str_contains($tbu, 'stunted')) $jumlahStatusBulan++;
-                        if ($status === 'Wasting' && str_contains($bbtb, 'wasted')) $jumlahStatusBulan++;
-                        if ($status === 'Underweight' && str_contains($bbu, 'underweight')) $jumlahStatusBulan++;
-                        if ($status === 'Normal'
-                            && $bbu === 'normal' && $tbu === 'normal' && $bbtb === 'normal')
+                        if ($status === 'Stunting' && str_contains($tbu, 'stunted'))
                             $jumlahStatusBulan++;
-                        if ($status === 'Overweight'
-                            && (str_contains($bbtb, 'overweight') || str_contains($bbtb, 'obes')))
+                        if ($status === 'Wasting' && str_contains($bbtb, 'wasted'))
+                            $jumlahStatusBulan++;
+                        if ($status === 'Underweight' && str_contains($bbu, 'underweight'))
+                            $jumlahStatusBulan++;
+                        if (
+                            $status === 'Normal'
+                            && $bbu === 'normal' && $tbu === 'normal' && $bbtb === 'normal'
+                        )
+                            $jumlahStatusBulan++;
+                        if (
+                            $status === 'Overweight'
+                            && (str_contains($bbtb, 'overweight') || str_contains($bbtb, 'obes'))
+                        )
                             $jumlahStatusBulan++;
                         if ($status === 'BB Stagnan' && is_null($row->naik_berat_badan))
                             $jumlahStatusBulan++;
@@ -534,7 +564,7 @@ class ChildrenController extends Controller
             $result = [];
             foreach ($count as $title => $value) {
 
-                $color = match($title) {
+                $color = match ($title) {
                     'Stunting' => 'danger',
                     'Wasting' => 'warning',
                     'Underweight' => 'violet',
@@ -546,11 +576,11 @@ class ChildrenController extends Controller
                 $percent = $total ? round(($value / $total) * 100, 1) : 0;
 
                 $result[] = [
-                    'title'   => $title,
-                    'value'   => $value,
+                    'title' => $title,
+                    'value' => $value,
                     'percent' => "{$percent}%",
-                    'color'   => $color,
-                    'trend'   => $trendCount[$title] ?? [],
+                    'color' => $color,
+                    'trend' => $trendCount[$title] ?? [],
                 ];
             }
 
@@ -575,14 +605,15 @@ class ChildrenController extends Controller
         // ======================================================
         // 1. Cek anggota TPK
         // ======================================================
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
 
         $posyandu = $anggotaTPK->posyandu;
-        $wilayah  = $posyandu?->wilayah;
-        if (!$wilayah) return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
+        $wilayah = $posyandu?->wilayah;
+        if (!$wilayah)
+            return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
 
         $filterKelurahan = $wilayah->kelurahan;
 
@@ -590,11 +621,11 @@ class ChildrenController extends Controller
         // 2. Atur periode
         // ======================================================
         if ($request->filled('periode')) {
-            $tanggal   = Carbon::createFromFormat('Y-m', $request->periode);
-            $bulanIni  = $tanggal->format('Y-m');
+            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            $bulanIni = $tanggal->format('Y-m');
             $bulanLalu = $tanggal->copy()->subMonth()->format('Y-m');
         } else {
-            $bulanIni  = now()->subMonth()->format('Y-m');
+            $bulanIni = now()->subMonth()->format('Y-m');
             $bulanLalu = now()->subMonths(2)->format('Y-m');
         }
 
@@ -605,9 +636,12 @@ class ChildrenController extends Controller
             ->where('kelurahan', $filterKelurahan)
             ->whereBetween(DB::raw("DATE_FORMAT(tgl_pengukuran,'%Y-%m')"), [$bulanLalu, $bulanIni]);
 
-        if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
-        if ($request->filled('rw'))       $query->where('rw', $request->rw);
-        if ($request->filled('rt'))       $query->where('rt', $request->rt);
+        if ($request->filled('posyandu'))
+            $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $query->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $query->where('rt', $request->rt);
 
         $data = $query->get();
 
@@ -615,13 +649,13 @@ class ChildrenController extends Controller
         // 4. Penampung
         // ======================================================
         $stuntingPerBulan = [];
-        $stuntingByDesa   = [];
+        $stuntingByDesa = [];
 
-        $giziNow  = ['stunting'=>0,'wasting'=>0,'underweight'=>0];
-        $giziPrev = ['stunting'=>0,'wasting'=>0,'underweight'=>0];
+        $giziNow = ['stunting' => 0, 'wasting' => 0, 'underweight' => 0];
+        $giziPrev = ['stunting' => 0, 'wasting' => 0, 'underweight' => 0];
 
         $nikBermasalah = [];
-        $dataPending   = 0;
+        $dataPending = 0;
 
         // ======================================================
         // 5. Loop kunjungan
@@ -631,7 +665,8 @@ class ChildrenController extends Controller
             $ym = Carbon::parse($child->tgl_pengukuran)->format('Y-m');
 
             // Data pending
-            if (empty($child->nik) ||
+            if (
+                empty($child->nik) ||
                 empty($child->bb) || $child->bb == 0 ||
                 empty($child->tb) || $child->tb == 0
             ) {
@@ -639,19 +674,25 @@ class ChildrenController extends Controller
             }
 
             // Status gizi
-            $isStunting = in_array($child->tb_u, ['Stunted','Severely Stunted']);
-            $isWasting  = in_array($child->bb_tb, ['Wasted','Severely Wasted']);
-            $isUnder    = in_array($child->bb_u, ['Underweight','Severely Underweight']);
+            $isStunting = in_array($child->tb_u, ['Stunted', 'Severely Stunted']);
+            $isWasting = in_array($child->bb_tb, ['Wasted', 'Severely Wasted']);
+            $isUnder = in_array($child->bb_u, ['Underweight', 'Severely Underweight']);
 
             // Masukkan ke bulan ini / bulan lalu
             if ($ym === $bulanIni) {
-                if ($isStunting)   $giziNow['stunting']++;
-                if ($isWasting)    $giziNow['wasting']++;
-                if ($isUnder)      $giziNow['underweight']++;
+                if ($isStunting)
+                    $giziNow['stunting']++;
+                if ($isWasting)
+                    $giziNow['wasting']++;
+                if ($isUnder)
+                    $giziNow['underweight']++;
             } elseif ($ym === $bulanLalu) {
-                if ($isStunting)   $giziPrev['stunting']++;
-                if ($isWasting)    $giziPrev['wasting']++;
-                if ($isUnder)      $giziPrev['underweight']++;
+                if ($isStunting)
+                    $giziPrev['stunting']++;
+                if ($isWasting)
+                    $giziPrev['wasting']++;
+                if ($isUnder)
+                    $giziPrev['underweight']++;
             }
 
             // Perhitungan stunting khusus
@@ -675,7 +716,7 @@ class ChildrenController extends Controller
         // ======================================================
         $nikBermasalah = array_unique($nikBermasalah);
 
-        $nikPMT = \App\Models\Intervensi::where('status_subjek','anak')
+        $nikPMT = Intervensi::where('status_subjek', 'anak')
             ->whereIn('nik_subjek', $nikBermasalah)
             ->pluck('nik_subjek')
             ->toArray();
@@ -685,11 +726,13 @@ class ChildrenController extends Controller
         // ======================================================
         // 7. Kasus Baru (Per Status)
         // ======================================================
-        $bulanIniData = $data->filter(fn($c) =>
+        $bulanIniData = $data->filter(
+            fn($c) =>
             Carbon::parse($c->tgl_pengukuran)->format('Y-m') == $bulanIni
         );
 
-        $bulanLaluData = $data->filter(fn($c) =>
+        $bulanLaluData = $data->filter(
+            fn($c) =>
             Carbon::parse($c->tgl_pengukuran)->format('Y-m') == $bulanLalu
         );
 
@@ -697,31 +740,33 @@ class ChildrenController extends Controller
         $nikPrev = [];
         foreach ($bulanLaluData as $c) {
             if (
-                in_array($c->tb_u, ['Stunted','Severely Stunted']) ||
-                in_array($c->bb_tb, ['Wasted','Severely Wasted']) ||
-                in_array($c->bb_u, ['Underweight','Severely Underweight'])
+                in_array($c->tb_u, ['Stunted', 'Severely Stunted']) ||
+                in_array($c->bb_tb, ['Wasted', 'Severely Wasted']) ||
+                in_array($c->bb_u, ['Underweight', 'Severely Underweight'])
             ) {
-                if ($c->nik) $nikPrev[] = $c->nik;
+                if ($c->nik)
+                    $nikPrev[] = $c->nik;
             }
         }
         $nikPrev = array_unique($nikPrev);
 
         // Kasus baru per status
         $kasusBaru = [
-            'total'       => 0,
-            'stunting'    => 0,
-            'wasting'     => 0,
+            'total' => 0,
+            'stunting' => 0,
+            'wasting' => 0,
             'underweight' => 0,
         ];
 
         foreach ($bulanIniData as $c) {
 
             $nik = $c->nik;
-            if (!$nik) continue;
+            if (!$nik)
+                continue;
 
-            $isStunting = in_array($c->tb_u, ['Stunted','Severely Stunted']);
-            $isWasting  = in_array($c->bb_tb, ['Wasted','Severely Wasted']);
-            $isUnder    = in_array($c->bb_u, ['Underweight','Severely Underweight']);
+            $isStunting = in_array($c->tb_u, ['Stunted', 'Severely Stunted']);
+            $isWasting = in_array($c->bb_tb, ['Wasted', 'Severely Wasted']);
+            $isUnder = in_array($c->bb_u, ['Underweight', 'Severely Underweight']);
 
             $isMasalah = $isStunting || $isWasting || $isUnder;
 
@@ -730,16 +775,19 @@ class ChildrenController extends Controller
 
                 $kasusBaru['total']++;
 
-                if ($isStunting)    $kasusBaru['stunting']++;
-                if ($isWasting)     $kasusBaru['wasting']++;
-                if ($isUnder)       $kasusBaru['underweight']++;
+                if ($isStunting)
+                    $kasusBaru['stunting']++;
+                if ($isWasting)
+                    $kasusBaru['wasting']++;
+                if ($isUnder)
+                    $kasusBaru['underweight']++;
             }
         }
 
         // ======================================================
         // 8. Tren Stunting
         // ======================================================
-        $stuntingNow  = $stuntingPerBulan[$bulanIni]  ?? 0;
+        $stuntingNow = $stuntingPerBulan[$bulanIni] ?? 0;
         $stuntingPrev = $stuntingPerBulan[$bulanLalu] ?? 0;
 
         if ($stuntingPrev == 0 && $stuntingNow > 0) {
@@ -767,8 +815,8 @@ class ChildrenController extends Controller
             }
 
             $trendGizi[$key] = [
-                'now'   => $valNow,
-                'prev'  => $valPrev,
+                'now' => $valNow,
+                'prev' => $valPrev,
                 'trend' => $growth,
             ];
         }
@@ -786,32 +834,32 @@ class ChildrenController extends Controller
         return response()->json([
             'boxes' => [
                 [
-                    'type'  => 'danger',
+                    'type' => 'danger',
                     'title' => "Stunting " . ($trendStunting >= 0 ? 'naik' : 'turun') . " " . number_format(abs($trendStunting), 1) . "%",
-                    'desc'  => "
+                    'desc' => "
                         Bulan ini: <strong>{$stuntingNow}</strong><br>
                         Bulan lalu: <strong>{$stuntingPrev}</strong><br>
                         Tertinggi di Desa <strong>{$desaTertinggi}</strong>.
                     "
                 ],
                 [
-                    'type'  => 'warning',
+                    'type' => 'warning',
                     'title' => 'Intervensi',
-                    'desc'  => "{$intervensiKurang} anak bermasalah gizi belum mendapat Intervensi."
+                    'desc' => "{$intervensiKurang} anak bermasalah gizi belum mendapat Intervensi."
                 ],
                 [
-                    'type'  => 'info',
+                    'type' => 'info',
                     'title' => 'Kasus Baru',
-                    'desc'  => "
+                    'desc' => "
                         <strong>{$kasusBaru['stunting']}</strong> kasus baru Stunting<br>
                         <strong>{$kasusBaru['wasting']}</strong> kasus baru Wasting<br>
                         <strong>{$kasusBaru['underweight']}</strong> kasus baru Underweight
                     "
                 ],
                 [
-                    'type'  => 'success',
+                    'type' => 'success',
                     'title' => 'Data Pending',
-                    'desc'  => "{$dataPending} anak memiliki data tidak lengkap (NIK/BB/TB kosong)."
+                    'desc' => "{$dataPending} anak memiliki data tidak lengkap (NIK/BB/TB kosong)."
                 ],
             ]
         ]);
@@ -862,167 +910,20 @@ class ChildrenController extends Controller
 
     public function import_kunjungan(Request $request)
     {
-        // Validasi file
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|mimes:csv,txt|max:2048',
+        $request->validate([
+            'file' => 'required|mimes:csv,xlsx,xls|max:5120',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $file = $request->file('file');
-
-        if (!$file->isValid()) {
-            return response()->json(['message' => 'File tidak valid.'], 400);
-        }
-
-        $path = $file->getRealPath();
-        $handle = fopen($path, 'r');
-
-        $header = null;
-        $rows = [];
-        $count = 0;
-
-        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            if (empty($data[0]))
-                continue; // skip baris kosong
-
-            if (!$header) {
-                $header = $data;
-                continue;
-            }
-
-            $count++;
-
-            $rows[] = [
-                'nik' => $data[0] ?? null,
-                'nama_anak' => $data[1] ?? null,
-                'jk' => $data[2] ?? null,
-                'tgl_lahir' => $data[3] ?? null,
-                'bb_lahir' => $data[4] ?? null,
-                'tb_lahir' => $data[5] ?? null,
-                'nama_ortu' => $data[6] ?? null,
-                'peran' => $data[7] ?? null,
-                'nik_ortu' => $data[8] ?? null,
-                'alamat' => $data[9] ?? null,
-                'provinsi' => $data[10] ?? null,
-                'kota' => $data[11] ?? null,
-                'kecamatan' => $data[12] ?? null,
-                'kelurahan' => $data[13] ?? null,
-                'rw' => $data[14] ?? null,
-                'rt' => $data[15] ?? null,
-                'puskesmas' => $data[16] ?? null,
-                'posyandu' => $data[17] ?? null,
-                'tgl_pengukuran' => $this->convertDate($data[18] ?? null),
-                'bb' => $data[19] ?? null,
-                'tb' => $data[20] ?? null,
-                'lila' => $data[21] ?? null,
-                'diasuh_oleh' => $data[22] ?? null,
-                'asi' => $data[23] ?? null,
-                'imunisasi' => $data[24] ?? null,
-                'rutin_posyandu' => $data[25] ?? null,
-                'penyakit_bawaan' => $data[26] ?? null,
-                'penyakit_6bulan' => $data[27] ?? null,
-                'terpapar_asap_rokok' => $data[28] ?? null,
-                'penggunaan_jamban_sehat' => $data[29] ?? null,
-                'penggunaan_sab' => $data[30] ?? null,
-                'memiliki_jaminan' => $data[31] ?? null,
-                'kie' => $data[32] ?? null,
-                'mendapatkan_bantuan' => $data[33] ?? null,
-                'kpsp' => $data[34] ?? null,
-                'catatan' => $data[36] ?? null,
-                'no_kk' => $data[35] ?? null,
-                'petugas' => $data[37] ?? null,
-            ];
-        }
-
-        fclose($handle);
-
-        // ✅ Simpan batch (gunakan chunk)
-        if (!empty($rows)) {
-            foreach (array_chunk($rows, 100) as $chunk) {
-                foreach ($chunk as $row) {
-                    // Hitung usia dalam bulan
-                    $usia = $this->hitungUmurBulan($row['tgl_lahir'], $row['tgl_pengukuran']);
-
-                    // Hitung z-score dummy (bisa diganti nanti pakai WHO standard)
-                    $z_bbu = $this->hitungZScore('BB/U', $row['jk'], $usia, $row['bb']);
-                    $z_tbu = $this->hitungZScore('TB/U', $row['jk'], $usia, $row['tb']);
-                    $z_bbtb = $this->hitungZScore('BB/TB', $row['jk'], $row['tb'], $row['bb']);
-
-                    // Tentukan status berdasarkan z-score
-                    $status_bbu = $this->statusBBU($z_bbu);
-                    $status_tbu = $this->statusTBU($z_tbu);
-                    $status_bbtb = $this->statusBBTB($z_bbtb);
-
-                    // Cek apakah berat naik
-                    $naikBB = $this->cekNaikBB($row['nik'], $row['bb'], $row['tgl_pengukuran'], 'kunjungan');
-
-                    // Gabungkan hasil perhitungan ke $row
-                    $row = array_merge($row, [
-                        'tgl_pengukuran' => $row['tgl_pengukuran'], // samakan nama
-                        'usia_saat_ukur' => $usia,
-                        'bb_u' => $status_bbu,
-                        'zs_bb_u' => $z_bbu,
-                        'tb_u' => $status_tbu,
-                        'zs_tb_u' => $z_tbu,
-                        'bb_tb' => $status_bbtb,
-                        'zs_bb_tb' => $z_bbtb,
-                        'naik_berat_badan' => $naikBB,
-                    ]);
-
-                    // Simpan anak
-                    $child = Kunjungan::create($row);
-
-                    // ✅ Simpan atau ambil wilayah & posyandu
-                    $wilayah = Wilayah::firstOrCreate([
-                        'provinsi' => $row['provinsi'],
-                        'kota' => $row['kota'],
-                        'kecamatan' => $row['kecamatan'],
-                        'kelurahan' => $row['kelurahan'],
-                    ]);
-
-                    Posyandu::firstOrCreate([
-                        'nama_posyandu' => $row['posyandu'] ?? '-',
-                        'id_wilayah' => $wilayah->id,
-                        'rt' => $row['rt'] ?? null,
-                        'rw' => $row['rw'] ?? null,
-                    ]);
-
-                    // ✅ Simpan keluarga & anggota bila ada no_kk
-                    if (!empty($row['no_kk'])) {
-                        $keluarga = Keluarga::firstOrCreate(
-                            ['no_kk' => $row['no_kk']],
-                            [
-                                'alamat' => $row['alamat'] ?? null,
-                                'rt' => $row['rt'] ?? null,
-                                'rw' => $row['rw'] ?? null,
-                                'id_wilayah' => $wilayah->id,
-                                'is_pending' => false,
-                            ]
-                        );
-                    }
-
-                    // ✅ Simpan log
-                    \App\Models\Log::create([
-                        'id_user' => \Auth::id(),
-                        'context' => 'Anak',
-                        'activity' => 'Import data anak ' . ($row['nama_anak'] ?? '-'),
-                        'timestamp' => now(),
-                    ]);
-                }
-            }
-        }
+        DB::transaction(function () use ($request) {
+            Excel::import(
+                new ChildrenImportKunjungan(auth()->id()),
+                $request->file('file')
+            );
+        });
 
         return response()->json([
-            'message' => "Berhasil import {$count} data anak",
-            'data' => $rows,
-            'count' => $count,
-        ], 200);
+            'message' => 'Import kunjungan berhasil',
+        ]);
     }
 
     public function import_pendampingan(Request $request)
@@ -1151,7 +1052,7 @@ class ChildrenController extends Controller
                     ]);
 
                     // Simpan data pendampingan anak
-                    $child = \App\Models\Child::create($row);
+                    $child = Child::create($row);
 
                     // ✅ Simpan wilayah & posyandu
                     $wilayah = \App\Models\Wilayah::firstOrCreate([
@@ -1358,8 +1259,8 @@ class ChildrenController extends Controller
     {
         // Pilih model berdasarkan tipe
         $model = match ($tipe) {
-            'pendampingan' => \App\Models\Child::class,
-            default => \App\Models\Kunjungan::class,
+            'pendampingan' => Child::class,
+            default => Kunjungan::class,
         };
 
         // Cek data terakhir berdasarkan NIK dan tanggal
@@ -1396,7 +1297,7 @@ class ChildrenController extends Controller
         $user = Auth::user();
 
         // 1. Ambil data anggota TPK
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
@@ -1533,7 +1434,7 @@ class ChildrenController extends Controller
         $user = Auth::user();
 
         // 1. Ambil data anggota TPK
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
@@ -1588,8 +1489,8 @@ class ChildrenController extends Controller
         $nik_intervensi = $intervensi->pluck('nik_subjek')->unique();
 
         // 9. Hitung sudah & belum intervensi
-        $sudah_intervensi   = $nik_case->intersect($nik_intervensi)->count();
-        $belum_intervensi   = $nik_case->diff($nik_intervensi)->count();
+        $sudah_intervensi = $nik_case->intersect($nik_intervensi)->count();
+        $belum_intervensi = $nik_case->diff($nik_intervensi)->count();
 
         // Grouping lama
         $bb_u_tb_u = $data->filter(fn($item) => $item->bb_u !== 'Normal' && $item->tb_u !== 'Normal')->count();
@@ -1601,14 +1502,14 @@ class ChildrenController extends Controller
             'message' => 'Data anak berhasil dimuat',
 
             'grouping' => [
-                'bb_u_tb_u'   => $bb_u_tb_u,
-                'tb_u_bb_tb'  => $tb_u_bb_tb,
-                'bb_u_bb_tb'  => $bb_u_bb_tb,
+                'bb_u_tb_u' => $bb_u_tb_u,
+                'tb_u_bb_tb' => $tb_u_bb_tb,
+                'bb_u_bb_tb' => $bb_u_bb_tb,
             ],
 
-            'totalCase'          => $nik_case->count(),
-            'sudahIntervensi'    => $sudah_intervensi,
-            'belumIntervensi'    => $belum_intervensi,
+            'totalCase' => $nik_case->count(),
+            'sudahIntervensi' => $sudah_intervensi,
+            'belumIntervensi' => $belum_intervensi,
         ]);
     }
 
@@ -1617,14 +1518,14 @@ class ChildrenController extends Controller
         $user = Auth::user();
 
         // 1️⃣ Ambil data anggota TPK
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
 
         // 2️⃣ Ambil posyandu & wilayah
         $posyandu = $anggotaTPK->posyandu;
-        $wilayah  = $posyandu?->wilayah;
+        $wilayah = $posyandu?->wilayah;
         if (!$wilayah) {
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
         }
@@ -1640,7 +1541,7 @@ class ChildrenController extends Controller
             $tanggal = now()->subMonth(); // default bulan berjalan -1
         }
         $startDate = $tanggal->copy()->startOfMonth();
-        $endDate   = $tanggal->copy()->endOfMonth();
+        $endDate = $tanggal->copy()->endOfMonth();
 
 
         // ==========================
@@ -1664,9 +1565,12 @@ class ChildrenController extends Controller
         // 🔥 Filter anak dengan **masalah gizi ganda**
         $nik_case = $kunjungan->filter(function ($item) {
             $gizi_ganda = 0;
-            if ($item->bb_u != null && $item->bb_u !== 'Normal') $gizi_ganda++;
-            if ($item->tb_u != null && $item->tb_u !== 'Normal') $gizi_ganda++;
-            if ($item->bb_tb != null && $item->bb_tb !== 'Normal') $gizi_ganda++;
+            if ($item->bb_u != null && $item->bb_u !== 'Normal')
+                $gizi_ganda++;
+            if ($item->tb_u != null && $item->tb_u !== 'Normal')
+                $gizi_ganda++;
+            if ($item->bb_tb != null && $item->bb_tb !== 'Normal')
+                $gizi_ganda++;
             return $gizi_ganda >= 2; // minimal 2 parameter bermasalah → gizi ganda
         })->pluck('nik')->unique();
 
@@ -1685,7 +1589,7 @@ class ChildrenController extends Controller
             $qIntervensi->where('rt', $request->rt);
 
         $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
-                    ->whereMonth('tgl_intervensi', $tanggal->month);
+            ->whereMonth('tgl_intervensi', $tanggal->month);
 
         $qIntervensi->whereIn("nik_subjek", $nik_case)->where("status_subjek", "anak");
 
@@ -1694,27 +1598,28 @@ class ChildrenController extends Controller
         // ==========================
         // C. GROUPING NIK
         // ==========================
-        $nikGanda   = $nik_case;
+        $nikGanda = $nik_case;
         $nikKunjungan = $kunjungan->pluck('nik')->unique();
-        $nikIntervensi  = $intervensi->pluck('nik_subjek')->unique();
+        $nikIntervensi = $intervensi->pluck('nik_subjek')->unique();
 
-        $punya_keduanya  = $nikIntervensi->intersect($nikGanda);;
+        $punya_keduanya = $nikIntervensi->intersect($nikGanda);
+        ;
         $hanya_intervensi = $nikIntervensi->diff($nikGanda);
         $hanya_kunjungan = $nikGanda->diff($nikIntervensi);
 
         // ==========================
         // D. Build DETAIL
         // ==========================
-        $mapKunjungan   = $kunjungan->keyBy('nik');
-        $mapIntervensi  = $intervensi->groupBy('nik_subjek');
+        $mapKunjungan = $kunjungan->keyBy('nik');
+        $mapIntervensi = $intervensi->groupBy('nik_subjek');
 
         $detail_keduanya = $punya_keduanya->map(function ($nik) use ($mapKunjungan, $mapIntervensi) {
             return [
-                'nik'             => $nik,
-                'nama'            => $mapKunjungan[$nik]->nama_anak ?? null,
-                'kelurahan'       => $mapKunjungan[$nik]->kelurahan ?? null,
-                'posyandu'        => $mapKunjungan[$nik]->posyandu ?? null,
-                'data_kunjungan'  => $mapKunjungan[$nik] ?? null,
+                'nik' => $nik,
+                'nama' => $mapKunjungan[$nik]->nama_anak ?? null,
+                'kelurahan' => $mapKunjungan[$nik]->kelurahan ?? null,
+                'posyandu' => $mapKunjungan[$nik]->posyandu ?? null,
+                'data_kunjungan' => $mapKunjungan[$nik] ?? null,
                 'data_intervensi' => $mapIntervensi[$nik] ?? [],
             ];
         });
@@ -1722,10 +1627,10 @@ class ChildrenController extends Controller
         $detail_hanya_kunjungan = $hanya_kunjungan->map(function ($nik) use ($mapKunjungan) {
             $row = $mapKunjungan[$nik];
             return [
-                'nik'            => $nik,
-                'nama'           => $row->nama_anak ?? null,
-                'kelurahan'      => $row->kelurahan ?? null,
-                'posyandu'       => $row->posyandu ?? null,
+                'nik' => $nik,
+                'nama' => $row->nama_anak ?? null,
+                'kelurahan' => $row->kelurahan ?? null,
+                'posyandu' => $row->posyandu ?? null,
                 'data_kunjungan' => $row,
             ];
         });
@@ -1733,10 +1638,10 @@ class ChildrenController extends Controller
         $detail_hanya_intervensi = $hanya_intervensi->map(function ($nik) use ($mapIntervensi) {
             $first = $mapIntervensi[$nik]->first();
             return [
-                'nik'             => $nik,
-                'nama'            => $first->nama_anak ?? null,
-                'kelurahan'       => $first->kelurahan ?? null,
-                'posyandu'        => $first->posyandu ?? null,
+                'nik' => $nik,
+                'nama' => $first->nama_anak ?? null,
+                'kelurahan' => $first->kelurahan ?? null,
+                'posyandu' => $first->posyandu ?? null,
                 'data_intervensi' => $mapIntervensi[$nik] ?? [],
             ];
         });
@@ -1745,15 +1650,15 @@ class ChildrenController extends Controller
             'status' => 'success',
             'message' => 'Data intervensi & kunjungan gizi ganda berhasil dimuat',
             'grouping' => [
-                'total_case'        => $nikGanda->count(),
-                'punya_keduanya'    => $punya_keduanya->count(),
-                'hanya_kunjungan'   => $hanya_kunjungan->count(),
-                'hanya_intervensi'  => $hanya_intervensi->count(),
+                'total_case' => $nikGanda->count(),
+                'punya_keduanya' => $punya_keduanya->count(),
+                'hanya_kunjungan' => $hanya_kunjungan->count(),
+                'hanya_intervensi' => $hanya_intervensi->count(),
             ],
             'detail' => [
-                'punya_keduanya'    => $detail_keduanya->values(),
-                'hanya_kunjungan'   => $detail_hanya_kunjungan->values(),
-                'hanya_intervensi'  => $detail_hanya_intervensi->values(),
+                'punya_keduanya' => $detail_keduanya->values(),
+                'hanya_kunjungan' => $detail_hanya_kunjungan->values(),
+                'hanya_intervensi' => $detail_hanya_intervensi->values(),
             ]
         ]);
     }
@@ -1763,7 +1668,7 @@ class ChildrenController extends Controller
         $user = Auth::user();
 
         // 1️⃣ Ambil data anggota TPK
-        $anggotaTPK = \App\Models\Cadre::where('id_user', $user->id)->first();
+        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
         }
@@ -1784,9 +1689,12 @@ class ChildrenController extends Controller
         }
 
         // 🔍 filter manual
-        if ($request->filled('posyandu')) $query->where('posyandu', $request->posyandu);
-        if ($request->filled('rw')) $query->where('rw', $request->rw);
-        if ($request->filled('rt')) $query->where('rt', $request->rt);
+        if ($request->filled('posyandu'))
+            $query->where('posyandu', $request->posyandu);
+        if ($request->filled('rw'))
+            $query->where('rw', $request->rw);
+        if ($request->filled('rt'))
+            $query->where('rt', $request->rt);
 
         // 4️⃣ Filter periode
         if ($request->filled('periode')) {
@@ -1823,7 +1731,8 @@ class ChildrenController extends Controller
         // 9️⃣ Top 5 posyandu dengan gizi ganda terbanyak
         // -------------------------
         $topPosyandu = $data
-            ->filter(fn($i) =>
+            ->filter(
+                fn($i) =>
                 ($i->bb_u !== 'Normal' || $i->tb_u !== 'Normal' || $i->bb_tb !== 'Normal')
                 && !is_null($i->nama) && trim($i->nama) !== ''
             )
@@ -1864,7 +1773,7 @@ class ChildrenController extends Controller
                 return [
                     'nik' => $first->nik,
                     'nama' => $first->nama,
-                    'status_awal'  => $statusAwal,
+                    'status_awal' => $statusAwal,
                     'status_akhir' => $statusAkhir,
                     'tidak_berubah' => $tidakBerubah
                 ];
@@ -1876,7 +1785,8 @@ class ChildrenController extends Controller
         // 1️⃣1️⃣ Detail anak + intervensinya
         // -------------------------
         $detail = $data
-            ->filter(fn($i) =>
+            ->filter(
+                fn($i) =>
                 ($i->bb_u !== 'Normal' || $i->tb_u !== 'Normal' || $i->bb_tb !== 'Normal')
                 && !is_null($i->nama) && trim($i->nama) !== ''
             )
@@ -1926,7 +1836,7 @@ class ChildrenController extends Controller
         ?array $bbtb,
         ?array $stagnan,      // 1, 2, '>2'
         ?array $intervensi
-    ){
+    ) {
         // ---------------------------------------------------------
         // 1. SUBQUERY: ambil tanggal pengukuran terakhir (per anak)
         // ---------------------------------------------------------
@@ -1975,7 +1885,8 @@ class ChildrenController extends Controller
         return $latest;
     }
 
-    public function testGetData(Request $request){
+    public function testGetData(Request $request)
+    {
         $filters = $request->only([
             'kelurahan',
             'periodeAwal',
@@ -1995,7 +1906,7 @@ class ChildrenController extends Controller
         if (!empty($filters['periodeAwal'])) {
             try {
                 $periodeAwal = explode(' ', $filters['periodeAwal']);
-                if(count($periodeAwal) === 1){
+                if (count($periodeAwal) === 1) {
                     $periodeAwal = explode('+', $filters['periodeAwal']);
                 }
                 $bulanIndex = array_search($periodeAwal[0], self::bulan);
@@ -2009,7 +1920,7 @@ class ChildrenController extends Controller
         if (!empty($filters['periodeAkhir'])) {
             try {
                 $periodeAkhir = explode(' ', $filters['periodeAkhir']);
-                if(count($periodeAkhir) === 1){
+                if (count($periodeAkhir) === 1) {
                     $periodeAkhir = explode('+', $filters['periodeAkhir']);
                 }
                 $bulanIndex = array_search($periodeAkhir[0], self::bulan);
@@ -2036,7 +1947,7 @@ class ChildrenController extends Controller
         );
         return response()->json([
             "count" => $latest->count(),
-            "data"  => $latest,
+            "data" => $latest,
         ]);
     }
 
@@ -2066,9 +1977,12 @@ class ChildrenController extends Controller
 
             foreach ($stagnanFilters as $filter) {
 
-                if ($filter == "1 T" && $row->stagnan_months == 1) return true;
-                if ($filter == "2 T" && $row->stagnan_months == 2) return true;
-                if (trim($filter) == "> 2 T" && $row->stagnan_months >= 3) return true;
+                if ($filter == "1 T" && $row->stagnan_months == 1)
+                    return true;
+                if ($filter == "2 T" && $row->stagnan_months == 2)
+                    return true;
+                if (trim($filter) == "> 2 T" && $row->stagnan_months >= 3)
+                    return true;
             }
 
             return false;
@@ -2088,8 +2002,10 @@ class ChildrenController extends Controller
             $next = $history[$i + 1];
 
             // STOP condition:
-            if (is_null($current->naik_berat_badan)) break;
-            if ($current->naik_berat_badan == 1) break;
+            if (is_null($current->naik_berat_badan))
+                break;
+            if ($current->naik_berat_badan == 1)
+                break;
 
             // current is stagnan (0)
             $monthDiff = $current->tgl_pengukuran->diffInMonths($next->tgl_pengukuran);
@@ -2125,9 +2041,12 @@ class ChildrenController extends Controller
         $latest = $latest->map(function ($row) use ($history) {
 
             $problem = 0;
-            if ($row->bb_u != null && $row->bb_u !== 'Normal') $problem++;
-            if ($row->tb_u != null && $row->tb_u !== 'Normal') $problem++;
-            if ($row->bb_tb != null && $row->bb_tb !== 'Normal') $problem++;
+            if ($row->bb_u != null && $row->bb_u !== 'Normal')
+                $problem++;
+            if ($row->tb_u != null && $row->tb_u !== 'Normal')
+                $problem++;
+            if ($row->bb_tb != null && $row->bb_tb !== 'Normal')
+                $problem++;
 
             $h = $history[$row->nik] ?? collect();
             // Default: tidak ada intervensi
@@ -2139,7 +2058,7 @@ class ChildrenController extends Controller
                 $row->intervensi_last_kategori = $last->kategori;
             }
 
-            if ($problem > 0 && $h->count() == 0){
+            if ($problem > 0 && $h->count() == 0) {
                 $row->intervensi_last_kategori = "belum mendapatkan intervensi";
             }
 
@@ -2175,7 +2094,7 @@ class ChildrenController extends Controller
         // Tentukan periode
         // ==========================
         if ($request->filled('periode')) {
-            $tanggal = Carbon::createFromFormat('Y-m-d', $request->periode."-01")->startOfMonth();
+            $tanggal = Carbon::createFromFormat('Y-m-d', $request->periode . "-01")->startOfMonth();
         } else {
             $tanggal = now()->subMonth()->startOfMonth(); // default bulan berjalan -1
         }
@@ -2204,9 +2123,12 @@ class ChildrenController extends Controller
         // Filter anak dengan **masalah gizi ganda**
         $isDoubleProblem = function ($item) {
             $gizi_ganda = 0;
-            if ($item->bb_u !== null && $item->bb_u !== 'Normal') $gizi_ganda++;
-            if ($item->tb_u !== null && $item->tb_u !== 'Normal') $gizi_ganda++;
-            if ($item->bb_tb !== null && $item->bb_tb !== 'Normal') $gizi_ganda++;
+            if ($item->bb_u !== null && $item->bb_u !== 'Normal')
+                $gizi_ganda++;
+            if ($item->tb_u !== null && $item->tb_u !== 'Normal')
+                $gizi_ganda++;
+            if ($item->bb_tb !== null && $item->bb_tb !== 'Normal')
+                $gizi_ganda++;
             return $gizi_ganda >= 2;
         };
 
@@ -2240,12 +2162,22 @@ class ChildrenController extends Controller
         // ==========================
         // C. Siapkan label per bulan
         // ==========================
-        $labels   = [];
+        $labels = [];
         $monthMap = [];
 
         $monthNames = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'Mei',
+            'Jun',
+            'Jul',
+            'Agu',
+            'Sep',
+            'Okt',
+            'Nov',
+            'Des'
         ];
 
         $cursor = $startDate->copy()->startOfMonth();
@@ -2256,7 +2188,7 @@ class ChildrenController extends Controller
             $key = $cursor->format('Y-m');
 
             // buat label: Jan 2025, Feb 2025, dst
-            $monthIndex = (int)$cursor->format('n') - 1; // 0–11
+            $monthIndex = (int) $cursor->format('n') - 1; // 0–11
             $labels[] = $monthNames[$monthIndex];
 
             // simpan data bulan ini
@@ -2408,17 +2340,17 @@ class ChildrenController extends Controller
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'tgl_ukur'  => $item->tgl_pengukuran ?? null,
-                        'jk'        => $item->jk,
-                        'bb'        => $item->bb,
-                        'tb'        => $item->tb,
-                        'bbu'       => $item->bb_u,
-                        'tbu'       => $item->tb_u,
-                        'bbtb'      => $item->bb_tb,
-                        'zs_bbu'    => $item->zs_bb_u,
-                        'zs_tbu'    => $item->zs_tb_u,
-                        'zs_bbtb'   => $item->zs_bb_tb,
-                        'usia'      => $item->usia_saat_ukur,
+                        'tgl_ukur' => $item->tgl_pengukuran ?? null,
+                        'jk' => $item->jk,
+                        'bb' => $item->bb,
+                        'tb' => $item->tb,
+                        'bbu' => $item->bb_u,
+                        'tbu' => $item->tb_u,
+                        'bbtb' => $item->bb_tb,
+                        'zs_bbu' => $item->zs_bb_u,
+                        'zs_tbu' => $item->zs_tb_u,
+                        'zs_bbtb' => $item->zs_bb_tb,
+                        'usia' => $item->usia_saat_ukur,
                     ];
                 });
 
@@ -2429,8 +2361,8 @@ class ChildrenController extends Controller
                 ->map(function ($row) {
                     return [
                         'tgl_intervensi' => $row->tgl_intervensi,
-                        'kader'          => $row->petugas ?? '-',
-                        'jenis'          => $row->kategori ?? '-',
+                        'kader' => $row->petugas ?? '-',
+                        'jenis' => $row->kategori ?? '-',
                     ];
                 });
 
@@ -2441,62 +2373,64 @@ class ChildrenController extends Controller
                 ->map(function ($row) {
                     return [
                         'tanggal' => $row->tgl_pendampingan,
-                        'kader'   => $row->kader,
-                        'usia'    => $row->usia,
-                        'uk_bb'    => $item->bb,
-                        'uk_tb'    => $item->tb,
-                        'bb'       => $item->bb_u,
-                        'tb'       => $item->tb_u,
-                        'bbu'      => $item->zs_bb_u,
-                        'tbu'      => $item->zs_tb_u,
-                        'bbtb'     => $item->zs_bb_tb,
+                        'kader' => $row->kader,
+                        'usia' => $row->usia,
+                        'uk_bb' => $row->bb,
+                        'uk_tb' => $row->tb,
+                        'bb' => $row->bb_u,
+                        'tb' => $row->tb_u,
+                        'bbu' => $row->zs_bb_u,
+                        'tbu' => $row->zs_tb_u,
+                        'bbtb' => $row->zs_bb_tb,
                     ];
                 });
 
             // === 5. Data Kelahiran ===
             $kelahiran =
-            [
-                'nik'            => $anak->nik,
-                'tgl_lahir'      => $anak->tgl_lahir,
-                'bb_lahir'       => $anak->bb_lahir,
-                'pb_lahir'       => $anak->tb_lahir,
-                //'persalinan'     => $k->jenis_persalinan,
-            ];
+                [
+                    'nik' => $anak->nik,
+                    'tgl_lahir' => $anak->tgl_lahir,
+                    'bb_lahir' => $anak->bb_lahir,
+                    'pb_lahir' => $anak->tb_lahir,
+                    //'persalinan'     => $k->jenis_persalinan,
+                ];
 
             // === 6. Data Keluarga (ayah/ibu) ===
             $keluarga = Child::where('nik_anak', $nik)->first();
 
-            $keluargaData = $keluarga ? [[
-                'nama_ayah' => $keluarga->nama_ayah,
-                'nik_ayah'  => $keluarga->nik_ayah,
-                'pekerjaan_ayah'  => $keluarga->pekerjaan_ayah,
-                'usia_ayah'  => $keluarga->usia_ayah,
-                'nama_ibu'  => $keluarga->nama_ibu,
-                'nik_ibu'   => $keluarga->nik_ibu,
-                'pekerjaan_ibu'  => $keluarga->pekerjaan_ibu,
-                'usia_ibu'  => $keluarga->usia_ibu,
-                'no_telp'   => $keluarga->no_telp,
-            ]] : [];
+            $keluargaData = $keluarga ? [
+                [
+                    'nama_ayah' => $keluarga->nama_ayah,
+                    'nik_ayah' => $keluarga->nik_ayah,
+                    'pekerjaan_ayah' => $keluarga->pekerjaan_ayah,
+                    'usia_ayah' => $keluarga->usia_ayah,
+                    'nama_ibu' => $keluarga->nama_ibu,
+                    'nik_ibu' => $keluarga->nik_ibu,
+                    'pekerjaan_ibu' => $keluarga->pekerjaan_ibu,
+                    'usia_ibu' => $keluarga->usia_ibu,
+                    'no_telp' => $keluarga->no_telp,
+                ]
+            ] : [];
 
             // === 7. Bentuk response sesuai kebutuhan FE ===
             return response()->json([
-                'id'       => $anak->id,
-                'nik'      => $anak->nik,
-                'nama'     => $anak->nama_anak,
-                'gender'   => $anak->jk,
-                'rt'       => $anak->rt,
-                'rw'       => $anak->rw,
-                'kelurahan'=> $anak->kelurahan,
-                'kecamatan'=> $anak->kecamatan,
-                'kota'     => $anak->kota,
+                'id' => $anak->id,
+                'nik' => $anak->nik,
+                'nama' => $anak->nama_anak,
+                'gender' => $anak->jk,
+                'rt' => $anak->rt,
+                'rw' => $anak->rw,
+                'kelurahan' => $anak->kelurahan,
+                'kecamatan' => $anak->kecamatan,
+                'kota' => $anak->kota,
                 'provinsi' => $anak->provinsi,
 
                 'raw' => [
-                    'posyandu'     => $posyandu,
-                    'intervensi'   => $intervensi,
+                    'posyandu' => $posyandu,
+                    'intervensi' => $intervensi,
                     'pendampingan' => $pendampingan,
-                    'kelahiran'    => $kelahiran,
-                    'keluarga'     => $keluargaData,
+                    'kelahiran' => $kelahiran,
+                    'keluarga' => $keluargaData,
                 ]
             ]);
 
@@ -2504,7 +2438,7 @@ class ChildrenController extends Controller
 
             return response()->json([
                 'message' => 'Gagal mengambil detail anak',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
 
         }
@@ -2636,16 +2570,16 @@ class ChildrenController extends Controller
 
             // 1. Validasi input
             $validated = $request->validate([
-                'nik'               => 'required|string',
-                'tgl_pengukuran'    => 'required|date',
-                'tgl_lahir'         => 'required|date',
-                'bb'                => 'required|numeric',
-                'tb'                => 'required|numeric',
-                'lika'              => 'nullable|numeric',
-                'gender'            => 'required|string',
+                'nik' => 'required|string',
+                'tgl_pengukuran' => 'required|date',
+                'tgl_lahir' => 'required|date',
+                'bb' => 'required|numeric',
+                'tb' => 'required|numeric',
+                'lika' => 'nullable|numeric',
+                'gender' => 'required|string',
             ]);
             $usia = $this->hitungUmurBulan($validated['tgl_lahir'], $validated['tgl_pengukuran']);
-            $jk = $validated['gender'] == 'Perempuan'? 'P':'L';
+            $jk = $validated['gender'] == 'Perempuan' ? 'P' : 'L';
             $z_bbu = $this->hitungZScore('BB/U', $jk, $usia, $validated['bb']);
             $z_tbu = $this->hitungZScore('TB/U', $jk, $usia, $validated['tb']);
             $z_bbtb = $this->hitungZScore('BB/TB', $jk, $validated['tb'], $validated['bb']);
@@ -2663,29 +2597,29 @@ class ChildrenController extends Controller
 
             // 2. Simpan data ke tabel kunjungan
             $data = Kunjungan::create([
-                'petugas'     => $user->name,
-                'nik'         => $validated['nik'],
-                'nama_anak'   => $request->nama_anak,
-                'jk'          => $jk,
-                'tgl_lahir'   => Carbon::parse($validated['tgl_lahir']),
-                'bb_lahir'    => $kunjungan->bb_lahir,
-                'tb_lahir'    => $kunjungan->tb_lahir,
+                'petugas' => $user->name,
+                'nik' => $validated['nik'],
+                'nama_anak' => $request->nama_anak,
+                'jk' => $jk,
+                'tgl_lahir' => Carbon::parse($validated['tgl_lahir']),
+                'bb_lahir' => $kunjungan->bb_lahir,
+                'tb_lahir' => $kunjungan->tb_lahir,
                 'nama_ortu' => $kunjungan->nama_ortu,
                 'peran' => $kunjungan->peran,
-                'nik_ortu'=> $kunjungan->nik_ortu,
-                'alamat'=> $kunjungan->alamat,
-                'provinsi'=> $kunjungan->provinsi,
-                'kota'=> $kunjungan->kota,
-                'kecamatan'=> $kunjungan->kecamatan,
-                'kelurahan'=> $kunjungan->kelurahan,
-                'rw'=> $kunjungan->rw,
-                'rt'=> $kunjungan->rt,
-                'puskesmas'=> $kunjungan->puskesmas,
-                'posyandu'=> $request->unit_posyandu ? $request->unit_posyandu:$kunjungan->posyandu,
+                'nik_ortu' => $kunjungan->nik_ortu,
+                'alamat' => $kunjungan->alamat,
+                'provinsi' => $kunjungan->provinsi,
+                'kota' => $kunjungan->kota,
+                'kecamatan' => $kunjungan->kecamatan,
+                'kelurahan' => $kunjungan->kelurahan,
+                'rw' => $kunjungan->rw,
+                'rt' => $kunjungan->rt,
+                'puskesmas' => $kunjungan->puskesmas,
+                'posyandu' => $request->unit_posyandu ? $request->unit_posyandu : $kunjungan->posyandu,
                 'tgl_pengukuran' => Carbon::parse($validated['tgl_pengukuran']),
                 'usia_saat_ukur' => $usia,
-                'bb'=> $validated['bb'],
-                'tb'=> $validated['tb'],
+                'bb' => $validated['bb'],
+                'tb' => $validated['tb'],
                 'lika' => $validated['lika'],
                 'bb_u' => $status_bbu,
                 'zs_bb_u' => $z_bbu,
@@ -2694,32 +2628,32 @@ class ChildrenController extends Controller
                 'bb_tb' => $status_bbtb,
                 'zs_bb_tb' => $z_bbtb,
                 'naik_berat_badan' => $naikBB,
-                'diasuh_oleh'=> $kunjungan->diasuh_oleh,
-                'asi'=> $kunjungan->asi,
-                'imunisasi'=> $kunjungan->imunisasi,
-                'rutin_posyandu'=> $kunjungan->rutin_posyandu,
-                'penyakit_bawaan'=> $kunjungan->penyakit_bawaan,
-                'penyakit_6bulan'=> $kunjungan->penyakit_6bulan,
-                'terpapar_asap_rokok'=> $kunjungan->terpapar_asap_rokok,
-                'penggunaan_jamban_sehat'=> $kunjungan->penggunaan_jamban_sehat,
-                'penggunaan_sab'=> $kunjungan->penggunaan_sab,
-                'memiliki_jaminan'=> $kunjungan->memiliki_jaminan,
-                'kie'=> $kunjungan->kie,
-                'mendapatkan_bantuan'=> $kunjungan->mendapatkan_bantuan,
-                'catatan'=> $kunjungan->puskesmas,
-                'kpsp'=> $kunjungan->kpsp,
-                'no_kk'=> $kunjungan->no_kk
+                'diasuh_oleh' => $kunjungan->diasuh_oleh,
+                'asi' => $kunjungan->asi,
+                'imunisasi' => $kunjungan->imunisasi,
+                'rutin_posyandu' => $kunjungan->rutin_posyandu,
+                'penyakit_bawaan' => $kunjungan->penyakit_bawaan,
+                'penyakit_6bulan' => $kunjungan->penyakit_6bulan,
+                'terpapar_asap_rokok' => $kunjungan->terpapar_asap_rokok,
+                'penggunaan_jamban_sehat' => $kunjungan->penggunaan_jamban_sehat,
+                'penggunaan_sab' => $kunjungan->penggunaan_sab,
+                'memiliki_jaminan' => $kunjungan->memiliki_jaminan,
+                'kie' => $kunjungan->kie,
+                'mendapatkan_bantuan' => $kunjungan->mendapatkan_bantuan,
+                'catatan' => $kunjungan->puskesmas,
+                'kpsp' => $kunjungan->kpsp,
+                'no_kk' => $kunjungan->no_kk
             ]);
 
             return response()->json([
                 'message' => 'Data berhasil disimpan',
-                'data'    => $data
+                'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal menyimpan data',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -2729,11 +2663,11 @@ class ChildrenController extends Controller
         try {
             // 1. Validasi input
             $validated = $request->validate([
-                'nama_ortu'      => 'nullable|string',
-                'bb'             => 'nullable|numeric',
-                'tb'             => 'nullable|numeric',
-                'lika'           => 'nullable|numeric',
-                'gender'         => 'nullable|string',
+                'nama_ortu' => 'nullable|string',
+                'bb' => 'nullable|numeric',
+                'tb' => 'nullable|numeric',
+                'lika' => 'nullable|numeric',
+                'gender' => 'nullable|string',
             ]);
 
             // 2. Cari data berdasarkan NIK
@@ -2746,24 +2680,23 @@ class ChildrenController extends Controller
 
             // 3. Update field
             $data->update([
-                'nik'            => $request->nik ?? $data->nik,
-                'nama_ortu'      => $validated['nama_ortu'] ?? $data->nama_ortu,
-                'bb'             => $validated['bb'],
-                'tb'             => $validated['tb'],
-                'lika'           => $validated['lika'] ?? null,
+                'nik' => $request->nik ?? $data->nik,
+                'nama_ortu' => $validated['nama_ortu'] ?? $data->nama_ortu,
+                'bb' => $validated['bb'],
+                'tb' => $validated['tb'],
+                'lika' => $validated['lika'] ?? null,
             ]);
 
             return response()->json([
                 'message' => 'Data berhasil diperbarui',
-                'data'    => $data
+                'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal update data',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
-
 }
