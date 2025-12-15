@@ -1642,6 +1642,10 @@ export default {
       showAdvanced: false,
       totalAnak: 0,
       filters: {
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
+        kelurahan: '',
         bbu: [],
         tbu: [],
         bbtb: [],
@@ -1969,6 +1973,7 @@ export default {
         // kelurahan dari filter (atau API kalo ada)
         this.kelurahan = this.filters.kelurahan || '-';
 
+
       } catch (error) {
         console.error('❌ hitungStatusGizi error:', error);
       }
@@ -2103,6 +2108,9 @@ export default {
 
         const wilayah = res.data
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.filters.provinsi = wilayah.provinsi || ''
+        this.filters.kota = wilayah.kota || ''
+        this.filters.kecamatan = wilayah.kecamatan || ''
         this.filters.kelurahan = wilayah.kelurahan
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
@@ -2639,6 +2647,7 @@ export default {
       await this.loadConfigWithCache()
       this.generatePeriodeOptions()
 
+      console.log(this.filters);
 
       // 🔥 Load children dulu
       await this.loadChildren()

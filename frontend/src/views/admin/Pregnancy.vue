@@ -931,6 +931,9 @@ export default {
       rwReadonly: true,
       rtReadonly: true,
       filters: {
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
         kelurahan: '',
         posyandu: '',
         rt: '',
@@ -1437,6 +1440,9 @@ export default {
         //console.log('✅ getWilayahUser ->', wilayah)
         this.kelurahan = wilayah.kelurahan || '-'
         this.filters.kelurahan = this.kelurahan
+        this.filters.provinsi = wilayah.provinsi || ''
+        this.filters.kota = wilayah.kota || ''
+        this.filters.kecamatan = wilayah.kecamatan || ''
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'
@@ -1533,6 +1539,8 @@ export default {
     this.isLoading = true
     try {
       await this.getWilayahUser()
+      console.log(this.filters);
+
       await this.loadPregnancy() // kasih await juga kalau ini async
       this.periodeTitle = this.periodeLabel
       this.generatePeriodeOptions()

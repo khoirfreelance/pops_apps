@@ -2009,7 +2009,7 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 import { exportExcel } from "@/utils/exportExcel";
-import { mapDataAnakBerandaToExcel } from "@/mappers/dataAnakBerandaMapper";  
+import { mapDataAnakBerandaToExcel } from "@/mappers/dataAnakBerandaMapper";
 import { mapDataIbuHamilBerandaToExcel } from "@/mappers/dataIbuHamilBerandaMapper";
 import {
   Chart,
@@ -2125,6 +2125,9 @@ export default {
       bride: [],
       filters: {
         ref: 'd',
+        provinsi:'',
+        kota:'',
+        kecamatan:'',
         kelurahan: '',
         posyandu: '',
         rw: '',
@@ -2240,7 +2243,7 @@ export default {
 
       if(tagId === 'kesehatanBumilExport'){
         const excelData = mapDataIbuHamilBerandaToExcel(this.filteredBumil);
-        console.log("excelData", excelData);
+        //console.log("excelData", excelData);
         exportExcel({
           data: excelData,
           fileName: "Data_Ibu_Hamil_Beranda.xlsx",
@@ -2308,6 +2311,9 @@ export default {
         //this.isLoading = true;
 
         const params = {
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
@@ -2433,7 +2439,12 @@ export default {
         })
 
         const wilayah = res.data
+        //console.log(wilayah);
+
         this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.filters.provinsi = wilayah.provinsi || ''
+        this.filters.kota = wilayah.kota || ''
+        this.filters.kecamatan = wilayah.kecamatan || ''
         this.filters.kelurahan = this.kelurahan
         this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
 
@@ -2602,8 +2613,8 @@ export default {
       return labels
     },
     async applyFilter() {
-      console.log("THIS Filter Bumil", this.filteredBumil);
-      
+      //console.log("THIS Filter Bumil", this.filteredBumil);
+
       if (this.isMobile) {
         this.showFilterMobile = false // auto sembunyikan setelah apply
       }
@@ -2638,6 +2649,9 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
 
@@ -2689,7 +2703,7 @@ export default {
 
               else if (this.activeMenu === "bumil") {
                 trendFixed = this.normalizeTrendNumber(item.trend);
-                console.log('trendBumil:',trendFixed);
+                //console.log('trendBumil:',trendFixed);
 
                 this.rendersvgChart_Bumil(`chart-bumil-${index}`, trendFixed, [item.color]);
               }
@@ -3064,6 +3078,9 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
 
@@ -3263,6 +3280,9 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
 
@@ -3294,6 +3314,9 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
 
@@ -3360,6 +3383,9 @@ export default {
           rw: this.filters.rw || '',
           rt: this.filters.rt || '',
           periode: this.filters.periode || '',
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
         const res = await axios.get(`${baseURL}/api/children/info-boxes`, {
@@ -3637,7 +3663,10 @@ export default {
         rw: this.filters.rw || '',
         rt: this.filters.rt || '',
         periode: this.filters.periode || '',
-        kelurahan: this.filters.kelurahan || '',
+        provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
+          kelurahan: this.filters.kelurahan || '',
       }
       const res = await axios.get(`${baseURL}/api/children/get-children-double-problem`, {
         params: params,
@@ -4035,6 +4064,9 @@ export default {
       // 1. Ambil Data dari API
       try {
         const params = {
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
@@ -4309,6 +4341,9 @@ export default {
     async generateIndikatorCatinBulanan() {
       try {
         const params = {
+          provinsi: this.filters.provinsi || '',
+          kota: this.filters.kota || '',
+          kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
           posyandu: this.filters.posyandu || '',
           rw: this.filters.rw || '',
@@ -4736,6 +4771,8 @@ export default {
 
       // 1️⃣ Ambil wilayah user
       await this.getWilayahUser()
+
+      console.log(this.filters);
 
       // 3️⃣ Generate bulan terakhir 12 bulan
       this.bulanLabels = this.getLast12Months()

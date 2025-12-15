@@ -923,6 +923,9 @@ export default {
       rtReadonly: true,
       ref:'p',
       filters: {
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
         kelurahan: '',
         posyandu: '',
         rt: '',
@@ -1307,6 +1310,9 @@ export default {
         this.kecamatan = wilayah.kecamatan || '-'
         this.kota = wilayah.kota || '-'
         this.provinsi = wilayah.provinsi || '-'
+        this.filters.provinsi = wilayah.provinsi || ''
+        this.filters.kota = wilayah.kota || ''
+        this.filters.kecamatan = wilayah.kecamatan || ''
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'
@@ -1513,6 +1519,8 @@ export default {
         //this.loadConfigWithCache(),
         //this.getPendingData(),
         await this.getWilayahUser(),
+        console.log(this.filters),
+
         this.periodeTitle = this.periodeLabel,
         this.loadBride(),
         this.handleResize(),
