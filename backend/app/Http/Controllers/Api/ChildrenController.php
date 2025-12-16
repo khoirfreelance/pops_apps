@@ -2424,7 +2424,7 @@ class ChildrenController extends Controller
                 'kecamatan' => $anak->kecamatan,
                 'kota' => $anak->kota,
                 'provinsi' => $anak->provinsi,
-
+                'nama_posyandu'=> $anak->posyandu,
                 'raw' => [
                     'posyandu' => $posyandu,
                     'intervensi' => $intervensi,
@@ -2447,6 +2447,17 @@ class ChildrenController extends Controller
     // ENDPOINT DETAIL
     public function detail_tren(Request $request)
     {
+        $filters = [
+            'provinsi'   => $request->provinsi,
+            'kota'       => $request->kota,
+            'kecamatan'  => $request->kecamatan,
+            'kelurahan'  => $request->kelurahan,
+            'posyandu'   => $request->posyandu,
+            'rt'         => $request->rt,
+            'rw'         => $request->rw,
+            'periode'    => $request->periode,
+        ];
+
         $tipe = $request->tipe;
 
         $mapKategori = [
@@ -2474,7 +2485,9 @@ class ChildrenController extends Controller
                     'Severely Wasted',
                     'Wasted',
                     'Normal',
-                    'Overweight'
+                    'Possible Risk of Overweight',
+                    'Overweight',
+                    'Obese'
                 ]
             ]
         ];

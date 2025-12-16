@@ -420,6 +420,7 @@
                           href="#"
                           @click.prevent="showDetail(item)"
                           class="fw-semibold text-decoration-underline text-primary"
+                          style="font-size: 12px"
                         >
                           {{ item.nama }}
                         </a>
@@ -430,10 +431,11 @@
                         <span
                           v-if="anemia === 'Anemia'"
                           class="badge bg-danger text-white px-3 py-2"
+                          style="font-size: 12px"
                         >
                           Ya
                         </span>
-                        <span v-else>{{ anemia }}</span>
+                        <span v-else style="font-size: 12px">Tidak</span>
                       </template>
 
                       <!-- Custom column: Kehamilan Berisiko -->
@@ -441,10 +443,11 @@
                         <span
                           v-if="risiko === 'Berisiko'"
                           class="badge bg-danger text-white px-3 py-2"
+                          style="font-size: 12px"
                         >
                           Ya
                         </span>
-                        <span v-else>{{ risiko }}</span>
+                        <span v-else style="font-size: 12px">Tidak</span>
                       </template>
 
                       <!-- Custom column: KEK -->
@@ -452,10 +455,11 @@
                         <span
                           v-if="kek === 'Ya' || kek === 'KEK'"
                           class="badge bg-danger text-white px-3 py-2"
+                          style="font-size: 12px"
                         >
                           Ya
                         </span>
-                        <span v-else>{{ kek }}</span>
+                        <span v-else style="font-size: 12px">Tidak</span>
                       </template>
 
                       <!-- Custom column: Intervensi -->
@@ -540,13 +544,13 @@
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
                         <tr>
-                          <th rowspan="2">Tanggal</th>
-                          <th colspan="3">Status</th>
+                          <th rowspan="2" style="font-size: 12px">Tanggal</th>
+                          <th colspan="3" style="font-size: 12px">Status</th>
                         </tr>
                         <tr>
-                          <th>Anemia</th>
-                          <th>KEK</th>
-                          <th>Risiko</th>
+                          <th style="font-size: 12px">Anemia</th>
+                          <th style="font-size: 12px">KEK</th>
+                          <th style="font-size: 12px">Risiko</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -554,7 +558,7 @@
                           v-for="(r, i) in (selectedBumil.riwayat_pemeriksaan || []).slice(-3)"
                           :key="i"
                         >
-                          <td>{{ r.tanggal }}</td>
+                          <td style="font-size: 12px">{{ r.tanggal }}</td>
                           <td>
                             <span
                               class="badge"
@@ -592,16 +596,16 @@
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
                         <tr>
-                          <th>Tanggal</th>
-                          <th>Kader</th>
-                          <th>Intervensi</th>
+                          <th style="font-size: 12px">Tanggal</th>
+                          <th style="font-size: 12px">Kader</th>
+                          <th style="font-size: 12px">Intervensi</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="(i, idx) in selectedBumil.riwayat_intervensi || []" :key="idx">
-                          <td>{{ i.tanggal }}</td>
-                          <td>{{ i.kader }}</td>
-                          <td>{{ i.intervensi }}</td>
+                          <td style="font-size: 12px">{{ i.tanggal }}</td>
+                          <td style="font-size: 12px">{{ i.kader }}</td>
+                          <td style="font-size: 12px">{{ i.intervensi }}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -689,7 +693,7 @@
                                   <table class="table table-borderless mb-0">
                                     <tbody>
                                       <tr>
-                                        <td class="fw-semibold" style="width: 120px">Nama</td>
+                                        <td class="fw-semibold" style="width: 120px; font-size: 12px;">Nama</td>
                                         <td>:</td>
                                         <td>{{ selectedBumil.nama }}</td>
                                       </tr>
@@ -750,21 +754,21 @@
                                 <table class="table table-sm table-striped align-middle">
                                   <thead>
                                     <tr class="small text-center align-middle">
-                                      <th style="width: 150px">Tanggal</th>
-                                      <th>Kehamilan ke</th>
-                                      <th>Risiko</th>
-                                      <th>TB <span class="fw-normal">(cm)</span></th>
-                                      <th>BB <span class="fw-normal">(kg)</span></th>
-                                      <th>Lila <span class="fw-normal">(cm)</span></th>
-                                      <th>KEK</th>
-                                      <th>Hb</th>
-                                      <th>Anemia</th>
-                                      <th>Terpapar Asap Rokok</th>
-                                      <th>Mendapat Bantuan Sosial</th>
-                                      <th>Jamban Sehat</th>
-                                      <th>Sumber Air Bersih</th>
-                                      <th>Keluhan</th>
-                                      <th>Intervensi</th>
+                                      <th style="width: 150px; font-size: 12px;">Tanggal</th>
+                                      <th style="font-size: 12px">Kehamilan ke</th>
+                                      <th style="font-size: 12px">Risiko</th>
+                                      <th style="font-size: 12px">TB <span class="fw-normal">(cm)</span></th>
+                                      <th style="font-size: 12px">BB <span class="fw-normal">(kg)</span></th>
+                                      <th style="font-size: 12px">Lila <span class="fw-normal">(cm)</span></th>
+                                      <th style="font-size: 12px">KEK</th>
+                                      <th style="font-size: 12px">Hb</th>
+                                      <th style="font-size: 12px">Anemia</th>
+                                      <th style="font-size: 12px">Terpapar Asap Rokok</th>
+                                      <th style="font-size: 12px">Mendapat Bantuan Sosial</th>
+                                      <th style="font-size: 12px">Jamban Sehat</th>
+                                      <th style="font-size: 12px">Sumber Air Bersih</th>
+                                      <th style="font-size: 12px">Keluhan</th>
+                                      <th style="font-size: 12px">Intervensi</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -773,9 +777,9 @@
                                       :key="'kehamilan-' + i"
                                       class="small text-center"
                                     >
-                                      <td>{{ item.tgl_pendampingan }}</td>
+                                      <td style="font-size: 12px">{{ item.tgl_pendampingan }}</td>
                                       <td>{{ item.kehamilan_ke }}</td>
-                                      <td>
+                                      <td style="font-size: 12px">
                                         <span
                                           class="badge"
                                           :class="item.risiko === 'Tinggi' ? 'bg-danger' : 'text-dark'"
@@ -783,9 +787,9 @@
                                           {{ item.risiko || '-' }}
                                         </span>
                                       </td>
-                                      <td>{{ item.tb }}</td>
-                                      <td>{{ item.bb }}</td>
-                                      <td>{{ item.lila }}</td>
+                                      <td style="font-size: 12px">{{ item.tb }}</td>
+                                      <td style="font-size: 12px">{{ item.bb }}</td>
+                                      <td style="font-size: 12px">{{ item.lila }}</td>
                                       <td>
                                         <span
                                           class="badge"
@@ -927,6 +931,9 @@ export default {
       rwReadonly: true,
       rtReadonly: true,
       filters: {
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
         kelurahan: '',
         posyandu: '',
         rt: '',
@@ -954,8 +961,8 @@ export default {
       const query = searchQuery.value.toLowerCase()
       console.log(" Searching for:", query);
       console.log("Bumil Value:", window);
-      
-      
+
+
       filteredData.value = window.bumil.filter((c) =>
         Object.values(c).some((v) => String(v).toLowerCase().includes(query)),
       )
@@ -1433,6 +1440,9 @@ export default {
         //console.log('✅ getWilayahUser ->', wilayah)
         this.kelurahan = wilayah.kelurahan || '-'
         this.filters.kelurahan = this.kelurahan
+        this.filters.provinsi = wilayah.provinsi || ''
+        this.filters.kota = wilayah.kota || ''
+        this.filters.kecamatan = wilayah.kecamatan || ''
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'
@@ -1529,6 +1539,8 @@ export default {
     this.isLoading = true
     try {
       await this.getWilayahUser()
+      console.log(this.filters);
+
       await this.loadPregnancy() // kasih await juga kalau ini async
       this.periodeTitle = this.periodeLabel
       this.generatePeriodeOptions()
@@ -1851,7 +1863,7 @@ export default {
   .my-custom-table {
     font-size: 12px;
   }
-  
+
   .badge {
     font-size: 10px;
     padding: 4px 8px !important;

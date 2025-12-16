@@ -230,30 +230,42 @@ export default {
       indiChartInstance_bb: null,
       filters: {
         tipe: '',
-        kelurahan:''
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
+        kelurahan: '',
+        posyandu: '',
+        rt: '',
+        rw: '',
+        periode: '',
       },
     }
   },
   methods: {
-    async getWilayahUser() {
+    applyFiltersFromRoute() {
+      const q = this.$route.query
+
+      Object.keys(this.filters).forEach(key => {
+        this.filters[key] = q[key] || ''
+      })
+
+      // set title sekali di sini
+      if (this.filters.tipe === 'bbu') this.title = 'Berat Badan / Usia'
+      else if (this.filters.tipe === 'tbu') this.title = 'Tinggi Badan / Usia'
+      else if (this.filters.tipe === 'bbtb') this.title = 'Berat Badan / Tinggi Badan'
+    },
+    async fetchDetail(endpoint) {
       try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
+        const res = await axios.get(`${baseURL}${endpoint}`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
+          params: this.filters,
         })
-
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.filters.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
-
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
-        this.kelurahan = '-'
+        this.detailRaw = res.data.data
+      } catch (e) {
+        console.error(`LOAD ${endpoint} ERROR:`, e)
       }
     },
     toggleSidebar() {
@@ -267,28 +279,6 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
-    // Implement to TREN and JK DEtail
-    async loadDetail() {
-      try {
-        const res = await axios.get(`${baseURL}/api/detail-tren`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          params: this.filters,
-        })
-        this.detailRaw = res.data.data
-        console.log(this.detailRaw);
-
-        this.$nextTick(() => {
-          this.buildDetailTable()
-        })
-
-      } catch (e) {
-        console.error('LOAD DETAIL ERROR:', e)
-      }
-    },
-
     async loadConfigWithCache() {
       try {
         // cek di localStorage
@@ -317,52 +307,23 @@ export default {
         this.logoLoaded = false
       }
     },
-    // Implement to Chart UMUR
-    async loadUmur() {
-      try {
-        const res = await axios.get(`${baseURL}/api/detail-umur`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          params: this.filters,
-        })
-        this.detailRaw = res.data.data
-        console.log(this.detailRaw);
-      } catch (e) {
-        console.error('LOAD DETAIL ERROR:', e)
-      }
+    async loadDetail() {
+      await this.fetchDetail('/api/detail-tren')
     },
 
-    // Implement to Indikator
+    async loadUmur() {
+      await this.fetchDetail('/api/detail-umur')
+    },
+
     async loadIndikator() {
-      try {
-        const res = await axios.get(`${baseURL}/api/detail-indikator`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          params: this.filters,
-        })
-        this.detailRaw = res.data.data
-        //console.log(this.detailRaw);
-      } catch (e) {
-        console.error('LOAD DETAIL ERROR:', e)
-      }
+      await this.fetchDetail('/api/detail-indikator')
     },
   },
   async mounted() {
     this.isLoading = true
     try {
-      await this.getWilayahUser()
+      this.applyFiltersFromRoute()
 
-      const { tipe/* , status */ } = this.$route.query
-      if (tipe/*  && status */) {
-        this.filters.tipe = tipe
-        if (tipe === 'bbu') this.title = 'Berat Badan / Usia'
-        else if (tipe === 'tbu') this.title = 'Tinggi Badan / Usia'
-        else if (tipe === 'bbtb') this.title = 'Berat Badan / Tinggi Badan'
-      }
       await this.loadUmur()
       await this.loadDetail()
       await this.loadConfigWithCache()
@@ -376,37 +337,37 @@ export default {
 
   },
   computed: {
-  // eslint-disable-next-line vue/no-dupe-keys
-  detailTablePerBulan() {
-    if (!this.detailRaw || !this.detailRaw.total) return []
+    // eslint-disable-next-line vue/no-dupe-keys
+    detailTablePerBulan() {
+      if (!this.detailRaw || !this.detailRaw.total) return []
 
-    const statusList = Object.keys(this.detailRaw.total)
+      const statusList = Object.keys(this.detailRaw.total)
 
-    // ✅ Ambil label bulan dari backend
-    const start = new Date(this.detailRaw.start)
-    const end   = new Date(this.detailRaw.end)
+      // ✅ Ambil label bulan dari backend
+      const start = new Date(this.detailRaw.start)
+      const end   = new Date(this.detailRaw.end)
 
-    const bulanLabels = [
-      start.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
-      end.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
-    ]
+      const bulanLabels = [
+        start.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+        end.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      ]
 
-    // ✅ Backend hanya 2 bulan valid → index 0 & 1
-    return [0, 1].map((bulanIndex) => {
-      return {
-        bulan: bulanLabels[bulanIndex],
-        rows: statusList.map((statusKey) => {
-          return {
-            status: statusKey,
-            total: this.detailRaw.total?.[statusKey]?.[bulanIndex] ?? 0,
-            laki: this.detailRaw.L?.[statusKey]?.[bulanIndex] ?? 0,
-            perempuan: this.detailRaw.P?.[statusKey]?.[bulanIndex] ?? 0
-          }
-        })
-      }
-    })
+      // ✅ Backend hanya 2 bulan valid → index 0 & 1
+      return [0, 1].map((bulanIndex) => {
+        return {
+          bulan: bulanLabels[bulanIndex],
+          rows: statusList.map((statusKey) => {
+            return {
+              status: statusKey,
+              total: this.detailRaw.total?.[statusKey]?.[bulanIndex] ?? 0,
+              laki: this.detailRaw.L?.[statusKey]?.[bulanIndex] ?? 0,
+              perempuan: this.detailRaw.P?.[statusKey]?.[bulanIndex] ?? 0
+            }
+          })
+        }
+      })
+    }
   }
-}
 
 }
 </script>
