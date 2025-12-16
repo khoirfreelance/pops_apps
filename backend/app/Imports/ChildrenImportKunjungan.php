@@ -15,19 +15,13 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
 class ChildrenImportKunjungan implements
-    ToModel,
-    WithHeadingRow,
-    WithChunkReading,
+    ToModel, 
+    WithHeadingRow, 
     WithCustomCsvSettings
 {
     protected array $wilayahUser = [];
     public function __construct(private int $userId) {
         $this->loadWilayahUser();
-    }
-
-    public function chunkSize(): int
-    {
-        return 200;
     }
 
     public function getCsvSettings(): array

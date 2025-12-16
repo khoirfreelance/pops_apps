@@ -8,6 +8,10 @@ use Illuminate\Support\Str;
 
 use App\Models\Catin;
 use App\Models\Log;
+use App\Models\Wilayah;
+use App\Models\Posyandu;
+use App\Models\Intervensi;
+use App\Models\Kunjungan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -478,152 +482,153 @@ class CatinController extends Controller
         }
     }
 
-    // public function import(Request $request)
-    // {
-    //     // ✅ Validasi file CSV
-    //         'file' => 'required|mimes:csv|max:2048',
-    //     ]);
+    public function import(Request $request)
+    {
+        // ✅ Validasi file CSV
+        $validator = \Validator::make($request->all(), [
+            'file' => 'required|mimes:csv|max:2048',
+        ]);
 
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validasi gagal',
-    //             'errors' => $validator->errors(),
-    //         ], 422);
-    //     }
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-    //     $file = $request->file('file');
-    //     if (!$file->isValid()) {
-    //         return response()->json(['message' => 'File tidak valid.'], 400);
-    //     }
+        $file = $request->file('file');
+        if (!$file->isValid()) {
+            return response()->json(['message' => 'File tidak valid.'], 400);
+        }
 
-    //     $path = $file->getRealPath();
-    //     $handle = fopen($path, 'r');
+        $path = $file->getRealPath();
+        $handle = fopen($path, 'r');
 
-    //     $header = null;
-    //     $rows = [];
-    //     $count = 0;
+        $header = null;
+        $rows = [];
+        $count = 0;
 
-    //     while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-    //         if (empty($data[0]))
-    //             continue;
+        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+            if (empty($data[0]))
+                continue;
 
-    //         // baris pertama dianggap header
-    //         if (!$header) {
-    //             $header = $data;
-    //             continue;
-    //         }
+            // baris pertama dianggap header
+            if (!$header) {
+                $header = $data;
+                continue;
+            }
 
-    //         $count++;
+            $count++;
 
-    //         // ✅ Mapping kolom CSV ke field sesuai model Catin
-    //         $rows[] = [
-    //             'nama_petugas' => $data[0] ?? null,
-    //             'tanggal_pendampingan' => $this->convertDate($data[1] ?? null),
+            // ✅ Mapping kolom CSV ke field sesuai model Catin
+            $rows[] = [
+                'nama_petugas' => $data[0] ?? null,
+                'tanggal_pendampingan' => $this->convertDate($data[1] ?? null),
 
-    //             'nama_perempuan' => $data[2] ?? null,
-    //             'nik_perempuan' => $data[3] ?? null,
-    //             'pekerjaan_perempuan' => $data[4] ?? null,
-    //             'usia_perempuan' => $data[5] ?? 0,
-    //             'hp_perempuan' => $data[6] ?? null,
+                'nama_perempuan' => $data[2] ?? null,
+                'nik_perempuan' => $data[3] ?? null,
+                'pekerjaan_perempuan' => $data[4] ?? null,
+                'usia_perempuan' => $data[5] ?? 0,
+                'hp_perempuan' => $data[6] ?? null,
 
-    //             'nama_laki' => $data[7] ?? null,
-    //             'nik_laki' => $data[8] ?? null,
-    //             'pekerjaan_laki' => $data[9] ?? null,
-    //             'usia_laki' => $data[10] ?? 0,
-    //             'hp_laki' => $data[11] ?? null,
+                'nama_laki' => $data[7] ?? null,
+                'nik_laki' => $data[8] ?? null,
+                'pekerjaan_laki' => $data[9] ?? null,
+                'usia_laki' => $data[10] ?? 0,
+                'hp_laki' => $data[11] ?? null,
 
-    //             'pernikahan_ke' => $data[12] ?? null,
+                'pernikahan_ke' => $data[12] ?? null,
 
-    //             'provinsi' => $data[13] ?? null,
-    //             'kota' => $data[14] ?? null,
-    //             'kecamatan' => $data[15] ?? null,
-    //             'kelurahan' => $data[16] ?? null,
-    //             'rw' => $data[17] ?? null,
-    //             'rt' => $data[18] ?? null,
-    //             'posyandu' => $data[19] ?? null,
+                'provinsi' => $data[13] ?? null,
+                'kota' => $data[14] ?? null,
+                'kecamatan' => $data[15] ?? null,
+                'kelurahan' => $data[16] ?? null,
+                'rw' => $data[17] ?? null,
+                'rt' => $data[18] ?? null,
+                'posyandu' => $data[19] ?? null,
 
-    //             'tanggal_pemeriksaan' => $this->convertDate($data[20] ?? null),
-    //             'berat_perempuan' => $data[21] ?? null,
-    //             'tinggi_perempuan' => $data[22] ?? null,
-    //             'hb_perempuan' => $data[24] ?? null,
-    //             'lila_perempuan' => $data[23] ?? null,
+                'tanggal_pemeriksaan' => $this->convertDate($data[20] ?? null),
+                'berat_perempuan' => $data[21] ?? null,
+                'tinggi_perempuan' => $data[22] ?? null,
+                'hb_perempuan' => $data[24] ?? null,
+                'lila_perempuan' => $data[23] ?? null,
 
-    //             'terpapar_rokok' => $this->toBool($data[25] ?? null),
-    //             'mendapat_ttd' => $this->toBool($data[26] ?? null),
-    //             'menggunakan_jamban' => $this->toBool($data[27] ?? null),
-    //             'sumber_air_bersih' => $this->toBool($data[28] ?? null),
-    //             'punya_riwayat_penyakit' => $this->toBool($data[29] ?? null),
-    //             'riwayat_penyakit' => $data[30] ?? null,
-    //             'mendapat_fasilitas_rujukan' => $this->toBool($data[31] ?? null),
-    //             'mendapat_kie' => $this->toBool($data[33] ?? null),
-    //             'mendapat_bantuan_pmt' => $this->toBool($data[33] ?? null),
+                'terpapar_rokok' => $this->toBool($data[25] ?? null),
+                'mendapat_ttd' => $this->toBool($data[26] ?? null),
+                'menggunakan_jamban' => $this->toBool($data[27] ?? null),
+                'sumber_air_bersih' => $this->toBool($data[28] ?? null),
+                'punya_riwayat_penyakit' => $this->toBool($data[29] ?? null),
+                'riwayat_penyakit' => $data[30] ?? null,
+                'mendapat_fasilitas_rujukan' => $this->toBool($data[31] ?? null),
+                'mendapat_kie' => $this->toBool($data[33] ?? null),
+                'mendapat_bantuan_pmt' => $this->toBool($data[33] ?? null),
 
-    //             'tanggal_rencana_menikah' => $this->convertDate($data[34] ?? null),
-    //             'rencana_tinggal' => $data[35] ?? null,
-    //         ];
-    //     }
+                'tanggal_rencana_menikah' => $this->convertDate($data[34] ?? null),
+                'rencana_tinggal' => $data[35] ?? null,
+            ];
+        }
 
-    //     fclose($handle);
+        fclose($handle);
 
-    //     // ✅ Simpan ke DB
-    //     if (!empty($rows)) {
-    //         DB::beginTransaction();
-    //         try {
-    //             foreach ($rows as $row) {
-    //                 // Perhitungan otomatis
-    //                 $imt = $this->hitungIMT($row['berat_perempuan'], $row['tinggi_perempuan']);
-    //                 $status_kek = $this->statusKEK($row['lila_perempuan']);
-    //                 $status_hb = $this->statusHB($row['hb_perempuan']);
-    //                 $status_risiko = $this->statusRisiko($row['usia_perempuan']);
+        // ✅ Simpan ke DB
+        if (!empty($rows)) {
+            DB::beginTransaction();
+            try {
+                foreach ($rows as $row) {
+                    // Perhitungan otomatis
+                    $imt = $this->hitungIMT($row['berat_perempuan'], $row['tinggi_perempuan']);
+                    $status_kek = $this->statusKEK($row['lila_perempuan']);
+                    $status_hb = $this->statusHB($row['hb_perempuan']);
+                    $status_risiko = $this->statusRisiko($row['usia_perempuan']);
 
-    //                 Catin::create(array_merge($row, [
-    //                     'imt_perempuan' => $imt,
-    //                     'status_kek' => $status_kek,
-    //                     'status_hb' => $status_hb,
-    //                     'status_risiko' => $status_risiko,
-    //                 ]));
+                    Catin::create(array_merge($row, [
+                        'imt_perempuan' => $imt,
+                        'status_kek' => $status_kek,
+                        'status_hb' => $status_hb,
+                        'status_risiko' => $status_risiko,
+                    ]));
 
-    //                 // ✅ Simpan atau ambil wilayah & posyandu
-    //                 $wilayah = Wilayah::firstOrCreate([
-    //                     'provinsi' => $row['provinsi'],
-    //                     'kota' => $row['kota'],
-    //                     'kecamatan' => $row['kecamatan'],
-    //                     'kelurahan' => $row['kelurahan'],
-    //                 ]);
+                    // ✅ Simpan atau ambil wilayah & posyandu
+                    $wilayah = Wilayah::firstOrCreate([
+                        'provinsi' => $row['provinsi'],
+                        'kota' => $row['kota'],
+                        'kecamatan' => $row['kecamatan'],
+                        'kelurahan' => $row['kelurahan'],
+                    ]);
 
-    //                 Posyandu::firstOrCreate([
-    //                     'nama_posyandu' => $row['posyandu'] ?? '-',
-    //                     'id_wilayah' => $wilayah->id,
-    //                     'rt' => $row['rt'] ?? null,
-    //                     'rw' => $row['rw'] ?? null,
-    //                 ]);
+                    Posyandu::firstOrCreate([
+                        'nama_posyandu' => $row['posyandu'] ?? '-',
+                        'id_wilayah' => $wilayah->id,
+                        'rt' => $row['rt'] ?? null,
+                        'rw' => $row['rw'] ?? null,
+                    ]);
 
-    //                 Log::create([
-    //                     'id_user' => Auth::id(),
-    //                     'context' => 'Catin',
-    //                     'activity' => 'Import data calon pengantin ' . ($row['nama_perempuan'] ?? '-'),
-    //                     'timestamp' => now(),
-    //                 ]);
-    //             }
+                    Log::create([
+                        'id_user' => Auth::id(),
+                        'context' => 'Catin',
+                        'activity' => 'Import data calon pengantin ' . ($row['nama_perempuan'] ?? '-'),
+                        'timestamp' => now(),
+                    ]);
+                }
 
-    //             DB::commit();
+                DB::commit();
 
-    //             return response()->json([
-    //                 'message' => "Berhasil import {$count} data calon pengantin",
-    //                 'count' => $count,
-    //             ], 200);
-    //         } catch (\Throwable $e) {
-    //             DB::rollBack();
-    //             return response()->json([
-    //                 'message' => 'Gagal import data',
-    //                 'error' => $e->getMessage(),
-    //                 'data' => $rows
-    //             ], 500);
-    //         }
-    //     }
+                return response()->json([
+                    'message' => "Berhasil import {$count} data calon pengantin",
+                    'count' => $count,
+                ], 200);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Gagal import data',
+                    'error' => $e->getMessage(),
+                    'data' => $rows
+                ], 500);
+            }
+        }
 
-    //     return response()->json(['message' => 'Tidak ada data untuk diimport'], 400);
-    // }
+        return response()->json(['message' => 'Tidak ada data untuk diimport'], 400);
+    }
 
     private function convertDate($date)
     {
@@ -1175,9 +1180,9 @@ class CatinController extends Controller
     {
         try {
             // Temukan record berdasarkan NIK
-            $pregnancy = Pregnancy::where('nik_ibu', $nik)->first();
+            $bride = Catin::where('nik_perempuan', $nik)->first();
             $intervensi = Intervensi::where('nik_subjek', $nik)->first();
-            if (!$child && !$intervensi) {
+            if (!$bride && !$intervensi) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data dengan NIK tersebut tidak ditemukan.'
@@ -1185,7 +1190,7 @@ class CatinController extends Controller
             }
 
             // Hapus
-            $pregnancy->delete();
+            $bride->delete();
             $intervensi->delete();
 
             return response()->json([
@@ -1339,37 +1344,37 @@ class CatinController extends Controller
         }
     }
 
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:csv,xlsx,xls|max:5120',
-        ]);
+    // public function import(Request $request)
+    // {
+    //     $request->validate([
+    //         'file' => 'required|mimes:csv,xlsx,xls|max:5120',
+    //     ]);
 
-        try {
-            DB::transaction(function () use ($request) {
-                Excel::import(
-                    new CatinImport(auth()->id()),
-                    $request->file('file')
-                );
-            });
+    //     try {
+    //         DB::transaction(function () use ($request) {
+    //             Excel::import(
+    //                 new CatinImport(auth()->id()),
+    //                 $request->file('file')
+    //             );
+    //         });
 
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Import data calon pengantin berhasil',
-            ], 200);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Import data calon pengantin berhasil',
+    //         ], 200);
 
-        } catch (\Throwable $e) {
-            \Log::error('Import catin gagal', [
-                'error' => $e->getMessage()
-            ]);
+    //     } catch (\Throwable $e) {
+    //         \Log::error('Import catin gagal', [
+    //             'error' => $e->getMessage()
+    //         ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal import data',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Gagal import data',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
 }

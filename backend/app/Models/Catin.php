@@ -11,23 +11,24 @@ class Catin extends Model
     protected $fillable = [
         'nama_petugas',
         'tanggal_pendampingan',
-
         'nama_perempuan',
         'nik_perempuan',
         'pekerjaan_perempuan',
         'usia_perempuan',
         'hp_perempuan',
-
         'nama_laki',
         'nik_laki',
         'pekerjaan_laki',
         'usia_laki',
         'hp_laki',
-
         'pernikahan_ke',
-
-        'provinsi','kota','kecamatan','kelurahan','rw','rt','posyandu',
-
+        'provinsi',
+        'kota',
+        'kecamatan',
+        'kelurahan',
+        'rw',
+        'rt',
+        'posyandu',
         'status_risiko',
         'tanggal_pemeriksaan',
         'berat_perempuan',
@@ -37,7 +38,6 @@ class Catin extends Model
         'status_hb',
         'lila_perempuan',
         'status_kek',
-
         'terpapar_rokok',
         'mendapat_ttd',
         'menggunakan_jamban',
@@ -47,7 +47,6 @@ class Catin extends Model
         'mendapat_fasilitas_rujukan',
         'mendapat_kie',
         'mendapat_bantuan_pmt',
-
         'tanggal_rencana_menikah',
         'rencana_tinggal',
     ];

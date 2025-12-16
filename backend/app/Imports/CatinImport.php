@@ -26,11 +26,6 @@ class CatinImport implements
         $this->loadWilayahUser();
     }
 
-    public function chunkSize(): int
-    {
-        return 500;
-    }
-
     public function getCsvSettings(): array
     {
         return [
@@ -63,8 +58,8 @@ class CatinImport implements
             Posyandu::firstOrCreate([
                 'nama_posyandu' => $row['posyandu'] ?? '-',
                 'id_wilayah' => $wilayah->id,
-                'rt' => $row['rt'] ?? null,
-                'rw' => $row['rw'] ?? null,
+                'rt' => ltrim($row['rt'], "0") ?? null,
+                'rw' => ltrim($row['rw'], "0") ?? null,
             ]);
 
             Log::create([
