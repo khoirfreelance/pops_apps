@@ -74,6 +74,12 @@
                     <template v-for="(bulanItem, b) in detailTablePerBulan" :key="b">
                       <td class="text-center">
                         {{ bulanItem.rows[i].total }}
+                        <span
+                          v-if="b === detailTablePerBulan.length - 1"
+                          :class="trendClass(bulanItem.rows[i].status, bulanItem.rows[i].trend)"
+                        >
+                          ({{ bulanItem.rows[i].trend > 0 ? '+' : '' }}{{ bulanItem.rows[i].trend }})
+                        </span>
                       </td>
                       <td class="text-center">
                         {{ bulanItem.rows[i].laki }}
@@ -112,23 +118,44 @@
                 <div class="row justify-content-center">
                   <div
                     class="col-md-6 col-sm-12 col-12 mb-4"
-                    v-for="(item, index) in genderData_bb"
+                    v-for="(item, index) in detailByGender"
                     :key="index"
                   >
-                    <div :class="['circle', item.circleClass]">{{ item.total }}</div>
-                    <h6 class="title" :class="item.titleClass">{{ item.label }}</h6>
-                    <div class="d-flex justify-content-between px-5">
+                    <div :class="['circle', item.circleClass]">
+                      {{ item.total }}
+                    </div>
+
+                    <h6 class="title text-center" :class="item.titleClass">
+                      {{ item.label }}
+                    </h6>
+
+                    <div class="d-flex justify-content-between px-5 mt-3">
                       <div>
-                        <p v-for="(cat, i) in item.categories" :key="i">{{ cat.name }}</p>
+                        <p
+                          v-for="(cat, i) in item.categories"
+                          :key="i"
+                          class="mb-1"
+                        >
+                          {{ cat.name }}
+                        </p>
                       </div>
-                      <div class="fw-bold text-end" :class="item.valueClass">
-                        <p v-for="(cat, i) in item.categories" :key="i">
+
+                      <div
+                        class="fw-bold text-end"
+                        :class="item.valueClass"
+                      >
+                        <p
+                          v-for="(cat, i) in item.categories"
+                          :key="i"
+                          class="mb-1"
+                        >
                           {{ cat.value }}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -202,11 +229,11 @@ export default {
   data() {
     return {
       detailTablePerBulan: [],
-      detailRaw: null,
+      detailTren: null,
       detailTable: [],
       tipe:'',
       title:'',
-      filteredData: [], // data hasil filter
+      /* filteredData: [], // data hasil filter
       rawData:[],
       configCacheKey: 'site_config_cache',
       isLoading: false,
@@ -227,7 +254,7 @@ export default {
       kelurahan:'',
       indiChartInstance_tb: null,
       indiChartInstance_bbtb: null,
-      indiChartInstance_bb: null,
+      indiChartInstance_bb: null, */
       filters: {
         tipe: '',
         provinsi: '',
@@ -242,6 +269,27 @@ export default {
     }
   },
   methods: {
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
+    },
+    trendClass(status, trend) {
+      const positiveIsGood = ['Normal']
+
+      if (positiveIsGood.includes(status)) {
+        return trend > 0 ? 'text-success' : trend < 0 ? 'text-danger' : ''
+      }
+
+      // di bawah normal → trend naik = buruk
+      return trend > 0 ? 'text-danger' : trend < 0 ? 'text-success' : ''
+    },
     applyFiltersFromRoute() {
       const q = this.$route.query
 
@@ -263,58 +311,17 @@ export default {
           },
           params: this.filters,
         })
-        this.detailRaw = res.data.data
+        this.detailTren = res.data.data
       } catch (e) {
         console.error(`LOAD ${endpoint} ERROR:`, e)
-      }
-    },
-    toggleSidebar() {
-      this.isCollapsed = !this.isCollapsed
-    },
-    handleResize() {
-      this.windowWidth = window.innerWidth
-      if (this.windowWidth < 992) {
-        this.isCollapsed = true // auto collapse di tablet/mobile
-      } else {
-        this.isCollapsed = false // normal lagi di desktop
-      }
-    },
-    async loadConfigWithCache() {
-      try {
-        // cek di localStorage
-        const cached = localStorage.getItem(this.configCacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
-          return
-        }
-         // kalau belum ada cache, fetch dari API
-        const res = await axios.get(`${baseURL}/api/config`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const data = res.data?.data
-        if (data) {
-          this.logoSrc = data.logo || null
-          // simpan di localStorage untuk load cepat di page berikutnya
-          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
-        }
-      }catch (error) {
-        console.warn('Gagal load config:', error)
-        this.logoLoaded = false
       }
     },
     async loadDetail() {
       await this.fetchDetail('/api/detail-tren')
     },
-
     async loadUmur() {
       await this.fetchDetail('/api/detail-umur')
     },
-
     async loadIndikator() {
       await this.fetchDetail('/api/detail-indikator')
     },
@@ -326,7 +333,6 @@ export default {
 
       await this.loadUmur()
       await this.loadDetail()
-      await this.loadConfigWithCache()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {
@@ -339,31 +345,68 @@ export default {
   computed: {
     // eslint-disable-next-line vue/no-dupe-keys
     detailTablePerBulan() {
-      if (!this.detailRaw || !this.detailRaw.total) return []
+      if (!this.detailTren || !this.detailTren.total) return []
 
-      const statusList = Object.keys(this.detailRaw.total)
+      const statusList = Object.keys(this.detailTren.total)
 
-      // ✅ Ambil label bulan dari backend
-      const start = new Date(this.detailRaw.start)
-      const end   = new Date(this.detailRaw.end)
+      // 🔑 Ambil bulan dari start & end backend
+      const startDate = new Date(this.detailTren.start)
+      const endDate   = new Date(this.detailTren.end)
 
-      const bulanLabels = [
-        start.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
-        end.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      const bulanList = [
+        {
+          label: startDate.toLocaleString('id-ID', {
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC'
+          }),
+          index: 0
+        },
+        {
+          label: endDate.toLocaleString('id-ID', {
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC'
+          }),
+          index: 1
+        }
       ]
 
-      // ✅ Backend hanya 2 bulan valid → index 0 & 1
-      return [0, 1].map((bulanIndex) => {
+      return bulanList.map((bulan) => ({
+        bulan: bulan.label,
+        rows: statusList.map((status) => ({
+          status,
+          total: this.detailTren.total?.[status]?.[bulan.index] ?? 0,
+          laki: this.detailTren.L?.[status]?.[bulan.index] ?? 0,
+          perempuan: this.detailTren.P?.[status]?.[bulan.index] ?? 0,
+          trend: this.detailTren.trend?.[status] ?? 0
+        }))
+      }))
+    },
+    detailByGender() {
+      if (!this.detailTren?.gender_summary) return []
+
+      const colorMap = {
+        L: {
+          circleClass: 'male-circle',
+          titleClass: 'text-success',
+          valueClass: 'text-success'
+        },
+        P: {
+          circleClass: 'female-circle',
+          titleClass: 'text-warning',
+          valueClass: 'text-warning'
+        }
+      }
+
+      return Object.keys(this.detailTren.gender_summary).map((key) => {
+        const item = this.detailTren.gender_summary[key]
+
         return {
-          bulan: bulanLabels[bulanIndex],
-          rows: statusList.map((statusKey) => {
-            return {
-              status: statusKey,
-              total: this.detailRaw.total?.[statusKey]?.[bulanIndex] ?? 0,
-              laki: this.detailRaw.L?.[statusKey]?.[bulanIndex] ?? 0,
-              perempuan: this.detailRaw.P?.[statusKey]?.[bulanIndex] ?? 0
-            }
-          })
+          label: item.label,
+          total: item.total,
+          categories: item.categories,
+          ...colorMap[key]
         }
       })
     }
@@ -373,6 +416,28 @@ export default {
 </script>
 
 <style scoped>
+.circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.circle-green {
+  background: #1f7a4d;
+  color: #fff;
+}
+
+.circle-yellow {
+  background: #d6c27a;
+  color: #fff;
+}
+
 .circle {
   width: 100px;
   height: 100px;
