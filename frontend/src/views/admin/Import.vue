@@ -2,10 +2,7 @@
   <div class="wrapper">
     <!-- 🔄 Spinner Overlay -->
     <transition name="fade">
-      <div
-        v-if="isLoading"
-        class="spinner-overlay d-flex justify-content-center align-items-center"
-      >
+      <div v-if="isLoading" class="spinner-overlay d-flex justify-content-center align-items-center">
         <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -15,75 +12,44 @@
     <!-- Header -->
     <HeaderAdmin />
 
-    <div
-      class="content flex-grow-1 d-flex flex-column flex-md-row"
-      :class="{
-        'sidebar-collapsed': isCollapsed,
-        'sidebar-expanded': !isCollapsed
-      }"
-    >
+    <div class="content flex-grow-1 d-flex flex-column flex-md-row" :class="{
+      'sidebar-collapsed': isCollapsed,
+      'sidebar-expanded': !isCollapsed
+    }">
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"   />
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Content -->
-        <div class="py-4 container-fluid" >
+        <div class="py-4 container-fluid">
 
           <!-- Welcome Card -->
           <Welcome />
 
           <!-- Nav Tab-->
           <div class="container-fluid my-2 d-flex justify-content-center">
-            <ul
-              class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100"
-              id="myTab"
-              role="tablist"
-              style="max-width: 800px;"
-            >
+            <ul class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100" id="myTab" role="tablist"
+              style="max-width: 800px;">
               <li class="nav-item flex-fill text-center" role="presentation">
-                <button
-                  class="nav-link active w-100 text-truncate"
-                  id="anak-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#anak-tab-pane"
-                  type="button"
-                  role="tab"
-                  aria-controls="anak-tab-pane"
-                  aria-selected="true"
-                  @click="menu('anak')"
-                >
+                <button class="nav-link active w-100 text-truncate" id="anak-tab" data-bs-toggle="tab"
+                  data-bs-target="#anak-tab-pane" type="button" role="tab" aria-controls="anak-tab-pane"
+                  aria-selected="true" @click="menu('anak')">
                   Gizi Anak
                 </button>
               </li>
 
               <li class="nav-item flex-fill text-center" role="presentation">
-                <button
-                  class="nav-link w-100 text-truncate"
-                  id="bumil-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#bumil-tab-pane"
-                  type="button"
-                  role="tab"
-                  aria-controls="bumil-tab-pane"
-                  aria-selected="false"
-                  @click="menu('bumil')"
-                >
+                <button class="nav-link w-100 text-truncate" id="bumil-tab" data-bs-toggle="tab"
+                  data-bs-target="#bumil-tab-pane" type="button" role="tab" aria-controls="bumil-tab-pane"
+                  aria-selected="false" @click="menu('bumil')">
                   Ibu Hamil
                 </button>
               </li>
 
               <li class="nav-item flex-fill text-center" role="presentation">
-                <button
-                  class="nav-link w-100 text-truncate"
-                  id="catin-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#catin-tab-pane"
-                  type="button"
-                  role="tab"
-                  aria-controls="catin-tab-pane"
-                  aria-selected="false"
-                  @click="menu('catin')"
-                >
+                <button class="nav-link w-100 text-truncate" id="catin-tab" data-bs-toggle="tab"
+                  data-bs-target="#catin-tab-pane" type="button" role="tab" aria-controls="catin-tab-pane"
+                  aria-selected="false" @click="menu('catin')">
                   Calon Pengantin
                 </button>
               </li>
@@ -96,7 +62,7 @@
               <div v-if="formOpen" class="card p-3 my-3">
                 <div class="d-flex justify-content-between">
                   <h3>Form Gizi Anak</h3>
-                  <button class="btn btn-outline-danger" @click="formOpen=!formOpen">
+                  <button class="btn btn-outline-danger" @click="formOpen = !formOpen">
                     X
                   </button>
                 </div>
@@ -140,7 +106,7 @@
 
                   <div class="col-12">
                     <button class="btn btn-primary mt-3" @click="submitUpdate">
-                      <i class="bi bi-pencil-square"></i> {{ form.mode == 'update'? 'Ubah Data' : 'Rekam Baru'}}
+                      <i class="bi bi-pencil-square"></i> {{ form.mode == 'update' ? 'Ubah Data' : 'Rekam Baru' }}
                     </button>
                     <button class="btn btn-secondary mt-3 ms-2" @click="resetForm">
                       <i class="bi bi-arrow-clockwise"></i> Reset
@@ -152,11 +118,8 @@
               <div v-if="isUploadOpen" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
                   <h5>Kelola Data</h5>
-                  <button
-                    @click="isUploadOpen = !isUploadOpen"
-                    class="btn btn-sm btn-outline-danger mb-2"
-                  >
-                  X
+                  <button @click="isUploadOpen = !isUploadOpen" class="btn btn-sm btn-outline-danger mb-2">
+                    X
                   </button>
                 </div>
 
@@ -172,13 +135,8 @@
                     </ul>
                   </div>
 
-                  <input
-                    ref="fileInput"
-                    type="file"
-                    accept=".csv,text/csv"
-                    class="form-control"
-                    @change="handleFileChange($event)"
-                  />
+                  <input ref="fileInput" type="file" accept=".csv,text/csv" class="form-control"
+                    @change="handleFileChange($event)" />
 
                   <!-- Preview / status -->
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -190,19 +148,20 @@
                         <table class="table table-bordered table-sm small border-danger">
                           <thead>
                             <tr>
-                              <th v-for="(col, index) in filePreviewTable[0]" :key="'h'+index" width="120" class="text-danger">
+                              <th v-for="(col, index) in filePreviewTable[0]" :key="'h' + index" width="120"
+                                class="text-danger">
                                 {{ col }}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr v-for="(row, rIndex) in filePreviewTable.slice(1)" :key="'r'+rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                            <tr v-for="(row, rIndex) in filePreviewTable.slice(1)" :key="'r' + rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
                                 {{ col }}
                               </td>
                             </tr>
-                            <tr v-for="(row, rIndex) in filePreviewTable.slice(2)" :key="'r'+rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                            <tr v-for="(row, rIndex) in filePreviewTable.slice(2)" :key="'r' + rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
                                 ...
                               </td>
                             </tr>
@@ -220,21 +179,12 @@
                   </div>
 
                   <div class="d-flex gap-2">
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-outline-danger btn-sm"
-                      @click="removeFile"
-                      type="button"
-                    >
+                    <button v-if="file && !uploading" class="btn btn-outline-danger btn-sm" @click="removeFile"
+                      type="button">
                       <i class="bi bi-trash me-1"></i> Hapus
                     </button>
 
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-success btn-sm"
-                      @click="uploadCSV"
-                      type="button"
-                    >
+                    <button v-if="file && !uploading" class="btn btn-success btn-sm" @click="uploadCSV" type="button">
                       <i class="bi bi-upload me-1"></i> Upload
                     </button>
 
@@ -251,33 +201,19 @@
                   <!-- Search + Button -->
                   <div class="d-flex align-items-center justify-content-end gap-2">
 
-                    <input
-                      type="text"
-                      class="form-control form-control-sm"
-                      style="width: 220px;"
-                      placeholder="Ketik NIK atau Nama"
-                      v-model="searchQuery_kunAn"
-                    >
+                    <input type="text" class="form-control form-control-sm" style="width: 220px;"
+                      placeholder="Ketik NIK atau Nama" v-model="searchQuery_kunAn">
 
-                    <button
-                      class="btn btn-primary btn-sm"
-                      type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas='kunjungan'"
-                    >
+                    <button class="btn btn-primary btn-sm" type="button"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'kunjungan'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Kunjungan
                     </button>
-                    <button
-                      class="btn btn-success btn-sm"
-                      type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas='pendampingan_anak'"
-                    >
+                    <button class="btn btn-success btn-sm" type="button"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'pendampingan_anak'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
-                    <button
-                      class="btn btn-outline-primary btn-sm"
-                      type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas='intervensi_anak'"
-                    >
+                    <button class="btn btn-outline-primary btn-sm" type="button"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'intervensi_anak'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                     </button>
                   </div>
@@ -285,31 +221,21 @@
                   <div class="mt-3">
 
                     <!-- Search + Row Per Page -->
-                    <easy-data-table
-                      :headers="headers_kunAn"
-                      :items="items_kunAn"
-                      :sortable="true"
-                      :search-value="searchQuery_kunAn"
-                      :rows-per-page="perPage"
-                      :rows-items="perPageOptions"
-                      :rows-per-page-text="'Rows per page'"
-                      header-text-direction="center"
-                      table-class-name="my-custom-table"
-                      header-class-name="my-custom-header"
-                      show-index
-                      alternating
-                      border-cell
-                    >
+                    <easy-data-table :headers="headers_kunAn" :items="items_kunAn" :sortable="true"
+                      :search-value="searchQuery_kunAn" :rows-per-page="perPage" :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'" header-text-direction="center"
+                      table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
+                      border-cell>
 
                       <!-- ACTION BUTTONS -->
-                      <template
-                        #item-action="items"
-                      >
+                      <template #item-action="items">
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
-                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip" title="Tambah">
+                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
+                            title="Tambah">
                             <i class="bi bi-plus-square"></i>
                           </button>
-                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip" title="Ubah">
+                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
+                            title="Ubah">
                             <i class="bi bi-pencil-square"></i>
                           </button>
                           <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
@@ -330,7 +256,7 @@
               <div v-if="formOpen_bumil" class="card p-3 my-3">
                 <div class="d-flex justify-content-between">
                   <h3>Form Ibu Hamil</h3>
-                  <button class="btn btn-outline-danger" @click="formOpen_bumil=!formOpen_bumil">
+                  <button class="btn btn-outline-danger" @click="formOpen_bumil = !formOpen_bumil">
                     X
                   </button>
                 </div>
@@ -342,7 +268,8 @@
 
                   <div class="col-md-4">
                     <label>Nama Ibu</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nama_ibu" :readonly="form.mode === 'input'">
+                    <input type="text" class="form-control" v-model="form_bumil.nama_ibu"
+                      :readonly="form.mode === 'input'">
                   </div>
 
                   <!-- <div v-if="form.mode === 'update'" class="col-md-4">
@@ -377,7 +304,7 @@
 
                   <div class="col-12">
                     <button class="btn btn-primary mt-3" @click="submitUpdate">
-                      <i class="bi bi-pencil-square"></i> {{ form_bumil.mode == 'update'? 'Ubah Data' : 'Rekam Baru'}}
+                      <i class="bi bi-pencil-square"></i> {{ form_bumil.mode == 'update' ? 'Ubah Data' : 'Rekam Baru' }}
                     </button>
                     <button class="btn btn-secondary mt-3 ms-2" @click="resetForm">
                       <i class="bi bi-arrow-clockwise"></i> Reset
@@ -389,11 +316,8 @@
               <div v-if="isUploadOpen_bumil" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
                   <h5>Kelola Data</h5>
-                  <button
-                    @click="isUploadOpen_bumil = !isUploadOpen_bumil"
-                    class="btn btn-sm btn-outline-danger mb-2"
-                  >
-                  X
+                  <button @click="isUploadOpen_bumil = !isUploadOpen_bumil" class="btn btn-sm btn-outline-danger mb-2">
+                    X
                   </button>
                 </div>
 
@@ -409,13 +333,8 @@
                     </ul>
                   </div>
 
-                  <input
-                    ref="fileInput"
-                    type="file"
-                    accept=".csv,text/csv"
-                    class="form-control"
-                    @change="handleFileChange($event)"
-                  />
+                  <input ref="fileInput" type="file" accept=".csv,text/csv" class="form-control"
+                    @change="handleFileChange($event)" />
 
                   <!-- Preview / status -->
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -427,19 +346,20 @@
                         <table class="table table-bordered table-sm small border-danger">
                           <thead>
                             <tr>
-                              <th v-for="(col, index) in filePreviewTable_bumil[0]" :key="'h'+index" width="120" class="text-danger">
+                              <th v-for="(col, index) in filePreviewTable_bumil[0]" :key="'h' + index" width="120"
+                                class="text-danger">
                                 {{ col }}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr v-for="(row, rIndex) in filePreviewTable_bumil.slice(1)" :key="'r'+rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                            <tr v-for="(row, rIndex) in filePreviewTable_bumil.slice(1)" :key="'r' + rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
                                 {{ col }}
                               </td>
                             </tr>
-                            <tr v-for="(row, rIndex) in filePreviewTable_bumil.slice(2)" :key="'r'+rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                            <tr v-for="(row, rIndex) in filePreviewTable_bumil.slice(2)" :key="'r' + rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
                                 ...
                               </td>
                             </tr>
@@ -457,21 +377,12 @@
                   </div>
 
                   <div class="d-flex gap-2">
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-outline-danger btn-sm"
-                      @click="removeFile"
-                      type="button"
-                    >
+                    <button v-if="file && !uploading" class="btn btn-outline-danger btn-sm" @click="removeFile"
+                      type="button">
                       <i class="bi bi-trash me-1"></i> Hapus
                     </button>
 
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-success btn-sm"
-                      @click="uploadCSV"
-                      type="button"
-                    >
+                    <button v-if="file && !uploading" class="btn btn-success btn-sm" @click="uploadCSV" type="button">
                       <i class="bi bi-upload me-1"></i> Upload
                     </button>
 
@@ -488,26 +399,15 @@
                   <!-- Search + Button -->
                   <div class="d-flex align-items-center justify-content-end gap-2">
 
-                    <input
-                      type="text"
-                      class="form-control form-control-sm"
-                      style="width: 220px;"
-                      placeholder="Ketik NIK atau Nama"
-                      v-model="searchQuery_bumil"
-                    >
+                    <input type="text" class="form-control form-control-sm" style="width: 220px;"
+                      placeholder="Ketik NIK atau Nama" v-model="searchQuery_bumil">
 
-                    <button
-                      class="btn btn-primary btn-sm"
-                      type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas='pendampingan_bumil'"
-                    >
+                    <button class="btn btn-primary btn-sm" type="button"
+                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'pendampingan_bumil'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
-                    <button
-                      class="btn btn-outline-primary btn-sm"
-                      type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas='intervensi_bumil'"
-                    >
+                    <button class="btn btn-outline-primary btn-sm" type="button"
+                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'intervensi_bumil'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                     </button>
                   </div>
@@ -515,30 +415,20 @@
                   <div class="mt-3">
 
                     <!-- Search + Row Per Page -->
-                    <easy-data-table
-                      :headers="headers_bumil"
-                      :items="items_bumil"
-                      :sortable="true"
-                      :search-value="searchQuery_bumil"
-                      :rows-per-page="perPage"
-                      :rows-items="perPageOptions"
-                      :rows-per-page-text="'Rows per page'"
-                      header-text-direction="center"
-                      table-class-name="my-custom-table"
-                      header-class-name="my-custom-header"
-                      show-index
-                      alternating
-                      border-cell
-                    >
+                    <easy-data-table :headers="headers_bumil" :items="items_bumil" :sortable="true"
+                      :search-value="searchQuery_bumil" :rows-per-page="perPage" :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'" header-text-direction="center"
+                      table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
+                      border-cell>
 
-                      <template
-                        #item-action="items"
-                      >
+                      <template #item-action="items">
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
-                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip" title="Tambah">
+                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
+                            title="Tambah">
                             <i class="bi bi-plus-square"></i>
                           </button>
-                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip" title="Ubah">
+                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
+                            title="Ubah">
                             <i class="bi bi-pencil-square"></i>
                           </button>
                           <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
@@ -560,7 +450,7 @@
               <div v-if="formOpen_catin" class="card p-3 my-3">
                 <div class="d-flex justify-content-between">
                   <h3>Form Calon Pengantin</h3>
-                  <button class="btn btn-outline-danger" @click="formOpen_catin=!formOpen_catin">
+                  <button class="btn btn-outline-danger" @click="formOpen_catin = !formOpen_catin">
                     X
                   </button>
                 </div>
@@ -572,7 +462,8 @@
 
                   <div class="col-md-4">
                     <label>Nama Calon Perempuan</label>
-                    <input type="text" class="form-control" v-model="form_catin.nama_perempuan" :readonly="form.mode === 'input'">
+                    <input type="text" class="form-control" v-model="form_catin.nama_perempuan"
+                      :readonly="form.mode === 'input'">
                   </div>
 
                   <div v-if="form.mode === 'update'" class="col-md-4">
@@ -607,7 +498,7 @@
 
                   <div class="col-12">
                     <button class="btn btn-primary mt-3" @click="submitUpdate">
-                      <i class="bi bi-pencil-square"></i> {{ form_catin.mode == 'update'? 'Ubah Data' : 'Rekam Baru'}}
+                      <i class="bi bi-pencil-square"></i> {{ form_catin.mode == 'update' ? 'Ubah Data' : 'Rekam Baru' }}
                     </button>
                     <button class="btn btn-secondary mt-3 ms-2" @click="resetForm">
                       <i class="bi bi-arrow-clockwise"></i> Reset
@@ -619,11 +510,8 @@
               <div v-if="isUploadOpen_catin" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
                   <h5>Kelola Data</h5>
-                  <button
-                    @click="isUploadOpen_catin = !isUploadOpen_catin"
-                    class="btn btn-sm btn-outline-danger mb-2"
-                  >
-                  X
+                  <button @click="isUploadOpen_catin = !isUploadOpen_catin" class="btn btn-sm btn-outline-danger mb-2">
+                    X
                   </button>
                 </div>
 
@@ -639,13 +527,8 @@
                     </ul>
                   </div>
 
-                  <input
-                    ref="fileInput"
-                    type="file"
-                    accept=".csv,text/csv"
-                    class="form-control"
-                    @change="handleFileChange($event)"
-                  />
+                  <input ref="fileInput" type="file" accept=".csv,text/csv" class="form-control"
+                    @change="handleFileChange($event)" />
 
                   <!-- Preview / status -->
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -657,19 +540,20 @@
                         <table class="table table-bordered table-sm border-danger" style="font-size: 80%;">
                           <thead>
                             <tr>
-                              <th v-for="(col, index) in PreviewTable_catin" :key="'h'+index" width="120" class="text-danger">
+                              <th v-for="(col, index) in PreviewTable_catin" :key="'h' + index" width="120"
+                                class="text-danger">
                                 {{ col }}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(0)" :key="'r'+rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(0)" :key="'r' + rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
                                 {{ col }}
                               </td>
                             </tr>
-                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(1)" :key="'r'+rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c'+cIndex" class="text-danger">
+                            <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(1)" :key="'r' + rIndex">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
                                 ...
                               </td>
                             </tr>
@@ -687,21 +571,12 @@
                   </div>
 
                   <div class="d-flex gap-2">
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-outline-danger btn-sm"
-                      @click="removeFile"
-                      type="button"
-                    >
+                    <button v-if="file && !uploading" class="btn btn-outline-danger btn-sm" @click="removeFile"
+                      type="button">
                       <i class="bi bi-trash me-1"></i> Hapus
                     </button>
 
-                    <button
-                      v-if="file && !uploading"
-                      class="btn btn-success btn-sm"
-                      @click="uploadCSV"
-                      type="button"
-                    >
+                    <button v-if="file && !uploading" class="btn btn-success btn-sm" @click="uploadCSV" type="button">
                       <i class="bi bi-upload me-1"></i> Upload
                     </button>
 
@@ -717,19 +592,11 @@
                 <div class="card-body">
                   <!-- Search + Button -->
                   <div class="d-flex align-items-center justify-content-end gap-2">
-                    <input
-                      type="text"
-                      class="form-control form-control-sm"
-                      style="width: 220px;"
-                      placeholder="Ketik NIK atau Nama"
-                      v-model="searchQuery_catin"
-                    >
+                    <input type="text" class="form-control form-control-sm" style="width: 220px;"
+                      placeholder="Ketik NIK atau Nama" v-model="searchQuery_catin">
 
-                    <button
-                      class="btn btn-primary btn-sm"
-                      type="button"
-                      @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas='pendampingan_catin'"
-                    >
+                    <button class="btn btn-primary btn-sm" type="button"
+                      @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas = 'pendampingan_catin'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
                   </div>
@@ -737,30 +604,20 @@
                   <div class="mt-3">
 
                     <!-- Search + Row Per Page -->
-                    <easy-data-table
-                      :headers="headers_catin"
-                      :items="items_catin"
-                      :sortable="true"
-                      :search-value="searchQuery_catin"
-                      :rows-per-page="perPage"
-                      :rows-items="perPageOptions"
-                      :rows-per-page-text="'Rows per page'"
-                      header-text-direction="center"
-                      table-class-name="my-custom-table"
-                      header-class-name="my-custom-header"
-                      show-index
-                      alternating
-                      border-cell
-                    >
+                    <easy-data-table :headers="headers_catin" :items="items_catin" :sortable="true"
+                      :search-value="searchQuery_catin" :rows-per-page="perPage" :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'" header-text-direction="center"
+                      table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
+                      border-cell>
 
-                      <template
-                        #item-action="items"
-                      >
+                      <template #item-action="items">
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
-                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip" title="Tambah">
+                          <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
+                            title="Tambah">
                             <i class="bi bi-plus-square"></i>
                           </button>
-                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip" title="Ubah">
+                          <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
+                            title="Ubah">
                             <i class="bi bi-pencil-square"></i>
                           </button>
                           <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
@@ -784,19 +641,13 @@
   </div>
 
   <!-- Loader Overlay with Animated Progress -->
-  <div
-    v-if="isLoadingImport"
+  <div v-if="isLoadingImport"
     class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-50"
-    style="z-index: 2000"
-  >
+    style="z-index: 2000">
     <div class="w-50">
       <div class="progress" style="height: 1.8rem; border-radius: 1rem; overflow: hidden">
-        <div
-          class="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          :style="{ width: importProgress + '%' }"
-          :data-progress="progressLevel"
-        >
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+          :style="{ width: importProgress + '%' }" :data-progress="progressLevel">
           <span class="fw-bold">{{ animatedProgress }}%</span>
         </div>
       </div>
@@ -810,12 +661,7 @@
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-success text-white rounded-top-4">
           <h5 class="modal-title">Berhasil</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center">
           <h5 class="mb-0">{{ successMessage || 'Konfigurasi berhasil disimpan.' }}</h5>
@@ -835,12 +681,7 @@
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-danger text-white rounded-top-4">
           <h5 class="modal-title">Error</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center">
           <h5 class="mb-0">{{ errorMessage || 'Terjadi kesalahan yang tidak diketahui.' }}</h5>
@@ -860,12 +701,7 @@
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-secondary rounded-top-4">
           <h5 class="modal-title">Konfirmasi</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body text-center">
           <h5 class="mb-0">{{ confirmMessage || 'Apakah anda yakin?' }}</h5>
@@ -913,39 +749,39 @@ export default {
       currentRow: 0,
       totalRows: 1,
       form: {
-        mode:"",
-        tgl_pengukuran:"",
+        mode: "",
+        tgl_pengukuran: "",
         nik: "",
         nama_anak: "",
         nama_ortu: "",
         bb: "",
         tb: "",
-        lika:"",
+        lika: "",
         unit_posyandu: "",
         gender: "",
         tgl_lahir: "",
       },
       form_bumil: {
-        mode:"",
-        tanggal_pendampingan:"",
+        mode: "",
+        tanggal_pendampingan: "",
         nik_ibu: "",
         nama_ibu: "",
         nama_suami: "",
         hb: "",
         bb: "",
         tb: "",
-        lila:"",
+        lila: "",
       },
       form_catin: {
-        mode:"",
-        tanggal_pendampingan:"",
+        mode: "",
+        tanggal_pendampingan: "",
         nik: "",
-        kadar_hb:"",
+        kadar_hb: "",
         nama_perempuan: "",
-        nama_laki:"",
+        nama_laki: "",
         berat_perempuan: "",
         tinggi_perempuan: "",
-        lika_perempuan:"",
+        lika_perempuan: "",
       },
       sortKey: '',
       sortOrder: 'asc',
@@ -1027,8 +863,8 @@ export default {
         { text: 'Unit Posyandu', value: 'unit_posyandu', sortable: true },
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
-      formOpen : false,
-      searchQuery_kunAn:"",
+      formOpen: false,
+      searchQuery_kunAn: "",
       searchQuery_bumil: "",
       searchQuery_catin: "",
       currentPage: 1,
@@ -1042,7 +878,7 @@ export default {
         pageLength: 10,
         destroy: true, // penting agar bisa di-refresh
       },
-      aktifitas:'kunjungan',
+      aktifitas: 'kunjungan',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1052,7 +888,7 @@ export default {
       windowWidth: window.innerWidth,
       configCacheKey: 'site_config_cache',
       activeMenu: 'anak', // default tampilan awal
-      dataLoad:[],
+      dataLoad: [],
       file: null,
       fileName: '',
       fileSize: 0,
@@ -1143,11 +979,11 @@ export default {
         ? this.dataLoad
         : Object.values(this.dataLoad);
 
-        const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
-          return arr.filter(item => {
-            const nama = item.nama_ibu?.toLowerCase() ?? "";
-            return nama.includes(q) || item.nik_ibu?.toString().includes(q);
-          });
+      const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
+      return arr.filter(item => {
+        const nama = item.nama_ibu?.toLowerCase() ?? "";
+        return nama.includes(q) || item.nik_ibu?.toString().includes(q);
+      });
     },
 
     items_bumil() {
@@ -1159,8 +995,8 @@ export default {
         kadar_hb: item.riwayat_pemeriksaan?.[0]?.kadar_hb ?? "-",
         lila: item.riwayat_pemeriksaan?.[0]?.lila ?? "-",
         usia_ibu: item.usia_ibu ?? "-",
-        bb:item.riwayat_pemeriksaan?.[0]?.berat_badan ?? "-",
-        tb:item.riwayat_pemeriksaan?.[0]?.tinggi_badan ?? "-",
+        bb: item.riwayat_pemeriksaan?.[0]?.berat_badan ?? "-",
+        tb: item.riwayat_pemeriksaan?.[0]?.tinggi_badan ?? "-",
         tgl_pendampingan: this.formatDate(item.tanggal_pendampingan) ?? "-",
         jml_anak: item.jumlah_anak ?? "-",
         action: { ...item }
@@ -1227,14 +1063,14 @@ export default {
       const file = e.target.files[0]
       this.loadFilePreview(file)
     },
-    resetForm(){
+    resetForm() {
       this.formOpen = false;
       this.form = {
         ...this.form,
-        mode:"",
+        mode: "",
         nik: "",
         nama_anak: "",
-        nama_ortu:  "",
+        nama_ortu: "",
         bb: "",
         tb: "",
         unit_posyandu: "",
@@ -1305,98 +1141,98 @@ export default {
     // Prefill form
     editItem(item) {
       switch (this.activeMenu) {
-          case 'anak':
-            this.formOpen = true;
-            this.form = {
-              ...this.form,
-              mode:'update',
-              nik: item.nik ?? "",
-              nama_anak: item.nama_anak ?? "",
-              nama_ortu: item.nama_ortu ?? "",
-              bb: item.bb ?? "",
-              tb: item.tb ?? "",
-              unit_posyandu: item.unit_posyandu ?? "",
-              gender: item.gender ?? "",
-              tgl_lahir: item.tgl_lahir ?? ""
-            };
-            break;
-          case 'bumil':
-            this.formOpen_bumil = true;
-            this.form_bumil = {
-              ...this.form_bumil,
-              mode:'input',
-              nik_ibu: item.nik_ibu ?? "",
-              nama_ibu: item.nama_ibu ?? "",
-              nama_suami: item.nama_suami ?? "",
-              bb: item.bb?? "",
-              tb: item.tb ?? "",
-              lila: item.lila ?? "",
-              hb: item.kadar_hb ?? "",
-            };
-            break;
+        case 'anak':
+          this.formOpen = true;
+          this.form = {
+            ...this.form,
+            mode: 'update',
+            nik: item.nik ?? "",
+            nama_anak: item.nama_anak ?? "",
+            nama_ortu: item.nama_ortu ?? "",
+            bb: item.bb ?? "",
+            tb: item.tb ?? "",
+            unit_posyandu: item.unit_posyandu ?? "",
+            gender: item.gender ?? "",
+            tgl_lahir: item.tgl_lahir ?? ""
+          };
+          break;
+        case 'bumil':
+          this.formOpen_bumil = true;
+          this.form_bumil = {
+            ...this.form_bumil,
+            mode: 'input',
+            nik_ibu: item.nik_ibu ?? "",
+            nama_ibu: item.nama_ibu ?? "",
+            nama_suami: item.nama_suami ?? "",
+            bb: item.bb ?? "",
+            tb: item.tb ?? "",
+            lila: item.lila ?? "",
+            hb: item.kadar_hb ?? "",
+          };
+          break;
 
-          case 'catin':
+        case 'catin':
 
-            this.formOpen_catin = true;
-            this.form_catin = {
-              ...this.form_catin,
-              mode:'input',
-              nik: item.nik ?? "",
-              tanggal_pendampingan: item.tanggal_pendampingan ?? "",
-              nama_perempuan: item.nama_perempuan ?? "",
-              nama_laki:item.nama_laki ?? "",
-              kadar_hb:item.hb_perempuan ?? "",
-              berat_perempuan: item.bb ?? "",
-              tinggi_perempuan: item.tb ?? "",
-              lila_perempuan:item.lila_perempuan ?? "",
-            };
-            break;
-          default:
-            return;
+          this.formOpen_catin = true;
+          this.form_catin = {
+            ...this.form_catin,
+            mode: 'input',
+            nik: item.nik ?? "",
+            tanggal_pendampingan: item.tanggal_pendampingan ?? "",
+            nama_perempuan: item.nama_perempuan ?? "",
+            nama_laki: item.nama_laki ?? "",
+            kadar_hb: item.hb_perempuan ?? "",
+            berat_perempuan: item.bb ?? "",
+            tinggi_perempuan: item.tb ?? "",
+            lila_perempuan: item.lila_perempuan ?? "",
+          };
+          break;
+        default:
+          return;
       }
     },
     inputItem(item) {
       switch (this.activeMenu) {
-          case 'anak':
-            this.formOpen = true;
-            this.form = {
-              ...this.form,
-              mode:'input',
-              nik: item.nik ?? "",
-              nama_anak: item.nama_anak ?? "",
-              nama_ortu: item.nama_ortu ?? "",
-              //bb: item.bb ?? "",
-              //tb: item.tb ?? "",
-              unit_posyandu: item.unit_posyandu ?? "",
-              gender: item.gender ?? "",
-              tgl_lahir: item.tgl_lahir ?? ""
-            };
-            break;
-          case 'bumil':
-            this.formOpen_bumil = true;
-            this.form_bumil = {
-              ...this.form_bumil,
-              mode:'input',
-              nik_ibu: item.nik_ibu ?? "",
-              nama_ibu: item.nama_ibu ?? "",
-              nama_suami: item.nama_suami ?? ""
-            };
-            break;
+        case 'anak':
+          this.formOpen = true;
+          this.form = {
+            ...this.form,
+            mode: 'input',
+            nik: item.nik ?? "",
+            nama_anak: item.nama_anak ?? "",
+            nama_ortu: item.nama_ortu ?? "",
+            //bb: item.bb ?? "",
+            //tb: item.tb ?? "",
+            unit_posyandu: item.unit_posyandu ?? "",
+            gender: item.gender ?? "",
+            tgl_lahir: item.tgl_lahir ?? ""
+          };
+          break;
+        case 'bumil':
+          this.formOpen_bumil = true;
+          this.form_bumil = {
+            ...this.form_bumil,
+            mode: 'input',
+            nik_ibu: item.nik_ibu ?? "",
+            nama_ibu: item.nama_ibu ?? "",
+            nama_suami: item.nama_suami ?? ""
+          };
+          break;
 
-          case 'catin':
-            this.formOpen_catin = true;
-            this.form_catin = {
-              ...this.form_catin,
-              mode:'input',
-              nik: item.nik ?? "",
-              tanggal_pendampingan: item.tanggal_pendampingan ?? "",
-              nama_perempuan: item.nama_perempuan ?? "",
-              nama_laki:item.nama_laki ?? "",
-              kadar_hb:item.kadar_hb ?? "",
-            };
-            break;
-          default:
-            return;
+        case 'catin':
+          this.formOpen_catin = true;
+          this.form_catin = {
+            ...this.form_catin,
+            mode: 'input',
+            nik: item.nik ?? "",
+            tanggal_pendampingan: item.tanggal_pendampingan ?? "",
+            nama_perempuan: item.nama_perempuan ?? "",
+            nama_laki: item.nama_laki ?? "",
+            kadar_hb: item.kadar_hb ?? "",
+          };
+          break;
+        default:
+          return;
       }
     },
     async submitUpdate() {
@@ -1534,7 +1370,7 @@ export default {
         //console.error(e)
         this.showError(e)
         //alert("Gagal menyimpan data")
-      }finally{
+      } finally {
         this.isLoadingImport = false
       }
     },
@@ -1607,7 +1443,7 @@ export default {
           this.logoSrc = parsed.logo || null
           return
         }
-         // kalau belum ada cache, fetch dari API
+        // kalau belum ada cache, fetch dari API
         const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
@@ -1621,7 +1457,7 @@ export default {
           // simpan di localStorage untuk load cepat di page berikutnya
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-      }catch (error) {
+      } catch (error) {
         console.warn('Gagal load config:', error)
         this.logoLoaded = false
       }
@@ -1761,19 +1597,11 @@ export default {
         case 'anak':
           switch (this.aktifitas) {
             case 'kunjungan':
-              UPLOAD_URL = `${baseURL}/api/children/${
-                this.aktifitas === 'kunjungan'
-                  ? 'kunjungan'
-                  : 'pendampingan_anak'
-              }`
+              UPLOAD_URL = `${baseURL}/api/children/import_kunjungan`
               break;
-              case 'pendampingan':
-            UPLOAD_URL = `${baseURL}/api/children/${
-              this.aktifitas === 'kunjungan'
-                ? 'kunjungan'
-                : 'pendampingan_anak'
-            }`
-            break;
+            case 'pendampingan':
+              UPLOAD_URL = `${baseURL}/api/children/import_pendampingan`
+              break;
             case 'intervensi_anak':
               UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
               break;
@@ -1905,57 +1733,57 @@ export default {
           })
 
           this.filePreviewTable = table
-            break;
-          case 'bumil':
-            if (rawLines.length === 0) {
-              this.filePreviewTable_bumil = []
-              return
+          break;
+        case 'bumil':
+          if (rawLines.length === 0) {
+            this.filePreviewTable_bumil = []
+            return
+          }
+
+          // Deteksi delimiter otomatis
+          // eslint-disable-next-line no-case-declarations
+          const delimiter_bumil = rawLines[0].includes(';') ? ';' : ','
+
+          // Parse CSV
+          // eslint-disable-next-line no-case-declarations
+          let table_bumil = rawLines.map(line => line.split(delimiter_bumil))
+
+          // === CROP KOLOM ===
+          table_bumil = table_bumil.map(row => {
+            if (row.length > 6) {
+              return [...row.slice(0, 10), '...'] // max 5 + "..."
             }
+            return row
+          })
 
-            // Deteksi delimiter otomatis
-            // eslint-disable-next-line no-case-declarations
-            const delimiter_bumil = rawLines[0].includes(';') ? ';' : ','
+          this.filePreviewTable_bumil = table_bumil
+          break;
+        case 'catin':
+          if (rawLines.length === 0) {
+            this.filePreviewTable_catin = []
+            return
+          }
 
-            // Parse CSV
-            // eslint-disable-next-line no-case-declarations
-            let table_bumil = rawLines.map(line => line.split(delimiter_bumil))
+          // Deteksi delimiter otomatis
+          // eslint-disable-next-line no-case-declarations
+          const delimiter_catin = rawLines[0].includes(';') ? ';' : ','
 
-            // === CROP KOLOM ===
-            table_bumil = table_bumil.map(row => {
-              if (row.length > 6) {
-                return [...row.slice(0, 10), '...'] // max 5 + "..."
-              }
-              return row
-            })
+          // Parse CSV
+          // eslint-disable-next-line no-case-declarations
+          let table_catin = rawLines.map(line => line.split(delimiter_catin))
 
-            this.filePreviewTable_bumil = table_bumil
-            break;
-          case 'catin':
-            if (rawLines.length === 0) {
-              this.filePreviewTable_catin = []
-              return
+          // === CROP KOLOM ===
+          table_catin = table_catin.map(row => {
+            if (row.length > 6) {
+              return [...row.slice(0, 10), '...'] // max 5 + "..."
             }
+            return row
+          })
 
-            // Deteksi delimiter otomatis
-            // eslint-disable-next-line no-case-declarations
-            const delimiter_catin = rawLines[0].includes(';') ? ';' : ','
-
-            // Parse CSV
-            // eslint-disable-next-line no-case-declarations
-            let table_catin = rawLines.map(line => line.split(delimiter_catin))
-
-            // === CROP KOLOM ===
-            table_catin = table_catin.map(row => {
-              if (row.length > 6) {
-                return [...row.slice(0, 10), '...'] // max 5 + "..."
-              }
-              return row
-            })
-
-            this.filePreviewTable_catin = table_catin
-            break;
-          default:
-            return;
+          this.filePreviewTable_catin = table_catin
+          break;
+        default:
+          return;
       }
 
     },
@@ -2060,6 +1888,7 @@ export default {
   opacity: 0;
   transform: translateY(-5px);
 }
+
 .action-wrapper {
   display: flex;
   justify-content: center;
@@ -2067,7 +1896,7 @@ export default {
 }
 
 .my-custom-table {
-   --easy-table-header-background-color: #b4dbc6;
+  --easy-table-header-background-color: #b4dbc6;
 }
 
 .my-custom-table .col-action {
@@ -2079,5 +1908,4 @@ export default {
   justify-content: center !important;
   align-items: center !important;
 }
-
 </style>

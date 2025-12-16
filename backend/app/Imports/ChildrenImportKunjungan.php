@@ -7,7 +7,7 @@ use App\Models\Wilayah;
 use App\Models\Posyandu;
 use App\Models\Keluarga;
 use App\Models\Log;
-use Carbon\Carbon;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -20,7 +20,10 @@ class ChildrenImportKunjungan implements
     WithChunkReading,
     WithCustomCsvSettings
 {
-    public function __construct(private int $userId) {}
+    protected array $wilayahUser = [];
+    public function __construct(private int $userId) {
+        $this->loadWilayahUser();
+    }
 
     public function chunkSize(): int
     {
@@ -59,59 +62,44 @@ class ChildrenImportKunjungan implements
             // =========================
 
 
-            /**
-             * Status Berat Badan	
-             * Sangat Kurang	Severely Underweight
-             * Kurang	Underweight
-             * Normal	Normal
-             * Risiko Berat Badan Lebih	Risiko BB Lebih
-             * 	
-             * Status Tinggi Badan	
-             * Sangat Pendek	Severely Stunted
-             * Pendek	Stunted
-             * Normal	Normal
-             * Tinggi	Tinggi
-             * 	
-             * Status BB/TB	
-             * Gizi Buruk	Severely Wasted
-             * Gizi Baik	Wasted
-             * Berisiko Gizi Lebih	Possible Risk of Overweight
-             * Gizi Lebih	Overweight
-             * Obesitas	Obese   
-             * */
-            $status_bbu  = $row["bbu"];
-            $status_tbu  = $row["tbu"];
-            $status_bbtb = $row["bbtb"];
+            
+            $status_bbu  = $this->statusBB($row["bbu"]);
+            $status_tbu  = $this->statusTB($row["tbu"]);
+            $status_bbtb = $this->statusBBTB($row["bbtb"]);
 
-            $naikBB = $row["naik_berat_badan"];
+            $naikBB = $this->normalizeNaikBeratBadan($row["naik_berat_badan"]);
 
             // =========================
             // 4. Simpan Kunjungan
             // =========================
             $kunjungan = Kunjungan::create([
                 'nik' => $row['nik'],
-                'nama_anak' => $row['nama'],
-                'jk' => $row['jk'],
+                'nama_anak' => $this->normalizeText($row['nama'] ?? null),
+                'jk' => $this->normalizeText($row['jk'] ?? null),
                 'tgl_lahir' => $tglLahir,
                 'bb_lahir' =>  $this->normalizeDecimal($row['bb_lahir']??null),
-                'tb_lahir' => $row['tb_lahir'],
-                'nama_ortu' => $row['nama_ortu'],
-                'alamat' => $row['alamat'],
+                'tb_lahir' => $this->normalizeDecimal($row['tb_lahir']??null),
+                'nama_ortu' => $this->normalizeText($row['nama_ortu'] ?? null),
+                'alamat' => $this->normalizeText($row['alamat']),
                 'rt' => $row['rt'],
                 'rw' => $row['rw'],
-                'puskesmas' => $row['pukesmas'],
-                'posyandu' => $row['posyandu'],
+                'puskesmas' => $this->normalizeText($row['pukesmas']),
+                'posyandu' => $this->normalizeText($row['posyandu']),
                 'tgl_pengukuran' => $tglUkur,
                 'usia_saat_ukur' => $usia,
                 'bb' =>  $this->normalizeDecimal($row['berat']??null),
                 'tb' =>  $this->normalizeDecimal($row['tinggi']??null),
-                'lila' => $row['lila'] ?? null,
+                'lila' => $this->normalizeDecimal($row['lila'] ?? null),
+                'provinsi' => $this->wilayahUser['provinsi'],
+                'kota' => $this->wilayahUser['kota'],
+                'kecamatan' => $this->normalizeText($row['kec']),
+                'kelurahan' => $this->normalizeText($row['desakel']),
 
-                'bb_u' => $status_bbu,
+                'bb_u' => $this->normalizeStatus($status_bbu),
                 'zs_bb_u' => $z_bbu,
-                'tb_u' => $status_tbu,
+                'tb_u' => $this->normalizeStatus($status_tbu),
                 'zs_tb_u' => $z_tbu,
-                'bb_tb' => $status_bbtb,
+                'bb_tb' => $this->normalizeStatus($status_bbtb),
                 'zs_bb_tb' => $z_bbtb,
                 'naik_berat_badan' => $naikBB,
             ]);
@@ -120,14 +108,14 @@ class ChildrenImportKunjungan implements
             // 5. Wilayah & Posyandu
             // =========================
             $wilayah = Wilayah::firstOrCreate([
-                'provinsi' => $row['prov'],
-                'kota' => $row['kab_kota'],
-                'kecamatan' => $row['kec'],
-                'kelurahan' => $row['desa_kel'],
+                'provinsi' => $this->wilayahUser['provinsi'],
+                'kota' => $this->wilayahUser['kota'],
+                'kecamatan' => $this->normalizeText($row['kec']),
+                'kelurahan' => $this->normalizeText($row['desakel']),
             ]);
 
             Posyandu::firstOrCreate([
-                'nama_posyandu' => $row['posyandu'],
+                'nama_posyandu' => $this->normalizeText($row['posyandu']),
                 'id_wilayah' => $wilayah->id,
                 'rt' => $row['rt'],
                 'rw' => $row['rw'],
@@ -140,7 +128,7 @@ class ChildrenImportKunjungan implements
                 Keluarga::firstOrCreate(
                     ['no_kk' => $row['no_kk']],
                     [
-                        'alamat' => $row['alamat'],
+                        'alamat' => $this->normalizeText($row['alamat']),
                         'rt' => $row['rt'],
                         'rw' => $row['rw'],
                         'id_wilayah' => $wilayah->id,
@@ -166,6 +154,16 @@ class ChildrenImportKunjungan implements
     /* ======================
      * Helper (reuse existing)
      * ====================== */
+
+    private function normalizeText($value)
+    {
+        return $value ? strtoupper(trim($value)) : null;
+    }   
+
+    private function normalizeStatus($value)
+    {
+        return $value ? ucwords(trim($value)) : null;
+    }   
 
     private function convertDate($date)
     {
@@ -204,4 +202,77 @@ class ChildrenImportKunjungan implements
         return is_numeric($value) ? (float) $value : null;
     }
 
+    private function statusBB($status){
+        $beratBadan = [
+            "Sangat Kurang" => "Severely Underweight",
+            "Kurang" => "Underweight",
+            "Normal" => "Normal",
+            "Risiko Berat Badan Lebih" => "Risiko BB Lebih",
+            "BB Lebih" => "BB Lebih",
+        ];
+        return $beratBadan[$status] ?? null;
+    }
+
+    private function statusTB($status){
+        $tinggiBadan = [
+            "Sangat Pendek" => "Severely Stunted",
+            "Pendek" => "Stunted",
+            "Normal" => "Normal",
+            "Tinggi" => "Tinggi",
+        ];
+        return $tinggiBadan[$status] ?? null;
+    }
+
+    private function statusBBTB($status){
+        $bbTb = [
+            "Gizi Buruk" => "Severely Wasted",
+            "Gizi Kurang" => "Wasted",
+            "Gizi Baik" => "Normal",
+            "Berisiko Gizi Lebih" => "Possible Risk of Overweight",
+            "Gizi Lebih" => "Overweight",
+            "Obesitas" => "Obese",
+        ];
+        return $bbTb[$status] ?? null;
+    }
+
+    private function normalizeNaikBeratBadan($value)
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        $value = strtolower(trim($value));
+
+        if (in_array($value, ['yes', 'ya', '1', 'true', 'T'])) {
+            return true;
+        } elseif (in_array($value, ['no', 'tidak', '0', 'false', 'F'])) {
+            return false;
+        }
+
+        return null;
+    }
+
+    protected function loadWilayahUser(): void
+    {
+        $user = User::find($this->userId);
+
+        if (!$user || !$user->id_wilayah) {
+            $this->wilayahUser = [
+                'provinsi' => null,
+                'kota' => null,
+                'kecamatan' => null,
+                'kelurahan' => null,
+            ];
+            return;
+        }
+
+        $zona = Wilayah::find($user->id_wilayah);
+
+        $this->wilayahUser = [
+            'provinsi' => $zona->provinsi ?? null,
+            'kota' => $zona->kota ?? null,
+            'kecamatan' => $zona->kecamatan ?? null,
+            'kelurahan' => $zona->kelurahan ?? null,
+        ];
+    }
 }
