@@ -76,10 +76,7 @@
                         {{ bulanItem.rows[i].total }}
                         <span
                           v-if="b === detailTablePerBulan.length - 1"
-                          :class="{
-                            'text-danger': bulanItem.rows[i].trend < 0,
-                            'text-success': bulanItem.rows[i].trend > 0
-                          }"
+                          :class="trendClass(bulanItem.rows[i].status, bulanItem.rows[i].trend)"
                         >
                           ({{ bulanItem.rows[i].trend > 0 ? '+' : '' }}{{ bulanItem.rows[i].trend }})
                         </span>
@@ -121,23 +118,44 @@
                 <div class="row justify-content-center">
                   <div
                     class="col-md-6 col-sm-12 col-12 mb-4"
-                    v-for="(item, index) in genderData_bb"
+                    v-for="(item, index) in detailByGender"
                     :key="index"
                   >
-                    <div :class="['circle', item.circleClass]">{{ item.total }}</div>
-                    <h6 class="title" :class="item.titleClass">{{ item.label }}</h6>
-                    <div class="d-flex justify-content-between px-5">
+                    <div :class="['circle', item.circleClass]">
+                      {{ item.total }}
+                    </div>
+
+                    <h6 class="title text-center" :class="item.titleClass">
+                      {{ item.label }}
+                    </h6>
+
+                    <div class="d-flex justify-content-between px-5 mt-3">
                       <div>
-                        <p v-for="(cat, i) in item.categories" :key="i">{{ cat.name }}</p>
+                        <p
+                          v-for="(cat, i) in item.categories"
+                          :key="i"
+                          class="mb-1"
+                        >
+                          {{ cat.name }}
+                        </p>
                       </div>
-                      <div class="fw-bold text-end" :class="item.valueClass">
-                        <p v-for="(cat, i) in item.categories" :key="i">
+
+                      <div
+                        class="fw-bold text-end"
+                        :class="item.valueClass"
+                      >
+                        <p
+                          v-for="(cat, i) in item.categories"
+                          :key="i"
+                          class="mb-1"
+                        >
                           {{ cat.value }}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -262,6 +280,16 @@ export default {
         this.isCollapsed = false // normal lagi di desktop
       }
     },
+    trendClass(status, trend) {
+      const positiveIsGood = ['Normal']
+
+      if (positiveIsGood.includes(status)) {
+        return trend > 0 ? 'text-success' : trend < 0 ? 'text-danger' : ''
+      }
+
+      // di bawah normal → trend naik = buruk
+      return trend > 0 ? 'text-danger' : trend < 0 ? 'text-success' : ''
+    },
     applyFiltersFromRoute() {
       const q = this.$route.query
 
@@ -329,14 +357,16 @@ export default {
         {
           label: startDate.toLocaleString('id-ID', {
             month: 'long',
-            year: 'numeric'
+            year: 'numeric',
+            timeZone: 'UTC'
           }),
           index: 0
         },
         {
           label: endDate.toLocaleString('id-ID', {
             month: 'long',
-            year: 'numeric'
+            year: 'numeric',
+            timeZone: 'UTC'
           }),
           index: 1
         }
@@ -352,6 +382,33 @@ export default {
           trend: this.detailTren.trend?.[status] ?? 0
         }))
       }))
+    },
+    detailByGender() {
+      if (!this.detailTren?.gender_summary) return []
+
+      const colorMap = {
+        L: {
+          circleClass: 'male-circle',
+          titleClass: 'text-success',
+          valueClass: 'text-success'
+        },
+        P: {
+          circleClass: 'female-circle',
+          titleClass: 'text-warning',
+          valueClass: 'text-warning'
+        }
+      }
+
+      return Object.keys(this.detailTren.gender_summary).map((key) => {
+        const item = this.detailTren.gender_summary[key]
+
+        return {
+          label: item.label,
+          total: item.total,
+          categories: item.categories,
+          ...colorMap[key]
+        }
+      })
     }
   }
 
@@ -359,6 +416,28 @@ export default {
 </script>
 
 <style scoped>
+.circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.circle-green {
+  background: #1f7a4d;
+  color: #fff;
+}
+
+.circle-yellow {
+  background: #d6c27a;
+  color: #fff;
+}
+
 .circle {
   width: 100px;
   height: 100px;

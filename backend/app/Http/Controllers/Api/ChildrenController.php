@@ -2548,8 +2548,40 @@ class ChildrenController extends Controller
             $result['trend'][$cat] = $latest - $prev;
         }
 
+        // ===============================
+        // ✅ SUMMARY SESUAI UI (PER GENDER)
+        // ===============================
+        $genderSummary = [
+            'L' => [
+                'label' => 'Laki - Laki',
+                'total' => 0,
+                'categories' => []
+            ],
+            'P' => [
+                'label' => 'Perempuan',
+                'total' => 0,
+                'categories' => []
+            ]
+        ];
+
+        foreach (['L', 'P'] as $jk) {
+            foreach ($categories as $cat) {
+                $sum = array_sum($result[$jk][$cat] ?? []);
+
+                $genderSummary[$jk]['categories'][] = [
+                    'name'  => $cat,
+                    'value' => $sum
+                ];
+
+                $genderSummary[$jk]['total'] += $sum;
+            }
+        }
+
         return response()->json([
-            "data" => $result
+            "data" => [
+                ...$result,
+                "gender_summary" => $genderSummary
+            ]
         ], 200);
     }
 
