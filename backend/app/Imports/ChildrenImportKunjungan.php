@@ -228,7 +228,7 @@ class ChildrenImportKunjungan implements
             "Gizi Buruk" => "Severely Wasted",
             "Gizi Kurang" => "Wasted",
             "Gizi Baik" => "Normal",
-            "Berisiko Gizi Lebih" => "Possible Risk of Overweight",
+            "Risiko Gizi Lebih" => "Possible Risk of Overweight",
             "Gizi Lebih" => "Overweight",
             "Obesitas" => "Obese",
         ];
