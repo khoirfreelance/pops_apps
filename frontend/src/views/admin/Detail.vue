@@ -74,6 +74,15 @@
                     <template v-for="(bulanItem, b) in detailTablePerBulan" :key="b">
                       <td class="text-center">
                         {{ bulanItem.rows[i].total }}
+                        <span
+                          v-if="b === detailTablePerBulan.length - 1"
+                          :class="{
+                            'text-danger': bulanItem.rows[i].trend < 0,
+                            'text-success': bulanItem.rows[i].trend > 0
+                          }"
+                        >
+                          ({{ bulanItem.rows[i].trend > 0 ? '+' : '' }}{{ bulanItem.rows[i].trend }})
+                        </span>
                       </td>
                       <td class="text-center">
                         {{ bulanItem.rows[i].laki }}
@@ -202,11 +211,11 @@ export default {
   data() {
     return {
       detailTablePerBulan: [],
-      detailRaw: null,
+      detailTren: null,
       detailTable: [],
       tipe:'',
       title:'',
-      filteredData: [], // data hasil filter
+      /* filteredData: [], // data hasil filter
       rawData:[],
       configCacheKey: 'site_config_cache',
       isLoading: false,
@@ -227,7 +236,7 @@ export default {
       kelurahan:'',
       indiChartInstance_tb: null,
       indiChartInstance_bbtb: null,
-      indiChartInstance_bb: null,
+      indiChartInstance_bb: null, */
       filters: {
         tipe: '',
         provinsi: '',
@@ -242,6 +251,17 @@ export default {
     }
   },
   methods: {
+    toggleSidebar() {
+      this.isCollapsed = !this.isCollapsed
+    },
+    handleResize() {
+      this.windowWidth = window.innerWidth
+      if (this.windowWidth < 992) {
+        this.isCollapsed = true // auto collapse di tablet/mobile
+      } else {
+        this.isCollapsed = false // normal lagi di desktop
+      }
+    },
     applyFiltersFromRoute() {
       const q = this.$route.query
 
@@ -263,58 +283,17 @@ export default {
           },
           params: this.filters,
         })
-        this.detailRaw = res.data.data
+        this.detailTren = res.data.data
       } catch (e) {
         console.error(`LOAD ${endpoint} ERROR:`, e)
-      }
-    },
-    toggleSidebar() {
-      this.isCollapsed = !this.isCollapsed
-    },
-    handleResize() {
-      this.windowWidth = window.innerWidth
-      if (this.windowWidth < 992) {
-        this.isCollapsed = true // auto collapse di tablet/mobile
-      } else {
-        this.isCollapsed = false // normal lagi di desktop
-      }
-    },
-    async loadConfigWithCache() {
-      try {
-        // cek di localStorage
-        const cached = localStorage.getItem(this.configCacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
-          return
-        }
-         // kalau belum ada cache, fetch dari API
-        const res = await axios.get(`${baseURL}/api/config`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const data = res.data?.data
-        if (data) {
-          this.logoSrc = data.logo || null
-          // simpan di localStorage untuk load cepat di page berikutnya
-          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
-        }
-      }catch (error) {
-        console.warn('Gagal load config:', error)
-        this.logoLoaded = false
       }
     },
     async loadDetail() {
       await this.fetchDetail('/api/detail-tren')
     },
-
     async loadUmur() {
       await this.fetchDetail('/api/detail-umur')
     },
-
     async loadIndikator() {
       await this.fetchDetail('/api/detail-indikator')
     },
@@ -326,7 +305,6 @@ export default {
 
       await this.loadUmur()
       await this.loadDetail()
-      await this.loadConfigWithCache()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {
@@ -339,33 +317,41 @@ export default {
   computed: {
     // eslint-disable-next-line vue/no-dupe-keys
     detailTablePerBulan() {
-      if (!this.detailRaw || !this.detailRaw.total) return []
+      if (!this.detailTren || !this.detailTren.total) return []
 
-      const statusList = Object.keys(this.detailRaw.total)
+      const statusList = Object.keys(this.detailTren.total)
 
-      // ✅ Ambil label bulan dari backend
-      const start = new Date(this.detailRaw.start)
-      const end   = new Date(this.detailRaw.end)
+      // 🔑 Ambil bulan dari start & end backend
+      const startDate = new Date(this.detailTren.start)
+      const endDate   = new Date(this.detailTren.end)
 
-      const bulanLabels = [
-        start.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
-        end.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      const bulanList = [
+        {
+          label: startDate.toLocaleString('id-ID', {
+            month: 'long',
+            year: 'numeric'
+          }),
+          index: 0
+        },
+        {
+          label: endDate.toLocaleString('id-ID', {
+            month: 'long',
+            year: 'numeric'
+          }),
+          index: 1
+        }
       ]
 
-      // ✅ Backend hanya 2 bulan valid → index 0 & 1
-      return [0, 1].map((bulanIndex) => {
-        return {
-          bulan: bulanLabels[bulanIndex],
-          rows: statusList.map((statusKey) => {
-            return {
-              status: statusKey,
-              total: this.detailRaw.total?.[statusKey]?.[bulanIndex] ?? 0,
-              laki: this.detailRaw.L?.[statusKey]?.[bulanIndex] ?? 0,
-              perempuan: this.detailRaw.P?.[statusKey]?.[bulanIndex] ?? 0
-            }
-          })
-        }
-      })
+      return bulanList.map((bulan) => ({
+        bulan: bulan.label,
+        rows: statusList.map((status) => ({
+          status,
+          total: this.detailTren.total?.[status]?.[bulan.index] ?? 0,
+          laki: this.detailTren.L?.[status]?.[bulan.index] ?? 0,
+          perempuan: this.detailTren.P?.[status]?.[bulan.index] ?? 0,
+          trend: this.detailTren.trend?.[status] ?? 0
+        }))
+      }))
     }
   }
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ChildrenController extends Controller
@@ -2456,9 +2457,8 @@ class ChildrenController extends Controller
             'rt'         => $request->rt,
             'rw'         => $request->rw,
             'periode'    => $request->periode,
+            'tipe'       => $request->tipe
         ];
-
-        $tipe = $request->tipe;
 
         $mapKategori = [
             'bbu' => [
@@ -2492,6 +2492,7 @@ class ChildrenController extends Controller
             ]
         ];
 
+        $tipe = $filters['tipe'];
         if (!isset($mapKategori[$tipe])) {
             return response()->json(['error' => 'Tipe tidak valid'], 400);
         }
@@ -2499,16 +2500,25 @@ class ChildrenController extends Controller
         $field = $mapKategori[$tipe]['field'];
         $categories = $mapKategori[$tipe]['cats'];
 
-        // ✅ HANYA 2 BULAN TERAKHIR
-        $endDate = now()->subMonths(1)->endOfMonth();
-        $startDate = now()->subMonths(2)->startOfMonth();
+        if (empty($filters['periode'])) {
+            // ✅ default: H-1 vs H-2 bulan berjalan
+            $endDate = now()->subMonth()->endOfMonth();
+            $startDate = now()->subMonths(2)->startOfMonth();
+        }else {
+            // periode = bulan acuan (YYYY-MM)
+            $base = Carbon::createFromFormat('Y-m', $filters['periode']);
+
+            $startDate = $base->copy()->startOfMonth();
+            $endDate   = $base->copy()->addMonth()->endOfMonth();
+        }
 
         // ✅ generate bulan (YYYY-MM)
-        $period = new \DatePeriod(
-            $startDate,
-            new \DateInterval('P1M'),
-            $endDate->copy()->addMonth()
+        $period = CarbonPeriod::create(
+            $startDate->copy()->startOfMonth(),
+            '1 month',
+            $endDate->copy()->startOfMonth()
         );
+
 
         $months = [];
         foreach ($period as $p) {
@@ -2527,6 +2537,15 @@ class ChildrenController extends Controller
             $result['L'][$cat] = $this->getCountPerMonth($field, $cat, 'L', $startDate, $endDate, $months);
             $result['P'][$cat] = $this->getCountPerMonth($field, $cat, 'P', $startDate, $endDate, $months);
             $result['total'][$cat] = $this->getCountPerMonth($field, $cat, null, $startDate, $endDate, $months);
+        }
+
+        $result['trend'] = [];
+        foreach ($categories as $cat) {
+            $values = array_values($result['total'][$cat]);
+            $latest = $values[1] ?? 0;
+            $prev   = $values[0] ?? 0;
+
+            $result['trend'][$cat] = $latest - $prev;
         }
 
         return response()->json([
