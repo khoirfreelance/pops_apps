@@ -2294,24 +2294,63 @@ class ChildrenController extends Controller
     /**
      * Helper: ambil count per bulan sesuai kategori.
      */
-    private function getCountPerMonth($field, $category, $jk, $startDate, $endDate, $months)
-    {
+    private function getCountPerMonth(
+        $field,
+        $category,
+        $jk,
+        $startDate,
+        $endDate,
+        $months,
+        $filters
+    ) {
         $query = Kunjungan::query()
             ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
             ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
             ->where($field, $category);
 
+        // ==========================
+        // 🔑 FILTER WILAYAH
+        // ==========================
+        if (!empty($filters['provinsi'])) {
+            $query->where('provinsi', $filters['provinsi']);
+        }
+
+        if (!empty($filters['kota'])) {
+            $query->where('kota', $filters['kota']);
+        }
+
+        if (!empty($filters['kecamatan'])) {
+            $query->where('kecamatan', $filters['kecamatan']);
+        }
+
+        if (!empty($filters['kelurahan'])) {
+            $query->where('kelurahan', $filters['kelurahan']);
+        }
+
+        if (!empty($filters['posyandu'])) {
+            $query->where('posyandu', $filters['posyandu']);
+        }
+
+        if (!empty($filters['rt'])) {
+            $query->where('rt', $filters['rt']);
+        }
+
+        if (!empty($filters['rw'])) {
+            $query->where('rw', $filters['rw']);
+        }
+
         if ($jk) {
             $query->where('jk', $jk);
         }
 
-        // ✅ DISTINCT PER NIK PER BULAN
+        // ==========================
+        // DISTINCT NIK PER BULAN
+        // ==========================
         $data = $query
             ->groupByRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m'), nik")
             ->get()
             ->groupBy('bulan');
 
-        // isi default 0
         $result = $months;
 
         foreach ($data as $bulan => $rows) {
@@ -2321,6 +2360,217 @@ class ChildrenController extends Controller
         return array_values($result);
     }
 
+    private function getCountPerMonthByAge(
+        $field,
+        $category,
+        array $ageRange,
+        $startDate,
+        $endDate,
+        $months,
+        $filters
+    ) {
+        [$minAge, $maxAge] = $ageRange;
+
+        $query = Kunjungan::query()
+            ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
+            ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
+            ->whereBetween('usia_saat_ukur', [$minAge, $maxAge])
+            ->where($field, $category);
+
+        // ==========================
+        // 🔑 FILTER WILAYAH
+        // ==========================
+        if (!empty($filters['provinsi'])) {
+            $query->where('provinsi', $filters['provinsi']);
+        }
+        if (!empty($filters['kota'])) {
+            $query->where('kota', $filters['kota']);
+        }
+        if (!empty($filters['kecamatan'])) {
+            $query->where('kecamatan', $filters['kecamatan']);
+        }
+        if (!empty($filters['kelurahan'])) {
+            $query->where('kelurahan', $filters['kelurahan']);
+        }
+        if (!empty($filters['posyandu'])) {
+            $query->where('posyandu', $filters['posyandu']);
+        }
+        if (!empty($filters['rt'])) {
+            $query->where('rt', $filters['rt']);
+        }
+        if (!empty($filters['rw'])) {
+            $query->where('rw', $filters['rw']);
+        }
+
+        $data = $query
+            ->groupByRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m'), nik")
+            ->get()
+            ->groupBy('bulan');
+
+        $result = $months;
+
+        foreach ($data as $bulan => $rows) {
+            $result[$bulan] = $rows->count();
+        }
+
+        return array_values($result);
+    }
+
+    private function getTidakNaikPerMonthByAge(
+        array $ageRange,
+        $startDate,
+        $endDate,
+        $months,
+        $filters
+    ) {
+        [$minAge, $maxAge] = $ageRange;
+
+        $query = Kunjungan::query()
+            ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
+            ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
+            ->whereBetween('usia_saat_ukur', [$minAge, $maxAge])
+            ->where('naik_berat_badan', 1);
+
+        // ==========================
+        // 🔑 FILTER WILAYAH
+        // ==========================
+        if (!empty($filters['provinsi'])) {
+            $query->where('provinsi', $filters['provinsi']);
+        }
+        if (!empty($filters['kota'])) {
+            $query->where('kota', $filters['kota']);
+        }
+        if (!empty($filters['kecamatan'])) {
+            $query->where('kecamatan', $filters['kecamatan']);
+        }
+        if (!empty($filters['kelurahan'])) {
+            $query->where('kelurahan', $filters['kelurahan']);
+        }
+        if (!empty($filters['posyandu'])) {
+            $query->where('posyandu', $filters['posyandu']);
+        }
+        if (!empty($filters['rt'])) {
+            $query->where('rt', $filters['rt']);
+        }
+        if (!empty($filters['rw'])) {
+            $query->where('rw', $filters['rw']);
+        }
+
+        $data = $query
+            ->groupByRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m'), nik")
+            ->get()
+            ->groupBy('bulan');
+
+        $result = $months;
+
+        foreach ($data as $bulan => $rows) {
+            $result[$bulan] = $rows->count();
+        }
+
+        return array_values($result);
+    }
+
+    private function getCountPerMonthIndikator(
+        $field,
+        $category,
+        $startDate,
+        $endDate,
+        $months,
+        $filters
+    ) {
+        $query = Kunjungan::query()
+            ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
+            ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
+            ->where($field, $category);
+
+        // ==========================
+        // 🔑 FILTER WILAYAH
+        // ==========================
+        if (!empty($filters['provinsi'])) {
+            $query->where('provinsi', $filters['provinsi']);
+        }
+        if (!empty($filters['kota'])) {
+            $query->where('kota', $filters['kota']);
+        }
+        if (!empty($filters['kecamatan'])) {
+            $query->where('kecamatan', $filters['kecamatan']);
+        }
+        if (!empty($filters['kelurahan'])) {
+            $query->where('kelurahan', $filters['kelurahan']);
+        }
+        if (!empty($filters['posyandu'])) {
+            $query->where('posyandu', $filters['posyandu']);
+        }
+        if (!empty($filters['rt'])) {
+            $query->where('rt', $filters['rt']);
+        }
+        if (!empty($filters['rw'])) {
+            $query->where('rw', $filters['rw']);
+        }
+
+        $data = $query
+            ->groupByRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m'), nik")
+            ->get()
+            ->groupBy('bulan');
+
+        $result = $months;
+
+        foreach ($data as $bulan => $rows) {
+            $result[$bulan] = $rows->count();
+        }
+
+        return array_values($result);
+    }
+
+    private function getTidakNaikPerMonthIndikator(
+        $startDate,
+        $endDate,
+        $months,
+        $filters
+    ) {
+        $query = Kunjungan::query()
+            ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
+            ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
+            ->where('naik_berat_badan', 1);
+
+        // ==========================
+        // 🔑 FILTER WILAYAH
+        // ==========================
+        if (!empty($filters['provinsi'])) {
+            $query->where('provinsi', $filters['provinsi']);
+        }
+        if (!empty($filters['kota'])) {
+            $query->where('kota', $filters['kota']);
+        }
+        if (!empty($filters['kecamatan'])) {
+            $query->where('kecamatan', $filters['kecamatan']);
+        }
+        if (!empty($filters['kelurahan'])) {
+            $query->where('kelurahan', $filters['kelurahan']);
+        }
+        if (!empty($filters['posyandu'])) {
+            $query->where('posyandu', $filters['posyandu']);
+        }
+        if (!empty($filters['rt'])) {
+            $query->where('rt', $filters['rt']);
+        }
+        if (!empty($filters['rw'])) {
+            $query->where('rw', $filters['rw']);
+        }
+
+        $data = $query
+            ->groupByRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m'), nik")
+            ->get()
+            ->groupBy('bulan');
+
+        $result = $months;
+
+        foreach ($data as $bulan => $rows) {
+            $result[$bulan] = $rows->count();
+        }
+
+        return array_values($result);
+    }
 
     public function show($nik)
     {
@@ -2500,6 +2750,7 @@ class ChildrenController extends Controller
         $field = $mapKategori[$tipe]['field'];
         $categories = $mapKategori[$tipe]['cats'];
 
+        //dd($categories);
         if (empty($filters['periode'])) {
             // ✅ default: H-1 vs H-2 bulan berjalan
             $endDate = now()->subMonth()->endOfMonth();
@@ -2534,9 +2785,21 @@ class ChildrenController extends Controller
         ];
 
         foreach ($categories as $cat) {
-            $result['L'][$cat] = $this->getCountPerMonth($field, $cat, 'L', $startDate, $endDate, $months);
+            /* $result['L'][$cat] = $this->getCountPerMonth($field, $cat, 'L', $startDate, $endDate, $months);
             $result['P'][$cat] = $this->getCountPerMonth($field, $cat, 'P', $startDate, $endDate, $months);
-            $result['total'][$cat] = $this->getCountPerMonth($field, $cat, null, $startDate, $endDate, $months);
+            $result['total'][$cat] = $this->getCountPerMonth($field, $cat, null, $startDate, $endDate, $months); */
+            $result['L'][$cat] = $this->getCountPerMonth(
+                $field, $cat, 'L', $startDate, $endDate, $months, $filters
+            );
+
+            $result['P'][$cat] = $this->getCountPerMonth(
+                $field, $cat, 'P', $startDate, $endDate, $months, $filters
+            );
+
+            $result['total'][$cat] = $this->getCountPerMonth(
+                $field, $cat, null, $startDate, $endDate, $months, $filters
+            );
+
         }
 
         $result['trend'] = [];
@@ -2551,7 +2814,59 @@ class ChildrenController extends Controller
         // ===============================
         // ✅ SUMMARY SESUAI UI (PER GENDER)
         // ===============================
+        $summaryIndex = empty($filters['periode']) ? 1 : 0;
+        $monthKeys = array_keys($months);
+        $summaryMonth = $monthKeys[$summaryIndex] ?? null;
+
+        $tidakNaik = [
+            'L' => 0,
+            'P' => 0
+        ];
+
+        if ($summaryMonth) {
+            foreach (['L', 'P'] as $jk) {
+                $tidakNaik[$jk] = Kunjungan::query()
+                    ->where('jk', $jk)
+                    ->where('naik_berat_badan', 1)
+                    ->whereRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') = ?", [$summaryMonth])
+                    ->distinct('nik')
+                    ->count('nik');
+            }
+        }
+
         $genderSummary = [
+            'L' => [
+                'label' => 'Laki - Laki',
+                'total' => 0,
+                'categories' => []
+            ],
+            'P' => [
+                'label' => 'Perempuan',
+                'total' => 0,
+                'categories' => []
+            ]
+        ];
+
+        foreach (['L', 'P'] as $jk) {
+            foreach ($categories as $cat) {
+
+                // 🔑 ambil HANYA 1 bulan sesuai rule
+                $value = $result[$jk][$cat][$summaryIndex] ?? 0;
+
+                $genderSummary[$jk]['categories'][] = [
+                    'name'  => $cat,
+                    'value' => $value
+                ];
+
+                $genderSummary[$jk]['total'] += $value;
+            }
+            // ✅ TAMBAH KATEGORI TIDAK NAIK
+            $genderSummary[$jk]['categories'][] = [
+                'name'  => 'Tidak Naik',
+                'value' => $tidakNaik[$jk] ?? 0
+            ];
+        }
+        /* $genderSummary = [
             'L' => [
                 'label' => 'Laki - Laki',
                 'total' => 0,
@@ -2575,7 +2890,7 @@ class ChildrenController extends Controller
 
                 $genderSummary[$jk]['total'] += $sum;
             }
-        }
+        } */
 
         return response()->json([
             "data" => [
@@ -2587,12 +2902,178 @@ class ChildrenController extends Controller
 
     public function detail_umur(Request $request)
     {
+        $filters = $request->only([
+            'provinsi','kota','kecamatan','kelurahan',
+            'posyandu','rt','rw','periode','tipe'
+        ]);
 
+        $mapKategori = [
+            'bbu' => [
+                'field' => 'bb_u',
+                'cats' => ['Severely Underweight','Underweight','Normal','Risiko BB Lebih']
+            ],
+            'tbu' => [
+                'field' => 'tb_u',
+                'cats' => ['Severely Stunted','Stunted','Normal','Tinggi']
+            ],
+            'bbtb' => [
+                'field' => 'bb_tb',
+                'cats' => ['Severely Wasted','Wasted','Normal','Possible Risk of Overweight','Overweight','Obese']
+            ]
+        ];
+
+        if (!isset($mapKategori[$filters['tipe']])) {
+            return response()->json(['error' => 'Tipe tidak valid'], 400);
+        }
+
+        $field = $mapKategori[$filters['tipe']]['field'];
+        $categories = $mapKategori[$filters['tipe']]['cats'];
+
+        // ======================
+        // 📆 PERIODE (1 BULAN)
+        // ======================
+        if (empty($filters['periode'])) {
+            $startDate = now()->subMonth()->startOfMonth();
+            $endDate   = now()->subMonth()->endOfMonth();
+        } else {
+            $base = Carbon::createFromFormat('Y-m', $filters['periode']);
+            $startDate = $base->copy()->startOfMonth();
+            $endDate   = $base->copy()->endOfMonth();
+        }
+
+        $months = [
+            $startDate->format('Y-m') => 0
+        ];
+
+        // ======================
+        // 🎯 RANGE UMUR (BULAN)
+        // ======================
+        $ageRanges = [
+            '0-5'   => [0, 5],
+            '6-11'  => [6, 11],
+            '12-17' => [12, 17],
+            '18-23' => [18, 23],
+            '24-35' => [24, 35],
+            '36-47' => [36, 47],
+            '48-60' => [48, 60],
+        ];
+
+        $result = [
+            'start' => $startDate,
+            'end'   => $endDate
+        ];
+
+        foreach ($ageRanges as $label => $range) {
+
+            // ======================
+            // STATUS GIZI
+            // ======================
+            foreach ($categories as $cat) {
+                $result[$label][$cat] = $this->getCountPerMonthByAge(
+                    $field,
+                    $cat,
+                    $range,
+                    $startDate,
+                    $endDate,
+                    $months,
+                    $filters // ✅ TAMBAH INI
+                );
+            }
+
+            // ======================
+            // 🚨 TIDAK NAIK BB
+            // ======================
+            $result[$label]['TIDAK NAIK'] = $this->getTidakNaikPerMonthByAge(
+                $range,
+                $startDate,
+                $endDate,
+                $months,
+                $filters // ✅ TAMBAH INI
+            );
+        }
+
+        return response()->json(['detail_umur' => $result], 200);
     }
 
     public function detail_indikator(Request $request)
     {
+        $filters = $request->only([
+            'provinsi','kota','kecamatan','kelurahan',
+            'posyandu','rt','rw','tipe'
+        ]);
 
+        $mapKategori = [
+            'bbu' => [
+                'field' => 'bb_u',
+                'cats' => ['Severely Underweight','Underweight','Normal','Risiko BB Lebih']
+            ],
+            'tbu' => [
+                'field' => 'tb_u',
+                'cats' => ['Severely Stunted','Stunted','Normal','Tinggi']
+            ],
+            'bbtb' => [
+                'field' => 'bb_tb',
+                'cats' => ['Severely Wasted','Wasted','Normal','Possible Risk of Overweight','Overweight','Obese']
+            ]
+        ];
+
+        if (!isset($mapKategori[$filters['tipe']])) {
+            return response()->json(['error' => 'Tipe tidak valid'], 400);
+        }
+
+        $field = $mapKategori[$filters['tipe']]['field'];
+        $categories = $mapKategori[$filters['tipe']]['cats'];
+
+        // ======================
+        // 📆 PERIODE 12 BULAN
+        // ======================
+        $endDate   = now()->startOfMonth();          // bulan ini
+        $startDate = now()->subMonths(11)->startOfMonth(); // 11 bulan ke belakang
+
+        // ======================
+        // 🗓️ LIST BULAN
+        // ======================
+        $period = CarbonPeriod::create($startDate, '1 month', $endDate);
+
+        $months = [];
+        foreach ($period as $p) {
+            $months[$p->format('Y-m')] = 0;
+        }
+        //dd(array_keys($months));
+        $result = [
+            'start'  => $startDate,
+            'end'    => $endDate,
+            'months' => array_keys($months),
+            'data'   => []
+        ];
+
+        // ======================
+        // 📊 KATEGORI UTAMA
+        // ======================
+        foreach ($categories as $cat) {
+            $result['data'][$cat] = $this->getCountPerMonthIndikator(
+                $field,
+                $cat,
+                $startDate,
+                $endDate,
+                $months,
+                $filters //
+            );
+        }
+
+        // ======================
+        // 🚨 KHUSUS BBU: TIDAK NAIK
+        // ======================
+        if ($filters['tipe'] === 'bbu') {
+            $result['data']['TIDAK NAIK'] = $this->getTidakNaikPerMonthIndikator(
+                $startDate,
+                $endDate,
+                $months,
+                $filters //
+            );
+        }
+
+        return response()->json(['indikator' => $result], 200);
     }
 
     // CRUD

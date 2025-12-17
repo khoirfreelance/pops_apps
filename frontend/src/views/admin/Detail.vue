@@ -14,6 +14,7 @@
 
     <!-- Header -->
     <HeaderAdmin/>
+
     <div
       class="content flex-grow-1 d-flex flex-column flex-md-row"
       :class="{
@@ -24,7 +25,7 @@
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
-      <div class="flex-grow-1 d-flex flex-column">
+      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Content -->
         <div class="py-4 container-fluid" >
           <!-- Welcome Card -->
@@ -104,16 +105,16 @@
 
           <!-- Statistik berdasarkan kelompok usia dan gender-->
           <div class="row mt-3">
-            <div class="col-12 col-lg-6 col-md-6">
-              <div class="card border border-primary shadow p-3 my-3">
+            <div class="col-12 col-lg-6 col-md-12">
+              <div class="card border border-primary shadow p-3 my-3" style="background:#e2ece7;">
                 <h6 class="text-primary fw-bold">Berdasarkan Kategori Usia</h6>
-                <div class="table-responsive">
+                <div class="table-responsive bg-light p-3 rounded">
                   <canvas ref="usiaChart"></canvas>
                 </div>
               </div>
             </div>
-            <div class="col-12 col-lg-6 col-md-6">
-              <div class="card border border-primary shadow p-3 my-3">
+            <div class="col-12 col-lg-6 col-md-12">
+              <div class="card border border-primary shadow p-3 my-3" style="background:#e2ece7;">
                 <h6 class="fw-bold mb-4 text-primary">Berdasarkan Jenis Kelamin</h6>
                 <div class="row justify-content-center">
                   <div
@@ -165,10 +166,85 @@
             <div class="col-12">
               <div class="card border border-primary shadow p-3 my-3">
                 <div class="table-responsive">
-                  <canvas ref="indiChart_bb"></canvas>
+                  <canvas ref="indiChart" style="height: 300px;"></canvas>
                 </div>
               </div>
             </div>
+            <div class="col-12">
+              <div class="card border border-primary shadow p-3 my-3">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm text-center align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="text-start">Indikator</th>
+                        <th
+                          v-for="(month, i) in detailIndikator.months"
+                          :key="i"
+                        >
+                          {{ formatMonth(month) }}
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      <tr
+                        v-for="catKey in categoryConfig.order"
+                        :key="catKey"
+                      >
+                        <!-- LABEL -->
+                        <td class="text-start fw-semibold">
+                          {{ categoryConfig.map[catKey]?.label || catKey }}
+                        </td>
+
+                        <!-- VALUE PER BULAN -->
+                        <td
+                          v-for="(val, i) in detailIndikator.data[catKey]"
+                          :key="i"
+                        >
+                          {{ val }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- <div class="col-12">
+              <div class="card border border-primary shadow p-3 my-3">
+                <div class="table-responsive">
+                  <div class="d-flex flex-column flex-md-row gap-2">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                      <label class="form-label" style="font-weight: 600;">Posyandu</label>
+                      <select v-model="filters.posyandu" class="form-select text-muted uniform-input"
+                        @change="handlePosyanduChange">
+                        <option value="">All</option>
+                        <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
+                          {{ item.nama_posyandu }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                      <label class="form-label" style="font-weight: 600;">RW</label>
+                      <select v-model="filters.rw" class="form-select text-muted uniform-input" @change="handleRWChange"
+                        :disabled="rwReadonly">
+                        <option value="">All</option>
+                        <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <table class="table table-bordered table-sm text-center align-middle">
+                    <thead class="table-light">
+
+                    </thead>
+
+                    <tbody>
+
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -230,9 +306,15 @@ export default {
     return {
       detailTablePerBulan: [],
       detailTren: null,
+      detailUmur: {},
+      detailIndikator: {},
+      indikatorChartInstance: null,
+      usiaChartInstance: null,
       detailTable: [],
       tipe:'',
       title:'',
+      posyanduList: [],
+      rwReadonly: true,
       /* filteredData: [], // data hasil filter
       rawData:[],
       configCacheKey: 'site_config_cache',
@@ -290,6 +372,14 @@ export default {
       // di bawah normal → trend naik = buruk
       return trend > 0 ? 'text-danger' : trend < 0 ? 'text-success' : ''
     },
+    formatMonth(month) {
+      const [y, m] = month.split('-')
+      const date = new Date(y, m - 1)
+      return date.toLocaleString('id-ID', {
+        month: 'long',
+        year: 'numeric'
+      })
+    },
     applyFiltersFromRoute() {
       const q = this.$route.query
 
@@ -302,37 +392,285 @@ export default {
       else if (this.filters.tipe === 'tbu') this.title = 'Tinggi Badan / Usia'
       else if (this.filters.tipe === 'bbtb') this.title = 'Berat Badan / Tinggi Badan'
     },
-    async fetchDetail(endpoint) {
+    async loadDetail() {
       try {
-        const res = await axios.get(`${baseURL}${endpoint}`, {
+        const res = await axios.get(`${baseURL}/api/detail-tren`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-          params: this.filters,
+          params: this.filters, // 🔹 kirim semua filter ke backend
         })
         this.detailTren = res.data.data
-      } catch (e) {
-        console.error(`LOAD ${endpoint} ERROR:`, e)
+      } catch (error) {
+        console.error(`LOAD ERROR:`, error)
       }
     },
-    async loadDetail() {
-      await this.fetchDetail('/api/detail-tren')
-    },
     async loadUmur() {
-      await this.fetchDetail('/api/detail-umur')
+      try {
+        const res = await axios.get(`${baseURL}/api/detail-umur`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          params: this.filters, // 🔹 kirim semua filter ke backend
+        })
+        this.detailUmur = res.data.detail_umur
+        this.$nextTick(() => {
+          this.drawUsiaChart()
+        })
+      } catch (error) {
+        console.error(`LOAD ERROR:`, error)
+      }
+      //await this.fetchDetail('/api/detail-umur')
+
+    },
+    drawUsiaChart() {
+      if (!this.$refs.usiaChart || !this.detailUmur) return
+
+      if (this.usiaChartInstance) {
+        this.usiaChartInstance.destroy()
+      }
+
+      // ======================
+      // LABEL USIA (X)
+      // ======================
+      const ageLabels = Object.keys(this.detailUmur).filter(
+        k => !['start', 'end'].includes(k)
+      )
+
+      const { order, map } = this.categoryConfig
+
+      // ======================
+      // DATASET DINAMIS
+      // ======================
+      const datasets = order.map(cat => ({
+        label: map[cat]?.label || cat,
+        backgroundColor: map[cat]?.color || '#999',
+        data: ageLabels.map(age =>
+          this.detailUmur[age]?.[cat]?.[0] ?? 0
+        )
+      }))
+
+      const ctx = this.$refs.usiaChart.getContext('2d')
+
+      this.usiaChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ageLabels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right'
+            },
+            datalabels: { display: false }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Kategori Usia (bulan)'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Total Individu'
+              }
+            }
+          }
+        }
+      })
     },
     async loadIndikator() {
-      await this.fetchDetail('/api/detail-indikator')
+      try {
+        const res = await axios.get(`${baseURL}/api/detail-indikator`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          params: this.filters, // 🔹 kirim semua filter ke backend
+        })
+        this.detailIndikator = res.data.indikator
+        this.$nextTick(() => {
+          this.drawIndikatorChart()
+        })
+      } catch (error) {
+        console.error(`LOAD ERROR:`, error)
+      }
+      //await this.fetchDetail('/api/detail-indikator')
     },
+    drawIndikatorChart() {
+      if (!this.detailIndikator || !this.$refs.indiChart) return
+
+      if (this.indikatorChartInstance) {
+        this.indikatorChartInstance.destroy()
+      }
+
+      const ctx = this.$refs.indiChart.getContext('2d')
+
+      // 👉 FORMAT MONTHS: "2025-01" → "Jan 2025"
+      const labels = (this.detailIndikator.months || []).map(m => {
+        const d = new Date(m + '-01') // aman buat parsing
+        return new Intl.DateTimeFormat('id-ID', {
+          month: 'short',
+          year: 'numeric'
+        }).format(d)
+      })
+
+      const dataMap = this.detailIndikator.data || {}
+      const cfg = this.categoryConfig
+
+      const datasets = cfg.order
+        .filter(cat => dataMap[cat])
+        .map(cat => {
+          const meta = cfg.map[cat]
+          return {
+            label: meta.label,
+            data: dataMap[cat],
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2,
+            borderColor: meta.color,
+            backgroundColor: meta.color + '55',
+            pointRadius: 2,
+            stack: 'indikator'
+          }
+        })
+
+      this.indikatorChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: { position: 'top' },
+            datalabels: { display: false },
+            tooltip: {
+              mode: 'index',
+              intersect: false
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              title: {
+                display: true,
+                text: 'Bulan'
+              }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Jumlah Anak'
+              }
+            }
+          }
+        }
+      })
+    },
+    async getWilayahUser() {
+      try {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        const wilayah = res.data
+        //console.log(wilayah);
+
+        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        this.filters.provinsi = wilayah.provinsi || ''
+        this.filters.kota = wilayah.kota || ''
+        this.filters.kecamatan = wilayah.kecamatan || ''
+        this.filters.kelurahan = this.kelurahan
+        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
+
+        // Setelah dapet id_wilayah, langsung fetch posyandu
+        await this.fetchPosyanduByWilayah(this.id_wilayah)
+      } catch (error) {
+        console.error('Gagal ambil data wilayah user:', error)
+        this.kelurahan = '-'
+      }
+    },
+    async fetchPosyanduByWilayah(id_wilayah) {
+      if (!id_wilayah) {
+        console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
+        return
+      }
+
+      try {
+        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}/wilayah`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        this.posyanduList = res.data?.data || res.data || []
+        //console.log("Posyandu list:", this.posyanduList);
+      } catch (error) {
+        console.error('Gagal mengambil data posyandu:', error)
+        this.posyanduList = []
+      }
+    },
+    handlePosyanduChange() {
+      const selected = this.posyanduList.find((p) => p.nama_posyandu === this.filters.posyandu)
+
+      if (selected) {
+        this.rwList = selected.rw || []
+        this.rtList = [] // reset RT
+        this.filters.rw = ''
+        this.filters.rt = ''
+        this.rwReadonly = false
+        this.rtReadonly = true
+      } else {
+        this.rwList = []
+        this.rtList = []
+        this.filters.rw = ''
+        this.filters.rt = ''
+        this.rwReadonly = true
+        this.rtReadonly = true
+      }
+    },
+    handleRWChange() {
+      const selected = this.posyanduList.find((p) => p.nama_posyandu === this.filters.posyandu)
+
+      if (selected) {
+        // RT yang terkait RW tertentu
+        this.rtList = selected.rt || []
+        this.filters.rt = ''
+        this.rtReadonly = false
+      } else {
+        this.rtList = []
+        this.filters.rt = ''
+        this.rtReadonly = true
+      }
+    },
+
   },
   async mounted() {
     this.isLoading = true
     try {
       this.applyFiltersFromRoute()
-
+      await this.getWilayahUser()
       await this.loadUmur()
       await this.loadDetail()
+      await this.loadIndikator()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {
@@ -409,6 +747,62 @@ export default {
           ...colorMap[key]
         }
       })
+    },
+    categoryConfig() {
+      const configs = {
+        bbu: {
+          order: [
+            'Severely Underweight',
+            'Underweight',
+            'Normal',
+            'Risiko BB Lebih',
+            'TIDAK NAIK'
+          ],
+          map: {
+            'Severely Underweight': { label: 'Sangat Kurang', color: '#dc3545' },
+            'Underweight': { label: 'Kurang', color: '#ffc107' },
+            'Normal': { label: 'Normal', color: '#198754' },
+            'Risiko BB Lebih': { label: 'Risiko Lebih', color: '#0d6efd' },
+            'TIDAK NAIK'  : { label: 'Tidak Naik', color: '#ab47bc' },
+          }
+        },
+
+        tbu: {
+          order: [
+            'Severely Stunted',
+            'Stunted',
+            'Normal',
+            'Tinggi'
+          ],
+          map: {
+            'Severely Stunted': { label: 'Sangat Pendek', color: '#dc3545' },
+            'Stunted': { label: 'Pendek', color: '#ffc107' },
+            'Normal': { label: 'Normal', color: '#198754' },
+            'Tinggi': { label: 'Tinggi', color: '#0d6efd' },
+          }
+        },
+
+        bbtb: {
+          order: [
+            'Severely Wasted',
+            'Wasted',
+            'Normal',
+            'Possible Risk of Overweight',
+            'Overweight',
+            'Obese'
+          ],
+          map: {
+            'Severely Wasted': { label: 'Gizi Buruk', color: '#dc3545' },
+            'Wasted': { label: 'Gizi Kurang', color: '#ffc107' },
+            'Normal': { label: 'Gizi Baik', color: '#198754' },
+            'Possible Risk of Overweight': { label: 'Risiko Gizi Lebih', color: '#0d6efd' },
+            'Overweight': { label: 'Gizi Lebih', color: '#6610f2' },
+            'Obese': { label: 'Obesitas', color: '#6f42c1' },
+          }
+        }
+      }
+
+      return configs[this.filters.tipe] || { order: [], map: {} }
     }
   }
 
