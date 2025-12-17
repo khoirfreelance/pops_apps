@@ -947,7 +947,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <p class="fw-bold text-start text-secondary mb-0" style="font-size: 16px">Riwayat Penimbangan</p>
+                  <p class="fw-bold text-start text-secondary mb-0" style="font-size: 16px">Riwayat Penimbangan 3 bulan terakhir</p>
                   <div class="table-responsive">
                     <table id="riwayat-card" class="table table-bordered table-sm align-middle text-center" style="font-size: 12px">
                       <thead class="table-light">
@@ -1013,7 +1013,7 @@
                   </div>
 
                   <!-- Riwayat Intervensi -->
-                  <p class="fw-bold text-start text-secondary mb-0" style="font-size: 16px">Riwayat Intervensi / Bantuan</p>
+                  <p class="fw-bold text-start text-secondary mb-0" style="font-size: 16px">Riwayat Intervensi 3 bulan terakhir</p>
 
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center" style="font-size: 12px">

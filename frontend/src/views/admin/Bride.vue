@@ -546,7 +546,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Status</h6>
+                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Status 3 bulan terakhir</h6>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center" style="font-size: 12px !important">
                       <thead class="table-light">
@@ -658,7 +658,7 @@
                           type="button"
                           role="tab"
                         >
-                          <i class="bi bi-clipboard-heart me-1"></i> Data Pemeriksaan
+                          <i class="bi bi-clipboard-heart me-1"></i> Pendampingan TPK
                         </button>
                       </li>
                     </ul>

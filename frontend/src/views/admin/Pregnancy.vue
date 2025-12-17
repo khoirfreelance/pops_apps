@@ -539,7 +539,7 @@
                   </div>
 
                   <!-- Riwayat Penimbangan -->
-                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Status</h6>
+                  <h6 class="fw-bold text-start text-secondary mt-2">Riwayat Status 3 bulan terakhir</h6>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
                       <thead class="table-light">
@@ -590,7 +590,7 @@
 
                   <!-- Riwayat Intervensi -->
                   <h6 class="fw-bold text-start text-secondary mt-3">
-                    Riwayat Intervensi / Bantuan
+                    Riwayat Intervensi 3 bulan terakhir
                   </h6>
                   <div class="table-responsive">
                     <table class="table table-bordered table-sm align-middle text-center">
@@ -673,7 +673,7 @@
                               type="button"
                               role="tab"
                             >
-                              <i class="bi bi-clipboard-heart me-1"></i> Data Kehamilan
+                              <i class="bi bi-clipboard-heart me-1"></i> Pendampingan TPK
                             </button>
                           </li>
                         </ul>
