@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Imports\ChildrenImportKunjungan;
+use App\Imports\ChildrenImportPendampingan;
 use App\Models\Child;
 use App\Models\Cadre;
 use App\Models\Kunjungan;
@@ -925,6 +926,25 @@ class ChildrenController extends Controller
         return response()->json([
             'message' => 'Import kunjungan berhasil',
         ]);
+    }
+
+
+    public function import_pendampingan_v2(Request $request)
+    {
+        try {
+            Excel::import(new ChildrenImportPendampingan, $request->file('file'));
+
+            return response()->json([
+                'message' => 'Import berhasil (semua data valid)',
+            ], 200);
+
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'message' => 'Import GAGAL — semua data dibatalkan',
+                'error' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     public function import_pendampingan(Request $request)

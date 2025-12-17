@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/children/index_kunjungan', [ChildrenController::class, 'kunjungan']);
     Route::get('/children/ringkasan', [ChildrenController::class, 'ringkasan']);
     Route::post('/children/import_kunjungan', [ChildrenController::class, 'import_kunjungan']);
-    Route::post('/children/import_pendampingan', [ChildrenController::class, 'import_pendampingan']);
+    Route::post('/children/import_pendampingan', [ChildrenController::class, 'import_pendampingan_v2']);
     Route::post('/children/import_intervensi', [ChildrenController::class, 'import_intervensi']);
     Route::get('/children/get-data', [ChildrenController::class, 'testGetData']);
     Route::get('/children/get-children-double-problem', [ChildrenController::class, 'getDataDoubleProblem']);
