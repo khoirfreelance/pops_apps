@@ -932,7 +932,9 @@ class ChildrenController extends Controller
     public function import_pendampingan_v2(Request $request)
     {
         try {
-            Excel::import(new ChildrenImportPendampingan, $request->file('file'));
+            DB::transaction(function () use ($request) {
+                Excel::import(new ChildrenImportPendampingan(auth()->id()), $request->file('file'));
+            });
 
             return response()->json([
                 'message' => 'Import berhasil (semua data valid)',
@@ -1073,7 +1075,7 @@ class ChildrenController extends Controller
                     ]);
 
                     // Simpan data pendampingan anak
-                    $child = Child::create($row);
+                    $child = Child::create(attributes: $row);
 
                     // ✅ Simpan wilayah & posyandu
                     $wilayah = \App\Models\Wilayah::firstOrCreate([
@@ -2695,7 +2697,7 @@ class ChildrenController extends Controller
                 'kecamatan' => $anak->kecamatan,
                 'kota' => $anak->kota,
                 'provinsi' => $anak->provinsi,
-                'nama_posyandu'=> $anak->posyandu,
+                'nama_posyandu' => $anak->posyandu,
                 'raw' => [
                     'posyandu' => $posyandu,
                     'intervensi' => $intervensi,
@@ -2719,15 +2721,15 @@ class ChildrenController extends Controller
     public function detail_tren(Request $request)
     {
         $filters = [
-            'provinsi'   => $request->provinsi,
-            'kota'       => $request->kota,
-            'kecamatan'  => $request->kecamatan,
-            'kelurahan'  => $request->kelurahan,
-            'posyandu'   => $request->posyandu,
-            'rt'         => $request->rt,
-            'rw'         => $request->rw,
-            'periode'    => $request->periode,
-            'tipe'       => $request->tipe
+            'provinsi' => $request->provinsi,
+            'kota' => $request->kota,
+            'kecamatan' => $request->kecamatan,
+            'kelurahan' => $request->kelurahan,
+            'posyandu' => $request->posyandu,
+            'rt' => $request->rt,
+            'rw' => $request->rw,
+            'periode' => $request->periode,
+            'tipe' => $request->tipe
         ];
 
         $mapKategori = [
@@ -2775,12 +2777,12 @@ class ChildrenController extends Controller
             // ✅ default: H-1 vs H-2 bulan berjalan
             $endDate = now()->subMonth()->endOfMonth();
             $startDate = now()->subMonths(2)->startOfMonth();
-        }else {
+        } else {
             // periode = bulan acuan (YYYY-MM)
             $base = Carbon::createFromFormat('Y-m', $filters['periode']);
 
             $startDate = $base->copy()->startOfMonth();
-            $endDate   = $base->copy()->addMonth()->endOfMonth();
+            $endDate = $base->copy()->addMonth()->endOfMonth();
         }
 
         // ✅ generate bulan (YYYY-MM)
@@ -2809,15 +2811,33 @@ class ChildrenController extends Controller
             $result['P'][$cat] = $this->getCountPerMonth($field, $cat, 'P', $startDate, $endDate, $months);
             $result['total'][$cat] = $this->getCountPerMonth($field, $cat, null, $startDate, $endDate, $months); */
             $result['L'][$cat] = $this->getCountPerMonth(
-                $field, $cat, 'L', $startDate, $endDate, $months, $filters
+                $field,
+                $cat,
+                'L',
+                $startDate,
+                $endDate,
+                $months,
+                $filters
             );
 
             $result['P'][$cat] = $this->getCountPerMonth(
-                $field, $cat, 'P', $startDate, $endDate, $months, $filters
+                $field,
+                $cat,
+                'P',
+                $startDate,
+                $endDate,
+                $months,
+                $filters
             );
 
             $result['total'][$cat] = $this->getCountPerMonth(
-                $field, $cat, null, $startDate, $endDate, $months, $filters
+                $field,
+                $cat,
+                null,
+                $startDate,
+                $endDate,
+                $months,
+                $filters
             );
 
         }
@@ -2826,7 +2846,7 @@ class ChildrenController extends Controller
         foreach ($categories as $cat) {
             $values = array_values($result['total'][$cat]);
             $latest = $values[1] ?? 0;
-            $prev   = $values[0] ?? 0;
+            $prev = $values[0] ?? 0;
 
             $result['trend'][$cat] = $latest - $prev;
         }
@@ -2874,7 +2894,7 @@ class ChildrenController extends Controller
                 $value = $result[$jk][$cat][$summaryIndex] ?? 0;
 
                 $genderSummary[$jk]['categories'][] = [
-                    'name'  => $cat,
+                    'name' => $cat,
                     'value' => $value
                 ];
 
@@ -2882,7 +2902,7 @@ class ChildrenController extends Controller
             }
             // ✅ TAMBAH KATEGORI TIDAK NAIK
             $genderSummary[$jk]['categories'][] = [
-                'name'  => 'Tidak Naik',
+                'name' => 'Tidak Naik',
                 'value' => $tidakNaik[$jk] ?? 0
             ];
         }
@@ -2923,22 +2943,29 @@ class ChildrenController extends Controller
     public function detail_umur(Request $request)
     {
         $filters = $request->only([
-            'provinsi','kota','kecamatan','kelurahan',
-            'posyandu','rt','rw','periode','tipe'
+            'provinsi',
+            'kota',
+            'kecamatan',
+            'kelurahan',
+            'posyandu',
+            'rt',
+            'rw',
+            'periode',
+            'tipe'
         ]);
 
         $mapKategori = [
             'bbu' => [
                 'field' => 'bb_u',
-                'cats' => ['Severely Underweight','Underweight','Normal','Risiko BB Lebih']
+                'cats' => ['Severely Underweight', 'Underweight', 'Normal', 'Risiko BB Lebih']
             ],
             'tbu' => [
                 'field' => 'tb_u',
-                'cats' => ['Severely Stunted','Stunted','Normal','Tinggi']
+                'cats' => ['Severely Stunted', 'Stunted', 'Normal', 'Tinggi']
             ],
             'bbtb' => [
                 'field' => 'bb_tb',
-                'cats' => ['Severely Wasted','Wasted','Normal','Possible Risk of Overweight','Overweight','Obese']
+                'cats' => ['Severely Wasted', 'Wasted', 'Normal', 'Possible Risk of Overweight', 'Overweight', 'Obese']
             ]
         ];
 
@@ -2954,11 +2981,11 @@ class ChildrenController extends Controller
         // ======================
         if (empty($filters['periode'])) {
             $startDate = now()->subMonth()->startOfMonth();
-            $endDate   = now()->subMonth()->endOfMonth();
+            $endDate = now()->subMonth()->endOfMonth();
         } else {
             $base = Carbon::createFromFormat('Y-m', $filters['periode']);
             $startDate = $base->copy()->startOfMonth();
-            $endDate   = $base->copy()->endOfMonth();
+            $endDate = $base->copy()->endOfMonth();
         }
 
         $months = [
@@ -2969,8 +2996,8 @@ class ChildrenController extends Controller
         // 🎯 RANGE UMUR (BULAN)
         // ======================
         $ageRanges = [
-            '0-5'   => [0, 5],
-            '6-11'  => [6, 11],
+            '0-5' => [0, 5],
+            '6-11' => [6, 11],
             '12-17' => [12, 17],
             '18-23' => [18, 23],
             '24-35' => [24, 35],
@@ -2980,7 +3007,7 @@ class ChildrenController extends Controller
 
         $result = [
             'start' => $startDate,
-            'end'   => $endDate
+            'end' => $endDate
         ];
 
         foreach ($ageRanges as $label => $range) {
@@ -3018,22 +3045,28 @@ class ChildrenController extends Controller
     public function detail_indikator(Request $request)
     {
         $filters = $request->only([
-            'provinsi','kota','kecamatan','kelurahan',
-            'posyandu','rt','rw','tipe'
+            'provinsi',
+            'kota',
+            'kecamatan',
+            'kelurahan',
+            'posyandu',
+            'rt',
+            'rw',
+            'tipe'
         ]);
 
         $mapKategori = [
             'bbu' => [
                 'field' => 'bb_u',
-                'cats' => ['Severely Underweight','Underweight','Normal','Risiko BB Lebih']
+                'cats' => ['Severely Underweight', 'Underweight', 'Normal', 'Risiko BB Lebih']
             ],
             'tbu' => [
                 'field' => 'tb_u',
-                'cats' => ['Severely Stunted','Stunted','Normal','Tinggi']
+                'cats' => ['Severely Stunted', 'Stunted', 'Normal', 'Tinggi']
             ],
             'bbtb' => [
                 'field' => 'bb_tb',
-                'cats' => ['Severely Wasted','Wasted','Normal','Possible Risk of Overweight','Overweight','Obese']
+                'cats' => ['Severely Wasted', 'Wasted', 'Normal', 'Possible Risk of Overweight', 'Overweight', 'Obese']
             ]
         ];
 
@@ -3047,7 +3080,7 @@ class ChildrenController extends Controller
         // ======================
         // 📆 PERIODE 12 BULAN
         // ======================
-        $endDate   = now()->startOfMonth();          // bulan ini
+        $endDate = now()->startOfMonth();          // bulan ini
         $startDate = now()->subMonths(11)->startOfMonth(); // 11 bulan ke belakang
 
         // ======================
@@ -3061,10 +3094,10 @@ class ChildrenController extends Controller
         }
         //dd(array_keys($months));
         $result = [
-            'start'  => $startDate,
-            'end'    => $endDate,
+            'start' => $startDate,
+            'end' => $endDate,
             'months' => array_keys($months),
-            'data'   => []
+            'data' => []
         ];
 
         // ======================
