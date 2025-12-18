@@ -1583,17 +1583,19 @@ class ChildrenController extends Controller
             null,
             null,
         );
-        // dd([$kunjungan->count(), $dataKunjungan->count()]);
 
         // 🔥 Filter anak dengan **masalah gizi ganda**
         $nik_case = $kunjungan->filter(function ($item) {
             $gizi_ganda = 0;
-            if ($item->bb_u != null && $item->bb_u !== 'Normal')
+            if ($item->bb_u != null && $item->bb_u !== 'Normal'){
                 $gizi_ganda++;
-            if ($item->tb_u != null && $item->tb_u !== 'Normal')
+            }
+            if ($item->tb_u != null && $item->tb_u !== 'Normal'){
                 $gizi_ganda++;
-            if ($item->bb_tb != null && $item->bb_tb !== 'Normal')
+            }
+            if ($item->bb_tb != null && $item->bb_tb !== 'Normal'){
                 $gizi_ganda++;
+            }
             return $gizi_ganda >= 2; // minimal 2 parameter bermasalah → gizi ganda
         })->pluck('nik')->unique();
 
@@ -1602,14 +1604,18 @@ class ChildrenController extends Controller
         // ==========================
         $qIntervensi = Intervensi::query();
 
-        if ($filterKelurahan)
+        if ($filterKelurahan) {
             $qIntervensi->where('desa', $filterKelurahan);
-        if ($request->filled('posyandu'))
+        }
+        if ($request->filled('posyandu')) {
             $qIntervensi->where('posyandu', $request->posyandu);
-        if ($request->filled('rw'))
+        }
+        if ($request->filled('rw')) {
             $qIntervensi->where('rw', $request->rw);
-        if ($request->filled('rt'))
+        }
+        if ($request->filled('rt')) {
             $qIntervensi->where('rt', $request->rt);
+        }
 
         $qIntervensi->whereYear('tgl_intervensi', $tanggal->year)
             ->whereMonth('tgl_intervensi', $tanggal->month);
@@ -1622,11 +1628,9 @@ class ChildrenController extends Controller
         // C. GROUPING NIK
         // ==========================
         $nikGanda = $nik_case;
-        $nikKunjungan = $kunjungan->pluck('nik')->unique();
         $nikIntervensi = $intervensi->pluck('nik_subjek')->unique();
 
         $punya_keduanya = $nikIntervensi->intersect($nikGanda);
-        ;
         $hanya_intervensi = $nikIntervensi->diff($nikGanda);
         $hanya_kunjungan = $nikGanda->diff($nikIntervensi);
 

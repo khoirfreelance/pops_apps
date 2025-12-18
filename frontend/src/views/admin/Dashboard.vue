@@ -636,7 +636,7 @@
                                 <td class="row-data-font-size"><i v-if="anak.stunting" class="bi bi-check2"></i></td>
                                 <td class="row-data-font-size"><i v-if="anak.wasting" class="bi bi-check2"></i></td>
                                 <td class="row-data-font-size"><i v-if="anak.underweight" class="bi bi-check2"></i></td>
-                                <td class="row-data-font-size"><i v-if="anak.bb_sangat" class="bi bi-check2"></i></td>
+                                <td class="row-data-font-size"><i v-if="anak.bb_stagnan" class="bi bi-check2"></i></td>
                                 <td class="row-data-font-size"><i v-if="anak.overweight" class="bi bi-check2"></i></td>
                               </tr>
                             </tbody>
@@ -3648,11 +3648,10 @@ export default {
         // tambahkan rumusan
         rumusan: intervensi.length ? intervensi[0].kategori : '-',
 
-        stunting: k.tb_u && k.tb_u !== 'Normal',
-        wasting: k.bb_tb && k.bb_tb !== 'Normal',
-        underweight: k.bb_u && k.bb_u !== 'Normal',
-
-        bb_stagnan: k.bb_tb && k.bb_tb.includes('Severely'),
+        wasting: k.bb_tb && k.bb_tb.includes('Wasted'),
+        underweight: k.bb_u && k.bb_u.includes('Underweight'),
+        stunting: k.tb_u && k.tb_u.includes('Stunted'),
+        bb_stagnan: k.naik_berat_badan == '0',
         overweight: k.bb_tb && k.bb_tb.includes('Overweight'),
 
         data_kunjungan: k,
