@@ -170,7 +170,7 @@ class CadreController extends Controller
         return response()->json($data);
     }
 
-    public function update(Request $request)
+    /* public function update(Request $request)
     {
         $id = $request->id;
 
@@ -199,6 +199,29 @@ class CadreController extends Controller
 
         return response()->json([
             'message' => 'Data berhasil diubah'
+        ]);
+    } */
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile berhasil diperbarui',
+            'data' => [
+                'nik'   => $user->nik,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'role'  => $user->role,
+            ]
         ]);
     }
 
@@ -269,4 +292,50 @@ class CadreController extends Controller
         ]);
     }
 
+    public function me(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'nik'               => $user->nik,
+                'name'              => $user->name,
+                'email'             => $user->email,
+                'email_verified_at' => $user->email_verified_at,
+                'phone'             => $user->phone,
+                'role'              => $user->role,
+                'status'            => $user->status,
+                'is_pending'        => $user->is_pending,
+                'deleted_at'        => $user->deleted_at,
+            ]
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => 'required|min:8|confirmed',
+        ]);
+
+        // cek password lama
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Password lama tidak sesuai'
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password berhasil diubah'
+        ]);
+    }
 }

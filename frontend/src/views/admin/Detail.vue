@@ -198,11 +198,12 @@
 
                         <!-- VALUE PER BULAN -->
                         <td
-                          v-for="(val, i) in detailIndikator.data[catKey]"
+                          v-for="(val, i) in detailIndikator?.data?.[catKey] ?? []"
                           :key="i"
                         >
                           {{ val }}
                         </td>
+
                       </tr>
                     </tbody>
                   </table>

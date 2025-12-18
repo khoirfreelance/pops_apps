@@ -3107,8 +3107,8 @@ export default {
           const bbCurrent = res.data.bb?.data?.current || {}
           const bbLast = res.data.bb?.data?.previous || {}
           const totalCurrent = res.data.bb?.total?.current || 0
-          const bbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b']
-
+          //const bbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b']
+          const bbColors = ['#E53935', '#FB8C00', '#43A047', '#1E88E5', '#8E24AA']
           this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah], idx) => {
             const prevValue = bbLast[status] ?? 0
             const diff = jumlah - prevValue
@@ -3146,7 +3146,8 @@ export default {
           const tbCurrent = res.data.tb?.data?.current || {}
           const tbLast = res.data.tb?.data?.previous || {}
           const totalCurrentTB = res.data.tb?.total?.current || 0
-          const tbColors = ['#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b']
+          //const tbColors = ['#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b']
+          const tbColors = ['#E53935', '#FB8C00', '#43A047', '#1E88E5', '#8E24AA']
 
           this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah], idx) => {
             const prevValue = tbLast[status] ?? 0
@@ -3185,7 +3186,8 @@ export default {
           const bbtbCurrent = res.data.bbtb?.data?.current || {}
           const bbtbLast = res.data.bbtb?.data?.previous || {}
           const totalCurrentBBTB = res.data.bbtb?.total?.current || 0
-          const bbtbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd']
+          //const bbtbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd']
+          const bbtbColors = ['#E53935', '#FB8C00', '#43A047', '#FDD835' ,'#1E88E5', '#8E24AA']
 
           this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah], idx) => {
             const prevValue = bbtbLast[status] ?? 0

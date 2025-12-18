@@ -136,7 +136,13 @@ Route::get('/region/kelurahan', [RegionController::class, 'getKelurahan']);
 Route::middleware('auth:sanctum')->get('/log', [LogController::class, 'index']);
 
 // User Endpoint
-Route::middleware('auth:sanctum')->get('/user/region', [CadreController::class, 'wilayahByUser']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [CadreController::class, 'me']);
+    Route::put('/user/profile', [CadreController::class, 'updateProfile']);
+    Route::put('/user/change-password', [CadreController::class, 'changePassword']);
+    Route::get('/user/region', [CadreController::class, 'wilayahByUser']);
+});
+//Route::middleware('auth:sanctum')->get('/user/region', [CadreController::class, 'wilayahByUser']);
 
 // Home Endpoint
 Route::get('/home/pregnancy', [HomeController::class, 'getBumil']);

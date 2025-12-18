@@ -2488,8 +2488,9 @@ export default {
               borderColor: '#0066ff',
               backgroundColor: '#0066ff',
               borderWidth: 3,
-              pointRadius: 5,
-              tension: 0.3
+              pointRadius: 3,
+              //borderDash: [8, 4],
+              //tension: 0.3
             }
           ]
         },
