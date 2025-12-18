@@ -672,8 +672,8 @@
                               </button>
                             </li>
 
-                            <li class="page-item" :class="{ disabled: currentPage === totalPagesAnak }">
-                              <button class="page-link" @click="currentPage < totalPagesAnak && currentPage++">
+                            <li class="page-item" :class="{ disabled: currentPage === totalPagesAnakGabungan }">
+                              <button class="page-link" @click="currentPage < totalPagesAnakGabungan && currentPage++">
                                 &raquo;
                               </button>
                             </li>
@@ -3652,7 +3652,7 @@ export default {
         underweight: k.bb_u && k.bb_u.includes('Underweight'),
         stunting: k.tb_u && k.tb_u.includes('Stunted'),
         bb_stagnan: k.naik_berat_badan == '0',
-        overweight: k.bb_tb && k.bb_tb.includes('Overweight'),
+        overweight: k.bb_tb && k.bb_tb.includes('Overweight') || k.bb_tb.includes('Obesitas'),
 
         data_kunjungan: k,
         raw: item,

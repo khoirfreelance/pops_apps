@@ -104,19 +104,21 @@
           </div>
 
           <!-- Statistik berdasarkan kelompok usia dan gender-->
-          <div class="row mt-3">
+          <div class="row mt-3 align-items-stretch">
             <div class="col-12 col-lg-6 col-md-12">
               <div class="card border border-primary shadow p-3 my-3" style="background:#e2ece7;">
                 <h6 class="text-primary fw-bold">Berdasarkan Kategori Usia</h6>
-                <div class="table-responsive bg-light p-3 rounded">
+                <div class="table-responsive bg-light p-3 rounded flex-grow-1">
                   <canvas ref="usiaChart"></canvas>
                 </div>
               </div>
             </div>
+
             <div class="col-12 col-lg-6 col-md-12">
               <div class="card border border-primary shadow p-3 my-3" style="background:#e2ece7;">
                 <h6 class="fw-bold mb-4 text-primary">Berdasarkan Jenis Kelamin</h6>
-                <div class="row justify-content-center">
+
+                <div class="row justify-content-center flex-grow-1">
                   <div
                     class="col-md-6 col-sm-12 col-12 mb-4"
                     v-for="(item, index) in detailByGender"
@@ -132,24 +134,13 @@
 
                     <div class="d-flex justify-content-between px-5 mt-3">
                       <div>
-                        <p
-                          v-for="(cat, i) in item.categories"
-                          :key="i"
-                          class="mb-1"
-                        >
+                        <p v-for="(cat, i) in item.categories" :key="i" class="mb-1">
                           {{ cat.name }}
                         </p>
                       </div>
 
-                      <div
-                        class="fw-bold text-end"
-                        :class="item.valueClass"
-                      >
-                        <p
-                          v-for="(cat, i) in item.categories"
-                          :key="i"
-                          class="mb-1"
-                        >
+                      <div class="fw-bold text-end" :class="item.valueClass">
+                        <p v-for="(cat, i) in item.categories" :key="i" class="mb-1">
                           {{ cat.value }}
                         </p>
                       </div>

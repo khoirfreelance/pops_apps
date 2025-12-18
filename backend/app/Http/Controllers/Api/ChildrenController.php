@@ -1538,22 +1538,22 @@ class ChildrenController extends Controller
 
     public function intervensi(Request $request)
     {
-        $user = Auth::user();
+        //$user = Auth::user();
 
         // 1️⃣ Ambil data anggota TPK
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
+        /* $anggotaTPK = Cadre::where('id_user', $user->id)->first();
         if (!$anggotaTPK) {
             return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
+        } */
 
         // 2️⃣ Ambil posyandu & wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
+        $posyandu = $request->posyandu;
+        /* $wilayah = $posyandu?->wilayah;
         if (!$wilayah) {
             return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
+        } */
 
-        $filterKelurahan = $wilayah->kelurahan ?? null;
+        $filterKelurahan = $request->kelurahan ?? null;
 
         // ==========================
         // Tentukan periode
@@ -1587,10 +1587,10 @@ class ChildrenController extends Controller
         // 🔥 Filter anak dengan **masalah gizi ganda**
         $nik_case = $kunjungan->filter(function ($item) {
             $gizi_ganda = 0;
-            if ($item->bb_u != null && $item->bb_u !== 'Normal'){
+            if ($item->bb_u != null && str_contains(strtolower($item->bb_u), 'underweight')){
                 $gizi_ganda++;
             }
-            if ($item->tb_u != null && $item->tb_u !== 'Normal'){
+            if ($item->tb_u != null && str_contains(strtolower($item->bb_u), 'stunted')){
                 $gizi_ganda++;
             }
             if ($item->bb_tb != null && $item->bb_tb !== 'Normal'){
