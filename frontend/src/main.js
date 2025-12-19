@@ -10,7 +10,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 // Pakai custom bootstrap yang sudah di-override
 import './assets/custom.scss'
 
-createApp(App).use(router).mount('#app')
+//createApp(App).use(router).mount('#app')
 
 const app = createApp(App)
 

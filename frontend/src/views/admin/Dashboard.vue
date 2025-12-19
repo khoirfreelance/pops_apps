@@ -968,18 +968,18 @@
                             <div class="card shadow-sm border-0 h-100 p-3 d-flex flex-column justify-content-between">
                               <h2 class="text-center text-success mb-2">Diagram Intervensi</h2>
                               <div class="chart-placeholder text-muted text-center py-4">
-                                <canvas v-if="isSudahBumil" ref="sudahBumilChart" style="
+                                <canvas ref="sudahBumilChart" style="
                                     max-height: 280px;
                                     min-height: 200px !important;
                                     height: 100% !important;
                                     width: 100% !important;
                                   "></canvas>
-                                <canvas v-else ref="belumBumilChart" style="
+                                <!-- <canvas v-else ref="belumBumilChart" id="belum" style="
                                     max-height: 280px;
                                     min-height: 200px !important;
                                     height: 100% !important;
                                     width: 100% !important;
-                                  "></canvas>
+                                  "></canvas> -->
                               </div>
                             </div>
                           </div>
@@ -2061,6 +2061,50 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      // ===== UI STATE =====
+      activeMenu: 'anak',
+      selectedChart: null,
+      searchQuery: '',
+
+      // ===== FILTER =====
+      filters: {
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
+        kelurahan: '',
+        posyandu: '',
+        rw: '',
+        rt: '',
+        periode: '',
+      },
+
+      // ===== TOTAL COUNTER =====
+      totalKasus: 0,
+      totalSudah: 0,
+      totalBelum: 0,
+
+      // ===== DATA TABLE =====
+      //filteredAnakGabungan: [],
+      //filteredBumil: [],
+      dataTable_catin: [],
+
+      // ===== INFO BOX =====
+      infoBoxes: [],
+
+      // ===== CHART INSTANCE REGISTRY =====
+      chartInstances: {},
+
+      // ===== SINGLE CHART REF =====
+      bumilChart: null,
+      belumChart: null,
+      funnelChart: null,
+      lineChart: null,
+      barChart: null,
+      bumilTrendChartInstance: null,
+
+      // ===== FLAGS =====
+      isSudahBumil: true,
+      noIntervensiMessage: '',
       bulanIni: 'Ini',
       showDetail_bb: false,
       showDetail_tb: false,
@@ -2069,11 +2113,9 @@ export default {
       showTableIbuHamil: false,
       diagramIntervensi: [],
       jmlTotalAnak: 0,
-      noIntervensiMessage: '',
       dataLoad_belum: [],
       giziGandaAnak: [],
       dataLoad: [],
-      selectedChart: null,
       kesehatanData: {
         anak: [],
         bumil: [],
@@ -2087,14 +2129,11 @@ export default {
       indikatorData: [],
       intervensiData: [],
       sudahBumilChart: null,
-      belumBumilChart: null,
-      bumilChart: null,
-      isSudahBumil: false,
+      //belumBumilChart: null,
       isSudah: false,
       bulanLabels: [], // diisi daftar bulan
       rawData: [], // data asli anak
       filteredData: [], // data hasil filter
-      activeMenu: 'anak', // default tab
       gizi: [],
       totalBumil: 0,
       totalCatin: 0,
@@ -2105,13 +2144,9 @@ export default {
       belumBumil: 0,
       anakMasalah: [],
       filterPeriode: 3,
-      lineChart: null,
-      funnelChart: null,
       sudahChart: null,
-      barChart: null,
       currentPage: 1,
       perPage: 5,
-      infoBoxes: [],
       configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
@@ -2123,17 +2158,6 @@ export default {
       stats: [],
       children: [],
       bride: [],
-      filters: {
-        ref: 'd',
-        provinsi:'',
-        kota:'',
-        kecamatan:'',
-        kelurahan: '',
-        posyandu: '',
-        rw: '',
-        rt: '',
-        periode: '',
-      },
       dev: 0,
       posyanduList: [],
       rwList: [],
@@ -2148,14 +2172,6 @@ export default {
       isMobile: false,
       mobileFilterOpen: false,
       periodeLabel: '',
-      chartInstances: {
-        bb: null,
-        bb_detail: null,
-        tb: null,
-        tb_detail: null,
-        bbtb: null,
-        bbtb_detail: null
-      },
     }
   },
   methods: {
@@ -3516,7 +3532,7 @@ export default {
       }
 
       if (!Array.isArray(dataTable) || !dataTable.length) {
-        console.warn(`⚠️ Tidak ada data untuk chart ${refName}`)
+        //console.warn(`⚠️ Tidak ada data untuk chart ${refName}`)
         return
       }
 
@@ -3646,7 +3662,7 @@ export default {
         kelurahan: item.kelurahan,
 
         // tambahkan rumusan
-        rumusan: intervensi.length ? intervensi[0].kategori : '-',
+        rumusan: intervensi.length ? intervensi[0].kategori : 'Belum dapat intervensi',
 
         wasting: k.bb_tb && k.bb_tb.includes('Wasted'),
         underweight: k.bb_u && k.bb_u.includes('Underweight'),
@@ -3984,10 +4000,10 @@ export default {
         //this.isLoading = false;
       }
     }, */
-    mapToBumil(item) {
+    /* mapToBumil(item) {
       const intervensi = item.data_intervensi?.length ? item.data_intervensi : []
 
-      const mapped = ['MBG', 'KIE', 'Bansos', 'PMT']
+      const mapped = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
 
       const normalizeJenis = (rawJenis) => {
         // jika rawJenis ada di jenisList, pakai itu
@@ -4010,12 +4026,53 @@ export default {
         anemia: item.data_kunjungan?.status_gizi_hb == 'Anemia',
         kek: item.data_kunjungan?.status_gizi_lila == 'KEK',
         risiko: item.data_kunjungan?.status_risiko_usia == 'Berisiko',
-        intervensi: intervensi.length ? normalizeJenis(intervensi[0].kategori) : '-',
+        intervensi: intervensi.length ? intervensi[0].kategori : 'Belum mendapatkan intervensi',//normalizeJenis(intervensi[0].kategori) : 'Belum mendapatkan intervensi',
         raw: {
           kunjungan: item.data_kunjungan || null,
           intervensi: item.data_intervensi || [],
         },
       }
+    }, */
+    mapToBumil(item) {
+      const k = item.data_kunjungan || {}
+      const intervensi = Array.isArray(item.data_intervensi) ? item.data_intervensi : []
+
+      return {
+        nik: item.nik,
+        nama: item.nama,
+        kelurahan: item.kelurahan,
+        posyandu: item.posyandu,
+        rt: item.rt,
+        rw: item.rw,
+        umur: item.umur ?? '-',
+        anemia: k?.status_gizi_hb == 'Anemia',
+        kek: k?.status_gizi_lila == 'KEK',
+        risiko: k?.status_risiko_usia == 'Berisiko',
+        //rumusan: intervensi.length ? intervensi[0].kategori : 'Belum dapat intervensi',
+        intervensi: intervensi.length ? intervensi[0].kategori : 'Belum Mendapat Bantuan',//normalizeJenis(intervensi[0].kategori) : 'Belum mendapatkan intervensi',
+        raw: {
+          kunjungan: k || null,
+          intervensi: item.data_intervensi || [],
+        },
+      }
+      /* return {
+        nik: item.nik,
+        nama: item.nama,
+        posyandu: item.posyandu,
+        kelurahan: item.kelurahan,
+
+        // tambahkan rumusan
+        rumusan: intervensi.length ? intervensi[0].kategori : 'Belum dapat intervensi',
+
+        wasting: k.bb_tb && k.bb_tb.includes('Wasted'),
+        underweight: k.bb_u && k.bb_u.includes('Underweight'),
+        stunting: k.tb_u && k.tb_u.includes('Stunted'),
+        bb_stagnan: k.naik_berat_badan == '0',
+        overweight: k.bb_tb && k.bb_tb.includes('Overweight') || k.bb_tb.includes('Obesitas'),
+
+        data_kunjungan: k,
+        raw: item,
+      } */
     },
     generateBumilSummary(dataTableBumil) {
       const summary = {
@@ -4093,6 +4150,7 @@ export default {
 
       // Log hasil pengolahan data
       //console.log('📊 Summary Hasil Pengolahan:', summary)
+      //if (this.activeMenu !== 'bumil') return
 
       // 3. Setup Chart
       const ctx = this.$refs.bumilChart?.getContext('2d')
@@ -4126,7 +4184,6 @@ export default {
         belumBumil = labels.map(() => 0)
       }
       //console.log('kok label nya cuma 2', labels, belumBumil, sudahBumil);
-
 
       // 4. Inisialisasi Chart
       this.bumilChart = new Chart(ctx, {
@@ -4189,6 +4246,7 @@ export default {
     },
     renderBumilTrendChart(tren) {
       //console.log(tren)
+      //if (this.activeMenu !== 'bumil') return
       const ctx = this.$refs.bumilTrendChart?.getContext('2d')
 
       if (!ctx || !this.indikatorData || !this.bulanLabels) return
@@ -4263,10 +4321,12 @@ export default {
       })
     },
     renderIntervensiBumilChart() {
+      //if (this.activeMenu !== 'bumil') return
       this.$nextTick(() => {
 
         // Mendapatkan elemen canvas
-        const canvas = this.$refs.belumBumilChart
+        //const canvas = this.$refs.belumBumilChart
+        const canvas = this.$refs.sudahBumilChart
         if (!canvas) return
 
         const ctx = canvas.getContext('2d')
@@ -4289,11 +4349,13 @@ export default {
         const jenisList = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya', 'Belum Mendapat Bantuan']
         const mapped = ['MBG', 'KIE', 'Bansos', 'PMT']
         const normalizeJenis = (rawJenis) => {
+          //console.log(rawJenis);
+
           // jika rawJenis ada di jenisList, pakai itu
           if (mapped.includes(rawJenis)) {
             return rawJenis
           }
-          if (rawJenis == "-") {
+          if (rawJenis == "Belum Mendapat Bantuan") {
             return "Belum Mendapat Bantuan"
           }
           // jika tidak ada → anggap "Bantuan Lainnya"
@@ -4785,7 +4847,7 @@ export default {
       // 1️⃣ Ambil wilayah user
       await this.getWilayahUser()
 
-      console.log(this.filters);
+      //console.log(this.filters);
 
       // 3️⃣ Generate bulan terakhir 12 bulan
       this.bulanLabels = this.getLast12Months()
@@ -4840,7 +4902,7 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
-    window.removeEventListener('resize', this.handleResize)
+    //window.removeEventListener('resize', this.handleResize)
 
     // ✅ TAMBAHAN: Destroy semua chart instances
     Object.values(this.chartInstances).forEach(chart => {
@@ -4851,32 +4913,63 @@ export default {
     'filters.posyandu'(val) {
       this.handlePosyanduChange(val)
     },
+
     async activeMenu() {
-      //console.log('🔄 Menu berganti, refresh data dan chart')
-      await this.hitungIntervensi()
-      await this.hitungStatistik() // hitung ulang sesuai menu 'anak'
-      await this.generateInfoBoxes()
-      await this.generateDataTable()
-      await this.masalahGanda()
+      this.isLoading = true   // 🔄 START LOADING
 
-      if (this.activeMenu === 'anak') {
-        this.renderGiziGandaGiziAnak()
-        this.rendersvgChart()
-      }
+      try {
+        // =========================
+        // 1️⃣ LOAD DATA (ASYNC)
+        // =========================
+        await this.hitungIntervensi()
+        await this.hitungStatistik()
+        await this.generateInfoBoxes()
+        await this.generateDataTable()
+        await this.masalahGanda()
 
-      if (this.activeMenu === 'bumil') {
-        this.rendersvgChart_Bumil()
-        this.renderBumilChart()
-        this.renderIntervensiBumilChart()
-        this.generateIndikatorBumilBulanan()
-      }
-      if (this.activeMenu === 'catin') {
-        this.rendersvgChart_Catin()
-        this.generateIndikatorCatinBulanan()
-      }
+        if (this.activeMenu === 'bumil') {
+          await this.generateIndikatorBumilBulanan()
+        }
 
-      this.renderFunnelChart()
+        if (this.activeMenu === 'catin') {
+          await this.generateIndikatorCatinBulanan()
+        }
+
+        // =========================
+        // 2️⃣ PASTIKAN DOM SIAP
+        // =========================
+        await this.$nextTick()
+
+        // =========================
+        // 3️⃣ RENDER CHART
+        // =========================
+        if (this.activeMenu === 'anak') {
+          this.renderGiziGandaGiziAnak()
+          this.rendersvgChart()
+        }
+
+        if (this.activeMenu === 'bumil') {
+          this.rendersvgChart_Bumil()
+          this.renderBumilChart()
+          this.renderIntervensiBumilChart()
+        }
+
+        if (this.activeMenu === 'catin') {
+          this.rendersvgChart_Catin()
+        }
+
+        this.renderFunnelChart()
+
+      } catch (err) {
+        console.error('❌ Error saat ganti menu:', err)
+      } finally {
+        // ⏳ delay kecil biar smooth
+        setTimeout(() => {
+          this.isLoading = false
+        }, 200)
+      }
     },
   },
+
 }
 </script>
