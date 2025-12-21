@@ -4781,9 +4781,9 @@ export default {
 
     detailLink() {
       const linkMap = {
-        bb: '/admin/dashboard/detail?tipe=bbu',
-        tb: '/admin/dashboard/detail?tipe=tbu',
-        bbtb: '/admin/dashboard/detail?tipe=bbtb',
+        bb: '/admin/detail?tipe=bbu',
+        tb: '/admin/detail?tipe=tbu',
+        bbtb: '/admin/detail?tipe=bbtb',
       }
 
       const base = linkMap[this.selectedChart]

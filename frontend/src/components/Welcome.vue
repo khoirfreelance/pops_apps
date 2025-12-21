@@ -123,7 +123,7 @@ export default {
 
 <style scoped>
 .welcome-card {
-    background-image: url(/welcome0.png);
+    background-image: url('@/assets/welcome0.png');
     background-repeat: no-repeat;
     background-size: cover;
     background-position-x: right;
@@ -139,7 +139,7 @@ export default {
     .welcome-card {
         margin-top: 60px;
         /* background: linear-gradient(0deg, #10754f 10%, #f7fcf4 13% ) !important; */
-        border-radius: 0 0 20px 20px !important; 
+        border-radius: 0 0 20px 20px !important;
     }
 }
 
