@@ -1235,7 +1235,6 @@
                               header-text-direction="center"
                               header-class-name="my-custom-header"
                               :rows-per-page="perPage"
-                              :rows-items="perPageOptions"
                               :rows-per-page-text="'Rows per page'"
                               show-index
                               alternating
@@ -1508,7 +1507,7 @@
             </div>
           </div>
 
-          
+
         </div>
       </div>
     </div>
