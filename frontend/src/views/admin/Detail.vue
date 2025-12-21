@@ -31,6 +31,26 @@
           <!-- Welcome Card -->
           <Welcome />
 
+          <!-- Statistic Cards -->
+          <div class="mt-3">
+            <div class="row justify-content-center g-2">
+              <div v-for="(stat, index) in stats" :key="index"
+                class="col-xl-1_9 col-lg-2_custom col-md-3 col-sm-3 col-6">
+                <div class="stat-card shadow-sm rounded h-100">
+                  <h6 class="text-muted pt-2 ps-2" style="font-size: 16px;">{{ stat.title }}</h6>
+                  <div class="card-body d-flex align-items-center justify-content-between px-2">
+                    <!-- Text -->
+                    <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
+                    <!-- Icon -->
+                    <div class="icon-wrap d-flex align-items-center justify-content-center mb-1">
+                      <i :class="[stat.icon]"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Statistik Berat Badan / Usia -->
           <div class="card border border-primary shadow p-3 my-3">
             <div class="mb-4">
@@ -43,7 +63,7 @@
                 v-if="detailTablePerBulan.length > 0"
                 class="table table-hover table-bordered align-middle mb-0"
               >
-                <thead class="table-light">
+                <thead class="table-success">
                   <tr>
                     <th rowspan="2" class="text-center align-middle">Status</th>
 
@@ -105,18 +125,28 @@
 
           <!-- Statistik berdasarkan kelompok usia dan gender-->
           <div class="row mt-3 align-items-stretch">
-            <div class="col-12 col-lg-6 col-md-12">
-              <div class="card border border-primary shadow p-3 my-3" style="background:#e2ece7;">
-                <h6 class="text-primary fw-bold">Berdasarkan Kategori Usia</h6>
+
+            <!-- KIRI -->
+            <div class="col-12 col-lg-6 col-md-12 d-flex">
+              <div class="card border border-primary shadow p-3 my-3 flex-fill d-flex flex-column"
+                  style="background:#e2ece7;">
+                <h6 class="text-primary fw-bold">
+                  Berdasarkan Kategori Usia
+                </h6>
+
                 <div class="table-responsive bg-light p-3 rounded flex-grow-1">
                   <canvas ref="usiaChart"></canvas>
                 </div>
               </div>
             </div>
 
-            <div class="col-12 col-lg-6 col-md-12">
-              <div class="card border border-primary shadow p-3 my-3" style="background:#e2ece7;">
-                <h6 class="fw-bold mb-4 text-primary">Berdasarkan Jenis Kelamin</h6>
+            <!-- KANAN -->
+            <div class="col-12 col-lg-6 col-md-12 d-flex">
+              <div class="card border border-primary shadow p-3 my-3 flex-fill d-flex flex-column"
+                  style="background:#e2ece7;">
+                <h6 class="fw-bold mb-4 text-primary">
+                  Berdasarkan Jenis Kelamin
+                </h6>
 
                 <div class="row justify-content-center flex-grow-1">
                   <div
@@ -132,24 +162,38 @@
                       {{ item.label }}
                     </h6>
 
-                    <div class="d-flex justify-content-between px-5 mt-3">
-                      <div>
-                        <p v-for="(cat, i) in item.categories" :key="i" class="mb-1">
-                          {{ cat.name }}
-                        </p>
-                      </div>
+                    <!-- TABLE -->
+                    <div class="px-4 mt-3">
+                      <table class="table table-borderless table-sm mb-0 bg-transparent">
+                        <tbody>
+                          <tr
+                            v-for="(cat, i) in item.categories"
+                            :key="i"
+                            class="bg-transparent"
+                          >
+                            <td
+                              class="bg-transparent p-1"
+                              :class="i < 2 ? 'text-danger' : 'text-primary'"
+                            >
+                              {{ cat.name }}
+                            </td>
 
-                      <div class="fw-bold text-end" :class="item.valueClass">
-                        <p v-for="(cat, i) in item.categories" :key="i" class="mb-1">
-                          {{ cat.value }}
-                        </p>
-                      </div>
+                            <td
+                              class="bg-transparent p-1 text-start fw-bold"
+                              :class="i < 2 ? 'text-danger' : 'text-primary'"
+                            >
+                              {{ cat.value }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
 
               </div>
             </div>
+
           </div>
 
           <!-- Statistik berdasarkan 1 tahun terkahir -->
@@ -201,42 +245,6 @@
                 </div>
               </div>
             </div>
-            <!-- <div class="col-12">
-              <div class="card border border-primary shadow p-3 my-3">
-                <div class="table-responsive">
-                  <div class="d-flex flex-column flex-md-row gap-2">
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                      <label class="form-label" style="font-weight: 600;">Posyandu</label>
-                      <select v-model="filters.posyandu" class="form-select text-muted uniform-input"
-                        @change="handlePosyanduChange">
-                        <option value="">All</option>
-                        <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
-                          {{ item.nama_posyandu }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                      <label class="form-label" style="font-weight: 600;">RW</label>
-                      <select v-model="filters.rw" class="form-select text-muted uniform-input" @change="handleRWChange"
-                        :disabled="rwReadonly">
-                        <option value="">All</option>
-                        <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <table class="table table-bordered table-sm text-center align-middle">
-                    <thead class="table-light">
-
-                    </thead>
-
-                    <tbody>
-
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div> -->
           </div>
         </div>
       </div>
@@ -296,22 +304,10 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome },
   data() {
     return {
-      detailTablePerBulan: [],
-      detailTren: null,
-      detailUmur: {},
-      detailIndikator: {},
-      indikatorChartInstance: null,
-      usiaChartInstance: null,
-      detailTable: [],
-      tipe:'',
-      title:'',
-      posyanduList: [],
-      rwReadonly: true,
       /* filteredData: [], // data hasil filter
       rawData:[],
       configCacheKey: 'site_config_cache',
-      isLoading: false,
-      isCollapsed: false,
+
       windowWidth: window.innerWidth,
       dataTable_bb:[],
       dataTable_tb:[],
@@ -329,6 +325,20 @@ export default {
       indiChartInstance_tb: null,
       indiChartInstance_bbtb: null,
       indiChartInstance_bb: null, */
+      stats: [],
+      isCollapsed: false,
+      //detailTablePerBulan: [],
+      detailTren: null,
+      detailUmur: {},
+      detailIndikator: {},
+      indikatorChartInstance: null,
+      usiaChartInstance: null,
+      detailTable: [],
+      tipe:'',
+      title:'',
+      posyanduList: [],
+      rwReadonly: true,
+      isLoading: false,
       filters: {
         tipe: '',
         provinsi: '',
@@ -343,6 +353,27 @@ export default {
     }
   },
   methods: {
+    async fetchStats() {
+      try {
+        const res = await axios.get(`${baseURL}/api/dashboard/stats/`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const data = res.data
+        this.stats = [
+          { title: 'RW', value: data.rw, icon: 'bi bi-houses-fill' },
+          { title: 'RT', value: data.rt, icon: 'bi bi-house-fill' },
+          { title: 'Keluarga Terdaftar', value: data.keluarga, icon: 'fa-solid fa-people-roof' },
+          { title: 'TPK', value: data.tpk, icon: 'bi bi-person-vcard' },
+          { title: 'Ibu Hamil', value: data.ibu_hamil, icon: 'fa-solid fa-person-pregnant' },
+          { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
+          { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
+          { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
+          { title: 'Anak <= 5 Tahun', value: data.anak, icon: 'fa-solid fa-baby' },
+        ]
+      } catch (e) {
+        console.error(e)
+      }
+    },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
@@ -663,6 +694,7 @@ export default {
       await this.loadUmur()
       await this.loadDetail()
       await this.loadIndikator()
+      await this.fetchStats()
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
     } catch (err) {
@@ -724,8 +756,8 @@ export default {
         },
         P: {
           circleClass: 'female-circle',
-          titleClass: 'text-warning',
-          valueClass: 'text-warning'
+          titleClass: 'text-secondary',
+          valueClass: 'text-secondary'
         }
       }
 
@@ -802,6 +834,281 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Neuton:wght@400;700&display=swap');
+
+.stat-card {
+  background-color: #fff;
+  border-top: 4px solid var(--bs-secondary);
+  height: 90px;
+  /* proporsional */
+  transition: all 0.2s ease-in-out;
+  max-width: 120px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .icon-wrap {
+    background-color: var(--bs-secondary);
+    color: #fff;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  h6 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    margin: 0;
+  }
+
+  h4 {
+    font-family: 'Inter', sans-serif;
+    color: #000;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+.stat-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  height: 60px;
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+/* custom kolom 9 per baris */
+@media (min-width: 1400px) {
+  .col-xl-1_9 {
+    flex: 0 0 auto;
+    width: 11.11%;
+  }
+}
+
+/* fallback grid untuk ukuran lain */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .col-lg-2_custom {
+    flex: 0 0 auto;
+    width: 11.11%;
+    /* 5 kolom */
+  }
+
+  .stat-card {
+    background-color: #fff;
+    border-top: 4px solid var(--bs-secondary);
+    height: 90px;
+    /* proporsional */
+    transition: all 0.2s ease-in-out;
+    max-width: 120px;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .icon-wrap {
+      background-color: var(--bs-secondary);
+      color: #fff;
+      border-radius: 8px;
+      width: 25px !important;
+      height: 25px !important;
+      font-size: 12px !important;
+      flex-shrink: 0;
+    }
+
+    h6 {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px !important;
+      margin: 0;
+    }
+
+    h4 {
+      font-family: 'Inter', sans-serif;
+      color: #000;
+      font-size: 14px !important;
+      margin: 0;
+    }
+  }
+
+  .stat-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    height: 60px;
+
+    .spacer {
+      flex: 1;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .col-md-3 {
+    flex: 0 0 auto;
+    width: 11.11%;
+  }
+
+  .stat-card {
+    background-color: #fff;
+    border-top: 4px solid var(--bs-secondary);
+    height: 90px;
+    /* proporsional */
+    transition: all 0.2s ease-in-out;
+    max-width: 80px;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .icon-wrap {
+      background-color: var(--bs-secondary);
+      color: #fff;
+      border-radius: 8px;
+      width: 25px !important;
+      height: 25px !important;
+      font-size: 12px !important;
+      flex-shrink: 0;
+    }
+
+    h6 {
+      font-family: 'Inter', sans-serif;
+      font-size: 6px !important;
+      margin: 0;
+    }
+
+    h4 {
+      font-family: 'Inter', sans-serif;
+      color: #000;
+      font-size: 12px !important;
+      margin: 0;
+    }
+  }
+
+  .stat-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    height: 60px;
+
+    .spacer {
+      flex: 1;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .col-sm-4 {
+    flex: 0 0 auto;
+    width: 33.33%;
+    /* 3 kolom */
+  }
+
+  .stat-card {
+    background-color: #fff;
+    border-top: 4px solid var(--bs-secondary);
+    height: 90px;
+    /* proporsional */
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .icon-wrap {
+      background-color: var(--bs-secondary);
+      color: #fff;
+      border-radius: 8px;
+      width: 30px !important;
+      height: 30px !important;
+      font-size: 12px !important;
+      flex-shrink: 0;
+    }
+
+    h6 {
+      font-family: 'Inter', sans-serif;
+      font-size: 7px !important;
+      margin: 0;
+    }
+
+    h4 {
+      font-family: 'Inter', sans-serif;
+      color: #000;
+      font-size: 12px !important;
+      margin: 0;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .sticky-filter {
+      position: sticky;
+      top: 70px;
+      z-index: 10;
+    }
+  }
+
+  /* Mobile: hilangkan sticky & rapikan */
+  /* @media (max-width: 767px) {
+    .sticky-filter {
+      position: static !important;
+    }
+    .uniform-input {
+      height: 44px;
+    }
+  } */
+
+  @media (max-width: 767px) {
+    .sticky-filter {
+      top: 100px;
+    }
+  }
+
+  .filter-floating-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+}
+
+* {
+  font-size: 16px;
+}
+
+/* Fade effect */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Rotate icon */
+.rotate {
+  transform: rotate(180deg);
+  transition: transform 0.25s ease;
+}
+
 .circle {
   width: 110px;
   height: 110px;
