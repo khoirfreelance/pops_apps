@@ -463,7 +463,7 @@
                       </template>
 
                       <!-- Custom column: Intervensi -->
-                      <template #item-intervensi="{ intervensi }">
+                      <!-- <template #item-intervensi="{ intervensi }">
                         <span
                           v-if="intervensi === 'Ya'"
                           class="badge bg-danger text-white px-3 py-2"
@@ -471,7 +471,7 @@
                           Ya
                         </span>
                         <span v-else>{{ intervensi }}</span>
-                      </template>
+                      </template> -->
 
                       <!-- Custom column: Tanggal Pemeriksaan -->
                       <template #item-tanggal_pemeriksaan_terakhir="{ tanggal_pemeriksaan_terakhir }">
@@ -869,7 +869,7 @@
               </div>
             </div>
           </div>
-          
+
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -1129,7 +1129,7 @@ export default {
         fileNameExport = `Status Risiko Ibu Hamil Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
       }
       const excelData = mapDataIbuHamilToExcel(this.filteredData);
-     
+
       exportExcel({
         data: excelData,
         fileName: fileNameExport,

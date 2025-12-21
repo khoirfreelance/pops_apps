@@ -1092,6 +1092,14 @@ export default {
   font-size: 16px;
 }
 
+.welcome-card {
+    background-image: url('/welcome0.png') !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    background-position-x: right !important;
+    height: 200px !important;
+}
+
 /* Fade effect */
 .fade-enter-active,
 .fade-leave-active {
