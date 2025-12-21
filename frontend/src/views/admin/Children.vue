@@ -890,7 +890,15 @@
                         </div>
                       </template>
                     </easy-data-table>
-
+                    <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
+              @click="exportDataAnakExcel"
+            >
+              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+              Export
+            </button>
+          </div>
                   </div>
                 </div>
               </div>
@@ -1499,15 +1507,8 @@
               </div>
             </div>
           </div>
-          <div class="d-flex justify-content-end">
-            <button
-              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
-              @click="exportDataAnakExcel"
-            >
-              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-              Export
-            </button>
-          </div>
+
+          
         </div>
       </div>
     </div>
@@ -1617,6 +1618,9 @@ export default {
         hfa,
         wfh
       },
+      periodeAwalExportData: '',
+      periodeAkhirExportData: '',
+      desaExportData: '',
 
       /* Wajib ada */
       file: null,
@@ -1782,10 +1786,17 @@ export default {
   },
   methods: {
     exportDataAnakExcel(){
+      let fileNameExport = '';
+      if (this.periodeAwalExportData === '' || this.periodeAkhirExportData === '' || this.periodeAkhirExportData.includes('+') ) {
+        fileNameExport = `Status Gizi Anak Desa ${this.desaExportData} 1 Tahun Terakhir.xlsx`;
+      } else {
+        fileNameExport = `Status Gizi Anak Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
+      }
+
         const excelData = mapDataAnakToExcel(this.filteredData);
         exportExcel({
           data: excelData,
-          fileName: "Data_Gizi_Anak.xlsx",
+          fileName: fileNameExport,
           sheetName: "Gizi Anak",
       });
     },
@@ -1980,6 +1991,9 @@ export default {
     },
     async applyFilter() {
       this.isLoading = true
+      this.periodeAwalExportData = this.filters.periodeAwal;
+      this.periodeAkhirExportData = this.filters.periodeAkhir;
+      this.desaExportData = this.filters.kelurahan;
       try {
         this.periodeTitle = this.filters.periodeAwal.replace('+', ' ')+ ' - '+this.filters.periodeAkhir.replace('+', ' ')
         await this.loadChildren()
