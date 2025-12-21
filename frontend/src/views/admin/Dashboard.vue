@@ -2078,6 +2078,9 @@ export default {
         periode: '',
       },
 
+      periodeExportData: '',
+      desaExportData: '',
+
       // ===== TOTAL COUNTER =====
       totalKasus: 0,
       totalSudah: 0,
@@ -2242,6 +2245,30 @@ export default {
       }
     },
     async exportDashboardPdf(tagId) {
+      let periodeLabel = '';
+      let fileName = '';
+
+      if(this.desaExportData === ''){
+        this.desaExportData = 'Kluwut';
+      }
+
+      if (this.periodeExportData === '') {
+        const now = new Date();
+        now.setDate(1);                     
+        now.setMonth(now.getMonth() - 1);   // mundur satu bulan
+        const monthName = now.toLocaleDateString('id-ID', { month: 'long' });
+        const year = now.getFullYear();
+        
+        periodeLabel = `${monthName} ${year}`;
+      } else {
+        const [yearStr, monthStr] = this.periodeExportData.split('-');
+        const year = parseInt(yearStr, 10);
+        const monthIndex = parseInt(monthStr, 10) - 1;   const date = new Date(year, monthIndex, 1);
+        const monthName = date.toLocaleDateString('id-ID', { month: 'long' });
+        
+        periodeLabel = `${monthName} ${year}`;
+      }
+
       const infoBoxes = document.querySelector('#infoBoxes')
       const canvasStatusBumil = document.querySelector('#canvas-status-bumil')
       if (infoBoxes) infoBoxes.classList.add('hide-for-pdf')
@@ -2249,21 +2276,21 @@ export default {
 
       if(tagId === 'giziAnakExport'){
         const excelData = mapDataAnakBerandaToExcel(this.filteredAnakGabungan);
-
+        fileName = `Status Gizi Anak Desa ${this.desaExportData} ${periodeLabel}.xlsx`;
         exportExcel({
           data: excelData,
-          fileName: "Data_Gizi_Anak_Beranda.xlsx",
-          sheetName: "Gizi Anak Beranda",
+          fileName: fileName,
+          sheetName: "Status Gizi Anak Beranda",
         });
       }
 
       if(tagId === 'kesehatanBumilExport'){
         const excelData = mapDataIbuHamilBerandaToExcel(this.filteredBumil);
-        //console.log("excelData", excelData);
+        fileName = `Status Resiko Ibu Hamil Desa ${this.desaExportData} ${periodeLabel}.xlsx`;
         exportExcel({
           data: excelData,
-          fileName: "Data_Ibu_Hamil_Beranda.xlsx",
-          sheetName: "Gizi Ibu Hamil Beranda",
+          fileName: fileName,
+          sheetName: "Status Resiko Ibu Hamil Beranda",
         });
       }
 
@@ -2313,7 +2340,7 @@ export default {
         })
 
         pdf.addImage(imgData, 'PNG', margin, margin, mmWidth, mmHeight)
-        pdf.save(tagId + '.pdf')
+        pdf.save('Grafik ' + fileName + '.pdf')
 
         element.style.overflow = originalOverflow
         document.body.removeChild(loading)
@@ -2630,7 +2657,8 @@ export default {
     },
     async applyFilter() {
       //console.log("THIS Filter Bumil", this.filteredBumil);
-
+      this.periodeExportData = this.filters.periode;
+      this.desaExportData = this.filters.kelurahan;
       if (this.isMobile) {
         this.showFilterMobile = false // auto sembunyikan setelah apply
       }
