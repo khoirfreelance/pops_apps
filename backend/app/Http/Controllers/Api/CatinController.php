@@ -44,11 +44,29 @@ class CatinController extends Controller
                 return $group->sortByDesc('tanggal_pemeriksaan')->first();
             });
 
-            if (!empty($request->kelurahan)) {
-                $data = $data->filter(callback: function ($item) use ($request) {
-                    return strtolower(trim($item->kelurahan)) === strtolower(trim($request->kelurahan));
-                });
-            }
+            $data = $data->filter(function ($item) use ($request) {
+                if (!empty($request->provinsi) &&
+                    strtolower(trim($item->provinsi)) !== strtolower(trim($request->provinsi))) {
+                    return false;
+                }
+
+                if (!empty($request->kota) &&
+                    strtolower(trim($item->kota)) !== strtolower(trim($request->kota))) {
+                    return false;
+                }
+
+                if (!empty($request->kecamatan) &&
+                    strtolower(trim($item->kecamatan)) !== strtolower(trim($request->kecamatan))) {
+                    return false;
+                }
+
+                if (!empty($request->kelurahan) &&
+                    strtolower(trim($item->kelurahan)) !== strtolower(trim($request->kelurahan))) {
+                    return false;
+                }
+
+                return true;
+            });
 
             if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
                 // Daftar bulan dalam Bahasa Indonesia
@@ -337,6 +355,12 @@ class CatinController extends Controller
         return response()->json([
             'total' => $total,
             'data' => $data->values(),
+            'wilayah' => [
+                'provinsi' => $request->provinsi,
+                'kota' => $request->kota,
+                'kecamatan' => $request->kecamatan,
+                'kelurahan' => $request->kelurahan,
+            ],
             'counts' => $result
         ], 200);
 
@@ -689,7 +713,10 @@ class CatinController extends Controller
     public function status(Request $request)
     {
         try {
+            /* $filterProvinsi = $request->provinsi;
             $filterKelurahan = $request->kelurahan;
+            $filterKelurahan = $request->kelurahan;
+            $filterKelurahan = $request->kelurahan; */
 
             // =====================================
             // 2. Tentukan periode (default H-1 bulan)
@@ -713,11 +740,35 @@ class CatinController extends Controller
 
             $dataRaw = $data;
 
-            if (!empty($filterKelurahan)) {
+            $data = $data->filter(function ($item) use ($request) {
+                if (!empty($request->provinsi) &&
+                    strtolower(trim($item->provinsi)) !== strtolower(trim($request->provinsi))) {
+                    return false;
+                }
+
+                if (!empty($request->kota) &&
+                    strtolower(trim($item->kota)) !== strtolower(trim($request->kota))) {
+                    return false;
+                }
+
+                if (!empty($request->kecamatan) &&
+                    strtolower(trim($item->kecamatan)) !== strtolower(trim($request->kecamatan))) {
+                    return false;
+                }
+
+                if (!empty($request->kelurahan) &&
+                    strtolower(trim($item->kelurahan)) !== strtolower(trim($request->kelurahan))) {
+                    return false;
+                }
+
+                return true;
+            });
+            /* if (!empty($filterKelurahan)) {
                 $data = $data->filter(function ($item) use ($filterKelurahan) {
                     return strtolower($item->kelurahan) === strtolower($filterKelurahan);
                 });
-            }
+
+            } */
 
             $data = $data->filter(function ($item) use ($periodeAwal, $periodeAkhir) {
                 return $item->tanggal_pemeriksaan >= $periodeAwal->format('Y-m-d') &&
@@ -752,7 +803,12 @@ class CatinController extends Controller
                         'Total Kasus' => 0,
                         'Total Calon Pengantin' => $data->count(),
                     ],
-                    'kelurahan' => $filterKelurahan,
+                    'wilayah' => [
+                        'provinsi'   => $request->provinsi,
+                        'kota'       => $request->kota,
+                        'kecamatan'  => $request->kecamatan,
+                        'kelurahan'  => $request->kelurahan,
+                    ],
                 ]);
             }
 
@@ -880,7 +936,12 @@ class CatinController extends Controller
             return response()->json([
                 'total' => $total,
                 'counts' => $result,
-                'kelurahan' => $filterKelurahan,
+                'wilayah' => [
+                    'provinsi'   => $request->provinsi,
+                    'kota'       => $request->kota,
+                    'kecamatan'  => $request->kecamatan,
+                    'kelurahan'  => $request->kelurahan,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -896,13 +957,13 @@ class CatinController extends Controller
         try {
             //$user = Auth::user();
 
-            $filterKelurahan = $request->kelurahan;
+            //$filterKelurahan = $request->kelurahan;
             // wilayah default dari user
             $wilayah = [
-                'kelurahan' => $user->kelurahan ?? null,
-                'kecamatan' => $user->kecamatan ?? null,
-                'kota' => $user->kota ?? null,
-                'provinsi' => $user->provinsi ?? null,
+                'kelurahan' => $request->kelurahan ?? null,
+                'kecamatan' => $request->kecamatan ?? null,
+                'kota' => $request->kota ?? null,
+                'provinsi' => $request->provinsi ?? null,
             ];
 
             $query = Catin::query();
@@ -913,7 +974,7 @@ class CatinController extends Controller
             }
 
             // Filter tambahan dari request
-            foreach (['kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
+            foreach (['provinsi','kota','kecamatan','kelurahan', 'posyandu', 'rw', 'rt'] as $f) {
                 if ($request->filled($f)) {
                     $query->where($f, $request->$f);
                 }
@@ -1092,6 +1153,9 @@ class CatinController extends Controller
             $query = Catin::query();
 
             // ✅ Filter wilayah user
+            $query->where('provinsi', $request->provinsi);
+            $query->where('kota', $request->kota);
+            $query->where('kecamatan', $request->kecamatan);
             $query->where('kelurahan', $request->kelurahan);
 
             // ✅ Filter tambahan dari frontend
@@ -1119,6 +1183,12 @@ class CatinController extends Controller
                 return response()->json([
                     'labels' => [],
                     'indikator' => [],
+                    'wilayah' => [
+                        'provinsi' => $request->provinsi,
+                        'kota' => $request->kota,
+                        'kecamatan' => $request->kecamatan,
+                        'kelurahan' => $request->kelurahan,
+                    ],
                 ]);
             }
 
@@ -1166,6 +1236,12 @@ class CatinController extends Controller
             return response()->json([
                 'labels' => $months,
                 'indikator' => $result,
+                'wilayah' => [
+                    'provinsi' => $request->provinsi,
+                    'kota' => $request->kota,
+                    'kecamatan' => $request->kecamatan,
+                    'kelurahan' => $request->kelurahan,
+                ],
             ]);
 
         } catch (\Throwable $th) {
