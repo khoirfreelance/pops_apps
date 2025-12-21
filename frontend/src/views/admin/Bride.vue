@@ -505,6 +505,16 @@
                       </template>
                     </easy-data-table>
 
+                    <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
+              @click="exportDataCatinExcel"
+            >
+              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+              Export
+            </button>
+          </div>
+
                   </div>
                 </div>
               </div>
@@ -831,18 +841,6 @@
               </div>
             </div>
           </div>
-
-          <div class="d-flex justify-content-end">
-            <button
-              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
-              @click="exportDataCatinExcel"
-            >
-              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-              Export
-            </button>
-          </div>
-
-
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -901,6 +899,9 @@ export default {
         { text: 'Air Bersih', value: 'sumber_air_bersih', sortable: true, width: 100 }
       ],
       periodeTitle:'',
+      periodeAwalExportData: '',
+      periodeAkhirExportData: '',
+      desaExportData: '',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1102,11 +1103,18 @@ export default {
   },
   methods: {
     exportDataCatinExcel(){
+      let fileNameExport = '';
+      if (this.periodeAwalExportData === '' || this.periodeAkhirExportData === '' ) {
+        fileNameExport = `Status Risiko Calon Pengantin Desa ${this.desaExportData} 1 Tahun Terakhir.xlsx`;
+      } else {
+        fileNameExport = `Status Risiko Calon Pengantin Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
+      }
+      
       const excelData = mapDataCatinToExcel(this.filteredCatin);
 
       exportExcel({
         data: excelData,
-        fileName: "Data_sCatin.xlsx",
+        fileName: fileNameExport,
         sheetName: "Catin",
       });
     },
@@ -1241,6 +1249,9 @@ export default {
     },
     async applyFilter() {
        //console.log('Applying filters:');
+      this.periodeAwalExportData = this.filters.periodeAwal;
+      this.periodeAkhirExportData = this.filters.periodeAkhir;
+      this.desaExportData = this.filters.kelurahan;
       this.periodeTitle = this.periodeLabel
       await this.loadBride()
       //await this.hitungStatusKesehatan()

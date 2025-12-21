@@ -497,6 +497,16 @@
                       </template>
                     </easy-data-table>
 
+                    <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
+              @click="exportDataIbuHamilExcel"
+            >
+              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+              Export
+            </button>
+          </div>
+
                   </div>
                 </div>
               </div>
@@ -859,15 +869,7 @@
               </div>
             </div>
           </div>
-          <div class="d-flex justify-content-end">
-            <button
-              class="btn btn-sm btn-outline-primary p-2 mt-3 w-auto"
-              @click="exportDataIbuHamilExcel"
-            >
-              <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-              Export
-            </button>
-          </div>
+          
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -930,6 +932,9 @@ export default {
       rtList: [],
       rwReadonly: true,
       rtReadonly: true,
+      periodeAwalExportData: '',
+      periodeAkhirExportData: '',
+      desaExportData: '',
       filters: {
         provinsi: '',
         kota: '',
@@ -1117,12 +1122,17 @@ export default {
   },
   methods: {
     exportDataIbuHamilExcel(){
+       let fileNameExport = '';
+      if (this.periodeAwalExportData === '' || this.periodeAkhirExportData === '' ) {
+        fileNameExport = `Status Risiko Ibu Hamil Desa ${this.desaExportData} 1 Tahun Terakhir.xlsx`;
+      } else {
+        fileNameExport = `Status Risiko Ibu Hamil Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
+      }
       const excelData = mapDataIbuHamilToExcel(this.filteredData);
-      console.log("Mapped Excel Data:", excelData);
-
+     
       exportExcel({
         data: excelData,
-        fileName: "Data_Ibu_Hamil.xlsx",
+        fileName: fileNameExport,
         sheetName: "Ibu Hamil",
       });
     },
@@ -1380,6 +1390,9 @@ export default {
     },
     async applyFilter() {
       (
+        this.periodeAwalExportData = this.filters.periodeAwal,
+      this.periodeAkhirExportData = this.filters.periodeAkhir,
+      this.desaExportData = this.filters.kelurahan,
         this.periodeTitle = this.periodeLabel,
         await this.loadPregnancy()
       )
