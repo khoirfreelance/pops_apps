@@ -602,7 +602,6 @@
 
 </style>
 
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -630,7 +629,13 @@ const currentMonthYear = new Date().toLocaleDateString('id-ID', {
 /* =========================
    API CONFIG
 ========================== */
-const baseURL = 'http://localhost:8000'
+// PORT backend kamu
+const API_PORT = 8000
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
 /* =========================
    SLIDER TEXT STATE
