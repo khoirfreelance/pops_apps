@@ -27,7 +27,7 @@ class SliderImageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|max:2048'
+            'image' => 'required|image|max:51200'
         ]);
 
         $path = $request->file('image')->store('slider', 'public');
