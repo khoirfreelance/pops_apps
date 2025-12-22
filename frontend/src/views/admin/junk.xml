@@ -1,74 +1,68 @@
-<div class="mt-5">
-              <h2 class="mb-0">Status Gizi Anak</h2>
-              <h5 class="text-primary">Dalam 12 Bulan Terakhir</h5>
-            </div>
-
-            <!-- content 2 -->
-            <div class="p-4 bg-light rounded shadow-sm text-center">
-              <!-- Nav Pills -->
-              <ul class="nav nav-pills-custom mb-3 " id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link active"
-                    id="pills-bb-usia-tab-12"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-bb-usia-12"
-                    type="button"
-                    role="tab"
-                  >
-                    Berat Badan / Usia
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    id="pills-tb-usia-tab-12"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-tb-usia-12"
-                    type="button"
-                    role="tab"
-                  >
-                    Tinggi Badan / Usia
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    id="pills-bb-tb-tab-12"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-bb-tb-12"
-                    type="button"
-                    role="tab"
-                  >
-                    Berat Badan / Tinggi Badan
-                  </button>
-                </li>
-              </ul>
-
-              <!-- Tabs Content -->
-              <div class="tab-content" id="pills-tabContent">
-                <!-- BB/U -->
-                <div class="tab-pane fade show active" id="pills-bb-usia-12" role="tabpanel">
-                  <h5>Berat Badan / Usia</h5>
-                  <div class="bg-light chart-container">
-                    <canvas id="chart-bb-usia-12"></canvas>
-                  </div>
-                </div>
-
-                <!-- TB/U -->
-                <div class="tab-pane fade" id="pills-tb-usia-12" role="tabpanel">
-                  <h5>Tinggi Badan / Usia</h5>
-                  <div class="bg-light chart-container">
-                    <canvas id="chart-tb-usia-12"></canvas>
-                  </div>
-                </div>
-
-                <!-- BB/TB -->
-                <div class="tab-pane fade" id="pills-bb-tb-12" role="tabpanel">
-                  <h5>Berat Badan / Tinggi Badan</h5>
-                  <div class="bg-light chart-container">
-                    <canvas id="chart-bb-tb-12"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
+{
+    "0-24": [
+        {
+            "L": [
+                {
+                    "length": 45,
+                    "sd3neg": 1.9,
+                    "sd2neg": 2.1,
+                    "sd1neg": 2.4,
+                    "median": 2.8,
+                    "sd1": 3.2,
+                    "sd2": 3.7,
+                    "sd3": 4.2
+                },...
+            ],
+            "P": [
+                {
+                    "length": 45,
+                    "sd3neg": 1.8,
+                    "sd2neg": 2,
+                    "sd1neg": 2.3,
+                    "median": 2.7,
+                    "sd1": 3.1,
+                    "sd2": 3.6,
+                    "sd3": 4.1
+                },...
+            ]
+        }
+    ],
+    "25-60": [
+        {
+            "L": [
+                {
+                    "height": 65,
+                    "sd3neg": 5.7,
+                    "sd2neg": 6.1,
+                    "sd1neg": 6.7,
+                    "median": 7.4,
+                    "sd1": 8.2,
+                    "sd2": 9,
+                    "sd3": 9.9
+                },...
+            ],
+            "P": [
+                {
+                    "height": 65,
+                    "sd3neg": 5.4,
+                    "sd2neg": 5.8,
+                    "sd1neg": 6.3,
+                    "median": 7,
+                    "sd1": 7.8,
+                    "sd2": 8.6,
+                    "sd3": 9.5
+                },
+                {
+                    "height": 66,
+                    "sd3neg": 5.5,
+                    "sd2neg": 6,
+                    "sd1neg": 6.5,
+                    "median": 7.2,
+                    "sd1": 8,
+                    "sd2": 8.9,
+                    "sd3": 9.8
+                },...
+            ]
+        }
+    ]
+}

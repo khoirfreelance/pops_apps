@@ -161,7 +161,19 @@ Route::get('/public/slider-images', [SliderImageController::class, 'index']);
    ADMIN ONLY
 ========================== */
 Route::middleware('auth:sanctum')->group(function () {
+
+    // slider text
+    Route::get('/slider-setting', [SliderSettingController::class, 'show']);
     Route::post('/slider-setting', [SliderSettingController::class, 'store']);
+
+    // slider images
+    Route::get('/slider-images', [SliderImageController::class, 'index']);
     Route::post('/slider-images', [SliderImageController::class, 'store']);
     Route::delete('/slider-images/{id}', [SliderImageController::class, 'destroy']);
+
+    Route::post('/footer', [FooterSettingController::class, 'store']);
+    Route::get('/footer', [FooterSettingController::class, 'show']);
+
+    Route::get('/footer-social', [FooterSocialLinkController::class, 'index']);
+    Route::put('/footer-social/{id}', [FooterSocialLinkController::class, 'update']);
 });

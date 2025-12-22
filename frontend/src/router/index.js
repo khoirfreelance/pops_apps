@@ -20,6 +20,7 @@ import Detail from '@/views/admin/Detail.vue'
 import Import from '@/views/admin/Import.vue'
 import Homepage from '@/views/Homepage.vue'
 import SliderPage from '@/views/admin/SliderPage.vue'
+import Footer from '@/views/admin/Footer.vue'
 
 const routes = [
   {
@@ -132,6 +133,11 @@ const routes = [
     path: '/admin/slider',
     name: 'AdminSlider',
     component: SliderPage,
+  },
+   {
+    path: '/admin/footer',
+    name: 'AdminFooter',
+    component: Footer,
   },
 ]
 

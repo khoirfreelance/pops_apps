@@ -12,14 +12,14 @@ class SliderImageController extends Controller
     /**
      * GET - public (homepage)
      */
-    public function index()
+    /*public function index()
     {
         return response()->json([
             'data' => SliderImage::where('is_active', 1)
                 ->orderBy('sort_order')
                 ->get()
         ]);
-    }
+    }*/
 
     /**
      * POST - admin only
@@ -27,7 +27,7 @@ class SliderImageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|max:51200'
+            'image' => 'required|image|max:2048'
         ]);
 
         $path = $request->file('image')->store('slider', 'public');
@@ -42,6 +42,22 @@ class SliderImageController extends Controller
         return response()->json([
             'message' => 'Image slider berhasil diupload',
             'data' => $image
+        ]);
+    }
+
+    // ADMIN
+    public function index()
+    {
+        return response()->json([
+            'data' => SliderImage::latest()->get()
+        ]);
+    }
+
+    // PUBLIC
+    public function public()
+    {
+        return response()->json([
+            'data' => SliderImage::latest()->get()
         ]);
     }
 

@@ -12,42 +12,38 @@ class SliderSettingController extends Controller
      * GET /api/slider-setting
      * Public - Homepage
      */
+    // ADMIN
     public function show()
     {
-        $setting = SliderSetting::first();
-
         return response()->json([
-            'message' => 'Slider setting',
-            'data' => $setting
-        ], 200);
+            'data' => SliderSetting::first()
+        ]);
     }
 
-    /**
-     * POST /api/slider-setting
-     * Admin only
-     */
+    // ADMIN (UPSERT)
     public function store(Request $request)
     {
-        $request->validate([
-            'main_title'     => 'nullable|string|max:255',
-            'title'          => 'nullable|string|max:255',
-            'description'    => 'nullable|string',
-            'subdescription' => 'nullable|string',
-        ]);
-
-        $setting = SliderSetting::updateOrCreate(
-            ['id' => 1], // selalu 1 row (GLOBAL)
-            [
-                'main_title'     => $request->main_title,
-                'title'          => $request->title,
-                'description'    => $request->description,
-                'subdescription' => $request->subdescription,
-            ]
+        $data = SliderSetting::updateOrCreate(
+            ['id' => 1],
+            $request->only([
+                'main_title',
+                'title',
+                'description',
+                'subdescription'
+            ])
         );
 
         return response()->json([
-            'message' => 'Pengaturan slider berhasil disimpan',
-            'data' => $setting
+            'message' => 'Slider setting disimpan',
+            'data' => $data
+        ]);
+    }
+
+    // PUBLIC (HOMEPAGE)
+    public function public()
+    {
+        return response()->json([
+            'data' => SliderSetting::first()
         ]);
     }
 }
