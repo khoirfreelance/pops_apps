@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\ChildrenController;
 use App\Http\Controllers\Api\PregnancyController;
 use App\Http\Controllers\Api\CatinController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\SliderSettingController;
+use App\Http\Controllers\Api\SliderImageController;
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -148,3 +150,18 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/home/pregnancy', [HomeController::class, 'getBumil']);
 Route::get('/home/children', [HomeController::class, 'getAnak']);
 Route::get('/home/indicator', [HomeController::class, 'getIndikatorAnak']);
+
+/* =========================
+   PUBLIC (HOMEPAGE)
+========================== */
+Route::get('/public/slider-setting', [SliderSettingController::class, 'show']);
+Route::get('/public/slider-images', [SliderImageController::class, 'index']);
+
+/* =========================
+   ADMIN ONLY
+========================== */
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/slider-setting', [SliderSettingController::class, 'store']);
+    Route::post('/slider-images', [SliderImageController::class, 'store']);
+    Route::delete('/slider-images/{id}', [SliderImageController::class, 'destroy']);
+});

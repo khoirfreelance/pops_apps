@@ -18,6 +18,8 @@ import Chart from '@/views/admin/Chart.vue'
 import Log from '@/views/admin/Log.vue'
 import Detail from '@/views/admin/Detail.vue'
 import Import from '@/views/admin/Import.vue'
+import Homepage from '@/views/Homepage.vue'
+import SliderPage from '@/views/admin/SliderPage.vue'
 
 const routes = [
   {
@@ -120,6 +122,16 @@ const routes = [
     name: 'profile',
     component: Profile,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/homepage',
+    name: 'Homepage',
+    component: Homepage
+  },
+  {
+    path: '/admin/slider',
+    name: 'AdminSlider',
+    component: SliderPage,
   },
 ]
 
