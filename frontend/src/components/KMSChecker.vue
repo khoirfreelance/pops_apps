@@ -1,93 +1,186 @@
 <template>
-  <div class="container py-4">
+  <div class="kalkulator-card">
+    <div class="kalkulator-card-title">
+      Input Data Anak
+    </div>
+    <div class="kalkulator-card-desc">
+      Masukkan data untuk menghitung status gizi
+    </div>
     <!-- Form Input -->
-    <form @submit.prevent="onHitung" class="row g-3 mb-4">
-      <div class="col-md-6">
-        <label class="form-label">Tanggal Lahir</label>
-        <input type="date" v-model="birthDate" class="form-control" required />
+    <form @submit.prevent="onHitung" class="kalkulator-card">
+
+     <!-- GENDER -->
+      <div class="mt-4">
+        <div class="form-label text-white mb-2 kalkulator-label">
+          Jenis Kelamin
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <div
+              class="gender-card"
+              :class="{ active: gender === 'male' }"
+              @click="gender = 'male'"
+            >
+              <div class="gender-inner male">
+                <img src="/icons/boy.png" alt="Laki-laki" />
+              </div>
+              <span>Laki-laki</span>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div
+              class="gender-card"
+              :class="{ active: gender === 'female' }"
+              @click="gender = 'female'"
+            >
+              <div class="gender-inner female">
+                <img src="/icons/girl.png" alt="Perempuan" />
+              </div>
+              <span>Perempuan</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="col-md-6">
-        <label class="form-label">Jenis Kelamin</label>
-        <select v-model="gender" class="form-select" required>
-          <option value="">Pilih...</option>
-          <option value="male">Laki-laki</option>
-          <option value="female">Perempuan</option>
-        </select>
+      <!-- TANGGAL LAHIR -->
+      <div class="mt-3">
+        <label class="form-label text-white">Tanggal Lahir</label>
+        <input
+          type="date"
+          v-model="birthDate"
+          class="form-control kalkulator-input"
+          required
+        />
       </div>
 
-      <div class="col-md-6">
-        <label class="form-label">BB Saat Ini (kg)</label>
+      <!-- BB -->
+      <div class="mt-3">
+        <label class="form-label text-white">Berat Badan Saat Ini (kg)</label>
         <input
           type="number"
           step="0.01"
           v-model.number="currentWeight"
-          class="form-control"
+          class="form-control kalkulator-input"
+          placeholder="Contoh: 12.5"
           required
         />
       </div>
 
-      <div class="col-md-6">
-        <label class="form-label">TB Saat Ini (cm)</label>
+      <!-- TB -->
+      <div class="mt-3">
+        <label class="form-label text-white">Tinggi Badan Saat Ini (cm)</label>
         <input
           type="number"
           step="0.01"
           v-model.number="currentHeight"
-          class="form-control"
+          class="form-control kalkulator-input"
+          placeholder="Contoh: 86"
           required
         />
       </div>
 
-      <div class="col-12 text-center">
-        <button type="submit" class="btn btn-primary px-4 mt-2">Hitung</button>
-      </div>
+      <!-- BUTTON -->
+      <button type="submit" class="btn kalkulator-btn mt-4 w-100">
+        <i class="fa-solid fa-magnifying-glass"></i> | Hitung
+      </button>
+
     </form>
+
     <!-- Ringkasan -->
-    <div v-if="calculated" class="mt-3">
-      <div class="row g-3 text-center mt-3 mb-3 alert alert-info">
-        <div class="col-md-6">
-          <div class="small text-muted">Usia</div>
-          <div class="fs-5 fw-semibold">{{ ageMonths }} bln</div>
-        </div>
-        <div class="col-md-6">
-          <div class="small text-muted">BB Ideal (Median WHO)</div>
-          <div class="fs-5 fw-semibold">{{ idealWeight.toFixed(1) }} kg</div>
-        </div>
-        <div class="col-md-6">
-          <div class="small text-muted">Status Gizi (BB/U)</div>
-          <span class="badge px-3 py-2" :class="statusWfaBadge">{{ statusWfa }}</span>
-        </div>
-        <div class="col-md-6">
-          <div class="small text-muted">Status TB/U</div>
-          <span class="badge px-3 py-2" :class="statusHfaBadge">{{ statusHfa }}</span>
-        </div>
-      </div>
+    <div
+      class="modal fade"
+      :class="{ show: showResultModal }"
+      style="display: block;"
+      tabindex="-1"
+      v-if="showResultModal"
+    >
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable
+              d-flex align-items-center justify-content-center"
+      >
+        <div class="modal-content text-center">
 
-      <!-- Chart BB/U -->
-      <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-          <h6 class="mb-2">BB/U (0–60 bln)</h6>
-          <div style="height: 500px">
-            <canvas ref="chartBB"></canvas>
-          </div>
-          <!-- <div class="small text-muted mt-2">
-            Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
-          </div> -->
-        </div>
-      </div>
+          <!-- HEADER -->
+          <div class="modal-header justify-content-center position-relative">
+            <h3 class="modal-title w-100 text-center">
+              Hasil Perhitungan Status Gizi
+            </h3>
 
-      <!-- Chart TB/U -->
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <h6 class="mb-2">TB/U (0–60 bln)</h6>
-          <div style="height: 500px">
-            <canvas ref="chartTB"></canvas>
+            <!-- close button tetap kanan atas -->
+            <button
+              type="button"
+              class="btn-close position-absolute end-0 me-3"
+              @click="showResultModal = false"
+            ></button>
           </div>
-          <!-- <div class="small text-muted mt-2">
-            Catatan: kurva via interpolasi linear antar titik acuan WHO untuk demo.
-          </div> -->
+
+          <!-- BODY -->
+          <div class="modal-body text-center">
+
+            <!-- RINGKASAN -->
+            <div class="row g-3 justify-content-center text-center alert alert-info mb-4">
+              <div class="col-md-3">
+                <div class="small text-muted">Usia</div>
+                <div class="fs-5 fw-semibold">{{ ageMonths }} bln</div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="small text-muted">BB Ideal (Median WHO)</div>
+                <div class="fs-5 fw-semibold">
+                  {{ idealWeight.toFixed(1) }} kg
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="small text-muted">Status BB/U</div>
+                <span class="badge px-3 py-2" :class="statusWfaBadge">
+                  {{ statusWfa }}
+                </span>
+              </div>
+
+              <div class="col-md-3">
+                <div class="small text-muted">Status TB/U</div>
+                <span class="badge px-3 py-2" :class="statusHfaBadge">
+                  {{ statusHfa }}
+                </span>
+              </div>
+            </div>
+
+            <!-- CHART BB/U -->
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <h6 class="mb-3">BB/U (0–60 bulan)</h6>
+                <div style="height: 400px">
+                  <canvas ref="chartBB"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- CHART TB/U -->
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <h6 class="mb-3">TB/U (0–60 bulan)</h6>
+                <div style="height: 400px">
+                  <canvas ref="chartTB"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- FOOTER -->
+          <div class="modal-footer justify-content-center">
+            <button class="btn btn-secondary" @click="showResultModal = false">
+              Tutup
+            </button>
+          </div>
         </div>
       </div>
+      <!-- OVERLAY -->
+      <!-- <div class="kms-overlay" @click="showResultModal = false"></div> -->
+
     </div>
   </div>
 </template>
@@ -124,6 +217,7 @@ export default {
   name: 'Kms',
   data() {
     return {
+      showResultModal: false,
       birthDate: '',
       gender: '',
       currentWeight: null,
@@ -246,31 +340,35 @@ export default {
     },
   },
   methods: {
-    onHitung() {
+    closeModal() {
+      this.showResultModal = false
+    },
+    async onHitung() {
       if (!this.birthDate || !this.gender || !this.currentWeight || !this.currentHeight) return
+
       this.ageMonths = this.calcAgeMonths(this.birthDate, new Date())
 
-      // Pilih kurva
       const wfa = this.gender === 'female' ? this.wfaGirls : this.wfaBoys
       const hfa = this.gender === 'female' ? this.hfaGirls : this.hfaBoys
 
-      // Hitung ideal & z-score WFA
+      // === WFA
       this.idealWeight = this.interpolateMedian(wfa, this.ageMonths)
       const sdW = this.interpolateSD(wfa, this.ageMonths)
       const zW = (this.currentWeight - this.idealWeight) / sdW
       this.statusWfa = this.classifyWFA(zW)
 
-      // Hitung z-score HFA
+      // === HFA
       const medianH = this.interpolateMedian(hfa, this.ageMonths)
       const sdH = this.interpolateSD(hfa, this.ageMonths)
       const zH = (this.currentHeight - medianH) / sdH
       this.statusHfa = this.classifyHFA(zH)
 
       this.calculated = true
-      nextTick(() => {
-        this.renderBB(wfa)
-        this.renderTB(hfa)
-      })
+      this.showResultModal = true   // 🔥 buka modal
+
+      await nextTick()              // 🔥 tunggu modal render
+      this.renderBB(wfa)
+      this.renderTB(hfa)
     },
 
     // ====== Chart: BB/U ======
@@ -504,7 +602,7 @@ export default {
   responsive: true,
   plugins: {
     legend: { position: 'top' },
-    title: { display: true, text: 'BB/U: Berat Badan vs Umur (0–60 bln)' },
+    title: { display: true, text: 'TB/U: Tinggi Badan vs Umur (0–60 bln)' },
     tooltip: {
       enabled: true, // tetap tampil saat hover
       callbacks: {
@@ -599,4 +697,151 @@ export default {
 .card h6 {
   font-weight: 600;
 }
+/* OVERLAY */
+.kms-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1049; /* ⬅️ PENTING */
+  animation: fadeIn 0.25s ease;
+}
+
+/* MODAL */
+.modal {
+  position: fixed; /* ⬅️ PENTING */
+  inset: 0;
+  z-index: 1050;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+.kalkulator-card-title {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.kalkulator-label {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 0.75rem;
+}
+
+.kalkulator-card-desc {
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 1.5rem;
+}
+
+
+/* GENDER CARD */
+/* ===== KOTAK LUAR (DEFAULT) ===== */
+.gender-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid #e5e7eb;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+/* ===== LABEL ===== */
+.gender-card span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* ===== KOTAK DALAM (ICON AREA) ===== */
+.gender-inner {
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gender-inner.male {
+  background: #7fae95;
+}
+
+.gender-inner.female {
+  background: #bfc4c6;
+}
+
+.gender-inner img {
+  width: 42px;
+  height: 42px;
+}
+
+/* ===== ACTIVE / TERPILIH ===== */
+.gender-card.active {
+  border-color: #2f6f63;
+  background: #f0f8f5;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+/* label berubah */
+.gender-card.active span {
+  color: #1f5f46;
+}
+
+/* icon lebih kontras */
+.gender-card.active .gender-inner {
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.6);
+}
+
+/* ===== CHECK ICON (opsional tapi cakep) ===== */
+.gender-card.active::after {
+  content: "✓";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #2f6f63;
+  color: #ffffff;
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+/* INPUT */
+.kalkulator-input {
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* BUTTON */
+.kalkulator-btn {
+  background: #cfe8da;
+  color: #1f5f46;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px;
+  border: none;
+}
+
+.kalkulator-btn:hover {
+  background: #70b890;
+}
+
 </style>

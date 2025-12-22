@@ -74,21 +74,7 @@
           <span v-if="!isCollapsed"> Kelola</span>
         </router-link>
       </li>
-      <!-- <li
-        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
-        data-bs-placement="right"
-        title="Intervensi"
-        ref="tooltipItem"
-      >
-        <router-link
-          to="/admin/jadwal"
-          class="nav-link"
-          :class="{ active: isActive('/admin/jadwal') }"
-        >
-          <i class="bi bi-calendar-check"></i>
-          <span v-if="!isCollapsed">Intervensi</span>
-        </router-link>
-      </li> -->
+
       <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"
@@ -132,6 +118,37 @@
       </li>
       <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li class="menu-section mt-4" v-if="!isCollapsed">Administrator</li>
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Slider"
+        ref="tooltipItem"
+      >
+        <router-link
+          to="/admin/slider"
+          class="nav-link"
+          :class="{ active: isActive('/admin/slider') }"
+        >
+          <i class="bi bi-images"></i>
+          <span v-if="!isCollapsed">Slider</span>
+        </router-link>
+      </li>
+
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Footer"
+        ref="tooltipItem"
+      >
+        <router-link
+          to="/admin/footer"
+          class="nav-link"
+          :class="{ active: isActive('/admin/footer') }"
+        >
+          <i class="bi bi-layout-text-window-reverse"></i>
+          <span v-if="!isCollapsed">Footer</span>
+        </router-link>
+      </li>
       <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"

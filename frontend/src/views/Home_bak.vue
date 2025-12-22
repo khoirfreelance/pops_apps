@@ -7,51 +7,41 @@
     <!-- Section Cover -->
     <section id="section0" class="hero-section position-relative text-white">
       <!-- Hero Content -->
-      <div class="hero-content d-flex flex-column align-items-center justify-content-center text-center py-5">
-        <h5 class="fw-semibold text-dark">Selamat Datang di</h5>
-        <h1 class="fw-bold display-4 text-primary">
+      <div class="hero-content d-flex flex-column align-items-center justify-content-center text-center ms-auto col-md-6 col-12">
+        <h5 class="fw-regular text-dark" style="font-size: 24px !important;">Selamat Datang di</h5>
+        <h1 class="fw-bold display-4 text-primary text-shadow">
           Pusat Operasi Penurunan Stunting (POPS)
         </h1>
-        <!-- <h3 class="fw-bold text-primary">Kabupaten Brebes ▼</h3> -->
       </div>
+    </section>
 
-      <!-- Hero Image -->
-      <div class="hero-image text-start top-0">
-        <img src="/src/assets/anak.png" alt="Anak" class="img-fluid hero-anak">
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-wrapper container position-relative z-2 mt-3">
-        <div class="stats-grid">
-          <div
-            v-for="item in stats"
-            :key="item.title"
-            class="card stat-card h-100 py-2 position-relative shadow"
-          >
-            <div class="card-body p-2 d-flex flex-column justify-content-between">
-              <h3 class="fw-bold text-success position-absolute top-0 end-0 m-2">
-                {{ item.value }}
-              </h3>
-              <div class="d-flex align-items-center justify-content-between mt-auto pt-4">
-                <h6 class="mb-0 text-primary fw-semibold">{{ item.title }}</h6>
-                <div class="icon-wrapper text-muted mt-2">
-                  <i :class="item.icon + ' fs-5'"></i>
-                </div>
+    <!-- Statistic Cards -->
+    <section id="section0_1" class="container-fluid mt-2">
+      <div class="row justify-content-center g-2">
+        <div v-for="(stat, index) in stats" :key="index"
+          class="col-xl-1_9 col-lg-2 col-md-1 col-sm-3 col-6">
+          <div class="stat-card shadow rounded h-100">
+            <h6 class="text-muted pt-2 ps-2" style="font-size: 14px;">{{ stat.title }}</h6>
+            <div class="card-body d-flex align-items-center justify-content-between px-2">
+              <!-- Text -->
+              <h4 class="fw-bold mb-0">{{ stat.value }}</h4>
+              <!-- Icon -->
+              <div class="icon-wrap d-flex align-items-center justify-content-center mb-1">
+                <i :class="[stat.icon]"></i>
               </div>
             </div>
           </div>
         </div>
       </div>
-
     </section>
 
     <!-- Section Gizi -->
-    <section class="py-5" id="section2" style="background-image: url('/src/assets/pattern_bg.png');background-position: center;background-size: contain;">
-      <div class="container">
-        <ul class="nav nav-pills justify-content-center mb-4" id="chartTabs" role="tablist">
+    <section class="py-3" id="section2">
+      <div class="container-fluid mt-5">
+        <ul class="nav nav-pills justify-content-center" id="chartTabs" role="tablist">
           <li class="nav-item me-2">
             <button
-              class="nav-link active"
+              class="nav-link active col-12"
               id="gizi-tab"
               data-bs-toggle="pill"
               data-bs-target="#gizi"
@@ -63,34 +53,28 @@
           </li>
           <li class="nav-item">
             <button
-              class="nav-link"
+              class="nav-link col-12"
               id="hamil-tab"
               data-bs-toggle="pill"
               data-bs-target="#hamil"
               type="button"
               role="tab"
             >
-              Ibu Hamil
+              Kesehatan Ibu Hamil
             </button>
           </li>
         </ul>
         <div class="tab-content">
+          <!-- Anak -->
           <div class="tab-pane fade show active" id="gizi" role="tabpanel">
-            <!-- Alert -->
-            <!-- <div class="alert alert-info">
-              <i></i>
-              Total Data <strong>Gizi Anak</strong> Per Bulan {{ currentMonthYear }}:
-              <strong>{{ totalData }}</strong>
-            </div> -->
-
-            <div class="mt-5">
-              <h5 class="mb-0 fw-bold">Status Gizi Anak</h5>
-              <h1 class="text-primary fw-bold">Berdasarkan Kategori Usia</h1>
+            <div class="">
+              <h2 class="mb-0">Status Gizi Anak</h2>
+              <h5 class="text-primary">Berdasarkan Usia</h5>
             </div>
 
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-end mb-2">
               <!-- Nav Pills -->
-              <ul class="nav nav-pills mb-2 mb-md-0" id="pills-tab" role="tablist">
+              <ul class="nav nav-pills-custom mb-2 mb-md-0" id="pills-tab" role="tablist">
                 <li class="nav-item" role="presentation">
                   <button
                     class="nav-link active"
@@ -128,35 +112,14 @@
                   </button>
                 </li>
               </ul>
-
-              <!-- Filter Form -->
-              <form class="d-flex align-items-center gap-2" @submit.prevent="applyFilter">
-                <select v-model="selectedMonth" class="form-select">
-                  <option v-for="(m, idx) in months" :key="idx" :value="idx + 1">
-                    {{ m }}
-                  </option>
-                </select>
-
-                <select v-model="selectedYear" class="form-select">
-                  <option v-for="y in yearOptions" :key="y" :value="y">
-                    {{ y }}
-                  </option>
-                </select>
-
-                <button type="submit" class="btn btn-gradient px-5">
-                  Cari
-                </button>
-              </form>
             </div>
 
             <!-- content -->
-            <div class="p-4 rounded shadow-sm text-center">
-
+            <div class="p-4 bg-light rounded shadow-sm text-center">
               <!-- Tabs Content -->
               <div class="tab-content" id="pills-tabContent">
                 <!-- BB/U -->
                 <div class="tab-pane fade show active" id="pills-bb-usia" role="tabpanel">
-                  <h5>Berat Badan / Usia</h5>
                   <div class="bg-light chart-container">
                     <canvas id="chart-bb-usia"></canvas>
                   </div>
@@ -180,83 +143,8 @@
               </div>
             </div>
 
-            <div class="mt-5">
-              <h5 class="mb-0 fw-bold">Status Gizi Anak</h5>
-              <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
-            </div>
-
-            <!-- content 2 -->
-            <div class="p-4 rounded shadow-sm text-center">
-              <!-- Nav Pills -->
-              <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link active"
-                    id="pills-bb-usia-tab-12"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-bb-usia-12"
-                    type="button"
-                    role="tab"
-                  >
-                    Berat Badan / Usia
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    id="pills-tb-usia-tab-12"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-tb-usia-12"
-                    type="button"
-                    role="tab"
-                  >
-                    Tinggi Badan / Usia
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    id="pills-bb-tb-tab-12"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-bb-tb-12"
-                    type="button"
-                    role="tab"
-                  >
-                    Berat Badan / Tinggi Badan
-                  </button>
-                </li>
-              </ul>
-
-              <!-- Tabs Content -->
-              <div class="tab-content" id="pills-tabContent">
-                <!-- BB/U -->
-                <div class="tab-pane fade show active" id="pills-bb-usia-12" role="tabpanel">
-                  <h5>Berat Badan / Usia</h5>
-                  <div class="bg-light chart-container">
-                    <canvas id="chart-bb-usia-12"></canvas>
-                  </div>
-                </div>
-
-                <!-- TB/U -->
-                <div class="tab-pane fade" id="pills-tb-usia-12" role="tabpanel">
-                  <h5>Tinggi Badan / Usia</h5>
-                  <div class="bg-light chart-container">
-                    <canvas id="chart-tb-usia-12"></canvas>
-                  </div>
-                </div>
-
-                <!-- BB/TB -->
-                <div class="tab-pane fade" id="pills-bb-tb-12" role="tabpanel">
-                  <h5>Berat Badan / Tinggi Badan</h5>
-                  <div class="bg-light chart-container">
-                    <canvas id="chart-bb-tb-12"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- content 3 -->
-            <div class="mt-5">
+            <!-- <div class="mt-5">
               <h5 class="mb-0 fw-bold">Indikator Utama (Persentase)</h5>
               <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
             </div>
@@ -265,90 +153,30 @@
               <div class="bg-light chart-container">
                 <canvas id="chart-bb-tb-indikator"></canvas>
               </div>
-            </div>
+            </div> -->
           </div>
-          <div class="tab-pane fade" id="hamil" role="tabpanel">
-            <div class="p-4">
-              <!-- Alert -->
-              <div class="alert alert-info">
-                <i></i>
-                Total Data <strong>Kesehatan Ibu Hamil</strong> Per Bulan {{ currentMonthYear }}:
-                <strong>0</strong>
-              </div>
 
-              <!-- Filter Form Content 1 -->
-              <div class="my-3">
-                <div class="card border-0 shadow-sm p-3">
-                  <h5 class="mb-3">Filter Data</h5>
-                  <form class="row g-3 align-items-center">
-                    <div class="col-auto">
-                      <select name="month" id="month" class="form-select">
-                        <option value="1">Januari</option>
-                        <option value="2">Februari</option>
-                        <option value="3">Maret</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <select name="year" id="year" class="form-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search me-1"></i> Cari
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
+          <!-- Ibu Hamil -->
+          <div class="tab-pane fade" id="hamil" role="tabpanel">
+            <div class="">
+              <!-- Alert -->
+              <!-- <div class="alert alert-info">
+                <p class="fs-4 mb-0">
+                  <i class="fa fa-info-circle"></i>
+                  Total Data <strong>Kesehatan Ibu Hamil</strong> Per Bulan {{ currentMonthYear }}:
+                  <strong>{{countBumil}}</strong>
+                </p>
+              </div> -->
 
               <!-- Content 1 -->
-              <div class="mt-5">
-                <h5 class="mb-0 fw-bold">Kesehatan Ibu Hamil</h5>
-                <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
+              <div class="">
+                <h2 class="mb-0">Data Kesehatan Ibu Hamil</h2>
+                <h5 class="text-primary">Dalam 12 Bulan Terakhir</h5>
               </div>
 
-              <div class="p-4 rounded shadow-sm text-center">
-                <div class="bg-light chart-container">
+              <div class="p-4 bg-light rounded shadow-sm text-center">
+                <div class="bg-light table-responsive">
                   <canvas id="chart-bumil"></canvas>
-                </div>
-              </div>
-              <!-- Filter Form Content 2 -->
-              <div class="my-3">
-                <div class="card border-0 shadow-sm p-3">
-                  <h5 class="mb-3">Filter Data</h5>
-                  <form class="row g-3 align-items-center">
-                    <div class="col-auto">
-                      <select name="month" id="month" class="form-select">
-                        <option value="1">Januari</option>
-                        <option value="2">Februari</option>
-                        <option value="3">Maret</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <select name="year" id="year" class="form-select">
-                        <option value="2020">2020</option>
-                        <option value="2021">2021</option>
-                      </select>
-                    </div>
-                    <div class="col-auto">
-                      <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search me-1"></i> Cari
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-
-              <!-- Content 2 -->
-              <div class="mt-5">
-                <h5 class="mb-0 fw-bold">Indikator Utama (persentase)</h5>
-                <h1 class="text-primary fw-bold">Dalam 12 Bulan Terakhir</h1>
-              </div>
-              <div class="p-4 rounded shadow-sm text-center">
-                <div class="bg-light chart-container">
-                  <canvas id="chart-bumil-indikator"></canvas>
                 </div>
               </div>
             </div>
@@ -358,86 +186,70 @@
     </section>
 
     <!-- Section About POPS -->
-    <section
-      class="py-5 position-relative overflow-hidden"
-      id="section1"
-      style="background: linear-gradient(135deg, #6fa287 0%, #a2aaad 100%)"
-    >
-      <div class="container py-5">
-        <!-- Heading -->
-        <div class="text-center mb-5 text-white">
-          <h2 class="fw-bold display-5 mb-3 animate-fade-in">Tentang POPS</h2>
-          <div
-            class="mx-auto mb-3"
-            style="width: 90px; height: 4px; background: #fff; border-radius: 3px"
-          ></div>
-        </div>
+    <section class="about-pops-section mb-3" id="section1">
+      <div class="blur-bg"></div>
+      <h2 class="text-center display-5 mb-4">Tentang POPS</h2>
+      <div class="container">
+        <div class="about-card shadow-lg">
+          <!-- Description -->
+           <img src="\src\assets\tf_box.png" alt="" class="mb-2" style="max-width: 100px;">
+          <div class="about-body">
 
-        <!-- Split Layout -->
-        <div class="row align-items-center mb-5 text-white">
-            <p class="lh-lg" style="text-align: justify">
+            <p class="lh-lg text-justify">
               <strong>Tanoto Foundation</strong> bersama <strong>BKKBN</strong> dan pemerintah daerah bekerja sama dalam mengembangkan program percepatan penurunan stunting di empat kabupaten/kota di Provinsi Jawa Barat, Kabupaten Bogor. Strategi pengembangan program tidak saja fokus kepada dukungan teknis konvergensi dan koordinasi dalam penyusunan kebijakan strategi percepatan penurunan stunting, namun juga mewujudkan layanan pencegahan stunting yang lebih berkualitas di tingkat masyarakat.
             </p>
-            <p class="lh-lg" style="text-align: justify">
-              Agar program pendampingan percepatan penurunan stunting tersebut dilakukan secara tepat sasaran sesuai dengan ketersediaan sumber daya hingga di tingkat desa, Tanoto Foundation berupaya menginisiasi pengelolaan program stunting berbasis data penerima sasaran di tingkat desa melalui program POPS (Pusat Operasi Penurunan Stunting). Inisiatif ini akan diujicobakan (pilot) di Desa Kluwut, Kabupaten Brebes. Dalam mempersiapkan program tersebut, beberapa tahapan akan dilakukan diantaranya ; Pertemuan assesmen kebutuhan (needs assessment) untuk menggali kebutuhan dan situasi di desa secara komprehensif sehingga kerangka program POPS yang dikembangkan tepat untuk membantu TPPS desa melakukan pengambilan keputusan intervensi stunting yang efektif, Menyepakati alur proses pengumpulan data dan informasi yang dibutuhkan, dan pengembangan website – applikasi POPS sebagai media yang akan ditampilkan dalam penyajian data.
+
+            <p class="lh-lg text-justify">
+              Agar program pendampingan percepatan penurunan stunting tersebut dilakukan secara tepat sasaran sesuai dengan ketersediaan sumber daya hingga di tingkat desa, Tanoto Foundation berupaya menginisiasi pengelolaan program stunting berbasis data penerima sasaran di tingkat desa melalui program POPS (Pusat Operasi Penurunan Stunting). Inisiatif ini akan diujicobakan (pilot) di Desa Kluwut, Kabupaten Brebes. Dalam mempersiapkan program tersebut, beberapa tahapan akan dilakukan diantaranya ; Pertemuan assesmen kebutuhan (needs assessment) untuk menggali kebutuhan dan situasi di desa secara komprehensif sehingga kerangka program POPS yang dikembangkan tepat untuk membantu TPPS desa melakukan pengambilan keputusan intervensi stunting yang efektif, Menyepakati alur proses pengumpulan data dan informasi yang dibutuhkan, dan pengembangan website - applikasi POPS sebagai media yang akan ditampilkan dalam penyajian data.
             </p>
-            <p class="lh-lg" style="text-align: justify">
+
+            <p class="lh-lg text-justify">
               Dalam pelaksanaan Program POPS ini, Tanoto Foundation bekerjasama dengan Yayasan Satu Karsa Karya (YSKK) sebagai mitra implementasi di Lapangan, dan juga mengajak Pemerintah dan Kader Desa Kluwut untuk membantu dalam penggalian/pengumpulan data dan informasi. Pelibatan Desa Kluwut sejak awal program POPS perlu dilakukan untuk memastikan adanya jaminan keberlanjutan Program POPS ini. Terkait dengan hal tersebut untuk mempermudah memahami alur porses program POPS berikut kami susun acuan program untuk bisa dibaca dan dipahami oleh para pihak yang akan terlibat dalam implementasi program ini.
             </p>
-        </div>
 
-        <!-- Goals Section -->
-        <div class="text-center pt-5 border-top border-light">
-          <h2 class="fw-bold text-white mb-3">Tujuan Pelaksanaan POPS</h2>
-          <p class="text-light">Dua fokus utama yang ingin dicapai:</p>
-        </div>
+          </div>
 
-        <!-- Cards -->
-        <div class="row mt-4">
-          <div class="col-md-6 mb-4">
-            <div class="card h-100 border-0 shadow-lg text-dark hover-card">
-              <div class="card-body p-4">
-                <div class="d-flex">
-                  <div
-                    class="rounded-circle bg-gradient-primary d-flex align-items-center justify-content-center me-3 flex-shrink-0"
-                    style="width: 60px; height: 60px"
-                  >
-                    <i class="bi bi-database-fill text-white fs-3"></i>
-                  </div>
-                  <p class="lh-lg mb-0" style="text-align: justify">
-                    Mengkoordinasikan data dan informasi program stunting di Desa Kluwut agar selalu
-                    update dan mudah diakses, melalui website berbasis data.
+          <!-- Goals Section -->
+          <div class="text-center mt-5 pt-4 border-top">
+            <h3 class="fw-bold">Tujuan Pelaksanaan POPS</h3>
+            <p class="text-muted mb-3">Dua fokus utama yang ingin dicapai:</p>
+          </div>
+
+          <div class="row mt-4">
+
+            <!-- Card 1 -->
+            <div class="col-md-6 mb-4">
+              <div class="mini-card shadow-sm">
+                <div class="d-flex align-items-center">
+                  <img src="/report.png" alt="">
+                  <p class="lh-lg mb-0 ms-3">
+                    Mengkoordinasikan data dan informasi sasaran program stunting yang ada didesa Kluwut agar selalu update dan mudah diakses banyak pihak, melalui pengembangan website berbasis data.
                   </p>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="col-md-6 mb-4">
-            <div class="card h-100 border-0 shadow-lg text-dark hover-card">
-              <div class="card-body p-4">
-                <div class="d-flex">
-                  <div
-                    class="rounded-circle bg-gradient-success d-flex align-items-center justify-content-center me-3 flex-shrink-0"
-                    style="width: 60px; height: 60px"
-                  >
-                    <i class="bi bi-bar-chart-line-fill text-white fs-3"></i>
-                  </div>
-                  <p class="lh-lg mb-0" style="text-align: justify">
-                    Mengembangkan <strong>Dashboard (website)</strong> berbasis data di Desa Kluwut
-                    untuk mendukung pengambilan keputusan intervensi stunting.
+            <!-- Card 2 -->
+            <div class="col-md-6 mb-4">
+              <div class="mini-card shadow-sm">
+                <div class="d-flex align-items-center">
+                  <img src="/chart.png" alt="" style="width: 100px;">
+                  <p class="lh-lg mb-0 ms-3">
+                    Mengembangkan Dashboard (website) berbasis data di Desa Kluwut
                   </p>
                 </div>
               </div>
             </div>
+
           </div>
+
         </div>
       </div>
     </section>
 
     <!-- Section KMS -->
-    <section id="section3" class="py-5 bg-light position-relative">
-      <div class="container px-4">
+    <section id="section3" class="py-5 bg-light">
+      <div class="container px-4 mt-3">
         <h2 class="text-center mb-2 fw-bold text-primary">Kalkulator Mandiri</h2>
         <p class="text-center text-muted mb-4">Pantau pertumbuhan anak dengan mudah dan cepat</p>
         <hr class="my-3 w-50 mx-auto" />
@@ -461,13 +273,13 @@
           aria-labelledby="kmsModalLabel"
           aria-hidden="true"
         >
-          <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow-lg">
               <div class="modal-header bg-primary text-white rounded-top-4">
-                <h5 class="modal-title fw-bold" id="kmsModalLabel">
-                  <small class="fw-normal"> Untuk Anak Usia 0 - 5 Tahun </small><br>
-                  Cek Indeks Berat dan Tinggi Badan Menurut Umur
-                </h5>
+                <h3 class="modal-title" id="kmsModalLabel">
+                  <small class="fw-normal text-secondary"> Untuk Anak Usia 0 - 5 Tahun </small><br>
+                  Cek indeks berat dan tinggi badan menurut umur
+                </h3>
                 <button
                   type="button"
                   class="btn-close btn-close-white"
@@ -535,6 +347,7 @@
     <FooterUser />
   </div>
 </template>
+
 <script>
 import NavbarUser from '../components/NavbarUser.vue'
 import FooterUser from '../components/FooterUser.vue'
@@ -549,13 +362,21 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-
+import axios from 'axios'
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+// PORT backend kamu
+const API_PORT = 8000
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
 export default {
   name: 'StatusGiziTabs',
   data() {
     return {
+      countBumil: '',
       months: [
         'Januari',
         'Februari',
@@ -587,138 +408,92 @@ export default {
       ],
     }
   },
-  mounted() {
-    const umurGroups = [
-      '0-5',
-      '6-11',
-      '12-17',
-      '18-23',
-      '24-29',
-      '30-35',
-      '36-41',
-      '42-47',
-      '48-60',
-    ]
+  async mounted() {
+    await this.fetchStats()
+    await this.loadBumil()
+    await this.loadAnak()
+    await this.Indikator()
+    // BB/U-12
 
-    const indi = ['-10', '0', '20', '30', '40', '50']
-    const bulan = this.getLastMonths(12)
-
-    //chart-bumil
-    this.createChart('chart-bumil', bulan, {
-      KEK: { data: [4, 4, 7, 4, 1, 0, 0, 5, 0, 3, 6, 2], color: '#8B4513' }, // contoh 12 data
-      Anemia: { data: [3, 7, 9, 7, 1, 0, 0, 13, 0, 2, 1, 4], color: '#FFD700' },
-      'Risiko Tinggi': { data: [10, 18, 14, 10, 1, 0, 0, 11, 0, 5, 8, 6], color: '#006341' },
-    })
-
-    //chart-bumil
-    this.createChart('chart-bumil-indikator', bulan, {
-      KEK: { data: [4, 4, 7, 4, 1, 0, 0, 5, 0, 3, 6, 2], color: '#8B4513' }, // contoh 12 data
-      Anemia: { data: [3, 7, 9, 7, 1, 0, 0, 13, 0, 2, 1, 4], color: '#FFD700' },
-      'Risiko Tinggi': { data: [10, 18, 14, 10, 1, 0, 0, 11, 0, 5, 8, 6], color: '#006341' },
-    })
+    /* const indi = ['-10', '0', '20', '30', '40', '50']
 
     //chart-bb-tb-indikator
     this.createChart('chart-bb-tb-indikator', indi, {
       'Balita Stunting': { data: [2, 3, 1, 4, 2, 1, 2, 1, 0], color: 'red' },
-      'Balita UNderweight': { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'yellow' },
+      'Balita Underweight': { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'yellow' },
       'Balita BBTN': { data: [5, 6, 8, 7, 6, 7, 6, 8, 7], color: 'green' },
       'Bumil KEK': { data: [1, 0, 1, 0, 1, 1, 0, 1, 2], color: 'blue' },
       'Bumil Anemia': { data: [1, 0, 1, 0, 1, 1, 0, 1, 8], color: 'purple' },
-      'Catin Beresiko': { data: [1, 0, 1, 0, 1, 1, 0, 1, 10], color: 'cyan' },
-    })
-
-    // BB/U
-    this.loadChart()
-
-    // TB/U
-    this.createChart('chart-tb-usia', umurGroups, {
-      'Sangat Pendek': { data: [1, 2, 1, 3, 1, 1, 1, 0, 1], color: 'red' },
-      Pendek: { data: [2, 3, 2, 2, 3, 2, 2, 1, 1], color: 'yellow' },
-      Normal: { data: [6, 7, 8, 7, 7, 8, 8, 9, 8], color: 'green' },
-      Tinggi: { data: [0, 0, 1, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
-
-    // BB/TB
-    this.createChart('chart-bb-tb', umurGroups, {
-      'Gizi Buruk': { data: [2, 1, 1, 2, 1, 0, 1, 0, 0], color: 'red' },
-      'Gizi Kurang': { data: [2, 3, 2, 2, 2, 2, 1, 2, 1], color: 'yellow' },
-      Normal: { data: [7, 6, 8, 7, 8, 8, 9, 8, 8], color: 'green' },
-      'Risiko Lebih': { data: [0, 1, 0, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
-
-    // BB/U-12
-    this.createChart('chart-bb-usia-12', umurGroups, {
-      'Sangat Kurang': { data: [2, 3, 1, 4, 2, 1, 2, 1, 0], color: 'red' },
-      Kurang: { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'yellow' },
-      Normal: { data: [5, 6, 8, 7, 6, 7, 6, 8, 7], color: 'green' },
-      'Risiko Lebih': { data: [1, 0, 1, 0, 1, 1, 0, 1, 2], color: 'blue' },
-    })
-
-    // TB/U-12
-    this.createChart('chart-tb-usia-12', umurGroups, {
-      'Sangat Pendek': { data: [1, 2, 1, 3, 1, 1, 1, 0, 1], color: 'red' },
-      Pendek: { data: [2, 3, 2, 2, 3, 2, 2, 1, 1], color: 'yellow' },
-      Normal: { data: [6, 7, 8, 7, 7, 8, 8, 9, 8], color: 'green' },
-      Tinggi: { data: [0, 0, 1, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
-
-    // BB/TB-12
-    this.createChart('chart-bb-tb-12', umurGroups, {
-      'Gizi Buruk': { data: [2, 1, 1, 2, 1, 0, 1, 0, 0], color: 'red' },
-      'Gizi Kurang': { data: [2, 3, 2, 2, 2, 2, 1, 2, 1], color: 'yellow' },
-      Normal: { data: [7, 6, 8, 7, 8, 8, 9, 8, 8], color: 'green' },
-      'Risiko Lebih': { data: [0, 1, 0, 0, 0, 1, 0, 1, 1], color: 'blue' },
-    })
+      'Bumil Beresiko': { data: [1, 0, 1, 0, 1, 1, 0, 1, 10], color: 'cyan' },
+    }) */
   },
   methods: {
-    applyFilter() {
-      this.loadChart() // reload chart sesuai filter
+    async fetchStats() {
+      try {
+        const res = await axios.get(`${baseURL}/api/dashboard/stats/`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const data = res.data
+        this.stats = [
+          { title: 'RW', value: data.rw, icon: 'bi bi-houses-fill' },
+          { title: 'RT', value: data.rt, icon: 'bi bi-house-fill' },
+          { title: 'Keluarga Terdaftar', value: data.keluarga, icon: 'fa-solid fa-people-roof' },
+          { title: 'TPK', value: data.tpk, icon: 'bi bi-person-vcard' },
+          { title: 'Ibu Hamil', value: data.ibu_hamil, icon: 'fa-solid fa-person-pregnant' },
+          { title: 'Posyandu', value: data.posyandu, icon: 'bi bi-heart-pulse' },
+          { title: 'Bidan', value: data.bidan, icon: 'fa-solid fa-stethoscope' },
+          { title: 'Calon Pengantin', value: data.catin, icon: 'bi bi-arrow-through-heart' },
+          { title: 'Anak <= 5 Tahun', value: data.anak, icon: 'fa-solid fa-baby' },
+        ]
+      } catch (e) {
+        console.error(e)
+      }
     },
-    loadChart() {
-      // Hapus chart lama biar gak numpuk
-      if (this.chartInstance) {
-        this.chartInstance.destroy()
+
+    // BUMIL
+    async loadBumil() {
+      try {
+        const res = await axios.get(`${baseURL}/api/home/pregnancy/`)
+        const data = res.data
+
+        this.countBumil= data.countBumil
+
+        //chart-bumil
+        this.createChart('chart-bumil', data.labels, data.indikator)
+
+      } catch (e) {
+        console.error(e)
       }
-      const umurGroup = [
-        '0-5',
-        '6-11',
-        '12-17',
-        '18-23',
-        '24-29',
-        '30-35',
-        '36-41',
-        '42-47',
-        '48-60',
-      ]
-
-      // Dummy data bisa diganti API sesuai bulan & tahun filter
-      const datasetsObj = {
-        'Sangat Kurang': { data: [2, 3, 1, 4, 2, 1, 2, 1, 0], color: 'red' },
-        Kurang: { data: [3, 4, 2, 3, 3, 2, 3, 2, 1], color: 'orange' },
-        Normal: { data: [5, 6, 8, 7, 6, 7, 6, 8, 7], color: 'green' },
-        'Risiko Lebih': { data: [1, 0, 1, 0, 1, 1, 0, 1, 2], color: 'blue' },
-      }
-
-      this.totalData = Object.values(datasetsObj)
-        .flatMap((d) => d.data)
-        .reduce((a, b) => a + b, 0)
-
-      this.createChart('chart-bb-usia', umurGroup, datasetsObj)
     },
-    getLastMonths(count = 12) {
-      const labels = []
-      const now = new Date()
 
-      for (let i = count - 1; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    // Anak
+    async loadAnak(){
+      try {
+        const res = await axios.get(`${baseURL}/api/home/children/`)
+        const data = res.data
+        console.log(data);
 
-        const bulan = d.toLocaleString('id-ID', { month: 'long' }) // nama bulan Indonesia
-        const tahun = d.getFullYear()
-
-        labels.push(`${bulan} ${tahun}`)
+        //chart-usia
+        this.createChart('chart-bb-usia', data.labels, data.bbu)
+        this.createChart('chart-tb-usia', data.labels, data.tbu)
+        this.createChart('chart-bb-tb', data.labels, data.bbtb)
+      } catch (e) {
+        console.error(e)
       }
+    },
 
-      return labels
+    async Indikator(){
+      try {
+        const res = await axios.get(`${baseURL}/api/home/indicator/`)
+        const data = res.data
+        // chart per bulan
+        this.createChart('chart-bb-usia-12', data.labels, data.bbu)
+        this.createChart('chart-tb-usia-12', data.labels, data.tbu)
+        this.createChart('chart-bb-tb-12', data.labels, data.bbtb)
+        console.log(data);
+      } catch (e) {
+        console.error(e)
+      }
     },
 
     createChart(canvasId, labels, datasetsObj) {
@@ -748,7 +523,7 @@ export default {
           },
           scales: {
             x: {
-              title: { display: true, text: 'Kelompok Umur (bulan)' },
+              title: { display: false},
             },
             y: {
               title: { display: true, text: 'Jumlah Individu' },
@@ -777,46 +552,350 @@ export default {
 </script>
 
 <style scoped>
-  .hero-image {
+   /* Hilangkan background default */
+  .nav-pills-custom .nav-link {
+    background: none !important;
+    color: #4A707A; /* Warna teks default */
+    border-radius: 0 !important;
+    padding-bottom: 6px;
     position: relative;
-    z-index: 2;
+    font-weight: 500;
   }
 
-  .hero-anak {
-    max-width: 220px;
-    margin-left: 2rem;
-    margin-top: -40px;
-    opacity: 0;
-    transform: translateY(20px); /* efek naik dikit */
-    animation: fadeInUp 1s ease-out forwards;
+  /* Warna teks aktif */
+  .nav-pills-custom .nav-link.active {
+    color: #1E6F5C !important; /* hijau gelap seperti gambar */
+    background: none !important;
   }
-  /* Keyframes */
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
+
+  /* Underline untuk item aktif */
+  .nav-pills-custom .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    bottom: -1px;
+    background-color: #1E6F5C;
+    border-radius: 4px;
+  }
+
+  /* Jarak antar nav item biar mirip gambar */
+  .nav-pills-custom .nav-item {
+    margin-right: 20px;
+  }
+  /* other */
+  .about-pops-section {
+    position: relative;
+    padding: 60px 0;
+  }
+
+  .blur-bg {
+    position: absolute;
+    inset: 0;
+    height: 30%;
+    background-image: url('/banner_1520.png');
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px);
+    opacity: 0.6;
+    z-index: 1;
+  }
+
+  .about-card {
+    position: relative;
+    z-index: 2;
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+  }
+
+  .about-header .logo-tanoto {
+    width: 80px;
+    height: auto;
+  }
+
+  .text-justify {
+    text-align: justify;
+  }
+
+/* Mini cards seperti di gambar */
+.mini-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.icon-circle {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+  .stat-card {
+    background-color: #fff;
+    border-top: 4px solid var(--bs-secondary);
+    height: 90px;
+    /* proporsional */
+    transition: all 0.2s ease-in-out;
+    max-width: 150px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+
+    .icon-wrap {
+      background-color: var(--bs-secondary);
+      color: #fff;
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    h6 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      margin: 0;
+    }
+
+    h4 {
+      font-family: 'Inter', sans-serif;
+      color: #000;
+      font-size: 1.1rem;
+      margin: 0;
     }
   }
+
+  .stat-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    height: 60px;
+
+    .spacer {
+      flex: 1;
+    }
+  }
+
+  /* custom kolom 9 per baris */
+  @media (min-width: 1400px) {
+    .col-xl-1_9 {
+      flex: 0 0 auto;
+      width: 11.11%;
+    }
+  }
+
+  /* fallback grid untuk ukuran lain */
+  @media (min-width: 992px) and (max-width: 1399.98px) {
+    .col-lg-2_custom {
+      flex: 0 0 auto;
+      width: 11.11%;
+      /* 5 kolom */
+    }
+
+    .stat-card {
+      background-color: #fff;
+      border-top: 4px solid var(--bs-secondary);
+      height: 90px;
+      /* proporsional */
+      transition: all 0.2s ease-in-out;
+      max-width: 120px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .icon-wrap {
+        background-color: var(--bs-secondary);
+        color: #fff;
+        border-radius: 8px;
+        width: 25px !important;
+        height: 25px !important;
+        font-size: 12px !important;
+        flex-shrink: 0;
+      }
+
+      h6 {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px !important;
+        margin: 0;
+      }
+
+      h4 {
+        font-family: 'Inter', sans-serif;
+        color: #000;
+        font-size: 14px !important;
+        margin: 0;
+      }
+    }
+
+    .stat-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-start;
+      height: 60px;
+
+      .spacer {
+        flex: 1;
+      }
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 991.98px) {
+    .col-md-3 {
+      flex: 0 0 auto;
+      /* width: 11.11%; */
+    }
+
+    .stat-card {
+      background-color: #fff;
+      border-top: 4px solid var(--bs-secondary);
+      height: 90px;
+      /* proporsional */
+      transition: all 0.2s ease-in-out;
+      max-width: 80px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .icon-wrap {
+        background-color: var(--bs-secondary);
+        color: #fff;
+        border-radius: 8px;
+        width: 25px !important;
+        height: 25px !important;
+        font-size: 12px !important;
+        flex-shrink: 0;
+      }
+
+      h6 {
+        font-family: 'Inter', sans-serif;
+        font-size: 6px !important;
+        margin: 0;
+      }
+
+      h4 {
+        font-family: 'Inter', sans-serif;
+        color: #000;
+        font-size: 12px !important;
+        margin: 0;
+      }
+    }
+
+    .stat-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-start;
+      height: 60px;
+
+      .spacer {
+        flex: 1;
+      }
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .col-sm-4 {
+      flex: 0 0 auto;
+      /* width: 33.33%; */
+      /* 3 kolom */
+    }
+
+    .stat-card {
+      background-color: #fff;
+      border-top: 4px solid var(--bs-secondary);
+      height: 90px;
+      /* proporsional */
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .icon-wrap {
+        background-color: var(--bs-secondary);
+        color: #fff;
+        border-radius: 8px;
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+        flex-shrink: 0;
+      }
+
+      h6 {
+        font-family: 'Inter', sans-serif;
+        font-size: 7px !important;
+        margin: 0;
+      }
+
+      h4 {
+        font-family: 'Inter', sans-serif;
+        color: #000;
+        font-size: 12px !important;
+        margin: 0;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .sticky-filter {
+        position: sticky;
+        top: 70px;
+        z-index: 10;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .sticky-filter {
+        top: 100px;
+      }
+    }
+
+    .filter-floating-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+  }
+
   .hero-section {
-    min-height: 100vh;
+    margin-top: 40px;
+    min-height: 80vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     position: relative;
     width: 100%;
     overflow: hidden;
-    background: url('/banner.png') center/cover no-repeat;
+    background: url('/banner_1520.png') center/cover no-repeat;
   }
 
   /* Konten di atas overlay */
   .hero-content {
     margin-top: 100px;
-    position: relative;
-    z-index: 2;
+    /* position: relative;
+    z-index: 2; */
     opacity: 0;
     transform: translateY(20px); /* efek naik dikit */
     animation: fadeInDown 1s ease-out forwards;
@@ -852,12 +931,6 @@ export default {
     }
   }
 
-
-  .stats-wrapper {
-    bottom: 0; /* nempel bawah */
-    padding-bottom: 2rem; /* kasih jarak dikit biar ga terlalu mepet */
-  }
-
   /* bikin col-1-5 (1.5 kolom dari 12 grid = 12/8) */
   @media (min-width: 992px) {
     .col-lg-1-5 {
@@ -865,25 +938,13 @@ export default {
       width: 12.5%; /* 100% / 8 */
     }
   }
-
-  /* Stat card */
-  .stat-card {
-    border: 2px solid #198754;
-    border-radius: 0.75rem;
-    background: #fff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    font-size: 0.8rem;
+  #section2{
+    background-image: url('/pattern.png') !important;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding-top: 10%;
   }
 
-  .icon-wrapper {
-    width: 30px;
-    height: 30px;
-    background: rgba(25, 135, 84, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
   .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
@@ -942,7 +1003,7 @@ export default {
   .big-circle {
     width: 400px; /* Biar nggak kebesaran di HP */
     height: 400px;
-    background-image: url('/src/assets/cover2.png');
+    background-image: url('/banner1520.png');
     background-size: cover;
     background-position: center;
     border-radius: 50%;
