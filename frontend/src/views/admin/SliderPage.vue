@@ -215,8 +215,14 @@ export default {
 
     async loadImages() {
       try {
-        const res = await axios.get(`${baseURL}/api/slider-images`)
-        this.images = res.data.data || []
+        const res = await axios.get(`${baseURL}/api/slider-images`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        this.images = res.data?.data || []
       } catch (err) {
         console.error('Gagal load images:', err)
         this.images = []
@@ -224,17 +230,31 @@ export default {
     },
 
     async uploadImage() {
-      if (!this.selectedImage) return alert('Pilih image')
+      if (!this.selectedImage) {
+        alert('Pilih image terlebih dahulu')
+        return
+      }
 
-      const fd = new FormData()
-      fd.append('image', this.selectedImage)
+      try {
+        const fd = new FormData()
+        fd.append('image', this.selectedImage)
 
-      await axios.post(`${baseURL}/api/slider-images`, fd, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      })
+        await axios.post(`${baseURL}/api/slider-images`, fd, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        })
 
-      this.selectedImage = null
-      this.loadImages()
+        this.selectedImage = null
+        this.$refs.fileInput.value = null
+        await this.loadImages()
+
+        alert('Upload berhasil')
+      } catch (error) {
+        console.error('Upload gagal:', error)
+        alert('Upload gagal')
+      }
     },
 
     async deleteImage(id) {

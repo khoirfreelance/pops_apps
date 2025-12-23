@@ -10,22 +10,21 @@
 
     <HeaderAdmin />
 
-    <div class="content flex-grow-1 d-flex flex-column flex-md-row">
-      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
+    <div
+      class="content flex-grow-1 d-flex flex-column flex-md-row"
+      :class="{
+        'sidebar-collapsed': isCollapsed,
+        'sidebar-expanded': !isCollapsed,
+      }"
+    >
+      <!-- Sidebar -->
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div class="container-fluid py-4">
+        <div class="py-4 container-fluid">
 
-          <!-- HEADER -->
-          <div class="card welcome-card shadow-sm border-0 mb-4">
-            <div class="card-body d-flex justify-content-between">
-              <div>
-                <h2 class="fw-bold text-primary mb-0">Footer</h2>
-                <small class="text-muted">Kelola konten footer landing page</small>
-              </div>
-              <img src="/src/assets/admin.png" class="welcome-img">
-            </div>
-          </div>
+          <!-- Welcome Card -->
+          <Welcome />
 
           <!-- ======================
                FOOTER LOGO
@@ -162,12 +161,13 @@ import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
+import Welcome from '@/components/Welcome.vue'
 
 const baseURL = 'http://localhost:8000'
 
 export default {
   name: 'FooterAdmin',
-  components: { CopyRight, HeaderAdmin, NavbarAdmin },
+  components: { CopyRight, HeaderAdmin, NavbarAdmin, Welcome },
 
   data() {
     return {
