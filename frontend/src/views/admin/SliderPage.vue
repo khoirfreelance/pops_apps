@@ -31,6 +31,38 @@
           <Welcome />
 
           <!-- =======================
+               UPLOAD LOGO DESA
+          ======================== -->
+          <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+              <h5 class="fw-bold text-primary mb-3">
+                <i class="fa-regular fa-images me-2"></i> Upload Logo Desa
+              </h5>
+
+              <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                  <input type="file" class="form-control" @change="handleFileChange($event, 'logo')">
+                </div>
+                <div class="col-md-3">
+                  <button class="btn btn-success" @click="handleSubmit">
+                    <i class="fa-solid fa-upload me-2"></i>Upload
+                  </button>
+                </div>
+                <div class="col-md-3">
+                  <div v-if="logoSrc" class="p-5 text-center">
+                    <img
+                      :src="logoSrc"
+                      alt="Logo Preview"
+                      class="img-fluid rounded shadow-sm"
+                      style="max-height: 100px"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- =======================
                SLIDER TEXT SETTING
           ======================== -->
           <div class="card border-0 shadow-sm rounded-4 my-4">
@@ -139,7 +171,57 @@
 
         </div>
 
-        <CopyRight class="mt-5"/>
+        <CopyRight/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Success -->
+  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-success text-white rounded-top-4">
+          <h5 class="modal-title">Berhasil</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-0">{{ successMessage || 'Konfigurasi berhasil disimpan.' }}</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Error -->
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header bg-danger text-white rounded-top-4">
+          <h5 class="modal-title">Error</h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-0">{{ errorMessage || 'Terjadi kesalahan yang tidak diketahui.' }}</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -167,26 +249,108 @@ export default {
 
   data() {
     return {
+      logoSrc:null,
       isLoading: false,
       isCollapsed: false,
       selectedImage: null,
       images: [],
       form: {
+        logo: null,
         main_title: '',
         title: '',
         description: '',
         subdescription: '',
       },
+      errorMessage: '',
+      successMessage: '',
     }
   },
 
   methods: {
+    // --- Upload handler ---
+    handleFileChange(e, type) {
+      const file = e.target.files[0]
+      if (!file) return
+      this.setFile(file, type)
+    },
+    handleDrop(e, type) {
+      const file = e.dataTransfer.files[0]
+      if (!file) return
+      this.setFile(file, type)
+      if (type === 'logo') this.isLogoDrag = false
+    },
+    setFile(file) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        this.logoSrc = ev.target.result
+        this.form.logoName = file.name
+      }
+      reader.readAsDataURL(file)
+      this.form.logo = file
+    },
+    normalizeLogoPath(path) {
+      if (!path) return null
+      // Kalau sudah mengandung http (sudah absolute URL), langsung return
+      if (path.startsWith('http')) return path
+
+      // Kalau masih relative, pastikan tanpa "storage/" dobel
+      return path.replace(/^storage\//, '')
+    },
+    async handleSubmit() {
+      try {
+
+        const formData = new FormData()
+        formData.append('logo', this.form.logo)
+
+        const res = await axios.post(`${baseURL}/api/config`, formData, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        console.log('✅ Config saved:', res.data)
+
+        localStorage.removeItem('site_config_cache')
+        const refresh = await axios.get(`${baseURL}/api/config`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        const data = refresh.data?.data
+        if (data) {
+          const cleanLogo = this.normalizeLogoPath(data.logo)
+          this.logoSrc = `${baseURL}/storage/${cleanLogo}`
+          this.form.logoName = cleanLogo.split('/').pop()
+          localStorage.setItem(this.configCacheKey, JSON.stringify(data))
+        }
+        this.showSuccess('Konfigurasi berhasil disimpan & disinkronkan')
+      } catch (err) {
+        console.error('❌ Gagal simpan konfigurasi:', err)
+        this.showError('Gagal menyimpan konfigurasi. Periksa koneksi atau token Anda.')
+      }
+    },
+
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
 
     handleImage(e) {
       this.selectedImage = e.target.files[0]
+    },
+
+    // --- Modal helper ---
+    showError(message) {
+      this.errorMessage = message || 'Terjadi kesalahan.'
+      // eslint-disable-next-line no-undef
+      const modal = new bootstrap.Modal(document.getElementById('errorModal'))
+      modal.show()
+    },
+    showSuccess(message) {
+      this.successMessage = message || 'Berhasil tersimpan.'
+      // eslint-disable-next-line no-undef
+      const modal = new bootstrap.Modal(document.getElementById('successModal'))
+      modal.show()
     },
 
     async loadSetting() {
@@ -231,7 +395,7 @@ export default {
 
     async uploadImage() {
       if (!this.selectedImage) {
-        alert('Pilih image terlebih dahulu')
+        this.showError('Pilih image terlebih dahulu')
         return
       }
 
@@ -250,10 +414,10 @@ export default {
         this.$refs.fileInput.value = null
         await this.loadImages()
 
-        alert('Upload berhasil')
+        this.showSuccess('Upload berhasil')
       } catch (error) {
         console.error('Upload gagal:', error)
-        alert('Upload gagal')
+        this.showError('Upload gagal')
       }
     },
 
@@ -274,7 +438,7 @@ export default {
         this.loadImages()
       ])
     } catch (error) {
-      console.error('Error load slider page:', error)
+      this.showError('Error load slider page:', error)
     } finally {
       this.isLoading = false
     }

@@ -118,7 +118,7 @@
       </li>
       <li class="border-bottom border-primary mt-3" v-if="isCollapsed"></li>
       <li class="menu-section mt-4" v-if="!isCollapsed">Administrator</li>
-      <li
+      <!-- <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"
         title="Slider"
@@ -132,8 +132,22 @@
           <i class="bi bi-images"></i>
           <span v-if="!isCollapsed">Slider</span>
         </router-link>
+      </li> -->
+      <li
+        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
+        data-bs-placement="right"
+        title="Konfigurasi"
+        ref="tooltipItem"
+      >
+        <router-link
+          to="/admin/slider"
+          class="nav-link"
+          :class="{ active: isActive('/admin/slider') }"
+        >
+          <i class="bi bi-gear"></i>
+          <span v-if="!isCollapsed">Konfigurasi</span>
+        </router-link>
       </li>
-
       <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"
@@ -147,21 +161,6 @@
         >
           <i class="bi bi-layout-text-window-reverse"></i>
           <span v-if="!isCollapsed">Footer</span>
-        </router-link>
-      </li>
-      <li
-        :data-bs-toggle="isCollapsed ? 'tooltip' : null"
-        data-bs-placement="right"
-        title="Konfigurasi"
-        ref="tooltipItem"
-      >
-        <router-link
-          to="/admin/config"
-          class="nav-link"
-          :class="{ active: isActive('/admin/config') }"
-        >
-          <i class="bi bi-gear"></i>
-          <span v-if="!isCollapsed">Konfigurasi</span>
         </router-link>
       </li>
       <li

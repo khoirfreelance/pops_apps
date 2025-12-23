@@ -19,42 +19,27 @@
       class="content flex-grow-1 d-flex flex-column flex-md-row"
       :class="{
         'sidebar-collapsed': isCollapsed,
-        'sidebar-expanded': !isCollapsed
+        'sidebar-expanded': !isCollapsed,
       }"
     >
       <!-- Sidebar -->
-      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
+      <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
       <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <!-- Content -->
-        <div class="py-4 container-fluid" >
+        <div class="py-4 container-fluid">
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div
-              class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between"
-            >
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <div class="my-3">
-                  <h2 class="fw-bold mt-3 mb-0 text-primary">Data Log</h2>
-                  <small class="text-muted"> Daftar log user </small>
-                </div>
-              </div>
-
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img src="/src/assets/admin.png" alt="Welcome" class="img-fluid welcome-img" />
-              </div>
-            </div>
-          </div>
+          <Welcome />
 
           <!-- Filter -->
           <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
             <form class="row g-4 align-items-end" @submit.prevent="applyFilter">
-              <!-- NIK -->
-              <div class="col-md-12">
-                <label for="nik" class="form-label text-primary fw-semibold">NIK Petugas</label>
+
+              <!-- NIK (Always Visible) -->
+              <div class="col-md-10">
+                <label for="nik" class="form-label text-primary fw-semibold">
+                  NIK Petugas
+                </label>
                 <input
                   type="text"
                   v-model="filter.nik"
@@ -64,70 +49,106 @@
                 />
               </div>
 
-              <!-- Context -->
-              <div class="col-md-6">
-                <label class="form-label mb-2 text-primary fw-semibold">Context Log</label>
-                <div class="row">
-                  <div class="col-6" v-for="(col, colIndex) in splitArray(contextOptions, 3)" :key="'ctx-col-' + colIndex">
-                    <div class="form-check mb-3" v-for="c in col" :key="'ctx-' + c">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        :value="c"
-                        v-model="advancedFilter.context"
-                        :id="'context-' + c"
-                      />
-                      <label class="form-check-label text-capitalize" :for="'context-' + c">
-                        {{ c }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Activity -->
-              <div class="col-md-6">
-                <label class="form-label text-primary fw-semibold mb-2">Activity Log</label>
-                <div class="row">
-                  <div class="col-6" v-for="(col, colIndex) in splitArray(activityOptions, 3)" :key="'act-col-' + colIndex">
-                    <div class="form-check mb-3" v-for="a in col" :key="'act-' + a">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        :value="a"
-                        v-model="advancedFilter.activity"
-                        :id="'activity-' + a"
-                      />
-                      <label class="form-check-label text-capitalize" :for="'activity-' + a">
-                        {{ a }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Tombol -->
-              <div class="col-md-12 d-flex justify-content-between mt-3">
-                <small class="text-muted fst-italic m-3">*Bisa pilih lebih dari 1</small>
-                <button type="button" class="btn btn-secondary" @click="resetFilter">
-                  <i class="bi bi-arrow-clockwise"></i> Reset
+              <!-- Toggle Button -->
+              <div class="col-md-2 d-flex align-items-end">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary w-100"
+                  @click="showAdvancedFilter = !showAdvancedFilter"
+                >
+                  <i
+                    class="bi bi-funnel me-1"
+                    :class="{ 'rotate-180': showAdvancedFilter }"
+                  ></i>
+                  Filter Lainnya
                 </button>
+
               </div>
+
+              <transition name="fade-slide">
+                <!-- COLLAPSE AREA -->
+                <div v-show="showAdvancedFilter" class="row mt-3">
+
+                  <!-- Context -->
+                  <div class="col-md-6">
+                    <label class="form-label mb-2 text-primary fw-semibold">
+                      Context Log
+                    </label>
+                    <div class="row">
+                      <div
+                        class="col-6"
+                        v-for="(col, colIndex) in splitArray(contextOptions, 3)"
+                        :key="'ctx-col-' + colIndex"
+                      >
+                        <div class="form-check mb-2" v-for="c in col" :key="'ctx-' + c">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            :value="c"
+                            v-model="advancedFilter.context"
+                            :id="'context-' + c"
+                          />
+                          <label class="form-check-label text-capitalize" :for="'context-' + c">
+                            {{ c }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Activity -->
+                  <div class="col-md-6">
+                    <label class="form-label mb-2 text-primary fw-semibold">
+                      Activity Log
+                    </label>
+                    <div class="row">
+                      <div
+                        class="col-6"
+                        v-for="(col, colIndex) in splitArray(activityOptions, 3)"
+                        :key="'act-col-' + colIndex"
+                      >
+                        <div class="form-check mb-2" v-for="a in col" :key="'act-' + a">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            :value="a"
+                            v-model="advancedFilter.activity"
+                            :id="'activity-' + a"
+                          />
+                          <label class="form-check-label text-capitalize" :for="'activity-' + a">
+                            {{ a }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Action -->
+                  <div class="col-md-12 d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-muted fst-italic">
+                      *Bisa pilih lebih dari 1
+                    </small>
+
+                    <button type="button" class="btn btn-secondary" @click="resetFilter">
+                      <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                  </div>
+                </div>
+              </transition>
+
             </form>
           </div>
 
           <!-- Table -->
-          <div class="container-fluid my-3">
-            <div class="card modern-card mt-4">
-              <div class="card-body">
-                <div class="datatable-responsive">
-                  <EasyDataTable
-                    :headers="headers"
-                    :items="filteredLog"
-                    buttons-pagination
-                    :rows-per-page="5"
-                  />
-                </div>
+          <div class="card modern-card mt-4">
+            <div class="card-body">
+              <div class="datatable-responsive">
+                <EasyDataTable
+                  :headers="headers"
+                  :items="filteredLog"
+                  buttons-pagination
+                  :rows-per-page="5"
+                />
               </div>
             </div>
           </div>
@@ -144,6 +165,7 @@ import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import EasyDataTable from 'vue3-easy-data-table'
+import Welcome from '@/components/Welcome.vue'
 import 'vue3-easy-data-table/dist/style.css'
 import axios from 'axios'
 
@@ -158,11 +180,12 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Log',
-  components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable },
+  components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
       configCacheKey: 'site_config_cache',
       // required
+      showAdvancedFilter: false,
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -374,6 +397,16 @@ export default {
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
   },
+  watch: {
+    advancedFilter: {
+      deep: true,
+      handler(val) {
+        if (val.context.length || val.activity.length) {
+          this.showAdvancedFilter = true
+        }
+      }
+    }
+  }
 }
 </script>
 
@@ -414,12 +447,12 @@ export default {
   border-radius: 0 0 1rem 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-.filter-wrapper {
+/* .filter-wrapper {
   position: relative;
   z-index: 1050;
   margin-top: -30px !important;
   width: 97%;
-}
+} */
 /* Hilangkan garis pemisah antara sidebar dan content */
 .flex-grow-1 {
   border-left: none !important;

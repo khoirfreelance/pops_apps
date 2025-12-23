@@ -83,7 +83,7 @@
   </path>
   </g>
  <g id="label_points">
-  <circle class="North Kalimantan" cx="467.7" cy="70" id="IDKU">
+  <!-- <circle class="North Kalimantan" cx="467.7" cy="70" id="IDKU">
   </circle>
   <circle class="Nusa Tenggara Timur" cx="560.4" cy="306" id="IDNT">
   </circle>
@@ -98,10 +98,10 @@
   <circle class="Nusa Tenggara Barat" cx="487.1" cy="307.5" id="IDNB">
   </circle>
   <circle class="Sulawesi Selatan" cx="538.9" cy="205.5" id="IDSN">
-  </circle>
+  </circle> -->
   <circle class="Jawa Tengah" cx="338.4" cy="279.8" id="IDJT">
   </circle>
-  <circle class="Jawa Barat" cx="294.6" cy="270.4" id="IDJB">
+  <!-- <circle class="Jawa Barat" cx="294.6" cy="270.4" id="IDJB">
   </circle>
   <circle class="Jakarta Raya" cx="279.6" cy="257" id="IDJK">
   </circle>
@@ -150,7 +150,7 @@
   <circle class="Bangka-Belitung" cx="262.9" cy="178" id="IDBB">
   </circle>
   <circle class="Kalimantan Timur" cx="469.2" cy="125.4" id="IDKI">
-  </circle>
+  </circle> -->
  </g>
 
 <g id="custom-markers">

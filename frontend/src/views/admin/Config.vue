@@ -26,50 +26,11 @@
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"  />
 
+      <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <!-- Content -->
-        <div class="py-4 container-fluid" >
-
+        <div class="py-4 container-fluid">
           <!-- Welcome Card -->
-          <div class="card welcome-card shadow-sm mb-4 border-0">
-            <div class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between">
-              <!-- Kiri: Teks Welcome -->
-              <div class="text-start">
-                <h3>
-                  <span class="fw-normal fs-6">Selamat datang,</span> <br />
-                  {{ username }}
-                </h3>
-                <img
-                  v-if="logoLoaded"
-                  :src="logoSrc"
-                  alt="Logo"
-                  height="50"
-                  class="mt-4"
-                  @error="logoLoaded = false"
-                />
-                <!-- jika gagal load logo, tampilkan kelurahan -->
-                <span
-                  v-else
-                  class="text-muted fw-bold fs-5 mt-4"
-                >
-                  {{ kelurahan || 'Wilayah' }}
-                </span>
-                <p class="small d-flex align-items-center mt-1">
-                  Data terakhir diperbarui pada &nbsp;<strong>{{ today }}</strong>
-                </p>
-              </div>
-
-              <!-- Kanan: Gambar -->
-              <div class="mt-3 mt-md-0">
-                <img
-                  src="/banner.png"
-                  alt="Welcome"
-                  class="img-fluid welcome-img"
-                  style="max-width: 280px"
-                />
-              </div>
-            </div>
-          </div>
+          <Welcome />
 
           <!-- Content -->
           <div class="container-fluid mt-2">
@@ -80,7 +41,7 @@
 
                     <!-- Upload Logo -->
                     <div class="col-md-6">
-                      <label class="form-label fw-semibold">Logo Desa</label>
+                      <label class="form-label fw-semibold text-primary"><i class="bi bi-cloud-upload"></i> Logo Desa</label>
                       <div
                         class="dropzone p-4 rounded-3 text-center position-relative"
                         :class="{ 'border-primary bg-light': isLogoDrag }"
@@ -166,7 +127,7 @@
                     </div> -->
 
                     <!-- Apps Mode-->
-                    <div class="col-md-12 d-flex align-items-center justify-content-between">
+                    <!-- <div class="col-md-12 d-flex align-items-center justify-content-between">
                       <label class="form-label fw-semibold mb-0">Dev Mode</label>
                       <div class="form-check form-switch">
                         <input
@@ -179,10 +140,10 @@
                           {{ form.app ? 'On' : 'Off' }}
                         </label>
                       </div>
-                    </div>
+                    </div> -->
 
                     <!-- Maintenance Mode -->
-                    <div class="col-md-12 d-flex align-items-center justify-content-between">
+                    <!-- <div class="col-md-12 d-flex align-items-center justify-content-between">
                       <label class="form-label fw-semibold mb-0">Maintenance Mode</label>
                       <div class="form-check form-switch">
                         <input
@@ -195,7 +156,7 @@
                           {{ form.maintenance ? 'On' : 'Off' }}
                         </label>
                       </div>
-                    </div>
+                    </div> -->
 
                     <!-- Save Button -->
                     <div class="col-12 text-end">
@@ -269,6 +230,7 @@
 import CopyRight from '@/components/CopyRight.vue'
 import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
+import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 
 const API_PORT = 8000
@@ -278,7 +240,7 @@ const baseURL = `${protocol}//${hostname}:${API_PORT}`
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Config',
-  components: { NavbarAdmin, CopyRight, HeaderAdmin },
+  components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
       configCacheKey: 'site_config_cache',
