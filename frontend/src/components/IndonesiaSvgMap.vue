@@ -212,6 +212,14 @@
 <script setup>
 import { reactive, onMounted } from 'vue'
 
+// PORT backend kamu
+const API_PORT = 8000
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
+
 /* =========================
    HEATMAP DATA (FROM API)
 ========================== */
@@ -277,7 +285,7 @@ function normalizeProvName(name) {
 ========================== */
 async function loadHeatmapStats() {
   try {
-    const res = await fetch('http://localhost:8000/api/public/heatmap', {
+    const res = await fetch(`${baseURL}/api/public/heatmap`, {
       headers: {
         Accept: 'application/json',
       },
