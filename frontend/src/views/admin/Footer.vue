@@ -163,7 +163,14 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
 
-const baseURL = 'http://localhost:8000'
+// PORT backend kamu
+const API_PORT = 8000
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
+//const baseURL = 'http://localhost:8000'
 
 export default {
   name: 'FooterAdmin',
