@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\CatinController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\SliderSettingController;
 use App\Http\Controllers\Api\SliderImageController;
+use App\Http\Controllers\Api\FooterSettingController;
+use App\Http\Controllers\Api\FooterSocialLinkController;
+
 
 // Auth Endpoint
 Route::post('/login', [AuthController::class, 'login']);
@@ -156,6 +159,9 @@ Route::get('/home/indicator', [HomeController::class, 'getIndikatorAnak']);
 ========================== */
 Route::get('/public/slider-setting', [SliderSettingController::class, 'show']);
 Route::get('/public/slider-images', [SliderImageController::class, 'index']);
+Route::get('/public/footer', [FooterSettingController::class, 'show']);
+Route::get('/public/footer-social', [FooterSocialLinkController::class, 'index']);
+Route::get('/public/heatmap', [FooterSettingController::class, 'statusByProvinsi']);
 
 /* =========================
    ADMIN ONLY
