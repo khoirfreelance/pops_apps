@@ -13,11 +13,11 @@ export function mapDataAnakToExcel(dataAnak) {
       Jenis_Kelamin: anak.gender,
       Posyandu: anak.posyandu || "-",
       Usia_Bulan: anak.usia || "-",
-      Tgl_Ukur: anak.tgl_ukur || "-",
+      Tgl_Ukur_Terakhir: anak.tgl_ukur || "-",
       TB_U: anak.tbu || "-",
       BB_U: anak.bbu || "-",
       BB_TB: anak.bbtb || "-",
-      Intervensi: anak.intervensi || "-",
+      Intervensi: anak.intervensi !== '-'? anak.intervensi:"Belum Mendapatkan Intervensi",
       RW: anak.rw,
       RT: anak.rt,
     };

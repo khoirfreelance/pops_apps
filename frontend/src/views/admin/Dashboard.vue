@@ -435,11 +435,77 @@
                     </div>
                   </div>
 
+                  <!-- ===================== -->
+                  <!-- MODE EXPORT (PDF) -->
+                  <!-- ===================== -->
+                  <div v-if="isExporting">
+
+                    <div
+                      v-for="type in ['bb', 'tb', 'bbtb']"
+                      :key="type"
+                      class="row mb-4"
+                    >
+                      <div class="col-12">
+                        <div class="card border-success shadow-lg">
+
+                          <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                              <i class="fa-solid fa-chart-pie me-2"></i>
+                              Detail: {{ getDetailTitle(type) }}
+                            </h5>
+                          </div>
+
+                          <div class="card-body p-4">
+                            <div class="table-responsive">
+                              <table class="table table-hover table-bordered align-middle mb-0">
+                                <thead class="table-light">
+                                  <tr>
+                                    <th class="text-center" width="60">Ket</th>
+                                    <th>Status</th>
+                                    <th class="text-center" width="100">Jumlah</th>
+                                    <th class="text-center" width="100">Persen</th>
+                                    <th class="text-center" width="100">Tren</th>
+                                  </tr>
+                                </thead>
+
+                                <tbody>
+                                  <tr
+                                    v-for="(row, index) in getDetailData(type)"
+                                    :key="index"
+                                  >
+                                    <td class="text-center">
+                                      <i class="fa-solid fa-circle" :style="{ color: row.color }"></i>
+                                    </td>
+                                    <td class="fw-semibold">{{ row.status }}</td>
+                                    <td class="text-center">
+                                      <span class="badge bg-primary">{{ row.jumlah }}</span>
+                                    </td>
+                                    <td class="text-center fw-bold">{{ row.persen }}%</td>
+                                    <td class="text-center" :class="row.trenClass">
+                                      <span v-if="row.tren !== '-'">
+                                        <i :class="row.trenIcon"></i> {{ row.tren }}
+                                      </span>
+                                      <span v-else class="text-muted">-</span>
+                                    </td>
+                                  </tr>
+                                </tbody>
+
+                              </table>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+
                   <!-- ========================================= -->
                   <!-- SECTION 2: Detail Section (Conditional) -->
                   <!-- ========================================= -->
                   <transition name="slide-down">
-                    <div v-if="selectedChart" class="row" id="detail-section">
+                    <div v-show="selectedChart" class="row" id="detail-section">
                       <div class="col-12">
                         <div class="card border-success shadow-lg">
                           <div
@@ -2010,6 +2076,8 @@ import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 import { exportExcel } from "@/utils/exportExcel";
 import { mapDataAnakBerandaToExcel } from "@/mappers/dataAnakBerandaMapper";
+import { mapDataAnakToExcel } from "@/mappers/dataAnakMapper";
+import { mapDataIbuHamilToExcel } from "@/mappers/dataIbuHamilMapper";
 import { mapDataIbuHamilBerandaToExcel } from "@/mappers/dataIbuHamilBerandaMapper";
 import {
   Chart,
@@ -2027,6 +2095,7 @@ import {
   Filler,
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
+import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
 
 // PORT backend kamu
 const API_PORT = 8000
@@ -2061,6 +2130,8 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      isExporting: false,
+      exportCharts: ['bb', 'tb', 'bbtb'],
       // ===== UI STATE =====
       activeMenu: 'anak',
       selectedChart: null,
@@ -2244,28 +2315,49 @@ export default {
         })
       }
     },
+    getDetailTitle(type) {
+      if (type === 'bb') return 'Berat Badan / Usia'
+      if (type === 'tb') return 'Tinggi Badan / Usia'
+      if (type === 'bbtb') return 'Berat Badan / Tinggi Badan'
+    },
+
+    getDetailData(type) {
+      if (type === 'bb') return this.dataTable_bb
+      if (type === 'tb') return this.dataTable_tb
+      if (type === 'bbtb') return this.dataTable_bbtb
+    },
+    /* async prepareAllDetailTablesForExport() {
+      for (const type of ['bb', 'tb', 'bbtb']) {
+        this.setChart(type)
+        await this.$nextTick()
+        await new Promise(r => setTimeout(r, 200))
+      }
+    }, */
     async exportDashboardPdf(tagId) {
+      this.isExporting = true
+      //await this.prepareAllDetailTablesForExport()
+
       let periodeLabel = '';
       let fileName = '';
 
       if(this.desaExportData === ''){
-        this.desaExportData = 'Kluwut';
+        this.desaExportData = '-';
       }
 
       if (this.periodeExportData === '') {
         const now = new Date();
-        now.setDate(1);                     
+        now.setDate(1);
         now.setMonth(now.getMonth() - 1);   // mundur satu bulan
         const monthName = now.toLocaleDateString('id-ID', { month: 'long' });
         const year = now.getFullYear();
-        
+
         periodeLabel = `${monthName} ${year}`;
       } else {
         const [yearStr, monthStr] = this.periodeExportData.split('-');
         const year = parseInt(yearStr, 10);
         const monthIndex = parseInt(monthStr, 10) - 1;   const date = new Date(year, monthIndex, 1);
         const monthName = date.toLocaleDateString('id-ID', { month: 'long' });
-        
+
         periodeLabel = `${monthName} ${year}`;
       }
 
@@ -2275,22 +2367,149 @@ export default {
       if (canvasStatusBumil) infoBoxes.classList.add('canvas-status-bumil')
 
       if(tagId === 'giziAnakExport'){
+        const detail = this.filteredAnakGabungan.map(item => {
+          const raw = item.raw || {}
+          const k = raw.data_kunjungan || {}
+          const i = raw.data_intervensi?.[0] || {}
+
+          return {
+            id: k.id ?? '-',
+            nama: raw.nama ?? '-',
+            nik: raw.nik ?? '-',
+            gender: k.jk ?? '-',
+
+            provinsi: k.provinsi ?? '-',
+            kota: k.kota ?? '-',
+            kecamatan: k.kecamatan ?? '-',
+            kelurahan: k.kelurahan ?? '-',
+            rt: k.rt ?? '-',
+            rw: k.rw ?? '-',
+            posyandu: raw.posyandu ?? k.posyandu ?? '-',
+
+            usia: k.usia_saat_ukur ?? '-',
+            tgl_ukur: k.tgl_pengukuran ?? '-',
+
+            bbu: k.bb_u ?? '-',
+            tbu: k.tb_u ?? '-',
+            bbtb: k.bb_tb ?? '-',
+
+            bb: k.bb ?? '-',
+            tb: k.tb ?? '-',
+            bb_naik: k.naik_berat_badan ?? '-',
+
+            intervensi: i.kategori ?? '-',
+
+            tmpt_dilahirkan: '-',
+            tgl_lahir: k.tgl_lahir ?? '-',
+            bb_lahir: k.bb_lahir ?? '-',
+            pb_lahir: k.tb_lahir ?? '-',
+            persalinan: '-',
+
+            nama_ayah: '-',
+            nama_ibu: k.nama_ortu ?? '-',
+            pekerjaan_ayah: '-',
+            pekerjaan_ibu: '-',
+            usia_ayah: '-',
+            usia_ibu: '-',
+            anak_ke: '-',
+
+            kader_pendamping: i.petugas ?? '-',
+            tgl_pendampingan: i.tgl_intervensi ?? '-'
+          }
+        })
+
         const excelData = mapDataAnakBerandaToExcel(this.filteredAnakGabungan);
+        const detailData = mapDataAnakToExcel(detail);
+        const filterSheetData = mapFilterToExcel(this.filters, 'Dashboard');
+
         fileName = `Status Gizi Anak Desa ${this.desaExportData} ${periodeLabel}.xlsx`;
         exportExcel({
-          data: excelData,
           fileName: fileName,
-          sheetName: "Status Gizi Anak Beranda",
+          sheets: [
+            {
+              sheetName: "Status Gizi Anak Beranda",
+              data: excelData,
+            },
+            {
+              sheetName: "Data Anak",
+              data: detailData,
+            },
+            {
+              sheetName: 'Filter',
+              data: filterSheetData
+            }
+          ]
         });
       }
 
       if(tagId === 'kesehatanBumilExport'){
+        const detail = this.filteredBumil.map(item => {
+          const k = item.raw?.kunjungan || {}
+          const i = item.raw?.intervensi?.[0] || {}
+
+          return {
+            id: item.nik ?? '-',
+            nama: item.nama ?? '-',
+            usia: item.umur ?? k.usia_ibu ?? '-',
+
+            nama_suami: k.nama_suami ?? '-',
+
+            risiko: item.risiko
+              ? 'Risiko'
+              : 'Normal',
+
+            rw: item.rw ?? k.rw ?? '-',
+            rt: item.rt ?? k.rt ?? '-',
+
+            tanggal_pemeriksaan_terakhir:
+              k.tanggal_pemeriksaan_terakhir ?? '-',
+
+            berat_badan: k.berat_badan ?? '-',
+            tinggi_badan: k.tinggi_badan ?? '-',
+            imt: k.imt ?? '-',
+            kadar_hb: k.kadar_hb ?? '-',
+            lila: k.lila ?? '-',
+
+            anemia: item.anemia
+              ? 'Anemia'
+              : 'Normal',
+
+            kek: item.kek
+              ? 'KEK'
+              : 'Normal',
+
+            posyandu: item.posyandu ?? k.posyandu ?? '-',
+
+            intervensi:
+              i.kategori
+              ?? item.intervensi
+              ?? 'Belum Mendapat Bantuan'
+          }
+        })
+
+        //console.log(detailBumil)
+
         const excelData = mapDataIbuHamilBerandaToExcel(this.filteredBumil);
+        const detailData = mapDataIbuHamilToExcel(detail);
+        const filterSheetData = mapFilterToExcel(this.filters, 'Dashboard');
+
         fileName = `Status Resiko Ibu Hamil Desa ${this.desaExportData} ${periodeLabel}.xlsx`;
         exportExcel({
-          data: excelData,
           fileName: fileName,
-          sheetName: "Status Resiko Ibu Hamil Beranda",
+          sheets: [
+            {
+              sheetName: "Status Resiko Ibu Hamil Beranda",
+              data: excelData,
+            },
+            {
+              sheetName: "Ibu Hamil",
+              data: detailData,
+            },
+            {
+              sheetName: 'Filter',
+              data: filterSheetData
+            }
+          ]
         });
       }
 
@@ -2346,8 +2565,29 @@ export default {
         document.body.removeChild(loading)
 
         infoBoxes.classList.remove('hide-for-pdf')
+        this.isExporting = false
         // bumilTable.classList.remove('hide-for-pdf')
       })
+    },
+    setChart(type) {
+      this.selectedChart = type
+
+      this.$nextTick(() => {
+        this.renderDetailChart()
+      })
+    },
+    selectChart(type) {
+      this.setChart(type)
+
+      setTimeout(() => {
+        const detailEl = document.getElementById('detail-section')
+        if (detailEl) {
+          detailEl.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
+      }, 150)
     },
     async generateIndikatorBumilBulanan() {
       try {
@@ -3446,7 +3686,7 @@ export default {
         this.showError('Error Ambil Data', e)
       }
     },
-    selectChart(type) {
+    /* selectChart(type) {
       this.selectedChart = type
 
       this.$nextTick(() => {
@@ -3462,7 +3702,7 @@ export default {
           }
         }, 150)
       })
-    },
+    }, */
 
     // ✅ METHOD BARU: Close Detail
     closeDetail() {

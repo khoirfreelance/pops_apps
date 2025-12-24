@@ -1529,7 +1529,7 @@ import hfa from '@/assets/hfa.json'
 import wfh from '@/assets/wfh.json'
 import { exportExcel } from "@/utils/exportExcel";
 import { mapDataAnakToExcel } from "@/mappers/dataAnakMapper";
-
+import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
 import { ref, computed } from 'vue'
 import {
   Chart,
@@ -1557,6 +1557,7 @@ Chart.register(
   Tooltip,
   Filler,
 )
+
 
 // Simple sort icon component
 // const SortIcon = {
@@ -1785,6 +1786,8 @@ export default {
   },
   methods: {
     exportDataAnakExcel(){
+      //console.log('export');
+
       let fileNameExport = '';
       if (this.periodeAwalExportData === '' || this.periodeAkhirExportData === '' || this.periodeAkhirExportData.includes('+') ) {
         fileNameExport = `Status Gizi Anak Desa ${this.desaExportData} 1 Tahun Terakhir.xlsx`;
@@ -1792,11 +1795,23 @@ export default {
         fileNameExport = `Status Gizi Anak Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
       }
 
-        const excelData = mapDataAnakToExcel(this.filteredData);
-        exportExcel({
-          data: excelData,
-          fileName: fileNameExport,
-          sheetName: "Gizi Anak",
+      console.log(this.filteredData);
+
+      const excelData = mapDataAnakToExcel(this.filteredData);
+      const filterSheetData = mapFilterToExcel(this.filters, 'Anak')
+
+      exportExcel({
+        fileName: fileNameExport,
+        sheets: [
+          {
+            sheetName: 'Gizi Anak',
+            data: excelData
+          },
+          {
+            sheetName: 'Filter',
+            data: filterSheetData
+          }
+        ]
       });
     },
     showDetailByNik(nik) {
@@ -1814,20 +1829,23 @@ export default {
 
       // Data utama anak
       const anak = this.selectedAnak
+      console.log(anak);
+
       let csvContent = `Data Anak\n`
       csvContent += `Nama,${anak.nama}\n`
       csvContent += `NIK,${anak.nik}\n`
       csvContent += `Jenis Kelamin,${anak.gender === 'L' ? 'Laki-laki' : anak.gender === 'P' ? 'Perempuan' : anak.gender}\n`
       csvContent += `Usia (${anak.usia} bulan),${anak.usia}\n`
-      csvContent += `Tgl Ukur Terakhir,${anak.tgl_ukur}\n`
+      /* csvContent += `Tgl Ukur Terakhir,${anak.tgl_ukur}\n`
       csvContent += `Status Gizi,${anak.status_gizi}\n`
-      csvContent += `Intervensi,${anak.intervensi}\n\n`
+      csvContent += `Intervensi,${anak.intervensi}\n\n` */
 
       // Riwayat penimbangan (jika ada)
       if (anak.riwayat_penimbangan && anak.riwayat_penimbangan.length) {
+        //csvContent += `Tgl Ukur Terakhir,${anak.tgl_ukur}\n`
         csvContent += `Riwayat Penimbangan\nTanggal,Status BB/U,Status TB/U,Status BB/TB\n`
         anak.riwayat_penimbangan.forEach((r) => {
-          csvContent += `${r.tanggal},${r.bb},${r.tb},${r.bb_tb}\n`
+          csvContent += `${this.formatDate(r.tanggal)},${r.bbu},${r.tbu},${r.bbtb}\n`
         })
         csvContent += `\n`
       }
@@ -1836,7 +1854,7 @@ export default {
       if (anak.riwayat_intervensi && anak.riwayat_intervensi.length) {
         csvContent += `Riwayat Intervensi / Bantuan\nTanggal,Kader,Intervensi\n`
         anak.riwayat_intervensi.forEach((r) => {
-          csvContent += `${r.tanggal},${r.kader},${r.intervensi}\n`
+          csvContent += `${this.formatDate(r.tanggal)},${r.kader},${r.intervensi}\n`
         })
         csvContent += `\n`
       }

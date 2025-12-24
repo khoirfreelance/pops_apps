@@ -24,7 +24,6 @@ export function mapDataCatinToExcel(dataCatin) {
       Posyandu: catin.posyandu || "-",
       RW: catin.rw || "-",
       RT: catin.rt || "-",
-      Usia_Tahun: catin.usia || "-",
       Tanggal_Kunjungan: tanggalKunjungan || "-",
       Tanggal_Menikah : tanggalMenikah || "-",
       BB_Perempuan : catin.pemeriksaan_terakhir.berat_perempuan || "-",

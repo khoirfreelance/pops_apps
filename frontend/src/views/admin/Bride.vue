@@ -859,7 +859,7 @@ import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import { exportExcel } from "@/utils/exportExcel";
 import { mapDataCatinToExcel } from "@/mappers/dataCatinMapper";
-
+import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
 
 // PORT backend kamu
 const API_PORT = 8000
@@ -1109,13 +1109,22 @@ export default {
       } else {
         fileNameExport = `Status Risiko Calon Pengantin Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
       }
-      
+
       const excelData = mapDataCatinToExcel(this.filteredCatin);
+      const filterSheetData = mapFilterToExcel(this.filters, 'Catin');
 
       exportExcel({
-        data: excelData,
         fileName: fileNameExport,
-        sheetName: "Catin",
+        sheets: [
+          {
+            sheetName: "Calon Pengantin",
+            data: excelData,
+          },
+          {
+            sheetName: 'Filter',
+            data: filterSheetData
+          }
+        ]
       });
     },
     formatDate(dateString) {
@@ -1687,13 +1696,13 @@ export default {
 }
 
 .my-custom-table {
-  --easy-table-header-background-color: #cfe2ff;
+  --easy-table-header-background-color: #d1e7dd;
   --easy-table-border: 1px solid #dee2e6;
   --easy-table-row-border: 1px solid #dee2e6;
 }
 
 .my-custom-header {
-  background-color: #cfe2ff !important;
+  background-color: #d1e7dd !important;
   font-weight: 600;
   font-size: 13px;
 }
