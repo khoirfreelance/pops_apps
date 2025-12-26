@@ -24,21 +24,8 @@ class CatinController extends Controller
     public function getData(Request $request)
     {
         try {
-            /* $user = Auth::user();
-            $id_wilayah = $user->id_wilayah;
-
-            $zona = Wilayah::find($id_wilayah); // ⬅️ ambil 1 baris, bukan Collection
-            $wilayah = [
-                'kelurahan' => $zona->kelurahan ?? null,
-                'kecamatan' => $zona->kecamatan ?? null,
-                'kota'      => $zona->kota ?? null,
-                'provinsi'  => $zona->provinsi ?? null,
-            ]; */
-            //dd($request);
-
             $data = Catin::get();
             $dataRaw = $data;
-            //dd($data->first());
 
             $data = $data->groupBy('nik_perempuan')->map(function ($group) {
                 return $group->sortByDesc('tanggal_pemeriksaan')->first();
@@ -710,6 +697,71 @@ class CatinController extends Controller
         return ($usia_perempuan < 20 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
     }
 
+    private function mapDetailCatin($rows)
+    {
+        return $rows
+            ->groupBy('nik_perempuan')
+            ->map(function ($items) {
+                $main = $items->sortByDesc('tanggal_pemeriksaan')->first();
+
+                return [
+                    // informasi utama
+                    'nama_perempuan' => $main->nama_perempuan,
+                    'nik_perempuan' => $main->nik_perempuan,
+                    'usia_perempuan' => $main->usia_perempuan,
+                    'hp_perempuan' => $main->hp_perempuan,
+                    'kerja_perempuan' => $main->pekerjaan_perempuan,
+
+                    'nama_laki' => $main->nama_laki,
+                    'nik_laki' => $main->nik_laki,
+                    'usia_laki' => $main->usia_laki,
+                    'hp_laki' => $main->hp_laki,
+                    'kerja_laki' => $main->pekerjaan_laki,
+
+                    'provinsi' => $main->provinsi,
+                    'kota' => $main->kota,
+                    'kecamatan' => $main->kecamatan,
+                    'kelurahan' => $main->kelurahan,
+                    'rw' => $main->rw,
+                    'rt' => $main->rt,
+                    'posyandu' => $main->posyandu,
+                    'status_risiko' => $main->status_risiko,
+                    'status_hb' => $main->status_hb,
+                    'status_kek' => $main->status_kek,
+                    'tgl_pernikahan' => $main->tanggal_rencana_menikah,
+                    'tgl_kunjungan' => $main->tanggal_pendampingan,
+
+                    // RIWAYAT PEMERIKSAAN
+                    'pemeriksaan_terakhir' => $items->map(function ($d) {
+                        return [
+                            'status_risiko' => $d->status_risiko,
+                            'tanggal_pemeriksaan' => $d->tanggal_pemeriksaan,
+                            'berat_perempuan' => $d->berat_perempuan,
+                            'tinggi_perempuan' => $d->tinggi_perempuan,
+                            'imt_perempuan' => $d->imt_perempuan,
+                            'hb_perempuan' => $d->hb_perempuan,
+                            'status_hb' => $d->status_hb,
+                            'lila_perempuan' => $d->lila_perempuan,
+                            'status_kek' => $d->status_kek,
+                            'riwayat_penyakit' => $d->riwayat_penyakit,
+                            'terpapar_rokok' => $d->terpapar_rokok,
+                            'menggunakan_jamban' => $d->menggunakan_jamban,
+                            'sumber_air_bersih' => $d->sumber_air_bersih
+                        ];
+                    })->values(),
+
+                    // RIWAYAT PENDAMPINGAN
+                    'riwayat_pendampingan' => $items->whereNotNull('tanggal_pendampingan')->map(function ($d) {
+                        return [
+                            'tanggal_pendampingan' => $d->tanggal_pendampingan,
+                            'nama_petugas' => $d->nama_petugas,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+    }
+
     public function status(Request $request)
     {
         try {
@@ -955,10 +1007,7 @@ class CatinController extends Controller
     public function tren(Request $request)
     {
         try {
-            //$user = Auth::user();
 
-            //$filterKelurahan = $request->kelurahan;
-            // wilayah default dari user
             $wilayah = [
                 'kelurahan' => $request->kelurahan ?? null,
                 'kecamatan' => $request->kecamatan ?? null,
@@ -1006,7 +1055,6 @@ class CatinController extends Controller
             $awalPrev = $awal->copy()->subMonth()->startOfMonth();
             $akhirPrev = $awal->copy()->subMonth()->endOfMonth();
 
-            //dd($query->whereBetween('tanggal_pendampingan', [$awal, $akhir])->toSQL(),[$awal->format('Y-m-d'), $akhir->format('Y-m-d')]);
             // ambil data untuk periode utama dan sebelumnya
             $current = (clone $query)
                 ->whereBetween('tanggal_pendampingan', [$awal, $akhir])
@@ -1015,6 +1063,11 @@ class CatinController extends Controller
             $previous = (clone $query)
                 ->whereBetween('tanggal_pendampingan', [$awalPrev, $akhirPrev])
                 ->get();
+
+            //include detail catin
+            $detailCatin = [
+                $this->mapDetailCatin($current)
+            ];
 
             // fungsi bantu: hitung status (tanpa intervensi)
             $countStatus = function ($rows) {
@@ -1096,7 +1149,13 @@ class CatinController extends Controller
 
             return response()->json([
                 'total' => $currCount['total'] ?? 0,
+
+                // tabel tren (ringkasan)
                 'dataTable_catin' => $dataTable,
+
+                // 🔥 DETAIL CATIN PER STATUS (CURRENT PERIOD)
+                'detail_catin_tren' => $detailCatin,
+
                 'periode' => [
                     'current' => [$awal->toDateString(), $akhir->toDateString()],
                     'previous' => [$awalPrev->toDateString(), $akhirPrev->toDateString()],

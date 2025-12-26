@@ -363,7 +363,7 @@
                             </div>
                           </div>
 
-                          <button class="btn btn-sm btn-link text-decoration-none mt-2">
+                          <button class="btn btn-sm btn-link text-decoration-none mt-2" data-html2canvas-ignore>
                             <i class="fa-solid fa-chevron-down"></i> Detail
                           </button>
                         </div>
@@ -395,7 +395,7 @@
                             </div>
                           </div>
 
-                          <button class="btn btn-sm btn-link text-decoration-none mt-2">
+                          <button class="btn btn-sm btn-link text-decoration-none mt-2" data-html2canvas-ignore>
                             <i class="fa-solid fa-chevron-down"></i> Detail
                           </button>
                         </div>
@@ -427,7 +427,7 @@
                             </div>
                           </div>
 
-                          <button class="btn btn-sm btn-link text-decoration-none mt-2">
+                          <button class="btn btn-sm btn-link text-decoration-none mt-2" data-html2canvas-ignore>
                             <i class="fa-solid fa-chevron-down"></i> Detail
                           </button>
                         </div>
@@ -505,7 +505,7 @@
                   <!-- SECTION 2: Detail Section (Conditional) -->
                   <!-- ========================================= -->
                   <transition name="slide-down">
-                    <div v-show="selectedChart" class="row" id="detail-section">
+                    <div v-show="selectedChart" class="row" id="detail-section" data-html2canvas-ignore>
                       <div class="col-12">
                         <div class="card border-success shadow-lg">
                           <div
@@ -1446,10 +1446,12 @@
                       </div>
                     </div>
                   </div>
-                  <button class="btn btn-sm btn-outline-primary p-2 mt-2" @click="exportDashboardPdf('catinExport')">
-                    <i class="bi bi-file-earmark-excel text-primary me-1"></i>
-                    Export
-                  </button>
+                  <div class="d-flex justify-content-end" data-html2canvas-ignore>
+                    <button class="btn btn-sm btn-outline-primary p-2 mt-2" @click="exportDashboardPdf('catinExport')">
+                      <i class="bi bi-file-earmark-excel text-primary me-1"></i>
+                      Export
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2078,6 +2080,7 @@ import { exportExcel } from "@/utils/exportExcel";
 import { mapDataAnakBerandaToExcel } from "@/mappers/dataAnakBerandaMapper";
 import { mapDataAnakToExcel } from "@/mappers/dataAnakMapper";
 import { mapDataIbuHamilToExcel } from "@/mappers/dataIbuHamilMapper";
+import { mapDataCatinToExcel } from "@/mappers/dataCatinMapper";
 import { mapDataIbuHamilBerandaToExcel } from "@/mappers/dataIbuHamilBerandaMapper";
 import {
   Chart,
@@ -2160,6 +2163,7 @@ export default {
       // ===== DATA TABLE =====
       //filteredAnakGabungan: [],
       //filteredBumil: [],
+      detailCatin:[],
       dataTable_catin: [],
 
       // ===== INFO BOX =====
@@ -2335,7 +2339,6 @@ export default {
     }, */
     async exportDashboardPdf(tagId) {
       this.isExporting = true
-      //await this.prepareAllDetailTablesForExport()
 
       let periodeLabel = '';
       let fileName = '';
@@ -2366,6 +2369,7 @@ export default {
       if (infoBoxes) infoBoxes.classList.add('hide-for-pdf')
       if (canvasStatusBumil) infoBoxes.classList.add('canvas-status-bumil')
 
+      var xlsx = 'xlsx'
       if(tagId === 'giziAnakExport'){
         const detail = this.filteredAnakGabungan.map(item => {
           const raw = item.raw || {}
@@ -2422,9 +2426,9 @@ export default {
         const detailData = mapDataAnakToExcel(detail);
         const filterSheetData = mapFilterToExcel(this.filters, 'Dashboard');
 
-        fileName = `Status Gizi Anak Desa ${this.desaExportData} ${periodeLabel}.xlsx`;
+        fileName = `Status Gizi Anak Desa ${this.desaExportData} ${periodeLabel}`;
         exportExcel({
-          fileName: fileName,
+          fileName: fileName+'.'+xlsx,
           sheets: [
             {
               sheetName: "Status Gizi Anak Beranda",
@@ -2493,9 +2497,9 @@ export default {
         const detailData = mapDataIbuHamilToExcel(detail);
         const filterSheetData = mapFilterToExcel(this.filters, 'Dashboard');
 
-        fileName = `Status Resiko Ibu Hamil Desa ${this.desaExportData} ${periodeLabel}.xlsx`;
+        fileName = `Status Resiko Ibu Hamil Desa ${this.desaExportData} ${periodeLabel}`;
         exportExcel({
-          fileName: fileName,
+          fileName:  fileName+'.'+xlsx,
           sheets: [
             {
               sheetName: "Status Resiko Ibu Hamil Beranda",
@@ -2503,6 +2507,88 @@ export default {
             },
             {
               sheetName: "Ibu Hamil",
+              data: detailData,
+            },
+            {
+              sheetName: 'Filter',
+              data: filterSheetData
+            }
+          ]
+        });
+      }
+
+      if(tagId === 'catinExport'){
+        const detail = this.detailCatin.map(item => {
+          const pemeriksaan = item.pemeriksaan_terakhir?.[0] || {}
+
+          return {
+            nik: item.nik_perempuan ?? '-',
+
+            status_risiko: item.status_risiko ?? '-',
+
+            nama_perempuan: item.nama_perempuan ?? '-',
+            nama_laki: item.nama_laki ?? '-',
+
+            usia_perempuan: item.usia_perempuan ?? '-',
+            usia_laki: item.usia_laki ?? '-',
+
+            pekerjaan_perempuan: item.kerja_perempuan ?? '-',
+            pekerjaan_laki: item.kerja_laki ?? '-',
+
+            posyandu: item.posyandu ?? '-',
+
+            provinsi: item.provinsi ?? '-',
+            kota: item.kota ?? '-',
+            kecamatan: item.kecamatan ?? '-',
+            kelurahan: item.kelurahan ?? '-',
+            rt: item.rt ?? '-',
+            rw: item.rw ?? '-',
+
+            tgl_kunjungan: item.tgl_kunjungan ?? '-',
+            tgl_menikah: item.tgl_pernikahan ?? '-',
+
+            sumber_air_bersih: pemeriksaan.sumber_air_bersih ? 'Ya' : 'Tidak',
+            jamban_sehat: pemeriksaan.menggunakan_jamban ? 'Ya' : 'Tidak',
+
+            pemeriksaan_terakhir: {
+              status_risiko: pemeriksaan.status_risiko ?? '-',
+              tanggal_pemeriksaan: pemeriksaan.tanggal_pemeriksaan ?? '-',
+
+              berat_perempuan: pemeriksaan.berat_perempuan ?? '-',
+              tinggi_perempuan: pemeriksaan.tinggi_perempuan ?? '-',
+              imt_perempuan: pemeriksaan.imt_perempuan ?? '-',
+              hb_perempuan: pemeriksaan.hb_perempuan ?? '-',
+
+              status_hb: pemeriksaan.status_hb ?? '-',
+              lila_perempuan: pemeriksaan.lila_perempuan ?? '-',
+              status_kek: pemeriksaan.status_kek ?? '-',
+
+              riwayat_penyakit:
+                pemeriksaan.riwayat_penyakit || 'Tidak',
+
+              terpapar_rokok:
+                pemeriksaan.terpapar_rokok ?? false,
+
+              menggunakan_jamban:
+                pemeriksaan.menggunakan_jamban ?? false,
+
+              sumber_air_bersih:
+                pemeriksaan.sumber_air_bersih ?? false
+            },
+
+            riwayat: item.riwayat_pendampingan ?? []
+          }
+        })
+
+        const detailData = mapDataCatinToExcel(detail);
+        const filterSheetData = mapFilterToExcel(this.filters, 'Dashboard');
+
+        fileName = `Status Resiko Calon Pengantin Desa ${this.desaExportData} ${periodeLabel}`;
+        exportExcel({
+          fileName:  fileName+'.'+xlsx,
+          sheets: [
+            {
+              sheetName: "Calon Pengantin",
               data: detailData,
             },
             {
@@ -2521,11 +2607,11 @@ export default {
       const loading = document.createElement('div')
       loading.innerHTML = 'Generating PDF...'
       loading.style = `
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(255,255,255,0.9); font-size:30px;
-    display:flex; align-items:center; justify-content:center;
-    z-index:9999
-  `
+        position:fixed; top:0; left:0; width:100%; height:100%;
+        background:rgba(255,255,255,0.9); font-size:30px;
+        display:flex; align-items:center; justify-content:center;
+        z-index:9999
+      `
       document.body.appendChild(loading)
 
       await new Promise((r) => setTimeout(r, 400))
@@ -2552,8 +2638,10 @@ export default {
         const mmHeight = pxHeight * 0.264583
 
         // 🚀 Tambahkan margin di PDF
+        const orientation = mmWidth > mmHeight ? 'l' : 'p'
+
         const pdf = new jsPDF({
-          orientation: 'p',
+          orientation: orientation,
           unit: 'mm',
           format: [mmWidth + margin * 2, mmHeight + margin * 2],
         })
@@ -3540,6 +3628,9 @@ export default {
 
         if (this.activeMenu === 'catin') {
           const dataCatin = res.data.dataTable_catin
+          this.detailCatin = res.data.detail_catin_tren[0]
+          //console.log('catin: ', this.detailCatin);
+
           this.dataTable_catin = Array.isArray(dataCatin)
             ? dataCatin
             : Object.values(dataCatin || {}).map((row) => ({
@@ -4215,92 +4306,6 @@ export default {
     },
 
     // only Bumil
-    /* async generateIndikatorBumilBulanan() {
-      try {
-        //this.isLoading = true;
-
-        const params = {
-          kelurahan: this.filters.kelurahan || '',
-          posyandu: this.filters.posyandu || '',
-          rw: this.filters.rw || '',
-          rt: this.filters.rt || '',
-          periode: this.filters.periode || getNowYearMonth(), // contoh: 'Agu 2025'
-        }
-
-        const res = await axios.get(`${baseURL}/api/pregnancy/indikator-bulanan`, {
-          params,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        const { labels, indikator } = res.data || {}
-
-        // kalau backend kirim kosong, tetap buat struktur default
-        if (!labels?.length || !indikator) {
-          this.bulanLabels = this.getLast12Months()
-          this.indikatorData = {
-            KEK: Array(12).fill(0),
-            Anemia: Array(12).fill(0),
-            Berisiko: Array(12).fill(0),
-            Normal: Array(12).fill(0),
-          }
-          return
-        }
-
-        this.bulanLabels = labels
-        this.indikatorData = indikator
-
-        // render chart
-        this.$nextTick(() => {
-          this.renderBumilTrendChart()
-        })
-        //console.log('✅ indikatorData:', this.indikatorData);
-      } catch (err) {
-        console.error('❌ Gagal memuat indikator bumil bulanan:', err)
-        this.bulanLabels = this.getLast12Months()
-        this.indikatorData = {
-          KEK: Array(12).fill(0),
-          Anemia: Array(12).fill(0),
-          Berisiko: Array(12).fill(0),
-          Normal: Array(12).fill(0),
-        }
-      } finally {
-        //this.isLoading = false;
-      }
-    }, */
-    /* mapToBumil(item) {
-      const intervensi = item.data_intervensi?.length ? item.data_intervensi : []
-
-      const mapped = ['MBG', 'KIE', 'Bansos', 'PMT', 'Bantuan Lainnya']
-
-      const normalizeJenis = (rawJenis) => {
-        // jika rawJenis ada di jenisList, pakai itu
-        if (mapped.includes(rawJenis)) {
-          return rawJenis
-        }
-
-        // jika tidak ada → anggap "Bantuan Lainnya"
-        return 'Bantuan Lainnya'
-      }
-
-      return {
-        nik: item.nik,
-        nama: item.nama,
-        kelurahan: item.kelurahan,
-        posyandu: item.posyandu,
-        rt: item.rt,
-        rw: item.rw,
-        umur: item.umur ?? '-',
-        anemia: item.data_kunjungan?.status_gizi_hb == 'Anemia',
-        kek: item.data_kunjungan?.status_gizi_lila == 'KEK',
-        risiko: item.data_kunjungan?.status_risiko_usia == 'Berisiko',
-        intervensi: intervensi.length ? intervensi[0].kategori : 'Belum mendapatkan intervensi',//normalizeJenis(intervensi[0].kategori) : 'Belum mendapatkan intervensi',
-        raw: {
-          kunjungan: item.data_kunjungan || null,
-          intervensi: item.data_intervensi || [],
-        },
-      }
-    }, */
     mapToBumil(item) {
       const k = item.data_kunjungan || {}
       const intervensi = Array.isArray(item.data_intervensi) ? item.data_intervensi : []

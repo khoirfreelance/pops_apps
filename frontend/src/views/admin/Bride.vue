@@ -1103,6 +1103,8 @@ export default {
   },
   methods: {
     exportDataCatinExcel(){
+      console.log(this.filteredCatin);
+
       let fileNameExport = '';
       if (this.periodeAwalExportData === '' || this.periodeAkhirExportData === '' ) {
         fileNameExport = `Status Risiko Calon Pengantin Desa ${this.desaExportData} 1 Tahun Terakhir.xlsx`;

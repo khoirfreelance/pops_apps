@@ -889,6 +889,7 @@ import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
 import { exportExcel } from "@/utils/exportExcel";
 import { mapDataIbuHamilToExcel } from "@/mappers/dataIbuHamilMapper";
+import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
 
 const API_PORT = 8000
 const { protocol, hostname } = window.location
@@ -1128,12 +1129,23 @@ export default {
       } else {
         fileNameExport = `Status Risiko Ibu Hamil Desa ${this.desaExportData} ${this.periodeAwalExportData} - ${this.periodeAkhirExportData}.xlsx`;
       }
+      console.log(this.filteredData);
+
       const excelData = mapDataIbuHamilToExcel(this.filteredData);
+      const filterSheetData = mapFilterToExcel(this.filters, 'Bumil')
 
       exportExcel({
-        data: excelData,
         fileName: fileNameExport,
-        sheetName: "Ibu Hamil",
+        sheets: [
+          {
+            sheetName: "Ibu Hamil",
+            data: excelData,
+          },
+          {
+            sheetName: 'Filter',
+            data: filterSheetData
+          }
+        ]
       });
     },
     formatTanggal(tanggal) {
