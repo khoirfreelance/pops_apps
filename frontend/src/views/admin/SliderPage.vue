@@ -39,26 +39,43 @@
                 <i class="fa-regular fa-images me-2"></i> Upload Logo Desa
               </h5>
 
-              <div class="row g-3 align-items-end">
-                <div class="col-md-6">
-                  <input type="file" class="form-control" @change="handleFileChange($event, 'logo')">
+              <div class="row justify-content-center">
+                <!-- Preview -->
+                <div class="col-12 text-center mb-3" v-if="logoSrc">
+                  <img
+                    :src="logoSrc"
+                    alt="Logo Preview"
+                    class="img-fluid rounded shadow-sm"
+                    style="max-height: 100px"
+                  />
                 </div>
-                <div class="col-md-3">
-                  <button class="btn btn-success" @click="handleSubmit">
-                    <i class="fa-solid fa-upload me-2"></i>Upload
-                  </button>
+
+                <div class="col-12 text-center mb-3" v-else>
+                  <div class="card shadow-0 p-4 mx-auto" style="width: 200px;height: 200px;">
+                    <p class="text-muted mb-0">Preview</p>
+                  </div>
                 </div>
-                <div class="col-md-3">
-                  <div v-if="logoSrc" class="p-5 text-center">
-                    <img
-                      :src="logoSrc"
-                      alt="Logo Preview"
-                      class="img-fluid rounded shadow-sm"
-                      style="max-height: 100px"
+
+                <!-- Input + Button (STACKED) -->
+                <div class="col-12 text-center">
+                  <div class="d-flex flex-column align-items-center gap-2">
+                    <input
+                      type="file"
+                      class="form-control"
+                      style="width: 260px"
+                      @change="handleFileChange($event, 'logo')"
                     />
+                    <button
+                      class="btn btn-success"
+                      style="width: 260px"
+                      @click="handleSubmit"
+                    >
+                      <i class="fa-solid fa-upload me-2"></i>Upload
+                    </button>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
 

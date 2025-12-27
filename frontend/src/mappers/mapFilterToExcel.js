@@ -15,9 +15,9 @@ export function mapFilterToExcel(filters, type = 'Anak') {
     if (item.type === 'array') {
       value = Array.isArray(value) && value.length
         ? value.join(', ')
-        : '-'
+        : 'All'
     } else {
-      value = value && value !== '' ? value : '-'
+      value = value && value !== '' ? value : 'All'
     }
 
     rows.push({
