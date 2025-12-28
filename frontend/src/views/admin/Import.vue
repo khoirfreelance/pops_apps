@@ -896,6 +896,9 @@ export default {
       fileError: '',
       uploading: false,
       uploadProgress: 0,
+      successMessage:'',
+      errorMessage:'',
+      confirmMessage:'',
       // config
       ACCEPTED_EXT: ['csv'],
       ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
