@@ -54,7 +54,6 @@ class FooterSettingController extends Controller
     public function statusByProvinsi(Request $request)
     {
         $bulanLalu = Carbon::now()->subMonth();
-
         $rows = DB::table('kunjungan_anak')
             ->select(
                 'provinsi',
@@ -93,4 +92,100 @@ class FooterSettingController extends Controller
             'data' => $result
         ]);
     }
+
+    public function statusByKelurahan(Request $request)
+    {
+        $bulanLalu = Carbon::now()->subMonth();
+        $rows = DB::table('kunjungan_anak')
+            ->select(
+                'provinsi',
+                'kelurahan',
+                DB::raw('COUNT(nik) as total_anak'),
+
+                DB::raw("SUM(CASE WHEN tb_u LIKE '%Stunted%' THEN 1 ELSE 0 END) as stunting"),
+                DB::raw("SUM(CASE WHEN bb_tb LIKE '%Wasted%' THEN 1 ELSE 0 END) as wasting"),
+                DB::raw("SUM(CASE WHEN bb_u LIKE '%Underweight%' THEN 1 ELSE 0 END) as underweight"),
+                DB::raw("SUM(CASE WHEN bb_tb LIKE '%Overweight%' OR bb_tb LIKE '%Obes%' THEN 1 ELSE 0 END) as overweight"),
+                DB::raw("SUM(CASE WHEN naik_berat_badan IS NULL OR naik_berat_badan = 0 THEN 1 ELSE 0 END) as bb_stagnan")
+            )
+            ->whereNotNull('provinsi')
+            ->whereNotNull('kelurahan')
+            ->whereMonth('tgl_pengukuran', $bulanLalu->month)
+            ->whereYear('tgl_pengukuran', $bulanLalu->year)
+            ->groupBy('provinsi', 'kelurahan')
+            ->orderBy('provinsi')
+            ->orderBy('kelurahan')
+            ->get();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $total = max($row->total_anak, 1);
+
+            $result[$row->provinsi][] = [
+                'Desa'       => $row->kelurahan,
+                'Stunting'    => round(($row->stunting / $total) * 100, 1) . '%',
+                'Wasting'     => round(($row->wasting / $total) * 100, 1) . '%',
+                'Underweight' => round(($row->underweight / $total) * 100, 1) . '%',
+                'BB Stagnan'  => round(($row->bb_stagnan / $total) * 100, 1) . '%',
+                'Overweight'  => round(($row->overweight / $total) * 100, 1) . '%',
+                'Total Anak Balita' => (int) $total,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
+
+
+    public function statusByKecamatan(Request $request)
+    {
+        $bulanLalu = Carbon::now()->subMonth();
+        $rows = DB::table('kunjungan_anak')
+            ->select(
+                'provinsi',
+                'kecamatan',
+                DB::raw('COUNT(nik) as total_anak'),
+
+                DB::raw("SUM(CASE WHEN tb_u LIKE '%Stunted%' THEN 1 ELSE 0 END) as stunting"),
+                DB::raw("SUM(CASE WHEN bb_tb LIKE '%Wasted%' THEN 1 ELSE 0 END) as wasting"),
+                DB::raw("SUM(CASE WHEN bb_u LIKE '%Underweight%' THEN 1 ELSE 0 END) as underweight"),
+                DB::raw("SUM(CASE WHEN bb_tb LIKE '%Overweight%' OR bb_tb LIKE '%Obes%' THEN 1 ELSE 0 END) as overweight"),
+                DB::raw("SUM(CASE WHEN naik_berat_badan IS NULL OR naik_berat_badan = 0 THEN 1 ELSE 0 END) as bb_stagnan")
+            )
+            ->whereNotNull('provinsi')
+            ->whereNotNull('kecamatan')
+            ->whereMonth('tgl_pengukuran', $bulanLalu->month)
+            ->whereYear('tgl_pengukuran', $bulanLalu->year)
+            ->groupBy('provinsi', 'kecamatan')
+            ->orderBy('provinsi')
+            ->orderBy('kecamatan')
+            ->get();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $total = max($row->total_anak, 1);
+
+            $result[$row->provinsi][] = [
+                'Desa'       => $row->kecamatan,
+                'Stunting'    => round(($row->stunting / $total) * 100, 1) . '%',
+                'Wasting'     => round(($row->wasting / $total) * 100, 1) . '%',
+                'Underweight' => round(($row->underweight / $total) * 100, 1) . '%',
+                'BB Stagnan'  => round(($row->bb_stagnan / $total) * 100, 1) . '%',
+                'Overweight'  => round(($row->overweight / $total) * 100, 1) . '%',
+                'Total Anak Balita' => (int) $total,
+            ];
+        }
+
+
+        return response()->json([
+            'success' => true,
+            'data' => $result
+        ]);
+    }
+
 }

@@ -135,7 +135,7 @@
                     </ul>
                   </div>
 
-                  <input ref="fileInput" type="file" accept=".csv,text/csv" class="form-control"
+                  <input ref="fileInput" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="form-control"
                     @change="handleFileChange($event)" />
 
                   <!-- Preview / status -->
@@ -333,7 +333,7 @@
                     </ul>
                   </div>
 
-                  <input ref="fileInput" type="file" accept=".csv,text/csv" class="form-control"
+                  <input ref="fileInput" type="file"  accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="form-control"
                     @change="handleFileChange($event)" />
 
                   <!-- Preview / status -->
@@ -527,7 +527,7 @@
                     </ul>
                   </div>
 
-                  <input ref="fileInput" type="file" accept=".csv,text/csv" class="form-control"
+                  <input ref="fileInput" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="form-control"
                     @change="handleFileChange($event)" />
 
                   <!-- Preview / status -->
@@ -900,8 +900,13 @@ export default {
       errorMessage:'',
       confirmMessage:'',
       // config
-      ACCEPTED_EXT: ['csv'],
-      ACCEPTED_MIME: ['text/csv', 'application/vnd.ms-excel', 'text/plain'],
+      ACCEPTED_EXT: ['csv', 'xlsx', 'xls'],
+      ACCEPTED_MIME: [
+        'text/csv',
+        'text/plain',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ],
       MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
       filePreviewTable: [],
       filePreviewTable_catin: [],
@@ -1546,10 +1551,12 @@ export default {
     },
     validateFile(file) {
       // ext
+      console.log('ini filenya:', file);
+
       const nameParts = (file.name || '').split('.')
       const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
       if (!this.ACCEPTED_EXT.includes(ext)) {
-        return { valid: false, message: 'Format file tidak didukung. Hanya .csv yang diperbolehkan.' }
+        return { valid: false, message: 'Format file tidak didukung. Hanya .csv, .xlxs atau .xls yang diperbolehkan.' }
       }
 
       // mime (beberapa browser pakai text/plain)
@@ -1697,8 +1704,11 @@ export default {
     },
     async loadFilePreview(file) {
       if (!file) return
-      if (!file.name.endsWith('.csv')) {
-        this.fileError = 'Hanya file CSV yang diperbolehkan.'
+
+      const allowed = ['.csv', '.xlsx', '.xls']
+
+      if (!allowed.some(ext => file.name.toLowerCase().endsWith(ext))) {
+        this.fileError = 'Hanya file CSV atau Excel (XLS/XLSX) yang diperbolehkan.'
         return
       }
 

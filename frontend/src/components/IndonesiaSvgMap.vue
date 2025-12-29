@@ -94,10 +94,10 @@
   <circle class="Jawa Timur" cx="384.3" cy="284.9" id="IDJI">
   </circle>
   <circle class="Maluku" cx="728.9" cy="194.2" id="IDMA">
-  </circle>
+  </circle> -->
   <circle class="Nusa Tenggara Barat" cx="487.1" cy="307.5" id="IDNB">
   </circle>
-  <circle class="Sulawesi Selatan" cx="538.9" cy="205.5" id="IDSN">
+  <!-- <circle class="Sulawesi Selatan" cx="538.9" cy="205.5" id="IDSN">
   </circle> -->
   <circle class="Jawa Tengah" cx="338.4" cy="279.8" id="IDJT">
   </circle>
@@ -118,28 +118,28 @@
   <circle class="Maluku Utara" cx="693.2" cy="106" id="IDMU">
   </circle>
   <circle class="Kepulauan Riau" cx="306.5" cy="55.3" id="IDKR">
-  </circle>
-  <circle class="Riau" cx="176.1" cy="125.2" id="IDRI">
+  </circle> -->
+  <!-- <circle class="Riau" cx="176.1" cy="125.2" id="IDRI">
   </circle>
   <circle class="Gorontalo" cx="586.7" cy="118.9" id="IDGO">
   </circle>
   <circle class="Sulawesi Utara" cx="624.1" cy="120" id="IDSA">
   </circle>
   <circle class="Sulawesi Barat" cx="524.1" cy="190.8" id="IDSR">
-  </circle>
+  </circle> -->
   <circle class="Jambi" cx="199.1" cy="167.3" id="IDJA">
   </circle>
-  <circle class="Sumatera Selatan" cx="223" cy="204.1" id="IDSS">
+  <!-- <circle class="Sumatera Selatan" cx="223" cy="204.1" id="IDSS">
   </circle>
   <circle class="Lampung" cx="243.9" cy="229.4" id="IDLA">
   </circle>
   <circle class="Bengkulu" cx="193.8" cy="204.9" id="IDBE">
-  </circle>
+  </circle> -->
   <circle class="Sumatera Barat" cx="160.4" cy="151.3" id="IDSB">
   </circle>
   <circle class="Sumatera Utara" cx="126.7" cy="83.9" id="IDSU">
   </circle>
-  <circle class="Aceh" cx="82.9" cy="45.8" id="IDAC">
+  <!-- <circle class="Aceh" cx="82.9" cy="45.8" id="IDAC">
   </circle>
   <circle class="Kalimantan Tengah" cx="410.5" cy="168.6" id="IDKT">
   </circle>
@@ -148,9 +148,9 @@
   <circle class="Bali" cx="445.2" cy="299.8" id="IDBA">
   </circle>
   <circle class="Bangka-Belitung" cx="262.9" cy="178" id="IDBB">
-  </circle>
-  <circle class="Kalimantan Timur" cx="469.2" cy="125.4" id="IDKI">
   </circle> -->
+  <circle class="Kalimantan Timur" cx="469.2" cy="125.4" id="IDKI">
+  </circle>
  </g>
 
 <g id="custom-markers">
@@ -194,9 +194,35 @@
 
       <!-- CONTENT -->
       <div class="tooltip-content">
-        <div class="tooltip-title-modern">{{ tooltip.name }}</div>
+        <!-- <div class="tooltip-title-modern">{{ tooltip.name }}</div>-->
+        <div class="tooltip-title-modern">
+          {{ tooltip.name }}
+          <small v-if="tooltip.data?.Desa">
+            – {{ tooltip.data.Desa }}
+          </small>
+        </div>
 
         <ul class="tooltip-list">
+          <div
+            v-if="tooltip.list && tooltip.list.length > 1"
+            style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px"
+          >
+            <button @click="prevItem" :disabled="currentIndex.value === 0">
+              ◀
+            </button>
+
+            <span>
+              {{ currentIndex.value + 1 }} / {{ tooltip.list.length }}
+            </span>
+
+            <button
+              @click="nextItem"
+              :disabled="currentIndex.value === tooltip.list.length - 1"
+            >
+              ▶
+            </button>
+          </div>
+
           <li v-for="(val, key) in tooltip.data" :key="key">
             <span class="label">{{ key }}</span>
             <span class="value">{{ val }}</span>
@@ -212,62 +238,65 @@
 <script setup>
 import { reactive, onMounted } from 'vue'
 
-// PORT backend kamu
-const API_PORT = 8000
-
-// Bangun base URL dari window.location
-const { protocol, hostname } = window.location
-// contoh hasil: "http://192.168.0.5:8000"
-const baseURL = `${protocol}//${hostname}:${API_PORT}`
-
 /* =========================
    HEATMAP DATA (FROM API)
 ========================== */
+// PORT backend kamu
+const API_PORT = 8000;
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location;
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 const stats = reactive({})
+const kelurahanData = reactive({})
+const currentIndex = reactive({ value: 0 })
+let slideTimer = null
+
 
 /* =========================
    PROVINCES (SVG COORD)
 ========================== */
 const provinces = [
-  /*{ id: 'IDAC', name: 'Aceh', cx: 82.9, cy: 45.8 },
+  //{ id: 'IDAC', name: 'Aceh', cx: 82.9, cy: 45.8 },
   { id: 'IDSU', name: 'Sumatera Utara', cx: 126.7, cy: 83.9 },
   { id: 'IDSB', name: 'Sumatera Barat', cx: 160.4, cy: 151.3 },
-  { id: 'IDRI', name: 'Riau', cx: 176.1, cy: 125.2 },
-  { id: 'IDKR', name: 'Kepulauan Riau', cx: 306.5, cy: 55.3 },
+  //{ id: 'IDRI', name: 'Riau', cx: 176.1, cy: 125.2 },
+  //{ id: 'IDKR', name: 'Kepulauan Riau', cx: 306.5, cy: 55.3 },
   { id: 'IDJA', name: 'Jambi', cx: 199.1, cy: 167.3 },
-  { id: 'IDSS', name: 'Sumatera Selatan', cx: 223.0, cy: 204.1 },
-  { id: 'IDBE', name: 'Bengkulu', cx: 193.8, cy: 204.9 },
-  { id: 'IDLA', name: 'Lampung', cx: 243.9, cy: 229.4 },
-  { id: 'IDBB', name: 'Bangka Belitung', cx: 262.9, cy: 178.0 },
+  //{ id: 'IDSS', name: 'Sumatera Selatan', cx: 223.0, cy: 204.1 },
+  //{ id: 'IDBE', name: 'Bengkulu', cx: 193.8, cy: 204.9 },
+  //{ id: 'IDLA', name: 'Lampung', cx: 243.9, cy: 229.4 },
+  //{ id: 'IDBB', name: 'Bangka Belitung', cx: 262.9, cy: 178.0 },
 
-  { id: 'IDBT', name: 'Banten', cx: 265.0, cy: 262.0 },
-  { id: 'IDJK', name: 'DKI Jakarta', cx: 279.6, cy: 257.0 },
-  { id: 'IDJB', name: 'Jawa Barat', cx: 294.6, cy: 270.4 },*/
+  //{ id: 'IDBT', name: 'Banten', cx: 265.0, cy: 262.0 },
+  //{ id: 'IDJK', name: 'DKI Jakarta', cx: 279.6, cy: 257.0 },
+  //{ id: 'IDJB', name: 'Jawa Barat', cx: 294.6, cy: 270.4 },
   { id: 'IDJT', name: 'Jawa Tengah', cx: 338.4, cy: 279.8 },
-  /*{ id: 'IDYO', name: 'DI Yogyakarta', cx: 350.1, cy: 290.6 },
-  { id: 'IDJI', name: 'Jawa Timur', cx: 384.3, cy: 284.9 },
+ // //{ id: 'IDYO', name: 'DI Yogyakarta', cx: 350.1, cy: 290.6 },
+  //{ id: 'IDJI', name: 'Jawa Timur', cx: 384.3, cy: 284.9 },
 
-  { id: 'IDBA', name: 'Bali', cx: 445.2, cy: 299.8 },
+  //{ id: 'IDBA', name: 'Bali', cx: 445.2, cy: 299.8 },
   { id: 'IDNB', name: 'Nusa Tenggara Barat', cx: 487.1, cy: 307.5 },
-  { id: 'IDNT', name: 'Nusa Tenggara Timur', cx: 560.4, cy: 306.0 },
+  //{ id: 'IDNT', name: 'Nusa Tenggara Timur', cx: 560.4, cy: 306.0 },
 
-  { id: 'IDKB', name: 'Kalimantan Barat', cx: 357.0, cy: 139.9 },
-  { id: 'IDKT', name: 'Kalimantan Tengah', cx: 410.5, cy: 168.6 },
-  { id: 'IDKS', name: 'Kalimantan Selatan', cx: 448.7, cy: 193.7 },
+  //{ id: 'IDKB', name: 'Kalimantan Barat', cx: 357.0, cy: 139.9 },
+  //{ id: 'IDKT', name: 'Kalimantan Tengah', cx: 410.5, cy: 168.6 },
+ // { id: 'IDKS', name: 'Kalimantan Selatan', cx: 448.7, cy: 193.7 },
   { id: 'IDKI', name: 'Kalimantan Timur', cx: 469.2, cy: 125.4 },
-  { id: 'IDKU', name: 'Kalimantan Utara', cx: 467.7, cy: 70.0 },
+  //{ id: 'IDKU', name: 'Kalimantan Utara', cx: 467.7, cy: 70.0 },
 
-  { id: 'IDSA', name: 'Sulawesi Utara', cx: 624.1, cy: 120.0 },
-  { id: 'IDGO', name: 'Gorontalo', cx: 586.7, cy: 118.9 },
-  { id: 'IDST', name: 'Sulawesi Tengah', cx: 571.3, cy: 161.0 },
-  { id: 'IDSR', name: 'Sulawesi Barat', cx: 524.1, cy: 190.8 },
-  { id: 'IDSN', name: 'Sulawesi Selatan', cx: 538.9, cy: 205.5 },
-  { id: 'IDSG', name: 'Sulawesi Tenggara', cx: 572.9, cy: 203.6 },
+  //{ id: 'IDSA', name: 'Sulawesi Utara', cx: 624.1, cy: 120.0 },
+  //{ id: 'IDGO', name: 'Gorontalo', cx: 586.7, cy: 118.9 },
+  //{ id: 'IDST', name: 'Sulawesi Tengah', cx: 571.3, cy: 161.0 },
+  //{ id: 'IDSR', name: 'Sulawesi Barat', cx: 524.1, cy: 190.8 },
+  //{ id: 'IDSN', name: 'Sulawesi Selatan', cx: 538.9, cy: 205.5 },
+  //{ id: 'IDSG', name: 'Sulawesi Tenggara', cx: 572.9, cy: 203.6 },
 
-  { id: 'IDMA', name: 'Maluku', cx: 728.9, cy: 194.2 },
-  { id: 'IDMU', name: 'Maluku Utara', cx: 693.2, cy: 106.0 },
-  { id: 'IDPB', name: 'Papua Barat', cx: 792.6, cy: 160.1 },
-  { id: 'IDPA', name: 'Papua', cx: 919.8, cy: 213.1 },*/
+  //{ id: 'IDMA', name: 'Maluku', cx: 728.9, cy: 194.2 },
+  //{ id: 'IDMU', name: 'Maluku Utara', cx: 693.2, cy: 106.0 },
+  //{ id: 'IDPB', name: 'Papua Barat', cx: 792.6, cy: 160.1 },
+  //{ id: 'IDPA', name: 'Papua', cx: 919.8, cy: 213.1 },
 ]
 
 /* =========================
@@ -301,7 +330,25 @@ async function loadHeatmapStats() {
   }
 }
 
-onMounted(loadHeatmapStats)
+async function loadKelurahanStats() {
+  try {
+    const res = await fetch(`${baseURL}/api/public/heatmap-kecamatan`, {
+      headers: { Accept: 'application/json' },
+    })
+    const json = await res.json()
+    if (json.success && json.data) {
+      Object.assign(kelurahanData, json.data)
+    }
+  } catch (err) {
+    console.error('Gagal load kelurahan', err)
+  }
+}
+
+onMounted(() => {
+  loadHeatmapStats()
+  loadKelurahanStats()
+})
+
 
 /* =========================
    TOOLTIP STATE
@@ -317,7 +364,8 @@ const tooltip = reactive({
 /* =========================
    TOOLTIP HANDLER
 ========================== */
-function moveTooltip(event, prov) {
+// eslint-disable-next-line no-unused-vars
+function moveTooltip_old(event, prov) {
   const key = normalizeProvName(prov.name)
 
   tooltip.visible = true
@@ -328,9 +376,82 @@ function moveTooltip(event, prov) {
   tooltip.y = event.clientY - 60
 }
 
-function hideTooltip() {
+// eslint-disable-next-line no-unused-vars
+function moveTooltip_button(event, prov) {
+  const key = normalizeProvName(prov.name)
+  const list = kelurahanData[key] || []
+
+  currentIndex.value = 0
+
+  tooltip.visible = true
+  tooltip.name = prov.name
+  tooltip.list = list
+  tooltip.data = list.length ? list[0] : stats[key] || {}
+
+  tooltip.x = event.clientX + 24
+  tooltip.y = event.clientY - 60
+}
+
+// eslint-disable-next-line no-unused-vars
+function hideTooltip_old() {
   tooltip.visible = false
 }
+
+function hideTooltip() {
+  tooltip.visible = false
+
+  if (slideTimer) {
+    clearInterval(slideTimer)
+    slideTimer = null
+  }
+}
+
+
+function moveTooltip(event, prov) {
+  const key = normalizeProvName(prov.name)
+  const list = kelurahanData[key] || []
+
+  currentIndex.value = 0
+
+  tooltip.visible = true
+  tooltip.name = prov.name
+  tooltip.list = list
+  tooltip.data = list.length ? list[0] : stats[key] || {}
+
+  tooltip.x = event.clientX + 24
+  tooltip.y = event.clientY - 60
+
+  // START AUTO SLIDE
+  if (slideTimer) clearInterval(slideTimer)
+
+  if (list.length > 1) {
+    slideTimer = setInterval(() => {
+      currentIndex.value =
+        (currentIndex.value + 1) % list.length
+      tooltip.data = list[currentIndex.value]
+    }, 2000)
+  }
+}
+
+
+// eslint-disable-next-line no-unused-vars
+function nextItem() {
+  if (!tooltip.list) return
+  if (currentIndex.value < tooltip.list.length - 1) {
+    currentIndex.value++
+    tooltip.data = tooltip.list[currentIndex.value]
+  }
+}
+
+// eslint-disable-next-line no-unused-vars
+function prevItem() {
+  if (!tooltip.list) return
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+    tooltip.data = tooltip.list[currentIndex.value]
+  }
+}
+
 </script>
 
 

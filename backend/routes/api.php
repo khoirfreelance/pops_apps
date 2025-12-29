@@ -162,7 +162,8 @@ Route::get('/public/slider-images', [SliderImageController::class, 'index']);
 Route::get('/public/footer', [FooterSettingController::class, 'show']);
 Route::get('/public/footer-social', [FooterSocialLinkController::class, 'index']);
 Route::get('/public/heatmap', [FooterSettingController::class, 'statusByProvinsi']);
-
+Route::get('/public/heatmap-kelurahan', [FooterSettingController::class, 'statusByKelurahan']);
+Route::get('/public/heatmap-kecamatan', [FooterSettingController::class, 'statusByKecamatan']);
 /* =========================
    ADMIN ONLY
 ========================== */
