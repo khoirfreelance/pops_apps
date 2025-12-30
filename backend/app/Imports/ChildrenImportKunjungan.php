@@ -15,8 +15,8 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
 class ChildrenImportKunjungan implements
-    ToModel, 
-    WithHeadingRow, 
+    ToModel,
+    WithHeadingRow,
     WithCustomCsvSettings
 {
     protected array $wilayahUser = [];
@@ -24,13 +24,35 @@ class ChildrenImportKunjungan implements
         $this->loadWilayahUser();
     }
 
+    // Irul Additional
+    protected function detectDelimiter(string $path): string
+    {
+        $handle = fopen($path, 'r');
+        $firstLine = fgets($handle);
+        fclose($handle);
+
+        $comma = substr_count($firstLine, ',');
+        $semicolon = substr_count($firstLine, ';');
+
+        return $semicolon > $comma ? ';' : ',';
+    }
+
     public function getCsvSettings(): array
+    {
+        $path = request()->file('file')->getRealPath();
+
+        return [
+            'delimiter' => $this->detectDelimiter($path),
+            'input_encoding' => 'UTF-8',
+        ];
+    }
+    /* public function getCsvSettings(): array
     {
         return [
             'delimiter' => ',',
             'input_encoding' => 'UTF-8',
         ];
-    }
+    } */
 
     public function model(array $row)
     {
@@ -41,7 +63,7 @@ class ChildrenImportKunjungan implements
             // =========================
             $tglLahir = $this->convertDate($row['tgl_lahir'] ?? null);
             $tglUkur  = $this->convertDate($row['tanggal_pengukuran'] ?? null);
-
+            //dump($tglLahir, $tglUkur);
             // =========================
             // 2. Hitung usia & status
             // =========================
@@ -55,8 +77,6 @@ class ChildrenImportKunjungan implements
             // 3. Status gizi
             // =========================
 
-
-            
             $status_bbu  = $this->statusBB($row["bbu"]);
             $status_tbu  = $this->statusTB($row["tbu"]);
             $status_bbtb = $this->statusBBTB($row["bbtb"]);
@@ -152,14 +172,57 @@ class ChildrenImportKunjungan implements
     private function normalizeText($value)
     {
         return $value ? strtoupper(trim($value)) : null;
-    }   
+    }
 
     private function normalizeStatus($value)
     {
         return $value ? ucwords(trim($value)) : null;
-    }   
+    }
 
+    // Irul Custom ConvertDate
     private function convertDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $date = trim($date);
+
+        // 1️⃣ Coba format yang jelas dulu
+        $formats = [
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        foreach ($formats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // 2️⃣ Fallback: split manual (untuk CSV jelek)
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            // asumsi kalau bagian pertama 4 digit = tahun
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        return null;
+    }
+
+    /* private function convertDate($date)
     {
         if (!$date)
             return null;
@@ -170,7 +233,7 @@ class ChildrenImportKunjungan implements
                 : "{$parts[0]}-{$parts[1]}-{$parts[2]}";
         }
         return null;
-    }
+    } */
 
     /** Hitung umur (bulan) */
     private function hitungUmurBulan($tglLahir, $tglUkur)

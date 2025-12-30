@@ -126,12 +126,12 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <li>
+                      <!-- <li>
                         Silahkan unduh contoh dengan klik
                         <a :href="exampleFile">Example.csv</a>
-                      </li>
+                      </li> -->
                     </ul>
                   </div>
 
@@ -324,12 +324,12 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <li>
+                      <!-- <li>
                         Silahkan unduh contoh dengan klik
                         <a :href="exampleFile">Example.csv</a>
-                      </li>
+                      </li> -->
                     </ul>
                   </div>
 
@@ -518,12 +518,12 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv</li>
+                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <li>
+                      <!-- <li>
                         Silahkan unduh contoh dengan klik
                         <a :href="exampleFile">Example.csv</a>
-                      </li>
+                      </li> -->
                     </ul>
                   </div>
 
@@ -907,7 +907,7 @@ export default {
         'application/vnd.ms-excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       ],
-      MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB
+      MAX_FILE_SIZE: 50 * 1024 * 1024, // 5 MB
       filePreviewTable: [],
       filePreviewTable_catin: [],
       filePreviewTable_bumil: []
@@ -1594,48 +1594,55 @@ export default {
       reader.readAsText(file.slice(0, 2000))
     },
     async uploadCSV() {
-      //console.log(this.aktifitas);
-
+      // 1️⃣ Cek file ada atau tidak
       if (!this.file) {
-        this.fileError = 'Tidak ada file untuk di-upload.'
+        this.showError('Tidak ada file untuk di-upload.')
         return
       }
 
-      // 🧭 Tentukan endpoint sesuai menu aktif
+      // 2️⃣ Validasi file (OPSI 1)
+      const validation = this.validateFile(this.file)
+      if (!validation.valid) {
+        this.showError(validation.message)
+        return
+      }
+
+      // 3️⃣ Tentukan endpoint sesuai menu aktif
       let UPLOAD_URL
       switch (this.activeMenu) {
         case 'anak':
           switch (this.aktifitas) {
             case 'kunjungan':
               UPLOAD_URL = `${baseURL}/api/children/import_kunjungan`
-              break;
+              break
             case 'pendampingan':
               UPLOAD_URL = `${baseURL}/api/children/import_pendampingan`
-              break;
+              break
             case 'intervensi_anak':
               UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
-              break;
-            default:
-              break;
+              break
           }
-          break;
+          break
+
         case 'bumil':
           switch (this.aktifitas) {
             case 'pendampingan_bumil':
               UPLOAD_URL = `${baseURL}/api/pregnancy/import`
-              break;
+              break
             case 'intervensi_bumil':
               UPLOAD_URL = `${baseURL}/api/pregnancy/import_intervensi`
-              break;
-            default:
-              break;
+              break
           }
-          break;
+          break
+
         case 'catin':
           UPLOAD_URL = `${baseURL}/api/bride/import`
-          break;
-        default:
-          break;
+          break
+      }
+
+      if (!UPLOAD_URL) {
+        this.showError('Endpoint upload tidak ditemukan.')
+        return
       }
 
       const formData = new FormData()
@@ -1644,7 +1651,6 @@ export default {
       try {
         this.uploading = true
         this.uploadProgress = 0
-        this.fileError = ''
 
         const res = await axios.post(UPLOAD_URL, formData, {
           headers: {
@@ -1660,26 +1666,21 @@ export default {
           }
         })
 
-        this.showSuccess(res.data.message || "Data berhasil diimport!")
+        // ✅ sukses
+        this.showSuccess(res.data.message || 'Data berhasil diimport!')
         this.formOpen = false
         this.formOpen_bumil = false
         this.formOpen_catin = false
-        // ✅ Respons sukses
-        //console.log('Upload berhasil:', res.data)
-        if (this.$bvToast) {
-          this.$bvToast.toast('Upload CSV berhasil diproses.', {
-            variant: 'success',
-            solid: true
-          })
-        }
 
-        // 🔄 Reset input file setelah upload
         this.removeFile()
       } catch (err) {
         console.error('Upload error:', err)
-        this.fileError =
-          (err.response && err.response.data && err.response.data.message) ||
+
+        const message =
+          err.response?.data?.message ||
           'Gagal upload file. Periksa format CSV atau koneksi server.'
+
+        this.showError(message)
       } finally {
         this.uploading = false
         this.uploadProgress = 0
