@@ -1804,13 +1804,14 @@ export default {
         fileName: fileNameExport,
         sheets: [
           {
+            sheetName: 'Filter',
+            data: filterSheetData
+          },
+          {
             sheetName: 'Gizi Anak',
             data: excelData
           },
-          {
-            sheetName: 'Filter',
-            data: filterSheetData
-          }
+
         ]
       });
     },

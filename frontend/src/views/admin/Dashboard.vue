@@ -2431,16 +2431,16 @@ export default {
           fileName: fileName+'.'+xlsx,
           sheets: [
             {
-              sheetName: "Status Gizi Anak Beranda",
-              data: excelData,
+              sheetName: 'Filter',
+              data: filterSheetData
             },
             {
               sheetName: "Data Anak",
               data: detailData,
             },
             {
-              sheetName: 'Filter',
-              data: filterSheetData
+              sheetName: "Status Gizi Ganda",
+              data: excelData,
             }
           ]
         });
@@ -2502,17 +2502,18 @@ export default {
           fileName:  fileName+'.'+xlsx,
           sheets: [
             {
-              sheetName: "Status Resiko Ibu Hamil Beranda",
-              data: excelData,
+              sheetName: 'Filter',
+              data: filterSheetData
             },
             {
               sheetName: "Ibu Hamil",
               data: detailData,
             },
             {
-              sheetName: 'Filter',
-              data: filterSheetData
+              sheetName: "Status Risiko Ganda Ibu Hamil",
+              data: excelData,
             }
+
           ]
         });
       }
@@ -2588,13 +2589,13 @@ export default {
           fileName:  fileName+'.'+xlsx,
           sheets: [
             {
+              sheetName: 'Filter',
+              data: filterSheetData
+            },
+            {
               sheetName: "Calon Pengantin",
               data: detailData,
             },
-            {
-              sheetName: 'Filter',
-              data: filterSheetData
-            }
           ]
         });
       }
@@ -2672,7 +2673,7 @@ export default {
         if (detailEl) {
           detailEl.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'center'
           })
         }
       }, 150)

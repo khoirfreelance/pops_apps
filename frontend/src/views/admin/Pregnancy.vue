@@ -1138,13 +1138,14 @@ export default {
         fileName: fileNameExport,
         sheets: [
           {
+            sheetName: 'Filter',
+            data: filterSheetData
+          },
+          {
             sheetName: "Ibu Hamil",
             data: excelData,
           },
-          {
-            sheetName: 'Filter',
-            data: filterSheetData
-          }
+
         ]
       });
     },
