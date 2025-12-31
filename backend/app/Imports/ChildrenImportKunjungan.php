@@ -56,6 +56,7 @@ class ChildrenImportKunjungan implements
 
     public function model(array $row)
     {
+        //dd($row);
         return DB::transaction(function () use ($row) {
 
             // =========================
@@ -104,8 +105,10 @@ class ChildrenImportKunjungan implements
                 'bb' =>  $this->normalizeDecimal($row['berat']??null),
                 'tb' =>  $this->normalizeDecimal($row['tinggi']??null),
                 'lila' => $this->normalizeDecimal($row['lila'] ?? null),
-                'provinsi' => $this->wilayahUser['provinsi'],
-                'kota' => $this->wilayahUser['kota'],
+                'provinsi' => $this->normalizeText($row['prov']),
+                'kota' => $this->normalizeText($row['kabkota']),
+                //'provinsi' => $this->wilayahUser['provinsi'],
+                //'kota' => $this->wilayahUser['kota'],
                 'kecamatan' => $this->normalizeText($row['kec']),
                 'kelurahan' => $this->normalizeText($row['desakel']),
 
@@ -122,8 +125,10 @@ class ChildrenImportKunjungan implements
             // 5. Wilayah & Posyandu
             // =========================
             $wilayah = Wilayah::firstOrCreate([
-                'provinsi' => $this->wilayahUser['provinsi'],
-                'kota' => $this->wilayahUser['kota'],
+                /* 'provinsi' => $this->wilayahUser['provinsi'],
+                'kota' => $this->wilayahUser['kota'], */
+                'provinsi' => $this->normalizeText($row['prov']),
+                'kota' => $this->normalizeText($row['kabkota']),
                 'kecamatan' => $this->normalizeText($row['kec']),
                 'kelurahan' => $this->normalizeText($row['desakel']),
             ]);

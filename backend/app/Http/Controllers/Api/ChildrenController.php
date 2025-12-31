@@ -912,8 +912,25 @@ class ChildrenController extends Controller
 
     public function import_kunjungan(Request $request)
     {
+        //dd($request['file']);
         $request->validate([
-            'file' => 'required|mimes:csv,xlsx,xls|max:5120',
+            'file' => [
+                'required',
+                'file',
+                'max:5120',
+                function ($attr, $file, $fail) {
+                    $allowed = [
+                        'text/csv',
+                        'text/plain',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    ];
+
+                    if (!in_array($file->getMimeType(), $allowed)) {
+                        $fail('Tipe file tidak valid.');
+                    }
+                },
+            ],
         ]);
 
         DB::transaction(function () use ($request) {
