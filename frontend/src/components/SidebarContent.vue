@@ -140,15 +140,15 @@
         ref="tooltipItem"
       >
         <router-link
-          to="/admin/slider"
+          to="/admin/config"
           class="nav-link"
-          :class="{ active: isActive('/admin/slider') }"
+          :class="{ active: isActive('/admin/config') }"
         >
           <i class="bi bi-gear"></i>
           <span v-if="!isCollapsed">Konfigurasi</span>
         </router-link>
       </li>
-      <li
+      <!-- <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"
         title="Footer"
@@ -162,7 +162,7 @@
           <i class="bi bi-layout-text-window-reverse"></i>
           <span v-if="!isCollapsed">Footer</span>
         </router-link>
-      </li>
+      </li> -->
       <li
         :data-bs-toggle="isCollapsed ? 'tooltip' : null"
         data-bs-placement="right"

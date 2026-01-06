@@ -5,7 +5,7 @@ import Home from '@/views/Home.vue'
 import Dashboard from '@/views/admin/Dashboard.vue'
 import Login from '@/views/admin/Login.vue'
 import Forgot from '@/views/admin/Forgot.vue'
-import Config from '@/views/admin/Config.vue'
+//import Config from '@/views/admin/Config.vue'
 import Children from '@/views/admin/Children.vue'
 import Pregnancy from '@/views/admin/Pregnancy.vue'
 import Bride from '@/views/admin/Bride.vue'
@@ -20,7 +20,7 @@ import Detail from '@/views/admin/Detail.vue'
 import Import from '@/views/admin/Import.vue'
 import Homepage from '@/views/Homepage.vue'
 import SliderPage from '@/views/admin/SliderPage.vue'
-import Footer from '@/views/admin/Footer.vue'
+//import Footer from '@/views/admin/Footer.vue'
 
 const routes = [
   {
@@ -106,12 +106,12 @@ const routes = [
     component: Forgot,
   },
   //administrator
-  {
+  /* {
     path: '/admin/config',
     name: 'config',
     component: Config,
     meta: { requiresAuth: true },
-  },
+  }, */
   {
     path: '/admin/log',
     name: 'log',
@@ -130,15 +130,16 @@ const routes = [
     component: Homepage
   },
   {
-    path: '/admin/slider',
+    path: '/admin/config',
     name: 'AdminSlider',
     component: SliderPage,
+    meta: { requiresAuth: true },
   },
-   {
+  /*  {
     path: '/admin/footer',
     name: 'AdminFooter',
     component: Footer,
-  },
+  }, */
 ]
 
 const router = createRouter({
