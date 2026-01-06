@@ -974,32 +974,44 @@ class PregnancyController extends Controller
         }
     }
 
+    private function mapDetailBumil($rows)
+    {
+        return $rows
+            ->groupBy('nik_ibu')
+            ->map(function ($items) {
+                $main = $items->sortByDesc('tgl_pendampingan')->first();
+
+                $intervensi = Intervensi::where('nik_subjek', $main->nik_ibu)
+                ->orderBy('tgl_intervensi', 'DESC')
+                ->first();
+
+                return [
+                    'id' => $main->nik_ibu ?? '-',
+                    'nama' => $main->nama_ibu ?? '-',
+                    'usia' => $main->usia_ibu ?? '-',
+                    'rw' => $main->rw ?? '-',
+                    'rt' => $main->rt ?? '-',
+                    'anemia' => $main->status_gizi_hb ?? '-',
+                    'kek' => $main->status_gizi_lila ?? '-',
+                    'risiko' => $main->status_risiko_usia ?? '-',
+                    'tanggal' => optional($main->tanggal_pemeriksaan_terakhir)->format('Y-m-d'),
+                    'jenis'    => $intervensi->kategori ?? '-',
+                ];
+            })
+        ->values();
+    }
+
     public function tren(Request $request)
     {
         try {
-            /* $user = Auth::user();
-
-            if (!$user) {
-                return response()->json(['message' => 'User tidak ditemukan'], 404);
-            }
-
-            // 1️⃣ Wilayah default dari user
-            $wilayah = [
-                'kelurahan' => $user->kelurahan ?? null,
-                'kecamatan' => $user->kecamatan ?? null,
-                'kota' => $user->kota ?? null,
-                'provinsi' => $user->provinsi ?? null,
-            ]; */
-
             $filterKelurahan = $request->kelurahan;
             $data = Pregnancy::get();
 
             $data = $data->groupBy('nik_ibu')->map(function ($group) {
                 return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
             });
-
+            //dump($data);
             $dataRaw = $data;
-
             // Filter default wilayah user
             if (!empty($filterKelurahan)) {
                 $data->where('kelurahan',$filterKelurahan);
@@ -1036,6 +1048,7 @@ class PregnancyController extends Controller
                 fn($i) =>
                 Carbon::parse($i->tanggal_pemeriksaan_terakhir)->format('Y-m') === $previousMonth
             );
+
 
             // 6️⃣ Fungsi hitung status
             $countStatus = function ($rows) {
@@ -1085,26 +1098,6 @@ class PregnancyController extends Controller
                 $trenIcon = $trendPercent > 0
                     ? 'fa-solid fa-caret-up'
                     : ($trendPercent < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus');
-                //UCOK
-               /*  $prevDivision = $prevJumlah;
-                if($prevJumlah === 0){
-                    $prevDivision = 1;
-                }
-                $deltaPersen = (($jumlah - $prevJumlah)/$prevDivision)*100;
-                $tren = $deltaPersen === 0
-                    ? '-'
-                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
-
-                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus'); */
-                /* // tren dalam persentase
-                $deltaPersen = $persen - $prevPersen;
-                $tren = $deltaPersen === 0
-                    ? '-'
-                    : ($deltaPersen > 0 ? "{$deltaPersen}%" : "" . abs($deltaPersen) . "%");
-
-                $trenClass = $deltaPersen > 0 ? 'text-danger' : ($deltaPersen < 0 ? 'text-success' : 'text-muted');
-                $trenIcon = $deltaPersen > 0 ? 'fa-solid fa-caret-up' : ($deltaPersen < 0 ? 'fa-solid fa-caret-down' : 'fa-solid fa-minus'); */
 
                 $dataTable[] = [
                     'status' => $status,
@@ -1131,6 +1124,7 @@ class PregnancyController extends Controller
             return response()->json([
                 'total' => $currCount['total'] ?? 0,
                 'dataTable_bumil' => $dataTable,
+                'detail' => $this->mapDetailBumil($current),
                 'periode' => [
                     'current' => $currentMonth,
                     'previous' => $previousMonth,

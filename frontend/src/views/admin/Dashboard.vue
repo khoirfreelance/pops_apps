@@ -2163,6 +2163,8 @@ export default {
       // ===== DATA TABLE =====
       //filteredAnakGabungan: [],
       //filteredBumil: [],
+      detailAnak:[],
+      detailBumil:[],
       detailCatin:[],
       dataTable_catin: [],
 
@@ -2371,54 +2373,22 @@ export default {
 
       var xlsx = 'xlsx'
       if(tagId === 'giziAnakExport'){
-        const detail = this.filteredAnakGabungan.map(item => {
-          const raw = item.raw || {}
-          const k = raw.data_kunjungan || {}
-          const i = raw.data_intervensi?.[0] || {}
+        const detail = this.detailAnak.map(item => {
 
           return {
-            id: k.id ?? '-',
-            nama: raw.nama ?? '-',
-            nik: raw.nik ?? '-',
-            gender: k.jk ?? '-',
-
-            provinsi: k.provinsi ?? '-',
-            kota: k.kota ?? '-',
-            kecamatan: k.kecamatan ?? '-',
-            kelurahan: k.kelurahan ?? '-',
-            rt: k.rt ?? '-',
-            rw: k.rw ?? '-',
-            posyandu: raw.posyandu ?? k.posyandu ?? '-',
-
-            usia: k.usia_saat_ukur ?? '-',
-            tgl_ukur: k.tgl_pengukuran ?? '-',
-
-            bbu: k.bb_u ?? '-',
-            tbu: k.tb_u ?? '-',
-            bbtb: k.bb_tb ?? '-',
-
-            bb: k.bb ?? '-',
-            tb: k.tb ?? '-',
-            bb_naik: k.naik_berat_badan ?? '-',
-
-            intervensi: i.kategori ?? '-',
-
-            tmpt_dilahirkan: '-',
-            tgl_lahir: k.tgl_lahir ?? '-',
-            bb_lahir: k.bb_lahir ?? '-',
-            pb_lahir: k.tb_lahir ?? '-',
-            persalinan: '-',
-
-            nama_ayah: '-',
-            nama_ibu: k.nama_ortu ?? '-',
-            pekerjaan_ayah: '-',
-            pekerjaan_ibu: '-',
-            usia_ayah: '-',
-            usia_ibu: '-',
-            anak_ke: '-',
-
-            kader_pendamping: i.petugas ?? '-',
-            tgl_pendampingan: i.tgl_intervensi ?? '-'
+            id: item.id ?? '-',
+            nama: item.nama ?? '-',
+            nik: item.nik ?? '-',
+            gender: item.jk ?? '-',
+            rt: item.rt ?? '-',
+            rw: item.rw ?? '-',
+            posyandu: item.posyandu ?? '-',
+            usia: item.usia ?? '-',
+            tgl_ukur: item.tgl_ukur ?? '-',
+            bbu: item.bbu ?? '-',
+            tbu: item.tbu ?? '-',
+            bbtb: item.bbtb ?? '-',
+            intervensi: item.jenis ?? '-',
           }
         })
 
@@ -2447,47 +2417,19 @@ export default {
       }
 
       if(tagId === 'kesehatanBumilExport'){
-        const detail = this.filteredBumil.map(item => {
-          const k = item.raw?.kunjungan || {}
-          const i = item.raw?.intervensi?.[0] || {}
+        const detail = this.detailBumil.map(item => {
 
           return {
-            id: item.nik ?? '-',
+            id: item.id ?? '-',
             nama: item.nama ?? '-',
-            usia: item.umur ?? k.usia_ibu ?? '-',
-
-            nama_suami: k.nama_suami ?? '-',
-
-            risiko: item.risiko
-              ? 'Risiko'
-              : 'Normal',
-
-            rw: item.rw ?? k.rw ?? '-',
-            rt: item.rt ?? k.rt ?? '-',
-
-            tanggal_pemeriksaan_terakhir:
-              k.tanggal_pemeriksaan_terakhir ?? '-',
-
-            berat_badan: k.berat_badan ?? '-',
-            tinggi_badan: k.tinggi_badan ?? '-',
-            imt: k.imt ?? '-',
-            kadar_hb: k.kadar_hb ?? '-',
-            lila: k.lila ?? '-',
-
-            anemia: item.anemia
-              ? 'Anemia'
-              : 'Normal',
-
-            kek: item.kek
-              ? 'KEK'
-              : 'Normal',
-
-            posyandu: item.posyandu ?? k.posyandu ?? '-',
-
-            intervensi:
-              i.kategori
-              ?? item.intervensi
-              ?? 'Belum Mendapat Bantuan'
+            usia: item.umur ?? '-',
+            risiko: item.risiko ?? '-',
+            anemia: item.anemia ?? '-',
+            kek: item.kek ?? '-',
+            rw: item.rw ?? '-',
+            rt: item.rt ?? '-',
+            tanggal_pemeriksaan_terakhir: item.tanggal ?? '-',
+            intervensi: item.jenis ?? '-',
           }
         })
 
@@ -3476,6 +3418,7 @@ export default {
 
         // ==================== ANAK ====================
         if (this.activeMenu === 'anak') {
+          this.detailAnak = res.data.detail
           // ----- BB/U -----
           const bbCurrent = res.data.bb?.data?.current || {}
           const bbLast = res.data.bb?.data?.previous || {}
@@ -3617,6 +3560,7 @@ export default {
 
         // ==================== BUMIL & CATIN (tidak perlu warna pie dinamis) ====================
         if (this.activeMenu === 'bumil') {
+          this.detailBumil = res.data.detail
           this.dataTable_bumil = (res.data.dataTable_bumil || []).map((row) => ({
             status: row.status || '-',
             jumlah: row.jumlah ?? 0,

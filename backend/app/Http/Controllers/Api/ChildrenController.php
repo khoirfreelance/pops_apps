@@ -1332,30 +1332,49 @@ class ChildrenController extends Controller
         return null;
     }
 
+    private function mapDetailAnak($rows)
+    {
+        return $rows
+            ->groupBy('nik')
+            ->map(function ($items) {
+                $main = $items->sortByDesc('tgl_pengukuran')->first();
+
+                $intervensi = Intervensi::where('nik_subjek', $main->nik)
+                ->orderBy('tgl_intervensi', 'DESC')
+                ->first();
+
+                return [
+                    // informasi utama
+                    'id' => $main->id,
+                    'nama' => $main->nama_anak ?? '-',
+                    'nik' => $main->nik ?? '',
+                    'jk' => $main->jk ?? '-',
+                    'posyandu' => $main->posyandu ?? '-',
+                    'usia'     => $main->usia_saat_ukur ?? '-',
+                    'tgl_ukur' => optional($main->tgl_pengukuran)->format('Y-m-d') ?? '-',
+                    'bbu'      => $main->bb_u ?? '-',
+                    'tbu'      => $main->tb_u ?? '-',
+                    'bbtb'     => $main->bb_tb ?? '-',
+                    'jenis'    => $intervensi->kategori ?? '-',
+                    'rw'       => $main->rw ?? '-',
+                    'rt'       => $main->rt ?? '-',
+                ];
+            })
+            ->values();
+            //dd($rows);
+    }
+
     public function tren(Request $request)
     {
-        $user = Auth::user();
-
-        // 1. Ambil data anggota TPK
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        // 2. Ambil posyandu & wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        // 3. Default filter kelurahan user
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
-        $query = Kunjungan::query();
-        if ($filterKelurahan) {
-            $query->where('kelurahan', $filterKelurahan);
-        }
+       $query = Kunjungan::query();
+        if ($request->filled('provinsi'))
+            $query->where('provinsi', $request->provinsi);
+        if ($request->filled('kota'))
+            $query->where('kota', $request->kota);
+        if ($request->filled('kecamatan'))
+            $query->where('kecamatan', $request->kecamatan);
+        if ($request->filled('kelurahan'))
+            $query->where('kelurahan', $request->kelurahan);
 
         // 4. Filter manual (opsional) dari UI
         if ($request->filled('posyandu'))
@@ -1380,11 +1399,20 @@ class ChildrenController extends Controller
             $q->whereBetween(\DB::raw("DATE_FORMAT(tgl_pengukuran, '%Y-%m')"), [$bulanLalu, $bulanIni]);
         });
 
-
-
         // 6. Ambil seluruh data Kunjungan yg relevan
         $data = $query->get();
 
+        //dump($data);
+        // bikin range bulan ini
+        $awalBulanIni  = Carbon::createFromFormat('Y-m', $bulanIni)->startOfMonth();
+        $akhirBulanIni = Carbon::createFromFormat('Y-m', $bulanIni)->endOfMonth();
+
+        // clone query biar gak ganggu query utama
+        $currentQuery = clone $query;
+
+        $current = $currentQuery
+            ->whereBetween('tgl_pengukuran', [$awalBulanIni, $akhirBulanIni])
+            ->get();
 
         // 7. Kirim ke buildTrend dgn bulan yang sudah ditentukan
         $tren = [
@@ -1410,6 +1438,8 @@ class ChildrenController extends Controller
                 'Gizi Lebih (Overweight)' => ['Overweight'],
                 'Obesitas (Obese)' => ['Obese', 'Obesitas'],
             ], $bulanIni, $bulanLalu),
+
+            'detail' => $this->mapDetailAnak($current),
         ];
 
         return response()->json($tren);
