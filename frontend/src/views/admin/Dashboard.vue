@@ -71,10 +71,41 @@
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
                 <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
-                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
-                  <option :value="kelurahan" class="small">{{ kelurahan }}</option>
+                <select
+                  class="form-select"
+                  v-if="isAdmin"
+                  v-model="filters.kelurahan_id"
+                  @change="handleRegionChange"
+                >
+                  <option value="">All</option>
+
+                  <optgroup
+                    v-for="group in listKelurahan"
+                    :key="group.label"
+                    :label="group.label"
+                  >
+                    <option
+                      v-for="opt in group.options"
+                      :key="opt.id"
+                      :value="opt.id"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </optgroup>
+                </select>
+
+                <select v-model="filters.kelurahan_id" class="form-select" v-else :disabled="!isAdmin">
+                  <option v-for="k in listKelurahan" :key="k.nama" :value="k.nama">
+                    {{ k.nama }}
+                  </option>
                 </select>
               </div>
+              <!-- <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
+                <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
+                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" :disabled="!isAdmin()">
+                  <option :value="kelurahan" class="small">{{ kelurahan }}</option>
+                </select>
+              </div> -->
 
               <!-- Posyandu -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
@@ -2133,6 +2164,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      listKelurahan: [],
       isExporting: false,
       exportCharts: ['bb', 'tb', 'bbtb'],
       // ===== UI STATE =====
@@ -2142,6 +2174,7 @@ export default {
 
       // ===== FILTER =====
       filters: {
+        kelurahan_id: '' ,
         provinsi: '',
         kota: '',
         kecamatan: '',
@@ -2230,7 +2263,7 @@ export default {
       configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
-      username: '',
+      //username: '',
       today: '',
       thisMonth: '',
       kelurahan: '',
@@ -2255,6 +2288,60 @@ export default {
     }
   },
   methods: {
+    handleRegionChange() {
+      const idWilayah = this.filters.kelurahan_id   // ✅ tetap ID
+
+      if (!idWilayah) {
+        localStorage.removeItem('userWilayah')
+
+        this.filters.provinsi = ''
+        this.filters.kota = ''
+        this.filters.kecamatan = ''
+        this.filters.kelurahan = ''
+
+        this.posyanduList = []
+        return
+      }
+
+      // 🔍 cari object wilayah
+      let selected = null
+
+      for (const group of this.listKelurahan) {
+        selected = group.options.find(opt => opt.id === idWilayah)
+        if (selected) break
+      }
+
+      if (!selected) return
+
+      // ✅ SET FILTER (TANPA MERUSAK v-model)
+      this.filters.provinsi        = selected.provinsi
+      this.filters.kota            = selected.kota
+      this.filters.kecamatan       = selected.kecamatan
+      this.filters.kelurahan       = selected.kelurahan
+      this.kelurahan               = selected.kelurahan
+      // 🔒 simpan ID
+      localStorage.setItem('userWilayah', idWilayah)
+
+      // 🚀 fetch posyandu
+      this.fetchPosyanduByWilayah(idWilayah)
+    },
+    async loadRegion() {
+      const res = await axios.get(
+        `${baseURL}/api/region`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      )
+
+      this.listKelurahan = res.data.data || []
+      //await this.fetchPosyanduByWilayah(this.id_wilayah)
+      //console.log('listKelurahan:', this.listKelurahan)
+    },
+    isAdmin() {
+      return localStorage.getItem('role') === 'Super Admin'
+    },
     getPeriodeLabel() {
       if (!this.filters.periode) {
         return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })
@@ -2755,7 +2842,7 @@ export default {
         const wilayah = res.data
         //console.log(wilayah);
 
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
+        //this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
         this.filters.provinsi = wilayah.provinsi || ''
         this.filters.kota = wilayah.kota || ''
         this.filters.kecamatan = wilayah.kecamatan || ''
@@ -4901,17 +4988,6 @@ export default {
 
       return [1, '...', this.currentPage - 1, this.currentPage, this.currentPage + 1, '...', total]
     },
-    /* periodeLabel() {
-      // Jika user pilih ALL → tampilkan bulan berjalan
-      if (!this.filters.periode) {
-        return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })
-      }
-
-      const [year, month] = this.filters.periode.split('-')
-      const date = new Date(year, month - 1, 1)
-      return date.toLocaleString('id-ID', { month: 'long', year: 'numeric' })
-    }, */
-
     filteredAnakGabungan() {
       if (!this.dataLoad) return []
 
@@ -5016,10 +5092,11 @@ export default {
       })
 
       return `${base}&${params.toString()}`
-    }
+    },
+
   },
   created() {
-    const storedEmail = localStorage.getItem('userEmail')
+    /* const storedEmail = localStorage.getItem('userEmail')
     if (storedEmail) {
       let namePart = storedEmail.split('@')[0]
       namePart = namePart.replace(/[._]/g, ' ')
@@ -5029,7 +5106,7 @@ export default {
         .join(' ')
     } else {
       this.username = 'User'
-    }
+    } */
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
@@ -5042,6 +5119,11 @@ export default {
     })
 
     try {
+      if (this.isAdmin) {
+        await this.loadRegion()
+      }else{
+        await this.getWilayahUser()
+      }
       // await this.$nextTick()
       this.periodeLabel = this.getPeriodeLabel()
       this.$nextTick(() => {
@@ -5063,7 +5145,7 @@ export default {
       })
 
       // 1️⃣ Ambil wilayah user
-      await this.getWilayahUser()
+      //await this.getWilayahUser()
 
       //console.log(this.filters);
 

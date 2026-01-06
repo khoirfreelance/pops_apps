@@ -8,6 +8,46 @@ use Illuminate\Http\Request;
 
 class RegionController extends Controller
 {
+    public function index(Request $request)
+    {
+        $rows = Wilayah::query()
+            ->orderBy('provinsi')
+            ->orderBy('kota')
+            ->orderBy('kecamatan')
+            ->orderBy('kelurahan')
+            ->get();
+
+        $grouped = $rows
+            ->groupBy(fn ($item) =>
+                "{$item->provinsi}|{$item->kota}|{$item->kecamatan}"
+            )
+            ->map(function ($items, $key) {
+                [$prov, $kota, $kec] = explode('|', $key);
+
+                return [
+                    'provinsi'  => $prov,
+                    'kota'      => $kota,
+                    'kecamatan' => $kec,
+                    'label'     => "{$prov} - {$kota} - {$kec}",
+                    'options'   => $items->map(fn ($row) => [
+                        'id'         => $row->id,
+                        'provinsi'   => $row->provinsi,
+                        'kota'       => $row->kota,
+                        'kecamatan'  => $row->kecamatan,
+                        'kelurahan'  => $row->kelurahan,
+                        'label'      => $row->kelurahan,
+                    ])->values()
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'status' => true,
+            'data'   => $grouped
+        ]);
+    }
+
+
     public function getProvinsi()
     {
         $provinsi = Wilayah::select('provinsi as nama')

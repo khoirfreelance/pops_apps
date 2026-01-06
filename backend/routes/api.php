@@ -131,7 +131,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Region Endpoint
-Route::apiResource('region', RegionController::class)->only(['index','store']);
+//Route::apiResource('region', RegionController::class)->only(['index','store']);
+Route::get('/region', [RegionController::class, 'index']);
 Route::get('/region/provinsi', [RegionController::class, 'getProvinsi']);
 Route::get('/region/kota', [RegionController::class, 'getKota']);
 Route::get('/region/kecamatan', [RegionController::class, 'getKecamatan']);

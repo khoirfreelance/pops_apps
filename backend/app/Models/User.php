@@ -26,6 +26,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'id_wilayah',
         'status',
         'is_pending',
         'deleted_at',

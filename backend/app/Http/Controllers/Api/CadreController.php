@@ -9,6 +9,7 @@ use App\Models\TPK;
 use App\Models\Posyandu;
 use App\Models\User;
 use App\Models\Log;
+use App\Models\Wilayah;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -170,37 +171,6 @@ class CadreController extends Controller
         return response()->json($data);
     }
 
-    /* public function update(Request $request)
-    {
-        $id = $request->id;
-
-        // ambil data kader berdasarkan id
-        $cadre = Cadre::findOrFail($id);
-        $is_pending = !empty($request->nik)? 0:1;
-
-        $user = $cadre->user()->where('email', $request->email)->first();
-        if ($user) {
-            $user->update([
-                'nik'        => $request->nik,
-                'name'       => $request->nama,
-                'email'      => $request->email,
-                'phone'      => $request->phone,
-                'role'       => $request->role,
-                'is_pending' => $is_pending,
-            ]);
-        }
-
-        Log::create([
-            'id_user'  => Auth::id(),
-            'context'  => 'keluarga',
-            'activity' => 'update',
-            'timestamp'=> now(),
-        ]);
-
-        return response()->json([
-            'message' => 'Data berhasil diubah'
-        ]);
-    } */
     public function updateProfile(Request $request)
     {
         $user = $request->user();
@@ -265,30 +235,39 @@ class CadreController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
         }
 
-        $cadre = Cadre::with(['tpk.wilayah', 'posyandu.wilayah'])
-            ->where('id_user', $user->id)
+        // join users -> wilayah
+        $wilayah = Wilayah::query()
+            ->join('users', 'users.id_wilayah', '=', 'wilayah.id')
+            ->where('users.id', $user->id)
+            ->select(
+                'wilayah.id',
+                'wilayah.provinsi',
+                'wilayah.kota',
+                'wilayah.kecamatan',
+                'wilayah.kelurahan'
+            )
             ->first();
 
-        if (!$cadre) {
-            return response()->json(['message' => 'Data kader tidak ditemukan'], 404);
-        }
-
-        // ambil dari wilayah TPK kalau ada, kalau tidak dari posyandu
-        $wilayah = $cadre->tpk->wilayah ?? $cadre->posyandu->wilayah ?? null;
-
         if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Wilayah tidak ditemukan'
+            ], 404);
         }
 
         return response()->json([
-            'id_wilayah' => $wilayah->id ?? '-',
-            'provinsi' => $wilayah->provinsi ?? '-',
-            'kota' => $wilayah->kota ?? '-',
-            'kecamatan' => $wilayah->kecamatan ?? '-',
-            'kelurahan' => $wilayah->kelurahan ?? '-',
+            'status'     => true,
+            'id_wilayah' => $wilayah->id,
+            'provinsi'   => $wilayah->provinsi,
+            'kota'       => $wilayah->kota,
+            'kecamatan' => $wilayah->kecamatan,
+            'kelurahan' => $wilayah->kelurahan,
         ]);
     }
 

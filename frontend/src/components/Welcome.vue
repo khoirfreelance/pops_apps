@@ -105,11 +105,9 @@ export default {
     },
   },
   created() {
-    const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-      let namePart = storedEmail.split('@')[0]
-      namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
+    const userName = localStorage.getItem('userName')
+    if (userName) {
+      this.username = userName
         .split(' ')
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ')
