@@ -197,8 +197,8 @@
         <!-- <div class="tooltip-title-modern">{{ tooltip.name }}</div>-->
         <div class="tooltip-title-modern">
           {{ tooltip.name }}
-          <small v-if="tooltip.data?.Desa">
-            – {{ tooltip.data.Desa }}
+          <small v-if="tooltip.data?.Kota">
+            – {{ tooltip.data.Kota }}
           </small>
         </div>
 
@@ -223,10 +223,12 @@
             </button>
           </div> -->
 
-          <li v-for="(val, key) in tooltip.data" :key="key">
-            <span class="label">{{ key }}</span>
-            <span class="value">{{ val }}</span>
-          </li>
+          <template v-for="(val, key) in tooltip.data" :key="key">
+            <li v-if="key && key.toString().trim().toLowerCase() !== 'kota'">
+              <span class="label">{{ key }}</span>
+              <span class="value">{{ val }}</span>
+            </li>
+          </template>
         </ul>
       </div>
     </div>
@@ -332,7 +334,7 @@ async function loadHeatmapStats() {
 
 async function loadKelurahanStats() {
   try {
-    const res = await fetch(`${baseURL}/api/public/heatmap-kecamatan`, {
+    const res = await fetch(`${baseURL}/api/public/heatmap-kelurahan`, {
       headers: { Accept: 'application/json' },
     })
     const json = await res.json()

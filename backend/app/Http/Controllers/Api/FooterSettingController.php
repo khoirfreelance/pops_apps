@@ -99,6 +99,7 @@ class FooterSettingController extends Controller
         $rows = DB::table('kunjungan_anak')
             ->select(
                 'provinsi',
+                'kota',
                 'kelurahan',
                 DB::raw('COUNT(nik) as total_anak'),
 
@@ -109,11 +110,13 @@ class FooterSettingController extends Controller
                 DB::raw("SUM(CASE WHEN naik_berat_badan IS NULL OR naik_berat_badan = 0 THEN 1 ELSE 0 END) as bb_stagnan")
             )
             ->whereNotNull('provinsi')
+            ->whereNotNull('kota')
             ->whereNotNull('kelurahan')
             ->whereMonth('tgl_pengukuran', $bulanLalu->month)
             ->whereYear('tgl_pengukuran', $bulanLalu->year)
-            ->groupBy('provinsi', 'kelurahan')
+            ->groupBy('provinsi', 'kota', 'kelurahan')
             ->orderBy('provinsi')
+            ->orderBy('kota')
             ->orderBy('kelurahan')
             ->get();
 
@@ -123,6 +126,7 @@ class FooterSettingController extends Controller
             $total = max($row->total_anak, 1);
 
             $result[$row->provinsi][] = [
+                'Kota'       => $row->kota,
                 'Desa'       => $row->kelurahan,
                 'Stunting'    => round(($row->stunting / $total) * 100, 1) . '%',
                 'Wasting'     => round(($row->wasting / $total) * 100, 1) . '%',
@@ -138,7 +142,6 @@ class FooterSettingController extends Controller
             'data' => $result
         ]);
     }
-
 
 
     public function statusByKecamatan(Request $request)
