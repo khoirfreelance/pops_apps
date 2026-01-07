@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CatinImport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class CatinController extends Controller
 {
@@ -266,6 +267,9 @@ class CatinController extends Controller
 
             })->values();
             //dd($grouped);
+            if ($grouped->isEmpty()) {
+                return collect(); // BIAR index() yang handle default
+            }
             return $grouped;
         } catch (\Exception $e) {
             return response()->json([
@@ -283,6 +287,21 @@ class CatinController extends Controller
             return $data;
         }
 
+        $data = collect($data);
+
+        // =========================
+        // EMPTY RESPONSE
+        // =========================
+        if ($data->isEmpty()) {
+            return response()->json(
+                $this->defaultCatinEmptyResponse($request),
+                200
+            );
+        }
+
+        // =========================
+        // NORMAL FLOW
+        // =========================
         $total = $data->count();
 
         $count = [
@@ -290,23 +309,28 @@ class CatinController extends Controller
             'KEK' => 0,
             'Risiko Usia' => 0,
             'Total Kasus' => 0,
-            'Total Calon Pengantin' => $data->count(),
+            //'Total Calon Pengantin' => $data->count(),
+            'Total Calon Pengantin' => $total,
         ];
 
         // Hitung masing-masing kategori
         foreach ($data as $row) {
             $hbStatus = strtoupper($row['status_hb'] ?? '');
-            $lilaStatus = strtoupper($row['status_kek'] ?? '');
+            //$lilaStatus = strtoupper($row['status_kek'] ?? '');
+            $kekStatus = strtoupper($row['status_kek'] ?? '');
             $riskStatus = strtoupper($row['status_risiko'] ?? '');
 
-            if ($hbStatus === 'ANEMIA')
+            if ($hbStatus === 'ANEMIA') {
                 $count['Anemia']++;
+            }
 
-            if ($lilaStatus === 'KEK')
+            if ($kekStatus === 'KEK') {
                 $count['KEK']++;
+            }
 
-            if ($riskStatus === 'BERISIKO')
+            if ($riskStatus === 'BERISIKO') {
                 $count['Risiko Usia']++;
+            }
         }
 
         // Hitung catin berisiko = TIGA-TIGANYA DIJUMLAH
@@ -326,31 +350,85 @@ class CatinController extends Controller
                 'KEK' => 'warning',
                 'Risiko Usia' => 'violet',
                 'Total Kasus' => 'success',
-                'Total Calon Pengantin' => 'secondary'
+                'Total Calon Pengantin' => 'secondary',
             };
 
-            $percent = $total ? round(($value / $total) * 100, 1) : 0;
+            $percent = $total
+                ? round(($value / $total) * 100, 1)
+                : 0;
 
             $result[] = [
                 'title' => $title,
                 'value' => $value,
                 'percent' => "{$percent}%",
                 'color' => $color,
+                'trend' => [],
             ];
         }
 
         return response()->json([
             'total' => $total,
             'data' => $data->values(),
+            'counts' => $result,
             'wilayah' => [
-                'provinsi' => $request->provinsi,
-                'kota' => $request->kota,
-                'kecamatan' => $request->kecamatan,
-                'kelurahan' => $request->kelurahan,
+                'provinsi' => $request->provinsi ?? '',
+                'kota' => $request->kota ?? '',
+                'kecamatan' => $request->kecamatan ?? '',
+                'kelurahan' => $request->kelurahan ?? '',
             ],
-            'counts' => $result
         ], 200);
 
+    }
+
+    private function defaultCatinEmptyResponse(Request $request)
+    {
+        return [
+            'total' => 0,
+            'data' => [],
+            'counts' => [
+                [
+                    'title' => 'Anemia',
+                    'value' => 0,
+                    'percent' => '0%',
+                    'color' => 'danger',
+                    'trend' => [],
+                ],
+                [
+                    'title' => 'KEK',
+                    'value' => 0,
+                    'percent' => '0%',
+                    'color' => 'warning',
+                    'trend' => [],
+                ],
+                [
+                    'title' => 'Risiko Usia',
+                    'value' => 0,
+                    'percent' => '0%',
+                    'color' => 'violet',
+                    'trend' => [],
+                ],
+                [
+                    'title' => 'Total Kasus',
+                    'value' => 0,
+                    'percent' => '0%',
+                    'color' => 'success',
+                    'trend' => [],
+                ],
+                [
+                    'title' => 'Total Calon Pengantin',
+                    'value' => 0,
+                    'percent' => '0%',
+                    'color' => 'secondary',
+                    'trend' => [],
+                ],
+            ],
+            'wilayah' => [
+                'provinsi'  => $request->provinsi ?? '',
+                'kota'      => $request->kota ?? '',
+                'kecamatan' => $request->kecamatan ?? '',
+                'kelurahan' => $request->kelurahan ?? '',
+            ],
+        ];
     }
 
     private function parseBulanTahun(string $periode, bool $akhirBulan = false): \Carbon\Carbon
@@ -765,11 +843,6 @@ class CatinController extends Controller
     public function status(Request $request)
     {
         try {
-            /* $filterProvinsi = $request->provinsi;
-            $filterKelurahan = $request->kelurahan;
-            $filterKelurahan = $request->kelurahan;
-            $filterKelurahan = $request->kelurahan; */
-
             // =====================================
             // 2. Tentukan periode (default H-1 bulan)
             // =====================================
@@ -815,12 +888,7 @@ class CatinController extends Controller
 
                 return true;
             });
-            /* if (!empty($filterKelurahan)) {
-                $data = $data->filter(function ($item) use ($filterKelurahan) {
-                    return strtolower($item->kelurahan) === strtolower($filterKelurahan);
-                });
 
-            } */
 
             $data = $data->filter(function ($item) use ($periodeAwal, $periodeAkhir) {
                 return $item->tanggal_pemeriksaan >= $periodeAwal->format('Y-m-d') &&
@@ -848,20 +916,45 @@ class CatinController extends Controller
             if ($data->isEmpty()) {
                 return response()->json([
                     'total' => 0,
-                    $count = [
-                        'Anemia' => 0,
-                        'KEK' => 0,
-                        'Risiko Usia' => 0,
-                        'Total Kasus' => 0,
-                        'Total Calon Pengantin' => $data->count(),
+                    'counts' => [
+                        [
+                            'title' => 'Anemia',
+                            'value' => 0,
+                            'percent' => '0%',
+                            'color' => 'danger',
+                            'trend' => [],
+                        ],
+                        [
+                            'title' => 'KEK',
+                            'value' => 0,
+                            'percent' => '0%',
+                            'color' => 'warning',
+                            'trend' => [],
+                        ],
+                        [
+                            'title' => 'Risiko Usia',
+                            'value' => 0,
+                            'percent' => '0%',
+                            'color' => 'violet',
+                            'trend' => [],
+                        ],
+                        [
+                            'title' => 'Total Kasus',
+                            'value' => 0,
+                            'percent' => '0%',
+                            'color' => 'success',
+                            'trend' => [],
+                        ],
+                        [
+                            'title' => 'Total Calon Pengantin',
+                            'value' => 0,
+                            'percent' => '0%',
+                            'color' => 'secondary',
+                            'trend' => [],
+                        ],
                     ],
-                    'wilayah' => [
-                        'provinsi'   => $request->provinsi,
-                        'kota'       => $request->kota,
-                        'kecamatan'  => $request->kecamatan,
-                        'kelurahan'  => $request->kelurahan,
-                    ],
-                ]);
+                    'kelurahan' => '',
+                ], 200);
             }
 
             $total = $data->count();

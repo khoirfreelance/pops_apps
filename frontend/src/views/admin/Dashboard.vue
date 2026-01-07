@@ -2825,6 +2825,9 @@ export default {
       const wilayah = res.data
 
       this.filters.kelurahan_id    = wilayah.id_wilayah
+      this.filters.provinsi = wilayah.provinsi
+      this.filters.kota = wilayah.kota
+      this.filters.kecamatan = wilayah.kecamatan
       this.filters.kelurahan = wilayah.kelurahan
 
       this.listKelurahan = [
@@ -4691,6 +4694,8 @@ export default {
           rt: this.filters.rt || '',
         }
 
+        //console.log('params: ',params);
+
         const res = await axios.get(`${baseURL}/api/bride/indikator-bulanan`, {
           params,
           headers: {
@@ -4698,8 +4703,26 @@ export default {
           },
         })
 
-        const { labels, indikator } = res.data || {}
+        console.log('indikator: ', res.data || {});
 
+        //const { labels, indikator } = res.data || {}
+        const { labels = [], indikator = {} } = res.data || {}
+
+        const isValid =
+          labels.length > 0 &&
+          Array.isArray(indikator.KEK) &&
+          Array.isArray(indikator.Anemia) &&
+          Array.isArray(indikator.Berisiko)
+
+        if (!isValid) {
+          this.bulanLabels = this.getLast12Months()
+          this.indikatorCatin = {
+            KEK: Array(12).fill(0),
+            Anemia: Array(12).fill(0),
+            Berisiko: Array(12).fill(0),
+          }
+          return
+        }
         // 📌 Jika backend kirim kosong, buat struktur default 12 bulan
         if (!labels?.length || !indikator) {
           this.bulanLabels = this.getLast12Months()
@@ -4711,20 +4734,16 @@ export default {
           return
         }
 
-        // ✔ Jika data ada, langsung assign
+        // 🔥 NORMAL CASE
         this.bulanLabels = labels
-        this.indikatorCatin = indikator
+        this.indikatorCatin = {
+          KEK: indikator.KEK.map(v => Number(v) || 0),
+          Anemia: indikator.Anemia.map(v => Number(v) || 0),
+          Berisiko: indikator.Berisiko.map(v => Number(v) || 0),
+        }
 
       } catch (err) {
         console.error('❌ Gagal memuat indikator catin bulanan:', err)
-
-        // fallback default
-        this.bulanLabels = this.getLast12Months()
-        this.indikatorCatin = {
-          KEK: Array(12).fill(0),
-          Anemia: Array(12).fill(0),
-          Berisiko: Array(12).fill(0),
-        }
       }
     },
   },

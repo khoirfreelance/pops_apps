@@ -741,7 +741,7 @@ class PregnancyController extends Controller
             }
 
             // =====================================
-            // 6. TREND 3 BULAN TERAKHIR
+            // 6. TREND 6 BULAN TERAKHIR
             // =====================================
             $trendCount = [];
 
@@ -1142,30 +1142,15 @@ class PregnancyController extends Controller
 
     public function case(Request $request)
     {
-        $user = Auth::user();
-
-        // 1. Ambil data anggota TPK
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        // 2. Ambil posyandu & wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        // 3. Default filter kelurahan user
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
         $query = Pregnancy::query();
-        if ($filterKelurahan) {
-            $query->where('kelurahan', $filterKelurahan);
-        }
-
-        // 4. Filter manual (opsional) dari UI
+        if ($request->filled('provinsi'))
+            $query->where('provinsi', $request->provinsi);
+        if ($request->filled('kota'))
+            $query->where('kota', $request->kota);
+        if ($request->filled('kecamatan'))
+            $query->where('kecamatan', $request->kecamatan);
+        if ($request->filled('kelurahan'))
+            $query->where('kelurahan', $request->kelurahan);
         if ($request->filled('posyandu'))
             $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -1478,23 +1463,6 @@ class PregnancyController extends Controller
 
     public function intervensi(Request $request)
     {
-        $user = Auth::user();
-
-        // 1️⃣ Ambil data anggota TPK
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        // 2️⃣ Ambil posyandu & wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
         // ==========================
         // Tentukan periode (Y-m)
         // ==========================
@@ -1514,12 +1482,22 @@ class PregnancyController extends Controller
         });
 
 
-        if ($filterKelurahan)
-            $data = $data->filter(function ($item) use ($filterKelurahan) {
-                return strtolower($item->kelurahan) == strtolower($filterKelurahan);
+        if ($request->filled('provinsi'))
+            $data = $data->filter(function ($item) use ($request) {
+                return strtolower($item->provinsi) == strtolower($request->provinsi);
             });
-
-
+        if ($request->filled('kota'))
+            $data = $data->filter(function ($item) use ($request) {
+                return strtolower($item->kota) == strtolower($request->kota);
+            });
+        if ($request->filled('kecamatan'))
+            $data = $data->filter(function ($item) use ($request) {
+                return strtolower($item->kecamatan) == strtolower($request->kecamatan);
+            });
+        if ($request->filled('kelurahan'))
+            $data = $data->filter(function ($item) use ($request) {
+                return strtolower($item->kelurahan) == strtolower($request->kelurahan);
+            });
         if ($request->filled('posyandu'))
             $data = $data->filter(function ($item) use ($request) {
                 return strtolower($item->posyandu) == strtolower($request->posyandu);
