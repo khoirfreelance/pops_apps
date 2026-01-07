@@ -79,6 +79,9 @@ class ChildrenController extends Controller
         }
 
         // ✅ 3. Dapatkan kelurahan user
+        $filterProvinsi = $request->provinsi ?? null;
+        $filterKota = $request->kota ?? null;
+        $filterKecamatan = $request->kecamatan ?? null;
         $filterKelurahan = $request->kelurahan ?? null;
 
         // DEFAULT: 1 tahun terakhir kalau user tidak apply periode
@@ -88,6 +91,9 @@ class ChildrenController extends Controller
         }
 
         $kunjungan = $this->getData(
+            $filterProvinsi,
+            $filterKota,
+            $filterKecamatan,
             $filterKelurahan,
             $filters["periodeAwal"] ?? null,
             $filters["periodeAkhir"] ?? null,
@@ -371,26 +377,10 @@ class ChildrenController extends Controller
     public function status(Request $request)
     {
         try {
-
-            /* $user = Auth::user();
-
-            // ================================
-            // 1. Ambil wilayah user
-            // ================================
-            $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-
-            if (!$anggotaTPK) {
-                return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-            }
-
-            $posyandu = $anggotaTPK->posyandu;
-            $wilayah = $posyandu?->wilayah;
-
-            if (!$wilayah) {
-                return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-            } */
-
-            $filterKelurahan = $request->kelurahan;
+            $filterProvinsi = $request->provinsi ?? null;
+            $filterKota = $request->kota ?? null;
+            $filterKecamatan = $request->kecamatan ?? null;
+            $filterKelurahan = $request->kelurahan ?? null;
 
             // ================================
             // 2. Tentukan periode
@@ -422,7 +412,10 @@ class ChildrenController extends Controller
             // 3. Query utama: Kunjungan
             // ================================
             $kunjungan = $this->getData(
-                $filterKelurahan,
+                $filterProvinsi ?? null,
+                $filterKota ?? null,
+                $filterKecamatan ?? null,
+                $filterKelurahan ?? null,
                 $filters['periodeAwal'],
                 $filters['periodeAkhir'],
                 $filters["posyandu"],
@@ -602,23 +595,6 @@ class ChildrenController extends Controller
 
     public function infoBoxes(Request $request)
     {
-        $user = Auth::user();
-
-        // ======================================================
-        // 1. Cek anggota TPK
-        // ======================================================
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah)
-            return response()->json(['message' => 'Wilayah tidak ditemukan'], 404);
-
-        $filterKelurahan = $wilayah->kelurahan;
-
         // ======================================================
         // 2. Atur periode
         // ======================================================
@@ -635,9 +611,16 @@ class ChildrenController extends Controller
         // 3. Query kunjungan (2 bulan)
         // ======================================================
         $query = Kunjungan::query()
-            ->where('kelurahan', $filterKelurahan)
             ->whereBetween(DB::raw("DATE_FORMAT(tgl_pengukuran,'%Y-%m')"), [$bulanLalu, $bulanIni]);
 
+        if ($request->filled('provinsi'))
+            $query->where('provinsi', $request->provinsi);
+        if ($request->filled('kota'))
+            $query->where('kota', $request->kota);
+        if ($request->filled('kecamatan'))
+            $query->where('kecamatan', $request->kecamatan);
+        if ($request->filled('kelurahan'))
+            $query->where('kelurahan', $request->kelurahan);
         if ($request->filled('posyandu'))
             $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -828,7 +811,7 @@ class ChildrenController extends Controller
         // ======================================================
         $desaTertinggi = count($stuntingByDesa)
             ? collect($stuntingByDesa)->sortDesc()->keys()->first()
-            : $filterKelurahan;
+            : $request->kelurahan;
 
         // ======================================================
         // 11. Output
@@ -944,7 +927,6 @@ class ChildrenController extends Controller
             'message' => 'Import kunjungan berhasil',
         ]);
     }
-
 
     public function import_pendampingan_v2(Request $request)
     {
@@ -1375,8 +1357,6 @@ class ChildrenController extends Controller
             $query->where('kecamatan', $request->kecamatan);
         if ($request->filled('kelurahan'))
             $query->where('kelurahan', $request->kelurahan);
-
-        // 4. Filter manual (opsional) dari UI
         if ($request->filled('posyandu'))
             $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -1501,30 +1481,15 @@ class ChildrenController extends Controller
 
     public function case(Request $request)
     {
-        $user = Auth::user();
-
-        // 1. Ambil data anggota TPK
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        // 2. Ambil posyandu & wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        // 3. Default filter kelurahan user
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
         $query = Kunjungan::query();
-        if ($filterKelurahan) {
-            $query->where('kelurahan', $filterKelurahan);
-        }
-
-        // 4. Filter manual
+        if ($request->filled('provinsi'))
+            $query->where('provinsi', $request->provinsi);
+        if ($request->filled('kota'))
+            $query->where('kota', $request->kota);
+        if ($request->filled('kecamatan'))
+            $query->where('kecamatan', $request->kecamatan);
+        if ($request->filled('kelurahan'))
+            $query->where('kelurahan', $request->kelurahan);
         if ($request->filled('posyandu'))
             $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -1585,20 +1550,8 @@ class ChildrenController extends Controller
 
     public function intervensi(Request $request)
     {
-        //$user = Auth::user();
-
-        // 1️⃣ Ambil data anggota TPK
-        /* $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        } */
-
         // 2️⃣ Ambil posyandu & wilayah
         $posyandu = $request->posyandu;
-        /* $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        } */
 
         $filterKelurahan = $request->kelurahan ?? null;
 
@@ -1618,6 +1571,9 @@ class ChildrenController extends Controller
         // A. Query KUNJUNGAN
         // ==========================
         $kunjungan = $this->getData(
+            $request->provinsi,
+            $request->kota,
+            $request->kecamatan,
             $filterKelurahan,
             $startDate->format("Y-m-d"),
             $endDate->format('Y-m-d'),
@@ -1739,30 +1695,17 @@ class ChildrenController extends Controller
 
     public function ringkasan(Request $request)
     {
-        $user = Auth::user();
-
-        // 1️⃣ Ambil data anggota TPK
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        // 2️⃣ Ambil posyandu & wilayah
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        // 3️⃣ Default filter berdasarkan kelurahan user
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
         $query = Kunjungan::query();
-        if ($filterKelurahan) {
-            $query->where('kelurahan', $filterKelurahan);
-        }
 
-        // 🔍 filter manual
+
+        if ($request->filled('provinsi'))
+            $query->where('provinsi', $request->provinsi);
+        if ($request->filled('kota'))
+            $query->where('kota', $request->kota);
+        if ($request->filled('kecamatan'))
+            $query->where('kecamatan', $request->kecamatan);
+        if ($request->filled('kelurahan'))
+            $query->where('kelurahan', $request->kelurahan);
         if ($request->filled('posyandu'))
             $query->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))
@@ -1899,6 +1842,9 @@ class ChildrenController extends Controller
     }
 
     private function getData(
+        ?string $provinsi,
+        ?string $kota,
+        ?string $kecamatan,
         ?string $kelurahan,
         ?string $periodeAwal,
         ?string $periodeAkhir,
@@ -1915,6 +1861,9 @@ class ChildrenController extends Controller
         // 1. SUBQUERY: ambil tanggal pengukuran terakhir (per anak)
         // ---------------------------------------------------------
         $sub = Kunjungan::selectRaw('trim(nik) as nik, MAX(tgl_pengukuran), MAX(id) as id')
+            ->when($provinsi, fn($q) => $q->where('provinsi', strtoupper($provinsi)))
+            ->when($kota, fn($q) => $q->where('kota', strtoupper($kota)))
+            ->when($kecamatan, fn($q) => $q->where('kecamatan', strtoupper($kecamatan)))
             ->when($kelurahan, fn($q) => $q->where('kelurahan', strtoupper($kelurahan)))
             ->when($periodeAwal, fn($q) =>
                 $q->whereDate('tgl_pengukuran', '>=', $periodeAwal))
@@ -2149,21 +2098,6 @@ class ChildrenController extends Controller
 
     public function getDataDoubleProblem(Request $request)
     {
-        $user = Auth::user();
-
-        $anggotaTPK = Cadre::where('id_user', $user->id)->first();
-        if (!$anggotaTPK) {
-            return response()->json(['message' => 'User tidak terdaftar dalam anggota TPK'], 404);
-        }
-
-        $posyandu = $anggotaTPK->posyandu;
-        $wilayah = $posyandu?->wilayah;
-        if (!$wilayah) {
-            return response()->json(['message' => 'Wilayah tidak ditemukan untuk user ini'], 404);
-        }
-
-        $filterKelurahan = $wilayah->kelurahan ?? null;
-
         // ==========================
         // Tentukan periode
         // ==========================
@@ -2178,8 +2112,14 @@ class ChildrenController extends Controller
         // ==========================
         $qKunjungan = Kunjungan::query();
 
-        if ($filterKelurahan)
-            $qKunjungan->where('kelurahan', $filterKelurahan);
+        if ($request->filled('provinsi'))
+            $qKunjungan->where('provinsi', $request->provinsi);
+        if ($request->filled('kota'))
+            $qKunjungan->where('kota', $request->kota);
+        if ($request->filled('kecamatan'))
+            $qKunjungan->where('kecamatan', $request->kecamatan);
+        if ($request->filled('kelurahan'))
+            $qKunjungan->where('kelurahan', $request->kelurahan);
         if ($request->filled('posyandu'))
             $qKunjungan->where('posyandu', $request->posyandu);
         if ($request->filled('rw'))

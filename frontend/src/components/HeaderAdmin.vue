@@ -108,36 +108,28 @@ export default {
     }
   },
   async mounted() {
+    this.kelurahan = localStorage.getItem('kelurahan_label') || 'Semua Desa'
+
+    eventBus.on('kelurahanChanged', this.updateKelurahan)
+
     this.loadEvents()
-    this.getWilayahUser()
+
     await this.loadConfigWithCache()
     eventBus.on('eventsUpdated', this.loadEvents)
   },
   beforeUnmount() {
     eventBus.off('eventsUpdated', this.loadEvents)
+    eventBus.off('kelurahanChanged', this.updateKelurahan)
   },
   methods: {
+    updateKelurahan(label) {
+      this.kelurahan = label
+    },
     loadEvents() {
       try {
         this.events = JSON.parse(localStorage.getItem(this.storageKey)) || []
       } catch {
         this.events = []
-      }
-    },
-    async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-      } catch (error) {
-        //console.error('Gagal mengambil data wilayah user:', error)
-        this.kelurahan = error
       }
     },
     handleLogout() {

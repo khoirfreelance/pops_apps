@@ -32,6 +32,7 @@
 
 <script>
 import axios from 'axios'
+import { eventBus } from '@/eventBus'
 
 const API_PORT = 8000
 const { protocol, hostname } = window.location
@@ -53,7 +54,10 @@ export default {
   async mounted() {
     this.today = this.getTodayDate()
     await this.loadConfigWithCache()
-    await this.getWilayahUser()
+    this.kelurahan = localStorage.getItem('kelurahan_label') || 'Semua Desa'
+
+    // 🔥 dengarkan perubahan
+    eventBus.on('kelurahanChanged', this.updateKelurahan)
   },
   methods: {
     getTodayDate() {
@@ -62,7 +66,9 @@ export default {
       const now = new Date()
       return `${hari[now.getDay()]}, ${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`
     },
-
+    updateKelurahan(label) {
+      this.kelurahan = label
+    },
     async loadConfigWithCache() {
       try {
         const cached = localStorage.getItem(this.configCacheKey)
@@ -87,22 +93,6 @@ export default {
         this.logoLoaded = false
       }
     },
-
-    async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-      } catch (err) {
-        console.error('Gagal ambil wilayah user:', err)
-        this.kelurahan = '-'
-      }
-    },
   },
   created() {
     const userName = localStorage.getItem('userName')
@@ -115,6 +105,9 @@ export default {
       this.username = 'User'
     }
     this.today = this.getTodayDate()
+  },
+  beforeUnmount() {
+    eventBus.off('kelurahanChanged', this.updateKelurahan)
   },
 }
 </script>

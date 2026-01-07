@@ -50,19 +50,10 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi Desa {{ kelurahan }} Periode {{ periodeLabel }}
+                Laporan Status Gizi {{ kelurahan }} Periode {{ periodeLabel }}
               </div>
             </div>
           </div>
-
-          <!-- <div class="d-md-none mt-2 sticky-filter">
-            <button
-              class="btn btn-success filter-floating-btn d-md-none"
-              @click="showFilterMobile = !showFilterMobile"
-            >
-              <i class="bi bi-funnel"></i>
-            </button>
-          </div> -->
 
           <!-- Filter Form -->
           <div class="bg-light border rounded-bottom shadow-sm px-4 py-3 mt-0 d-none d-md-block sticky-filter"
@@ -94,18 +85,11 @@
                   </optgroup>
                 </select>
 
-                <select v-model="filters.kelurahan_id" class="form-select" v-else :disabled="!isAdmin">
-                  <option v-for="k in listKelurahan" :key="k.nama" :value="k.nama">
-                    {{ k.nama }}
-                  </option>
+                <select v-else v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
+                  <option :value="filters.kelurahan" class="small">{{ filters.kelurahan }}</option>
                 </select>
+
               </div>
-              <!-- <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
-                <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
-                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" :disabled="!isAdmin()">
-                  <option :value="kelurahan" class="small">{{ kelurahan }}</option>
-                </select>
-              </div> -->
 
               <!-- Posyandu -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
@@ -180,7 +164,30 @@
               <!-- Kelurahan/Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
                 <label class="form-label fs-md-1" style="font-weight: 600;">Kel/Desa</label>
-                <select v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
+                <select
+                  class="form-select"
+                  v-if="isAdmin"
+                  v-model="filters.kelurahan_id"
+                  @change="handleRegionChange"
+                >
+                  <option value="">All</option>
+
+                  <optgroup
+                    v-for="group in listKelurahan"
+                    :key="group.label"
+                    :label="group.label"
+                  >
+                    <option
+                      v-for="opt in group.options"
+                      :key="opt.id"
+                      :value="opt.id"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </optgroup>
+                </select>
+
+                <select v-else v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
                   <option :value="kelurahan" class="small">{{ kelurahan }}</option>
                 </select>
               </div>
@@ -2130,6 +2137,7 @@ import {
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
 import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
+import { eventBus } from '@/eventBus'
 
 // PORT backend kamu
 const API_PORT = 8000
@@ -2174,16 +2182,17 @@ export default {
 
       // ===== FILTER =====
       filters: {
-        kelurahan_id: '' ,
+        kelurahan_id: '',        // 🔥 ID (number)
+        kelurahan: '',     // 🔥 NAMA (string)
         provinsi: '',
         kota: '',
         kecamatan: '',
-        kelurahan: '',
         posyandu: '',
         rw: '',
         rt: '',
         periode: '',
       },
+
 
       periodeExportData: '',
       desaExportData: '',
@@ -2195,7 +2204,6 @@ export default {
 
       // ===== DATA TABLE =====
       //filteredAnakGabungan: [],
-      //filteredBumil: [],
       detailAnak:[],
       detailBumil:[],
       detailCatin:[],
@@ -2289,23 +2297,10 @@ export default {
   },
   methods: {
     handleRegionChange() {
-      const idWilayah = this.filters.kelurahan_id   // ✅ tetap ID
+      const idWilayah = this.filters.kelurahan_id
+      if (!idWilayah) return
 
-      if (!idWilayah) {
-        localStorage.removeItem('userWilayah')
-
-        this.filters.provinsi = ''
-        this.filters.kota = ''
-        this.filters.kecamatan = ''
-        this.filters.kelurahan = ''
-
-        this.posyanduList = []
-        return
-      }
-
-      // 🔍 cari object wilayah
       let selected = null
-
       for (const group of this.listKelurahan) {
         selected = group.options.find(opt => opt.id === idWilayah)
         if (selected) break
@@ -2313,16 +2308,17 @@ export default {
 
       if (!selected) return
 
-      // ✅ SET FILTER (TANPA MERUSAK v-model)
+      // 🔥 ID & LABEL DIPISAH
       this.filters.provinsi        = selected.provinsi
       this.filters.kota            = selected.kota
       this.filters.kecamatan       = selected.kecamatan
       this.filters.kelurahan       = selected.kelurahan
-      this.kelurahan               = selected.kelurahan
-      // 🔒 simpan ID
-      localStorage.setItem('userWilayah', idWilayah)
 
-      // 🚀 fetch posyandu
+      this.kelurahan = 'Desa '+this.filters.kelurahan
+      localStorage.setItem('userWilayah', idWilayah)
+      localStorage.setItem('kelurahan_label', selected.kelurahan)
+      eventBus.emit('kelurahanChanged', selected.kelurahan)
+
       this.fetchPosyanduByWilayah(idWilayah)
     },
     async loadRegion() {
@@ -2334,13 +2330,9 @@ export default {
           },
         }
       )
+      console.log('loadRegion');
 
       this.listKelurahan = res.data.data || []
-      //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      //console.log('listKelurahan:', this.listKelurahan)
-    },
-    isAdmin() {
-      return localStorage.getItem('role') === 'Super Admin'
     },
     getPeriodeLabel() {
       if (!this.filters.periode) {
@@ -2419,13 +2411,6 @@ export default {
       if (type === 'tb') return this.dataTable_tb
       if (type === 'bbtb') return this.dataTable_bbtb
     },
-    /* async prepareAllDetailTablesForExport() {
-      for (const type of ['bb', 'tb', 'bbtb']) {
-        this.setChart(type)
-        await this.$nextTick()
-        await new Promise(r => setTimeout(r, 200))
-      }
-    }, */
     async exportDashboardPdf(tagId) {
       this.isExporting = true
 
@@ -2831,31 +2816,30 @@ export default {
       this.activeMenu = type
     },
     async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
+      const res = await axios.get(`${baseURL}/api/user/region`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
 
-        const wilayah = res.data
-        //console.log(wilayah);
+      const wilayah = res.data
 
-        //this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.filters.provinsi = wilayah.provinsi || ''
-        this.filters.kota = wilayah.kota || ''
-        this.filters.kecamatan = wilayah.kecamatan || ''
-        this.filters.kelurahan = this.kelurahan
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
+      this.filters.kelurahan_id    = wilayah.id_wilayah
+      this.filters.kelurahan = wilayah.kelurahan
 
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
-        this.kelurahan = '-'
-      }
+      this.listKelurahan = [
+        {
+          label: 'Kelurahan',
+          options: [
+            {
+              id: wilayah.id_wilayah,
+              label: wilayah.kelurahan,
+            },
+          ],
+        },
+      ]
     },
+
     async fetchPosyanduByWilayah(id_wilayah) {
       if (!id_wilayah) {
         console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
@@ -3025,6 +3009,8 @@ export default {
         // UPDATE PERIODE LABEL DI SINI ← !!!
         this.periodeLabel = this.getPeriodeLabel()
         this.bulanIni = this.periodeLabel
+        //this.filters.kelurahan = this.filters.kelurahan_id
+        this.kelurahan = 'Desa '+this.filters.kelurahan
         await Promise.all([
           this.hitungStatistik(),
           this.generateDataTable(),
@@ -3038,8 +3024,9 @@ export default {
         this.renderFunnelChart()
         this.renderBumilChart()
         this.renderIntervensiBumilChart()
+
       } catch (e) {
-        this.showError('Gagal menerapkan filter', e)
+        console.error('Gagal menerapkan filter', e)
       } finally {
         this.isLoading = false // END LOADING
       }
@@ -3056,6 +3043,8 @@ export default {
           kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
+
+        //console.log(params);
 
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
         let res = null
@@ -3133,7 +3122,6 @@ export default {
       // Format khusus CATIN: { months:[], data:[], total:{} }
       // eslint-disable-next-line no-undef
       if (months && trend.data) {
-        // eslint-disable-next-line no-undef
         //console.log('normalizeCatinTrend - trend:', months, trend.data  )
         return trend.months.map((bulan, i) => ({
           bulan,
@@ -3675,7 +3663,7 @@ export default {
             }))
         }
       } catch (e) {
-        this.showError('Error Ambil Data', e)
+        console.error('Error Ambil Data', e)
       }
     },
     toggleSudah(val) {
@@ -3713,7 +3701,7 @@ export default {
         this.totalSudah = res.data.sudahIntervensi || 0;
         this.totalBelum = res.data.belumIntervensi || 0; */
       } catch (e) {
-        this.showError('Error Ambil Data', e)
+        console.error('Error Ambil Data', e)
       }
     },
     async hitungIntervensi() {
@@ -3764,7 +3752,7 @@ export default {
           })
         }
       } catch (e) {
-        this.showError('Error Ambil Data', e)
+        console.error('Error Ambil Data', e)
       }
     },
     parseDate(str) {
@@ -3797,6 +3785,8 @@ export default {
           kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
+        //console.log('params box: ',params);
+
         const res = await axios.get(`${baseURL}/api/children/info-boxes`, {
           params,
           headers: {
@@ -3806,26 +3796,9 @@ export default {
 
         this.infoBoxes = res.data.boxes || []
       } catch (e) {
-        this.showError('Error Ambil Data', e)
+        console.error('Error Ambil Data', e)
       }
     },
-    /* selectChart(type) {
-      this.selectedChart = type
-
-      this.$nextTick(() => {
-        this.renderDetailChart()
-
-        setTimeout(() => {
-          const detailEl = document.getElementById('detail-section')
-          if (detailEl) {
-            detailEl.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
-            })
-          }
-        }, 150)
-      })
-    }, */
 
     // ✅ METHOD BARU: Close Detail
     closeDetail() {
@@ -4742,8 +4715,6 @@ export default {
         this.bulanLabels = labels
         this.indikatorCatin = indikator
 
-        //console.log('📌 Labels Catin:', this.bulanLabels)
-        //console.log('📌 Indikator Catin:', this.indikatorCatin)
       } catch (err) {
         console.error('❌ Gagal memuat indikator catin bulanan:', err)
 
@@ -4758,6 +4729,12 @@ export default {
     },
   },
   computed: {
+    role() {
+      return localStorage.getItem('role')
+    },
+    isAdmin() {
+      return this.role === 'Super Admin'
+    },
     // Sudah
     filteredAnak() {
       if (!this.dataLoad) return []
@@ -5096,21 +5073,11 @@ export default {
 
   },
   created() {
-    /* const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-      let namePart = storedEmail.split('@')[0]
-      namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
-        .split(' ')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ')
-    } else {
-      this.username = 'User'
-    } */
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
   async mounted() {
+
     this.isLoading = true
     this.isMobile = window.innerWidth < 768
 
@@ -5121,10 +5088,17 @@ export default {
     try {
       if (this.isAdmin) {
         await this.loadRegion()
+        this.kelurahan = 'Semua Desa'
       }else{
         await this.getWilayahUser()
+        this.kelurahan = 'Desa '+ this.filters.kelurahan
+        console.log('nama'+this.kelurahan);
+
+        const label = this.filters.kelurahan
+        localStorage.setItem('kelurahan_label', label)
+        eventBus.emit('kelurahanChanged', label)
       }
-      // await this.$nextTick()
+
       this.periodeLabel = this.getPeriodeLabel()
       this.$nextTick(() => {
         this.renderChart(
@@ -5186,7 +5160,7 @@ export default {
       this.generatePeriodeOptions()
 
       // 9️⃣ Pastikan filter kelurahan sudah terisi
-      this.filters.kelurahan = this.kelurahan
+      //this.filters.kelurahan = this.kelurahan
 
       // 11️⃣ Setup resize listener untuk responsive
       this.handleResize()
