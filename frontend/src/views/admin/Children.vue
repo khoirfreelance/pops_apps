@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ periodeTitle }}
+                Laporan Status Gizi {{ this.kelurahan }} Periode {{ periodeTitle }}
                 <!-- Laporan Status Gizi Desa {{ this.kelurahan }} Periode {{ this.filters.periodeAwal.replace('+', ' ') }} - {{ this.filters.periodeAkhir.replace('+', ' ') }} -->
               </div>
             </div>
@@ -301,6 +301,38 @@
                 </div>
               </div>
 
+              <!-- Kelurahan/Desa -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20" v-if="isAdmin">
+                <label class="form-label fs-md-1 text-primary">Kel/Desa</label>
+                <select
+                  class="form-select"
+                  v-if="isAdmin"
+                  v-model="filters.kelurahan_id"
+                  @change="handleRegionChange"
+                >
+                  <option value="">Pilih Kel/Desa</option>
+
+                  <optgroup
+                    v-for="group in listKelurahan"
+                    :key="group.label"
+                    :label="group.label"
+                  >
+                    <option
+                      v-for="opt in group.options"
+                      :key="opt.id"
+                      :value="opt.id"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </optgroup>
+                </select>
+
+                <select v-else v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
+                  <option :value="filters.kelurahan" class="small">{{ filters.kelurahan }}</option>
+                </select>
+
+              </div>
+
               <!-- === POSYANDU === -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
                 <label class="form-label text-primary">Filter Lokasi</label>
@@ -317,7 +349,7 @@
               </div>
 
               <!-- === RW === -->
-              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+              <div class="col-12 col-sm-6 col-md-4" :class="isAdmin ? 'col-lg-auto mini-form' : 'col-lg-auto custom-20'">
                 <select v-model="filters.rw" class="form-select text-muted" :disabled="rwReadonly">
                   <option value="">Pilih RW</option>
                   <option v-for="rw in rwList" :key="rw" :value="rw">{{ rw }}</option>
@@ -325,7 +357,7 @@
               </div>
 
               <!-- === RT === -->
-              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20">
+              <div class="col-12 col-sm-6 col-md-4" :class="isAdmin ? 'col-lg-auto mini-form' : 'col-lg-auto custom-20'">
                 <select v-model="filters.rt" class="form-select text-muted" :disabled="rtReadonly">
                   <option value="">Pilih RT</option>
                   <option v-for="rt in rtList" :key="rt" :value="rt">{{ rt }}</option>
@@ -655,6 +687,38 @@
                     </li>
                   </ul>
                 </div>
+              </div>
+
+              <!-- Kelurahan/Desa -->
+              <div class="col-12 col-sm-6 col-md-4 col-lg-auto custom-20" v-if="isAdmin">
+                <label class="form-label fs-md-1 text-primary">Kel/Desa</label>
+                <select
+                  class="form-select"
+                  v-if="isAdmin"
+                  v-model="filters.kelurahan_id"
+                  @change="handleRegionChange"
+                >
+                  <option value="">Pilih Kel/Desa</option>
+
+                  <optgroup
+                    v-for="group in listKelurahan"
+                    :key="group.label"
+                    :label="group.label"
+                  >
+                    <option
+                      v-for="opt in group.options"
+                      :key="opt.id"
+                      :value="opt.id"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </optgroup>
+                </select>
+
+                <select v-else v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
+                  <option :value="filters.kelurahan" class="small">{{ filters.kelurahan }}</option>
+                </select>
+
               </div>
 
               <!-- === POSYANDU === -->
@@ -1545,6 +1609,7 @@ import {
 } from 'chart.js'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
+import { eventBus } from '@/eventBus'
 
 Chart.register(
   LineController,
@@ -1557,7 +1622,6 @@ Chart.register(
   Tooltip,
   Filler,
 )
-
 
 // Simple sort icon component
 // const SortIcon = {
@@ -1585,6 +1649,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome, EasyDataTable },
   data() {
     return {
+      listKelurahan: [],
       headersRiwayat: [
         { text: "Tanggal", value: "tanggal" },
         { text: "Status BB", value: "bbu" },
@@ -1650,6 +1715,7 @@ export default {
         kota: '',
         kecamatan: '',
         kelurahan: '',
+        kelurahan_id: '',
         bbu: [],
         tbu: [],
         bbtb: [],
@@ -1785,6 +1851,87 @@ export default {
     }
   },
   methods: {
+    handleRegionChange() {
+      const idWilayah = this.filters.kelurahan_id
+
+      // 🔁 DEFAULT / ALL
+      if (!idWilayah) {
+        this.filters.provinsi  = null
+        this.filters.kota      = null
+        this.filters.kecamatan = null
+        this.filters.kelurahan = null
+
+        this.kelurahan = 'Semua Desa'
+        localStorage.removeItem('userWilayah')
+        //localStorage.setItem('kelurahan_label', this.kelurahan)
+        localStorage.removeItem('kelurahan_label')
+
+        eventBus.emit('kelurahanChanged', null)
+
+        // optional: load semua posyandu
+        //this.fetchAllPosyandu?.()
+
+        return
+      }
+
+      // 🔍 CARI DATA TERPILIH
+      let selected = null
+      for (const group of this.listKelurahan) {
+        selected = group.options.find(opt => opt.id === idWilayah)
+        if (selected) break
+      }
+
+      if (!selected) return
+
+      // ✅ ASSIGN NORMAL
+      this.filters.provinsi  = selected.provinsi
+      this.filters.kota      = selected.kota
+      this.filters.kecamatan = selected.kecamatan
+      this.filters.kelurahan = selected.kelurahan
+
+      this.kelurahan = `Desa ${selected.kelurahan}`
+
+      localStorage.setItem('userWilayah', idWilayah)
+      localStorage.setItem('kelurahan_label', selected.kelurahan)
+
+      eventBus.emit('kelurahanChanged', selected.kelurahan)
+
+      this.fetchPosyanduByWilayah(idWilayah)
+    },
+    async loadRegion() {
+      const res = await axios.get(
+        `${baseURL}/api/region`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      )
+      console.log('loadRegion');
+
+      this.listKelurahan = res.data.data || []
+    },
+    async fetchPosyanduByWilayah(id_wilayah) {
+      if (!id_wilayah) {
+        console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
+        return
+      }
+
+      try {
+        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}/wilayah`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        this.posyanduList = res.data?.data || res.data || []
+        //console.log("Posyandu list:", this.posyanduList);
+      } catch (error) {
+        console.error('Gagal mengambil data posyandu:', error)
+        this.posyanduList = []
+      }
+    },
     exportDataAnakExcel(){
       //console.log('export');
 
@@ -2130,6 +2277,33 @@ export default {
       }
     },
     async getWilayahUser() {
+      const res = await axios.get(`${baseURL}/api/user/region`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+
+      const wilayah = res.data
+
+      this.filters.kelurahan_id    = wilayah.id_wilayah
+      this.filters.provinsi = wilayah.provinsi
+      this.filters.kota = wilayah.kota
+      this.filters.kecamatan = wilayah.kecamatan
+      this.filters.kelurahan = wilayah.kelurahan
+
+      this.listKelurahan = [
+        {
+          label: 'Kelurahan',
+          options: [
+            {
+              id: wilayah.id_wilayah,
+              label: wilayah.kelurahan,
+            },
+          ],
+        },
+      ]
+    },
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -2152,7 +2326,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
-    },
+    }, */
     generatePeriodeOptions() {
       const bulan = [
         'Januari',
@@ -2590,21 +2764,16 @@ export default {
 
   },
   created() {
-    const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-      let namePart = storedEmail.split('@')[0]
-      namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
-        .split(' ')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ')
-    } else {
-      this.username = 'User'
-    }
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
   computed: {
+    role() {
+      return localStorage.getItem('role')
+    },
+    isAdmin() {
+      return this.role === 'Super Admin'
+    },
     itemsRiwayat() {
       return [...(this.selectedAnak?.riwayat_penimbangan || [])]
         .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
@@ -2676,7 +2845,19 @@ export default {
   async mounted() {
     this.isLoading = true
     try {
-      await this.getWilayahUser()
+      if (this.isAdmin) {
+        await this.loadRegion()
+        this.kelurahan = 'Semua Desa'
+      }else{
+        await this.getWilayahUser()
+        this.kelurahan = 'Desa '+ this.filters.kelurahan
+        console.log('nama'+this.kelurahan);
+
+        const label = this.filters.kelurahan
+        localStorage.setItem('kelurahan_label', label)
+        eventBus.emit('kelurahanChanged', label)
+      }
+      //await this.getWilayahUser()
       await this.loadConfigWithCache()
       this.generatePeriodeOptions()
 

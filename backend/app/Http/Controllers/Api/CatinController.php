@@ -1304,11 +1304,18 @@ class CatinController extends Controller
         try {
             $query = Catin::query();
 
-            // ✅ Filter wilayah user
-            $query->where('provinsi', $request->provinsi);
-            $query->where('kota', $request->kota);
-            $query->where('kecamatan', $request->kecamatan);
-            $query->where('kelurahan', $request->kelurahan);
+            if ($request->filled('provinsi')){
+                $query->where('provinsi', $request->provinsi);
+            }
+            if ($request->filled('kota')){
+                $query->where('kota', $request->kota);
+            }
+            if ($request->filled('kecamatan')){
+                $query->where('kecamatan', $request->kecamatan);
+            }
+            if ($request->filled('kelurahan')){
+                $query->where('kelurahan', $request->kelurahan);
+            }
 
             // ✅ Filter tambahan dari frontend
             foreach (['posyandu', 'rw', 'rt'] as $f) {

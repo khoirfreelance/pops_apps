@@ -18,14 +18,14 @@ class PregnancyController extends Controller
     public function getData(Request $request)
     {
         try {
-            $user = Auth::user();
+            //$user = Auth::user();
 
-            $wilayah = [
+            /* $wilayah = [
                 'kelurahan' => $user->kelurahan ?? null,
                 'kecamatan' => $user->kecamatan ?? null,
                 'kota' => $user->kota ?? null,
                 'provinsi' => $user->provinsi ?? null,
-            ];
+            ]; */
 
             $data = Pregnancy::get();
 
@@ -35,9 +35,24 @@ class PregnancyController extends Controller
                 return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
             });
 
-            if (!empty($wilayah['kelurahan'])) {
-                $data = $data->filter(function ($item) use ($wilayah) {
-                    return $item->kelurahan === $wilayah['kelurahan'];
+            if (!empty($request->provinsi)) {
+                $data = $data->filter(function ($item) use ($request) {
+                    return $item->provinsi === $request->provinsi;
+                });
+            }
+            if (!empty($request->kota)) {
+                $data = $data->filter(function ($item) use ($request) {
+                    return $item->kota === $request->kota;
+                });
+            }
+            if (!empty($request->kecamatan)) {
+                $data = $data->filter(function ($item) use ($request) {
+                    return $item->kecamatan === $request->kecamatan;
+                });
+            }
+            if (!empty($request->kelurahan)) {
+                $data = $data->filter(function ($item) use ($request) {
+                    return $item->kelurahan === $request->kelurahan;
                 });
             }
 
@@ -1605,7 +1620,18 @@ class PregnancyController extends Controller
         try {
             $query = Pregnancy::query();
 
-            $query->where('kelurahan', $request->kelurahan);
+            if ($request->filled('provinsi')){
+                $query->where('provinsi', $request->provinsi);
+            }
+            if ($request->filled('kota')){
+                $query->where('kota', $request->kota);
+            }
+            if ($request->filled('kecamatan')){
+                $query->where('kecamatan', $request->kecamatan);
+            }
+            if ($request->filled('kelurahan')){
+                $query->where('kelurahan', $request->kelurahan);
+            }
 
             foreach (['posyandu', 'rw', 'rt'] as $f) {
                 if ($request->filled($f))

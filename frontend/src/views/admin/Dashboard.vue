@@ -2298,8 +2298,28 @@ export default {
   methods: {
     handleRegionChange() {
       const idWilayah = this.filters.kelurahan_id
-      if (!idWilayah) return
 
+      // 🔁 DEFAULT / ALL
+      if (!idWilayah) {
+        this.filters.provinsi  = null
+        this.filters.kota      = null
+        this.filters.kecamatan = null
+        this.filters.kelurahan = null
+
+        this.kelurahan = 'Semua Desa'
+        localStorage.removeItem('userWilayah')
+        //localStorage.setItem('kelurahan_label', this.kelurahan)
+        localStorage.removeItem('kelurahan_label')
+
+        eventBus.emit('kelurahanChanged', null)
+
+        // optional: load semua posyandu
+        //this.fetchAllPosyandu?.()
+
+        return
+      }
+
+      // 🔍 CARI DATA TERPILIH
       let selected = null
       for (const group of this.listKelurahan) {
         selected = group.options.find(opt => opt.id === idWilayah)
@@ -2308,15 +2328,17 @@ export default {
 
       if (!selected) return
 
-      // 🔥 ID & LABEL DIPISAH
-      this.filters.provinsi        = selected.provinsi
-      this.filters.kota            = selected.kota
-      this.filters.kecamatan       = selected.kecamatan
-      this.filters.kelurahan       = selected.kelurahan
+      // ✅ ASSIGN NORMAL
+      this.filters.provinsi  = selected.provinsi
+      this.filters.kota      = selected.kota
+      this.filters.kecamatan = selected.kecamatan
+      this.filters.kelurahan = selected.kelurahan
 
-      this.kelurahan = 'Desa '+this.filters.kelurahan
+      this.kelurahan = `Desa ${selected.kelurahan}`
+
       localStorage.setItem('userWilayah', idWilayah)
       localStorage.setItem('kelurahan_label', selected.kelurahan)
+
       eventBus.emit('kelurahanChanged', selected.kelurahan)
 
       this.fetchPosyanduByWilayah(idWilayah)

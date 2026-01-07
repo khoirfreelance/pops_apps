@@ -35,7 +35,7 @@
           <div class="text-center mt-4">
             <div class="bg-additional text-white py-1 px-4 d-inline-block rounded-top">
               <div class="title mb-0 text-capitalize fw-bold" style="font-size: 23px">
-                Laporan Status Kesehatan Ibu Hamil Desa {{ kelurahan }} Periode {{ periodeTitle }}
+                Laporan Status Kesehatan Ibu Hamil {{ kelurahan }} Periode {{ periodeTitle }}
               </div>
             </div>
           </div>
@@ -109,10 +109,34 @@
 
               <!-- Desa -->
               <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-6">
-                <label class="text-primary">Desa:</label>
-                <select v-model="kelurahan" class="form-select text-muted" disabled>
-                  <option :value="kelurahan">{{ kelurahan }}</option>
+                <label class="form-label fs-md-1 text-primary">Kel/Desa</label>
+                <select
+                  class="form-select"
+                  v-if="isAdmin"
+                  v-model="filters.kelurahan_id"
+                  @change="handleRegionChange"
+                >
+                  <option value="">Pilih Kel/Desa</option>
+
+                  <optgroup
+                    v-for="group in listKelurahan"
+                    :key="group.label"
+                    :label="group.label"
+                  >
+                    <option
+                      v-for="opt in group.options"
+                      :key="opt.id"
+                      :value="opt.id"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </optgroup>
                 </select>
+
+                <select v-else v-model="filters.kelurahan" class="form-select text-muted small uniform-input" disabled>
+                  <option :value="filters.kelurahan" class="small">{{ filters.kelurahan }}</option>
+                </select>
+
               </div>
 
               <!-- Posyandu -->
@@ -890,6 +914,7 @@ import 'vue3-easy-data-table/dist/style.css'
 import { exportExcel } from "@/utils/exportExcel";
 import { mapDataIbuHamilToExcel } from "@/mappers/dataIbuHamilMapper";
 import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
+import { eventBus } from '@/eventBus'
 
 const API_PORT = 8000
 const { protocol, hostname } = window.location
@@ -901,6 +926,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable   },
   data() {
     return {
+      listKelurahan: [],
       headersBumil: [
         { text: 'Nama', value: 'nama', sortable: true, width: 200 },
         { text: 'Anemia', value: 'anemia', sortable: true, width: 100 },
@@ -941,6 +967,7 @@ export default {
         kota: '',
         kecamatan: '',
         kelurahan: '',
+        kelurahan_id: '',
         posyandu: '',
         rt: '',
         rw: '',
@@ -1039,6 +1066,12 @@ export default {
     }
   },
   computed: {
+    role() {
+      return localStorage.getItem('role')
+    },
+    isAdmin() {
+      return this.role === 'Super Admin'
+    },
     periodeLabel() {
       const awal = this.filters.periodeAwal
       const akhir = this.filters.periodeAkhir
@@ -1122,6 +1155,87 @@ export default {
     },
   },
   methods: {
+    handleRegionChange() {
+      const idWilayah = this.filters.kelurahan_id
+
+      // 🔁 DEFAULT / ALL
+      if (!idWilayah) {
+        this.filters.provinsi  = null
+        this.filters.kota      = null
+        this.filters.kecamatan = null
+        this.filters.kelurahan = null
+
+        this.kelurahan = 'Semua Desa'
+        localStorage.removeItem('userWilayah')
+        //localStorage.setItem('kelurahan_label', this.kelurahan)
+        localStorage.removeItem('kelurahan_label')
+
+        eventBus.emit('kelurahanChanged', null)
+
+        // optional: load semua posyandu
+        //this.fetchAllPosyandu?.()
+
+        return
+      }
+
+      // 🔍 CARI DATA TERPILIH
+      let selected = null
+      for (const group of this.listKelurahan) {
+        selected = group.options.find(opt => opt.id === idWilayah)
+        if (selected) break
+      }
+
+      if (!selected) return
+
+      // ✅ ASSIGN NORMAL
+      this.filters.provinsi  = selected.provinsi
+      this.filters.kota      = selected.kota
+      this.filters.kecamatan = selected.kecamatan
+      this.filters.kelurahan = selected.kelurahan
+
+      this.kelurahan = `Desa ${selected.kelurahan}`
+
+      localStorage.setItem('userWilayah', idWilayah)
+      localStorage.setItem('kelurahan_label', selected.kelurahan)
+
+      eventBus.emit('kelurahanChanged', selected.kelurahan)
+
+      this.fetchPosyanduByWilayah(idWilayah)
+    },
+    async loadRegion() {
+      const res = await axios.get(
+        `${baseURL}/api/region`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      )
+      console.log('loadRegion');
+
+      this.listKelurahan = res.data.data || []
+    },
+    async fetchPosyanduByWilayah(id_wilayah) {
+      if (!id_wilayah) {
+        console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
+        return
+      }
+
+      try {
+        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}/wilayah`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+
+        this.posyanduList = res.data?.data || res.data || []
+        //console.log("Posyandu list:", this.posyanduList);
+      } catch (error) {
+        console.error('Gagal mengambil data posyandu:', error)
+        this.posyanduList = []
+      }
+    },
     exportDataIbuHamilExcel(){
        let fileNameExport = '';
       if (this.periodeAwalExportData === '' || this.periodeAkhirExportData === '' ) {
@@ -1402,20 +1516,32 @@ export default {
       this.filters[key] = []
     },
     async applyFilter() {
-      (
-        this.periodeAwalExportData = this.filters.periodeAwal,
-      this.periodeAkhirExportData = this.filters.periodeAkhir,
-      this.desaExportData = this.filters.kelurahan,
+      this.isLoading = true
+      this.periodeAwalExportData = this.filters.periodeAwal
+      this.periodeAkhirExportData = this.filters.periodeAkhir
+      this.desaExportData = this.filters.kelurahan
+      try {
         this.periodeTitle = this.periodeLabel,
         await this.loadPregnancy()
-      )
+        // await this.hitungStatusGizi()
+      }catch(e){
+        console.error(e);
+      }finally{
+        this.isLoading = false
+      }
     },
     async resetFilter() {
       Object.keys(this.filters).forEach((k) => {
         if (Array.isArray(this.filters[k])) this.filters[k] = []
         else this.filters[k] = ''
       });
-      (await this.loadPregnancy(),await this.getWilayahUser())
+      (await this.loadPregnancy(),await this.getWilayahUser()),
+        this.kelurahan = 'Semua Desa'
+        localStorage.removeItem('userWilayah')
+        //localStorage.setItem('kelurahan_label', this.kelurahan)
+        localStorage.removeItem('kelurahan_label')
+
+        eventBus.emit('kelurahanChanged', null)
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
@@ -1548,24 +1674,24 @@ export default {
     },
   },
   created() {
-    const storedEmail = localStorage.getItem('userEmail')
-    this.username = storedEmail
-      ? storedEmail
-          .split('@')[0]
-          .replace(/[._]/g, ' ')
-          .split(' ')
-          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(' ')
-      : 'User'
-
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
   async mounted() {
     this.isLoading = true
     try {
-      await this.getWilayahUser()
-      console.log(this.filters);
+      if (this.isAdmin) {
+        await this.loadRegion()
+        this.kelurahan = 'Semua Desa'
+      }else{
+        await this.getWilayahUser()
+        this.kelurahan = 'Desa '+ this.filters.kelurahan
+        console.log('nama'+this.kelurahan);
+
+        const label = this.filters.kelurahan
+        localStorage.setItem('kelurahan_label', label)
+        eventBus.emit('kelurahanChanged', label)
+      }
 
       await this.loadPregnancy() // kasih await juga kalau ini async
       this.periodeTitle = this.periodeLabel

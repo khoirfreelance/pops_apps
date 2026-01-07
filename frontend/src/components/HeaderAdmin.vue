@@ -20,7 +20,7 @@
         </span>
       </a>
       <h1 class="header-title">
-        Pusat Operasi Penurunan Stunting Desa {{ kelurahan || '...' }}
+        Pusat Operasi Penurunan Stunting {{ kelurahan || '...' }}
       </h1>
     </div>
 
@@ -108,8 +108,10 @@ export default {
     }
   },
   async mounted() {
-    this.kelurahan = localStorage.getItem('kelurahan_label') || 'Semua Desa'
 
+    const desa = 'Desa '+ localStorage.getItem('kelurahan_label')
+    //this.kelurahan = desa || 'Semua Desa'
+    this.kelurahan = localStorage.getItem('kelurahan_label') != null ? desa : 'Semua Desa'
     eventBus.on('kelurahanChanged', this.updateKelurahan)
 
     this.loadEvents()
