@@ -10,6 +10,7 @@ use App\Models\Posyandu;
 use App\Models\User;
 use App\Models\Log;
 use App\Models\Wilayah;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -54,14 +55,6 @@ class CadreController extends Controller
         $isPendingUser = empty($request->nik) ? 1 : 0;
         $isTPK = empty($request->no_tpk);
 
-        if (!$isTPK) {
-            // simpan TPK
-            $tpk = \App\Models\TPK::firstOrCreate([
-                'no_tpk' => $request->no_tpk ?: null,
-                'id_wilayah' => $wilayah->id,
-            ]);
-        }
-
         // simpan wilayah
         $wilayah = \App\Models\Wilayah::firstOrCreate([
             'provinsi' => $request->provinsi,
@@ -69,6 +62,14 @@ class CadreController extends Controller
             'kecamatan' => $request->kecamatan,
             'kelurahan' => $request->kelurahan,
         ]);
+
+        if (!$isTPK) {
+            // simpan TPK
+            $tpk = \App\Models\TPK::firstOrCreate([
+                'no_tpk' => $request->no_tpk ?: null,
+                'id_wilayah' => $wilayah->id,
+            ]);
+        }
 
         // simpan Posyandu
         $posyandu = \App\Models\Posyandu::firstOrCreate([
@@ -109,6 +110,95 @@ class CadreController extends Controller
             'data' => $cadre->load('user', 'tpk')
         ]);
     }
+
+    public function update(Request $request, $id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $isPendingUser = empty($request->nik) ? 1 : 0;
+            $isTPK = empty($request->no_tpk);
+
+            // ambil user
+            $user = User::findOrFail($id);
+
+            // ambil cadre
+            $cadre = Cadre::where('id_user', $user->id)->firstOrFail();
+
+            // simpan / ambil wilayah
+            $wilayah = \App\Models\Wilayah::firstOrCreate([
+                'provinsi'  => $request->provinsi,
+                'kota'      => $request->kota,
+                'kecamatan' => $request->kecamatan,
+                'kelurahan' => $request->kelurahan,
+            ]);
+
+            // simpan / ambil TPK (jika ada)
+            $tpkId = null;
+            if (!$isTPK) {
+                $tpk = \App\Models\TPK::firstOrCreate([
+                    'no_tpk'     => $request->no_tpk,
+                    'id_wilayah' => $wilayah->id,
+                ]);
+                $tpkId = $tpk->id;
+            }
+
+            // simpan / ambil posyandu
+            $posyandu = \App\Models\Posyandu::firstOrCreate([
+                'nama_posyandu' => $request->unit_posyandu,
+                'id_wilayah'    => $wilayah->id,
+            ]);
+
+            // 🔹 update user
+            $userData = [
+                'nik'        => $request->nik ?: null,
+                'name'       => $request->nama,
+                'email'      => $request->email,
+                'phone'      => $request->phone,
+                'role'       => $request->role,
+                'status'     => $request->status,
+                'is_pending' => $isPendingUser,
+            ];
+
+            // update password hanya jika diisi
+            if (!empty($request->password)) {
+                $userData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($userData);
+
+            // 🔹 update cadre
+            $cadre->update([
+                'id_tpk'      => $tpkId,
+                'id_posyandu' => $posyandu->id,
+                'status'      => $request->no_tpk ? 'kader' : 'non-kader',
+            ]);
+
+            // log aktivitas
+            Log::create([
+                'id_user'   => Auth::id(),
+                'context'   => 'Kader/Pengguna',
+                'activity'  => 'update',
+                'timestamp' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Cadre berhasil diperbarui',
+                'data'    => $cadre->load('user', 'tpk', 'posyandu')
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Gagal update data',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function pendingData()
     {

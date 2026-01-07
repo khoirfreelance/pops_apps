@@ -99,6 +99,7 @@
                   <label for="role" class="form-label">Role</label>
                   <select class="form-select shadow-sm" v-model="advancedFilter.role">
                     <option value="">Pilih</option>
+                    <option value="Super Admin">Super Admin</option>
                     <option value="Admin">Admin</option>
                     <option value="Bidan">Bidan</option>
                     <option value="Kader PKK">Kader PKK</option>
@@ -148,7 +149,29 @@
                   <!-- No TPK -->
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">No. TPK <small class="text-additional2 fw-normal">(kosongkan jika pengguna bukan anggota TPK)</small></label>
-                    <input type="number" min="0" class="form-control shadow-sm" v-model="form.no_tpk" />
+                    <template  v-if="form.no_tpk === '__new__'">
+                      <input
+                        type="number"
+                        min="0"
+                        class="form-control shadow-sm"
+                        v-model="form.no_tpk_new"
+                        placeholder="Tambah No. TPK baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.no_tpk"
+                        @change="loadTPK"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in tpkList" :key="item.no_tpk" :value="item.no_tpk">
+                          {{ item.no_tpk }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                    <!-- <input type="number" min="0" class="form-control shadow-sm" v-model="form.no_tpk" /> -->
                   </div>
                   <div class="col-md-6"></div>
                   <!-- NIK -->
@@ -237,6 +260,7 @@
                     <label class="form-label small fw-semibold text-secondary">Role</label>
                     <select class="form-select shadow-sm" v-model="form.role">
                       <option value="">Pilih</option>
+                      <option value="Super Admin">Super Admin</option>
                       <option value="Admin">Admin</option>
                       <option value="Bidan">Bidan</option>
                       <option value="Kader PKK">Kader PKK</option>
@@ -396,7 +420,7 @@
 
           <!-- Table -->
           <div class="container-fluid">
-            <div class="card modern-card mt-4" v-if="isPendingOpen">
+            <!-- <div class="card modern-card mt-4" v-if="isPendingOpen">
               <div class="card-body bg-additional rounded">
                 <div class="d-flex justify-content-between">
                   <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
@@ -418,7 +442,7 @@
                   </template>
                 </EasyDataTable>
               </div>
-            </div>
+            </div> -->
             <div class="card modern-card mt-4">
               <div class="card-body">
                 <div class="table-responsive">
@@ -492,12 +516,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div
         class="modal-content border-0 shadow-lg rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
       >
         <div class="modal-header bg-success text-white rounded-top-4">
           <h5 class="modal-title">✅ Berhasil</h5>
@@ -566,6 +584,8 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      roleList: [],
+      tpkList:[],
       configCacheKey: 'site_config_cache',
       // required
       isLoading: true,
@@ -598,6 +618,7 @@ export default {
       form: {
         id: null,
         nik: '',
+        no_tpk_new: '',
         no_tpk: '',
         nama: '',
         email: '',
@@ -651,17 +672,7 @@ export default {
     }
   },
   created() {
-    const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-      let namePart = storedEmail.split('@')[0]
-      namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
-        .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ')
-    } else {
-      this.username = 'User'
-    }
+
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
@@ -670,16 +681,25 @@ export default {
       return this.cadrePending.length
     },
     filteredCadre() {
-      return this.cadre.filter((item) => {
+      const f = this.filter || {}
+      const af = this.appliedFilter || {}
+
+      return (this.cadre || []).filter(item => {
+        const nik     = item.nik ?? ''
+        const no_tpk  = item.no_tpk ?? ''
+        const status  = item.status ?? ''
+        const nama    = item.nama ?? ''
+        const role    = item.role ?? ''
+
         return (
           // NIK realtime
-          (!this.filter.nik || item.nik.includes(this.filter.nik)) &&
-          (!this.filter.no_tpk || item.no_tpk.includes(this.filter.no_tpk)) &&
-          (!this.filter.status || item.status.includes(this.filter.status)) &&
-          // Advanced filter hanya aktif setelah "Cari"
-          (!this.appliedFilter.nama ||
-            item.nama.toLowerCase().includes(this.appliedFilter.nama.toLowerCase())) &&
-          (!this.appliedFilter.role || item.role === this.appliedFilter.role)
+          (!f.nik || nik.includes(f.nik)) &&
+          (!f.no_tpk || no_tpk.includes(f.no_tpk)) &&
+          (!f.status || status.includes(f.status)) &&
+
+          // Advanced filter (aktif setelah Cari)
+          (!af.nama || nama.toLowerCase().includes(af.nama.toLowerCase())) &&
+          (!af.role || role === af.role)
         )
       })
     },
@@ -698,6 +718,21 @@ export default {
     },
   },
   methods: {
+    async loadTPK(){
+      try {
+        const res = await axios.get(`${baseURL}/api/member/tpk`,{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        //console.log('data: '+res.data);
+
+        this.tpkList = res.data
+      } catch (e) {
+        console.error('Gagal ambil data:', e)
+      }
+    },
     async loadConfigWithCache() {
       try {
         // cek di localStorage
@@ -726,7 +761,7 @@ export default {
         this.logoLoaded = false
       }
     },
-    async getWilayahUser() {
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -745,7 +780,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
-    },
+    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -965,6 +1000,25 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
+    normalizeFormPayload(form) {
+      const normalized = { ...form }
+
+      Object.keys(normalized).forEach(key => {
+        if (key.endsWith('_new')) {
+          const baseKey = key.replace('_new', '')
+          const value = normalized[key]
+
+          if (value !== null && value !== '' && value !== undefined) {
+            normalized[baseKey] = value
+          }
+
+          // optional: hapus field _new dari payload
+          delete normalized[key]
+        }
+      })
+
+      return normalized
+    },
     async saveData() {
       this.isLoadingImport = true
       this.importProgress = 0
@@ -973,14 +1027,9 @@ export default {
       try {
         console.log("Payload sebelum dikirim:", this.form)
 
-        this.form.provinsi = this.form.provinsi === "__new__" ? this.form.provinsi_new : this.form.provinsi;
-        this.form.kota = this.form.kota === "__new__" ? this.form.kota_new : this.form.kota;
-        this.form.kecamatan = this.form.kecamatan === "__new__" ? this.form.kecamatan_new : this.form.kecamatan;
-        this.form.kelurahan= this.form.kelurahan === "__new__" ? this.form.kelurahan_new : this.form.kelurahan;
-        this.form.unit_posyandu= this.form.unit_posyandu === "__new__" ? this.form.unit_posyandu_new : this.form.unit_posyandu;
-
+        const payload = this.normalizeFormPayload(this.form)
         // simpan ke backend
-        await axios.post(`${baseURL}/api/cadre`, this.form,{
+        await axios.post(`${baseURL}/api/cadre`, payload,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -990,7 +1039,7 @@ export default {
         // refresh table
         await this.resetForm()
         await this.loadCadre()
-        await this.getPendingData()
+        //await this.getPendingData()
 
         setTimeout(() => (this.showAlert = false), 3000)
 
@@ -1064,7 +1113,7 @@ export default {
         //alert("Data berhasil diupdate")
         this.isFormOpen = false
         this.isPendingOpen = false
-        this.getPendingData()
+        //this.getPendingData()
         this.loadCadre()
         const modal = new Modal(document.getElementById("successModal"))
         modal.show()
@@ -1086,7 +1135,7 @@ export default {
         );
 
         this.loadCadre()
-        this.getPendingData()
+        //this.getPendingData()
 
         const modal = new Modal(document.getElementById("successModal"));
         modal.show();
@@ -1109,7 +1158,7 @@ export default {
 
 
         this.loadCadre()
-        this.getPendingData()
+        //this.getPendingData()
 
         const modal = new Modal(document.getElementById("successModal"));
         modal.show();
@@ -1131,14 +1180,14 @@ export default {
         );
 
         this.loadCadre()
-        this.getPendingData()
+        //this.getPendingData()
         const modal = new Modal(document.getElementById("successModal"));
         modal.show();
       } catch (err) {
         console.error("Gagal deactive data kader:", err.response?.data || err);
       }
     },
-    async getPendingData() {
+    /* async getPendingData() {
       try {
         const res = await axios.get(`${baseURL}/api/cadre/pending`,{
           headers: {
@@ -1151,7 +1200,7 @@ export default {
       } catch (err) {
         console.error("Gagal fetch pending data:", err)
       }
-    },
+    }, */
   },
   async mounted() {
     this.isLoading = true
@@ -1161,8 +1210,9 @@ export default {
         this.loadCadre(),
         this.loadProvinsi(),
         this.loadPosyandu(),
-        this.getPendingData(),
-        this.getWilayahUser(),
+        this.loadTPK(),
+        //this.getPendingData(),
+        //this.getWilayahUser(),
         this.handleResize(),
         window.addEventListener('resize', this.handleResize)
       ])

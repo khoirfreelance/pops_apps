@@ -2778,7 +2778,6 @@ export default {
       return [...(this.selectedAnak?.riwayat_penimbangan || [])]
         .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
     },
-    // eslint-disable-next-line vue/return-in-computed-property
     periodeLabel() {
       // DEFAULT → pakai bulan berjalan
       const defaultLabel = new Date().toLocaleString('id-ID', {

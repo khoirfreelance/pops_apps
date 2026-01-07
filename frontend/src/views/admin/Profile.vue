@@ -515,22 +515,12 @@ export default {
         name: '',
         phone: '',
       },
+      confirmMessage:'',
       savingProfile: false,
       loadingUser: false
     }
   },
   created() {
-    const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-      let namePart = storedEmail.split('@')[0]
-      namePart = namePart.replace(/[._]/g, ' ')
-      this.username = namePart
-        .split(' ')
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ')
-    } else {
-      this.username = 'User'
-    }
     this.today = this.getTodayDate()
     this.thisMonth = this.getThisMonth()
   },
@@ -692,7 +682,7 @@ export default {
         this.logoLoaded = false
       }
     },
-    async getWilayahUser() {
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -711,7 +701,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
-    },
+    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -767,17 +757,11 @@ export default {
     },
 
   },
-  computed: {
-    background() {
-      const config = JSON.parse(localStorage.getItem('siteConfig'))
-      return config && config.background ? config.background : null
-    },
-  },
   async mounted() {
     this.isLoading = true
     try {
       await Promise.all([
-        this.getWilayahUser(),
+        //this.getWilayahUser(),
         this.loginUser(),
         //this.handleResize(),
         this.loadConfigWithCache(),

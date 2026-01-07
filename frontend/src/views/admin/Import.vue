@@ -1470,7 +1470,34 @@ export default {
         this.logoLoaded = false
       }
     },
-    async getWilayahUser() {
+    /* async getWilayahUser() {
+      const res = await axios.get(`${baseURL}/api/user/region`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+
+      const wilayah = res.data
+
+      this.filters.kelurahan_id    = wilayah.id_wilayah
+      this.filters.provinsi = wilayah.provinsi
+      this.filters.kota = wilayah.kota
+      this.filters.kecamatan = wilayah.kecamatan
+      this.filters.kelurahan = wilayah.kelurahan
+
+      this.listKelurahan = [
+        {
+          label: 'Kelurahan',
+          options: [
+            {
+              id: wilayah.id_wilayah,
+              label: wilayah.kelurahan,
+            },
+          ],
+        },
+      ]
+    }, */
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -1487,7 +1514,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         //this.kelurahan = '-'
       }
-    },
+    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -1867,7 +1894,7 @@ export default {
       await Promise.all([
         this.loadConfigWithCache(),
         this.loadData(),
-        this.getWilayahUser(),
+        //this.getWilayahUser(),
         this.handleResize(),
 
         window.addEventListener('resize', this.handleResize)

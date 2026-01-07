@@ -464,12 +464,6 @@
     <div class="modal-dialog">
       <div
         class="modal-content"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
       >
         <div class="modal-header text-primary bg-light border-0 rounded-top-4">
           <h5 class="modal-title">Import File Data Keluarga</h5>
@@ -503,12 +497,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div
         class="modal-content border-0 shadow-lg rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
       >
         <div class="modal-header bg-success text-white rounded-top-4">
           <h5 class="modal-title">Berhasil</h5>
@@ -536,12 +524,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div
         class="modal-content border-0 shadow-lg rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
       >
         <div class="modal-header bg-danger text-white rounded-top-4">
           <h5 class="modal-title">Error</h5>
@@ -834,7 +816,7 @@ export default {
         this.logoLoaded = false
       }
     },
-    async getWilayahUser() {
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -853,7 +835,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
-    },
+    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -1316,7 +1298,7 @@ export default {
         this.loadFamily(),
         this.loadProvinsi(),
         this.getPendingData(),
-        this.getWilayahUser(),
+        //this.getWilayahUser(),
         this.handleResize(),
         window.addEventListener('resize', this.handleResize)
       ])

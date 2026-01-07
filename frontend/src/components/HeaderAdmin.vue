@@ -142,6 +142,11 @@ export default {
         showCancelButton: true,
         confirmButtonText: 'Ya, Logout',
         cancelButtonText: 'Batal',
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-primary mx-1',
+          cancelButton: 'btn btn-outline-secondary mx-1'
+        }
       }).then((result) => {
         if (result.isConfirmed) {
           localStorage.clear()

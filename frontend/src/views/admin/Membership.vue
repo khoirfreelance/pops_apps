@@ -78,7 +78,7 @@
                           type="number"
                           min="0"
                           class="form-control shadow-sm"
-                          v-model="form.no_tpk"
+                          v-model="form.no_tpk_new"
                           placeholder="Tambah No. TPK baru"
                         />
                       </template>
@@ -521,12 +521,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div
         class="modal-content border-0 shadow-lg rounded-4"
-        :style="{
-          backgroundImage: background ? `url(${background})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }"
       >
         <div class="modal-header bg-success text-white rounded-top-4">
           <h5 class="modal-title">✅ Berhasil</h5>
@@ -595,6 +589,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      progressLevel: null,
       configCacheKey: 'site_config_cache',
       // required
       isLoading: true,
@@ -664,20 +659,7 @@ export default {
         { text: 'Sasaran', value: 'sasaran' },
       ],
       //dummy anak
-      chilList:[
-        {
-          tgl_pendampingan:'2025-10-04',
-          nama:'Agustian Pratama',
-          kepala:'1871031205950003 - Monkey D. Dragon',
-          petugas:'Super Admin',
-          bb:'13',
-          tb:'94',
-          lila:'12',
-          asi:true,
-          imunisasi:true,
-          posyandu:true,
-        },
-      ],
+      chilList:[],
       headers_children: [
         { text: 'Tanggal', value: 'tgl_pendampingan' },
         { text: 'Nama', value: 'nama' },
@@ -691,25 +673,7 @@ export default {
         { text: 'Rutin Posyandu', value: 'posyandu' },
       ],
       //dummy bumil
-      pregnancy: [
-        {
-          kunjungan: '2025-08-10',
-          no_kk: '3326167001090001 - Dono Pradana Putra',
-          pic:'Super Admin',
-          phone_pic:'082198435667',
-          nama: 'Nur Dini Waini',
-          kehamilan_ke: '3',
-          kunjungan_ke:'3',
-          usia_kehamilan: '28',
-          bb:'50',
-          tb:'150',
-          lila:'12',
-          hb:'',
-          riwayat:'-',
-          anemia: '-',
-          kek: '-',
-        },
-      ],
+      pregnancy: [],
       headers_pregnancy: [
         { text: 'Kunjungan Terakhir', value: 'kunjungan' },
         { text: 'No. KK', value: 'no_kk' },
@@ -729,29 +693,7 @@ export default {
 
       ],
       // dummy brides data
-      brides: [
-        {
-          //catatan: 'Berisiko Tinggi',
-          kunjungan: '2025-08-20',
-          menikah: '2024-12-12',
-          namaP: 'Siti',
-          nikP: '123456789',
-          usiaP: 22,
-          pekerjaanP: 'Mahasiswa',
-          bbP: 45,
-          tbP: 155,
-          lilaP: 24,
-          hbP: '12',
-          namaL: 'Budi',
-          nikL: '987654321',
-          usiaL: 25,
-          pekerjaanL: 'Karyawan',
-          riwayat: 'Hipertensi',
-          jamban: 'Ya',
-          air: 'Sumur',
-          intervensi: '-',
-        },
-      ],
+      brides: [],
       headers_bride: [
         { text: 'Tanggal', value: 'kunjungan' },
         { text: 'Tanggal Menikah', value: 'menikah' },
@@ -780,14 +722,6 @@ export default {
     }
   },
   computed: {
-    background() {
-      try {
-        const config = JSON.parse(localStorage.getItem('siteConfig'))
-        return config?.background || null
-      } catch {
-        return null
-      }
-    },
     filteredMember() {
       return this.member.filter((item) => {
         return (
@@ -826,7 +760,7 @@ export default {
         this.logoLoaded = false
       }
     },
-    async getWilayahUser() {
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -845,7 +779,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
-    },
+    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -1092,16 +1026,34 @@ export default {
       },
       this.isFormOpen = false
     },
+    normalizeFormPayload(form) {
+      const normalized = { ...form }
+
+      Object.keys(normalized).forEach(key => {
+        if (key.endsWith('_new')) {
+          const baseKey = key.replace('_new', '')
+          const value = normalized[key]
+
+          if (value !== null && value !== '' && value !== undefined) {
+            normalized[baseKey] = value
+          }
+
+          // optional: hapus field _new dari payload
+          delete normalized[key]
+        }
+      })
+
+      return normalized
+    },
     async saveData() {
       this.isLoadingImport = true
       this.importProgress = 0
       this.animatedProgress = 0
 
       try {
-        console.log("Payload sebelum dikirim:", this.form)
-
+        const payload = this.normalizeFormPayload(this.form)
         // simpan ke backend
-        await axios.post(`${baseURL}/api/member`, this.form,{
+        await axios.post(`${baseURL}/api/member`, payload,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1193,7 +1145,7 @@ export default {
         this.loadFamily(),
         this.loadUser(),
         this.loadTPK(),
-        this.getWilayahUser(),
+        //this.getWilayahUser(),
         this.handleResize(),
         window.addEventListener('resize', this.handleResize)
       ])
