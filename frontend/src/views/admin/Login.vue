@@ -32,11 +32,11 @@
             Login
           </button>
         </form>
-        <div class="mt-3 text-center">
+        <!-- <div class="mt-3 text-center">
           <a href="/admin/forgot" class="text-decoration-none text-brand fw-semibold">
             Lupa Password?
           </a>
-        </div>
+        </div> -->
       </div>
     </div>
 
