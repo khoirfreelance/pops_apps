@@ -1,184 +1,235 @@
 <template>
-  <footer class="footer-gradient text-white pt-5 pb-3">
-    <!-- Top Multi-layer Wave -->
-    <div class="footer-wave">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1440 150"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#0e7a54; stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#2fa174; stop-opacity:1" />
-          </linearGradient>
-        </defs>
+  <footer class="footer">
+      <div class="footer-ratio">
 
-        <!-- Layer 1 (paling bawah, warna penuh) -->
-        <path
-          fill="url(#waveGradient)"
-          d="M0,80
-             C360,0 1080,160 1440,80
-             L1440,0 L0,0 Z"
-        ></path>
+        <div class="container-fluid footer-inner">
 
-        <!-- Layer 2 (transparan) -->
-        <path
-          fill="#ffffff"
-          fill-opacity="1"
-          d="M0,50
-             C480,20 960,180 1440,100
-             L1440,0 L0,0 Z"
-        ></path>
+          <div class="row align-items-center footer-content">
+            <!-- LEFT : LOGO -->
+            <div class="col-md-4">
+              <div class="footer-program text-white mb-2">PROGRAM DARI</div>
 
-        <!-- Layer 3 (lebih transparan lagi) -->
-        <path
-          fill="#ffffff"
-          fill-opacity="0.4"
-          d="M0,150
-             C360,40 1080,200 1440,120
-             L1440,0 L0,0 Z"
-        ></path>
-      </svg>
-    </div>
+              <img
+                v-if="footerLogo"
+                :src="footerLogo"
+                alt="Footer Logo"
+                class="footer-logo"
+              />
 
-    <!-- Isi footer -->
-    <div class="container">
-      <div class="row align-items-center text-white">
-
-        <!-- Logo -->
-        <div class="col-md-4 text-center text-md-centert mb-4 mb-md-0">
-          <p class="small text-white mb-3 text-uppercase letter-space">Program dari</p>
-          <img
-            src="/src/assets/tf_reserved_primary.png"
-            alt="Logo"
-            class="img-fluid"
-            style="max-width: 180px;"
-          />
-        </div>
-
-        <!-- Menu & Kontak -->
-        <div class="col-md-8">
-           <!-- Row menu + contact button -->
-          <div class="row align-items-start mb-4">
-
-            <!-- Menu -->
-            <div class="col-md-9">
-              <div class="row">
-                <div class="col-6 col-md-6">
-                  <ul class="list-unstyled">
-                    <li><a :href="domain + '#section0'" class="footer-link my-2">Home</a></li>
-                    <li><a :href="domain + '#section1'" class="footer-link my-2">Tentang Pops</a></li>
-                  </ul>
-                </div>
-                <div class="col-6 col-md-6">
-                  <ul class="list-unstyled">
-
-                    <li><a :href="domain + '#section2'" class="footer-link my-2">Status Gizi</a></li>
-                    <li><a :href="domain + '#section3'" class="footer-link my-2">Kalkulator Mandiri</a></li>
-
-                  </ul>
-                </div>
-              </div>
+              <!-- fallback kalau belum ada -->
+              <img
+                v-else
+                src="/images/logo-tanoto.png"
+                alt="Tanoto Foundation"
+                class="footer-logo"
+              />
             </div>
 
-            <!-- Contact Us button -->
-            <!-- <div class="col-md-3 text-md-end text-center mt-2 mt-md-0">
-              <a href="#contact" class="btn btn-secondary text-light fw-bold px-4 py-2 mt-4">
-                CONTACT US
-              </a>
-            </div> -->
 
+            <!-- MENU -->
+            <div class="col-md-4 mb-4 mb-md-0 pt-5">
+              <ul class="footer-menu list-unstyled">
+                <li><a class="text-white" href="#home">Home</a></li>
+                <li><a class="text-white" href="#kalkulator">Kalkulator Mandiri</a></li>
+              </ul>
+            </div>
           </div>
-
-          <!-- Separator -->
-          <hr class="border-light opacity-25 mb-3" />
-
-          <!-- Social Media -->
-          <div class="d-flex justify-content-md-end justify-content-center gap-3 fs-6">
-            <a href="#" class="footer-icon"><i class="bi bi-phone"></i></a>
-            <a href="#" class="footer-icon"><i class="bi bi-envelope"></i></a>
-            <a href="#" class="footer-icon"><i class="bi bi-globe"></i></a>
-            <a href="#" class="footer-icon"><i class="bi bi-twitter"></i></a>
-            <a href="#" class="footer-icon"><i class="bi bi-instagram"></i></a>
-            <a href="#" class="footer-icon"><i class="bi bi-facebook"></i></a>
-            <a href="#" class="footer-icon"><i class="bi bi-linkedin"></i></a>
-          </div>
-
         </div>
 
+        <div class="container-fluid footer-inner-social w-100 p-0">
+          <div class="row align-items-center footer-content w-100 m-0">
+            <div class="col-md-12 w-100">
+              <div class="footer-social d-flex gap-2 justify-content-md-end w-100">
+
+                <a
+                  v-for="item in footerSocials"
+                  :key="item.id"
+                  :href="item.url"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <img
+                    :src="socialIcons[item.type]"
+                    :alt="item.type"
+                  />
+                </a>
+
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <hr class="w-100 border-light opacity-25 mt-4" />
+      <!-- COPYRIGHT BAR -->
       <CopyRight />
-    </div>
-
-  </footer>
+    </footer>
 </template>
 
 <script>
-import CopyRight from './CopyRight.vue';
+import CopyRight from './CopyRight.vue'
+import axios from 'axios'
+/* =========================
+   API CONFIG
+========================== */
+// PORT backend kamu
+const API_PORT = 8000
+
+// Bangun base URL dari window.location
+const { protocol, hostname } = window.location
+// contoh hasil: "http://192.168.0.5:8000"
+const baseURL = `${protocol}//${hostname}:${API_PORT}`
+
 export default {
   components: { CopyRight },
   data() {
     return {
-       domain: window.location.origin
+      domain: window.location.origin,
+      footerLogo: null,
+      footerSocials: [],
+      socialIcons: {
+        call: '/icons/phone.png',
+        email: '/icons/email.png',
+        web: '/icons/web.png',
+        twitter: '/icons/twitter.png',
+        instagram: '/icons/instagram.png',
+        facebook: '/icons/facebook.png',
+        linkedin: '/icons/linkedin.png',
+      }
     }
+  },
+  methods:{
+    async loadFooterLogo() {
+      try {
+        const res = await axios.get(`${baseURL}/api/public/footer`, {
+          headers: { Accept: 'application/json' },
+        })
+
+        this.footerLogo = res.data?.data?.logo_url || null
+      } catch (error) {
+        console.error('Gagal load footer logo:', error)
+      }
+    },
+    async loadFooterSocial() {
+      try {
+        const res = await axios.get(`${baseURL}/api/public/footer-social`, {
+          headers: { Accept: 'application/json' },
+        })
+
+        this.footerSocials = (res.data?.data || []).filter(
+          item => item.is_active === 1
+        )
+      } catch (error) {
+        console.error('Gagal load footer social:', error)
+      }
+    }
+  },
+  mounted(){
+    this.loadFooterLogo()
+    this.loadFooterSocial()
   }
 }
 </script>
 
 <style scoped>
-.footer-gradient {
-  background: linear-gradient(90deg, #0e7a54, #2fa174);
+/* =========================
+   FOOTER RATIO 1150x310
+========================= */
+.footer {
+  color: #ffffff!important;
+}
+
+/* ratio wrapper */
+.footer-ratio {
+  /*padding-bottom: 20px;*/
+  padding-left: 60px;
+  padding-right: 60px;
   position: relative;
-  padding-top: 6rem !important;
-}
-
-/* Wave */
-.footer-wave {
-  position: absolute;
-  top: -20px;
-  left: 0;
   width: 100%;
-  overflow: hidden;
-  line-height: 0;
+  aspect-ratio: 1150 / 180;   /* FIX RATIO */
+  background: url('/images/footer-bg.png') no-repeat center;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
 }
-.footer-wave svg {
-  display: block;
+
+/* isi footer di tengah */
+.footer-inner {
+  flex: 1;
+  display: flex;
+  margin: 0;
+  max-height:150px;
+  align-items: center; /* center vertical */
+}
+
+.footer-inner-social {
+  flex: 1;
+  display: flex;
+  margin: 0;
+  max-height:80px;
+  margin-bottom: 10px;
+  align-items: center; /* center vertical */
+}
+
+/* konten */
+.footer-content {
   width: 100%;
-  height: 120px;
 }
 
-/* Link fresh look */
-.footer-link {
-    color: #fff;
-    text-decoration: none;
-    display: block;
-    padding: 4px 0;
-    border-left: 2px solid #28a745; /* garis hijau kecil seperti contoh */
-    padding-left: 8px;
-  }
-  .footer-link:hover {
-    opacity: 0.7;
-  }
-  .footer-icon {
-    color: white;
-    text-decoration: none;
-  }
-  .footer-icon:hover {
-    opacity: 0.7;
+/* menu */
+.footer-menu a::before {
+  content: '|';
+  margin-right: 10px;
+  opacity: 0.7;
+  color: #FFFFFF;
+}
+
+/* social icons */
+.footer-social img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.footer-program {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.70rem;
+  letter-spacing: 0.12em;   /* khas label */
+  opacity: 0.9;
+}
+
+/* Logo Tanoto */
+.footer-logo {
+  max-width: 175px;         /* pas untuk rasio 1150x310 */
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 768px) {
+  .footer-logo {
+    max-width: 150px;
   }
 
-/* Animasi halus */
-.animate-fade-in {
-  animation: fadeIn 1.2s ease-in-out;
+  .footer-program {
+    font-size: 0.7rem;
+  }
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+
+.footer-social {
+  margin-top: auto;
+  margin-bottom: 0px;
+  align-items: center;
 }
-.letter-space {
-  letter-spacing: 2px;
+
+.footer-menu li:not(:last-child) {
+  margin-bottom: 0.75rem;
+}
+
+.footer-menu a {
+  text-decoration: none;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.footer-menu a:hover {
+  transform: translateX(4px);
 }
 </style>

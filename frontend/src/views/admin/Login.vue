@@ -18,20 +18,39 @@
               required
             />
           </div>
+
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input
-              type="password"
-              class="form-control rounded-pill"
-              id="password"
-              v-model="password"
-              required
-            />
+
+            <div class="password-wrapper">
+              <input
+                :type="showPassword ? 'text' : 'password'"
+                id="password"
+                v-model="password"
+                class="form-control rounded-pill password-input"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-toggle"
+                @click="togglePassword"
+                tabindex="-1"
+              >
+                <i
+                  class="fa-solid"
+                  :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
+            </div>
           </div>
+
+
           <button type="submit" class="btn w-100 text-white btn-brand-gradient rounded-pill">
-            Login
+            <i class="bi bi-box-arrow-in-right"></i> Login
           </button>
         </form>
+
         <!-- <div class="mt-3 text-center">
           <a href="/admin/forgot" class="text-decoration-none text-brand fw-semibold">
             Lupa Password?
@@ -66,6 +85,7 @@ export default {
     return {
       email: '',
       password: '',
+      showPassword: false,
       loading: false,
     }
   },
@@ -74,6 +94,9 @@ export default {
     return { router }
   },
   methods: {
+    togglePassword() {
+      this.showPassword = !this.showPassword
+    },
     async handleLogin() {
       this.loading = true
       try {
@@ -83,6 +106,8 @@ export default {
         })
 
         // ambil data dari API
+        //console.log('user role: ',response.data.user.role);
+
         const { status, message, user, token } = response.data
 
         if (status) {
@@ -90,8 +115,10 @@ export default {
           localStorage.setItem('token', token)
           localStorage.setItem('isLoggedIn', 'true')
           localStorage.setItem('userEmail', user.email)
-          localStorage.setItem('role', user.role)
           localStorage.setItem('userName', user.name)
+          localStorage.setItem('role', user.role)
+          localStorage.setItem('userWilayah', user.id_wilayah)
+          localStorage.setItem('userPosyandu', user.id_posyandu)
           localStorage.setItem('authToken', token)
 
           Swal.fire({
@@ -103,7 +130,7 @@ export default {
             showClass: { popup: 'animate__animated animate__fadeInDown' },
             hideClass: { popup: 'animate__animated animate__fadeOutUp' },
           })
-          console.log('berhasil masuk');
+          //console.log('berhasil masuk');
 
           this.router.push('/admin')
         } else {
@@ -141,4 +168,33 @@ export default {
 .btn-brand-gradient:hover {
   opacity: 0.9;
 }
+.password-wrapper {
+  position: relative;
+}
+
+.password-input {
+  padding-right: 3rem; /* ruang icon */
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+  color: #333;
+  cursor: pointer;
+}
+
+.password-toggle i {
+  font-size: 1.1rem;
+}
+
+.password-toggle:focus {
+  outline: none;
+}
+
 </style>

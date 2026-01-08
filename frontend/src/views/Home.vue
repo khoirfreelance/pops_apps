@@ -256,12 +256,10 @@
             </div>
           </div>
         </div>
-
-        <!-- COPYRIGHT BAR -->
-        <div class="footer-copyright">
-          Copyright @ Tanoto Foundation 2025
-        </div>
-
+      </div>
+      <!-- COPYRIGHT BAR -->
+      <div class="footer-copyright">
+        Copyright @ Tanoto Foundation 2025
       </div>
     </footer>
 

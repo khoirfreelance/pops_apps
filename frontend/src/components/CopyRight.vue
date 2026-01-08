@@ -1,7 +1,15 @@
 <template>
-  <div class="bg-secondary text-white py-2" style="border-bottom: 10px solid var(--bs-primary);">
-    <div class="container text-center small">
-      Copyright &copy; Tanoto Foundation {{ new Date().getFullYear() }}
-    </div>
+  <div class="footer-copyright">
+    Copyright @ Tanoto Foundation 2025
   </div>
 </template>
+<style scoped>
+/* copyright bar */
+.footer-copyright {
+  background: #b3a369;
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.6rem 0;
+}
+</style>

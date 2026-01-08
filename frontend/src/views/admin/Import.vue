@@ -326,10 +326,10 @@
                     <ul>
                       <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <!-- <li>
+                      <li>
                         Silahkan unduh contoh dengan klik
                         <a :href="exampleFile">Example.csv</a>
-                      </li> -->
+                      </li>
                     </ul>
                   </div>
 
@@ -520,10 +520,10 @@
                     <ul>
                       <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <!-- <li>
+                      <li>
                         Silahkan unduh contoh dengan klik
                         <a :href="exampleFile">Example.csv</a>
-                      </li> -->
+                      </li>
                     </ul>
                   </div>
 
@@ -713,6 +713,26 @@
         </div>
       </div>
     </div>
+  </div>
+  <!-- Loader Overlay with Animated Progress -->
+  <div
+    v-if="isLoadingImport"
+    class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-50"
+    style="z-index: 2000"
+  >
+    <div class="w-50">
+      <div class="progress" style="height: 1.8rem; border-radius: 1rem; overflow: hidden">
+        <div
+          class="progress-bar progress-bar-striped progress-bar-animated"
+          role="progressbar"
+          :style="{ width: importProgress + '%' }"
+          :data-progress="progressLevel"
+        >
+          <span class="fw-bold">{{ animatedProgress }}%</span>
+        </div>
+      </div>
+    </div>
+    <p class="text-white mt-3">Menyimpan data... {{ currentRow }}/{{ totalRows }} baris</p>
   </div>
 </template>
 
@@ -1675,9 +1695,14 @@ export default {
       const formData = new FormData()
       formData.append('file', this.file)
 
+      this.isLoadingImport = true
+      this.importProgress = 0
+      this.animatedProgress = 0
+
       try {
-        this.uploading = true
-        this.uploadProgress = 0
+
+        //this.uploading = true
+        //this.uploadProgress = 0
 
         const res = await axios.post(UPLOAD_URL, formData, {
           headers: {
@@ -1700,6 +1725,7 @@ export default {
         this.formOpen_catin = false
 
         this.removeFile()
+        setTimeout(() => (this.showAlert = false), 3000)
       } catch (err) {
         console.error('Upload error:', err)
 
@@ -1709,8 +1735,9 @@ export default {
 
         this.showError(message)
       } finally {
-        this.uploading = false
-        this.uploadProgress = 0
+        this.isLoadingImport = false
+        /* this.uploading = false
+        this.uploadProgress = 0 */
       }
     },
     removeFile() {
