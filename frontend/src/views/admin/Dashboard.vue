@@ -385,8 +385,11 @@
                             Berat Badan / Usia
                           </h5>
 
-                          <div style="max-width: 280px; margin: 0 auto;"
-                            class="d-flex justify-content-center align-items-center">
+                          <div
+                            style="max-width: 280px; margin: 0 auto;"
+                            class="d-flex justify-content-center align-items-center"
+                            v-if="activeMenu === 'anak'"
+                          >
                             <canvas ref="pieChart_bb"></canvas>
                           </div>
 
@@ -418,7 +421,7 @@
                           </h5>
 
                           <div style="max-width: 280px; margin: 0 auto;"
-                            class="d-flex justify-content-center align-items-center">
+                            class="d-flex justify-content-center align-items-center" v-if="activeMenu === 'anak'">
                             <canvas ref="pieChart_tb"></canvas>
                           </div>
 
@@ -450,7 +453,7 @@
                           </h5>
 
                           <div style="max-width: 280px; margin: 0 auto;"
-                            class="d-flex justify-content-center align-items-center">
+                            class="d-flex justify-content-center align-items-center" v-if="activeMenu === 'anak'">
                             <canvas ref="pieChart_status"></canvas>
                           </div>
 
@@ -956,8 +959,8 @@
                                   style="color: #006341 !important">
                                   {{ row.persen ? row.persen + ' %' : '0 %' }}
                                 </td>
-                                <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'" style="color: #006341 !important">
+                                <td id="text-diagram-table-piechart" class="small">
+                                  <span v-if="row.tren && row.tren !== '-'" :class="row.trenClass">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
                                   <span v-else>-</span>
@@ -973,9 +976,9 @@
                     <div class="col-12 col-xl-6">
                       <div
                         class="card border border-primary shadow p-3 h-100 d-flex align-items-center justify-content-center">
-                        <!-- <div class="w-full h-[300px]"> -->
-                        <canvas ref="bumilChart" class="w-full h-full" id="canvas-status-bumil"></canvas>
-                        <!-- </div> -->
+                        <div v-if="activeMenu === 'bumil'">
+                          <canvas ref="bumilChart" class="w-full h-full"></canvas>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1447,8 +1450,8 @@
                                   style="color: #006341 !important;">
                                   {{ row.persen ? row.persen + ' %' : '0 %' }}
                                 </td>
-                                <td id="text-diagram-table-piechart" class="small" :class="row.trenClass">
-                                  <span v-if="row.tren && row.tren !== '-'" style="color: #006341 !important;">
+                                <td id="text-diagram-table-piechart" class="small">
+                                  <span v-if="row.tren && row.tren !== '-'" :class="row.trenClass">
                                     <i :class="row.trenIcon"></i> {{ row.tren }}
                                   </span>
                                   <span v-else>-</span>
@@ -2296,6 +2299,45 @@ export default {
     }
   },
   methods: {
+    destroyAllCharts() {
+      if (!this.chartInstances) return
+
+      Object.values(this.chartInstances).forEach(chart => {
+        if (chart) {
+          try {
+            chart.stop()      // ⛔ STOP plugin & animation
+            chart.destroy()
+          } catch (e) {
+            console.warn('Gagal destroy chart', e)
+          }
+        }
+      })
+
+      this.chartInstances = {}
+    },
+    renderAllCharts() {
+      this.$nextTick(() => {
+        if (!this.dataTable_bb.length) return
+
+        this.renderChart(
+          'pieChart_bb',
+          this.dataTable_bb,
+          this.dataTable_bb.map(r => r.color)
+        )
+
+        this.renderChart(
+          'pieChart_tb',
+          this.dataTable_tb,
+          this.dataTable_tb.map(r => r.color)
+        )
+
+        this.renderChart(
+          'pieChart_status',
+          this.dataTable_bbtb,
+          this.dataTable_bbtb.map(r => r.color)
+        )
+      })
+    },
     handleRegionChange() {
       const idWilayah = this.filters.kelurahan_id
 
@@ -2427,7 +2469,6 @@ export default {
       if (type === 'tb') return 'Tinggi Badan / Usia'
       if (type === 'bbtb') return 'Berat Badan / Tinggi Badan'
     },
-
     getDetailData(type) {
       if (type === 'bb') return this.dataTable_bb
       if (type === 'tb') return this.dataTable_tb
@@ -2864,7 +2905,6 @@ export default {
         },
       ]
     },
-
     async fetchPosyanduByWilayah(id_wilayah) {
       if (!id_wilayah) {
         console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
@@ -3022,38 +3062,55 @@ export default {
       }
       return labels
     },
-    async applyFilter() {
-      //console.log("THIS Filter Bumil", this.filteredBumil);
-      this.periodeExportData = this.filters.periode;
-      this.desaExportData = this.filters.kelurahan;
-      if (this.isMobile) {
-        this.showFilterMobile = false // auto sembunyikan setelah apply
-      }
+    /* async applyFilter() {
       this.isLoading = true
       try {
-        // UPDATE PERIODE LABEL DI SINI ← !!!
-        this.periodeLabel = this.getPeriodeLabel()
-        this.bulanIni = this.periodeLabel
-        //this.filters.kelurahan = this.filters.kelurahan_id
-        this.kelurahan = 'Desa '+this.filters.kelurahan
-        await Promise.all([
-          this.hitungStatistik(),
-          this.generateDataTable(),
-          this.masalahGanda(),
-          this.hitungIntervensi(),
-          this.generateInfoBoxes(),
-          this.generateIndikatorBumilBulanan(),
-          this.renderGiziGandaGiziAnak()
-        ])
+        await this.hitungStatistik()
+        await this.generateDataTable()
+        await this.masalahGanda()
+        await this.hitungIntervensi()
+        await this.generateInfoBoxes()
 
-        this.renderFunnelChart()
-        this.renderBumilChart()
-        this.renderIntervensiBumilChart()
+        if (this.activeMenu === 'bumil') {
+          await this.generateIndikatorBumilBulanan()
+        }
 
-      } catch (e) {
-        console.error('Gagal menerapkan filter', e)
+        // ⛔ JANGAN render chart di sini
       } finally {
-        this.isLoading = false // END LOADING
+        this.isLoading = false
+      }
+    }, */
+    async applyFilter() {
+      this.isLoading = true
+
+      try {
+        await this.hitungStatistik()
+        await this.generateDataTable()
+        await this.masalahGanda()
+        await this.hitungIntervensi()
+        await this.generateInfoBoxes()
+        await this.generateIndikatorBumilBulanan()
+
+        if (this.activeMenu === 'anak') {
+          //this.destroyAnakCharts()
+          this.$nextTick(() => {
+            // ⛔ JANGAN render bumil di sini
+            this.renderAllCharts()
+            this.renderFunnelChart()
+            this.renderGiziGandaGiziAnak()
+          })
+        }
+
+        // ✅ hanya render bumil jika menu aktif
+        if (this.activeMenu === 'bumil') {
+          this.$nextTick(() => {
+            this.renderBumilChart()
+            this.renderIntervensiBumilChart()
+          })
+        }
+
+      } finally {
+        this.isLoading = false
       }
     },
     async hitungStatistik() {
@@ -3136,7 +3193,6 @@ export default {
         console.error('❌ hitungStatusGizi error:', error)
       }
     },
-
     normalizeTrendNumber(trend) {
       if (!trend) return []
 
@@ -3498,194 +3554,24 @@ export default {
           kecamatan: this.filters.kecamatan || '',
           kelurahan: this.filters.kelurahan || '',
         }
-
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        let res = null
 
+        let res = null
         switch (this.activeMenu) {
           case 'anak':
             res = await axios.get(`${baseURL}/api/children/tren`, { headers, params })
+            this.processDataAnak(res.data)
             break
+
           case 'bumil':
             res = await axios.get(`${baseURL}/api/pregnancy/tren`, { headers, params })
+            this.processDataBumil(res.data)
             break
+
           case 'catin':
             res = await axios.get(`${baseURL}/api/bride/tren`, { headers, params })
+            this.processDataCatin(res.data)
             break
-          default:
-            return
-        }
-
-        // ==================== ANAK ====================
-        if (this.activeMenu === 'anak') {
-          this.detailAnak = res.data.detail
-          // ----- BB/U -----
-          const bbCurrent = res.data.bb?.data?.current || {}
-          const bbLast = res.data.bb?.data?.previous || {}
-          const totalCurrent = res.data.bb?.total?.current || 0
-          //const bbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b']
-          const bbColors = ['#E53935', '#FB8C00', '#43A047', '#1E88E5', '#8E24AA']
-          this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah], idx) => {
-            const prevValue = bbLast[status] ?? 0
-            const diff = jumlah - prevValue
-
-            let tren = '-',
-              trenIcon = '',
-              trenClass = ''
-            if (prevValue === 0 && jumlah === 0) tren = '-'
-            else if (diff > 0) {
-              tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
-              trenIcon = 'bi bi-caret-up-fill'
-              trenClass = 'text-danger'
-            } else if (diff < 0) {
-              tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
-              trenIcon = 'bi bi-caret-down-fill'
-              trenClass = 'text-success'
-            } else {
-              tren = '0.00%'
-              trenIcon = 'bi bi-caret-right-fill'
-              trenClass = 'text-secondary'
-            }
-
-            return {
-              status,
-              jumlah,
-              persen: totalCurrent > 0 ? ((jumlah / totalCurrent) * 100).toFixed(1) : 0,
-              tren,
-              trenIcon,
-              trenClass,
-              color: bbColors[idx % bbColors.length], // warna slice sinkron dengan chart
-            }
-          })
-
-          // ----- TB/U -----
-          const tbCurrent = res.data.tb?.data?.current || {}
-          const tbLast = res.data.tb?.data?.previous || {}
-          const totalCurrentTB = res.data.tb?.total?.current || 0
-          //const tbColors = ['#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b']
-          const tbColors = ['#E53935', '#FB8C00', '#43A047', '#1E88E5', '#8E24AA']
-
-          this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah], idx) => {
-            const prevValue = tbLast[status] ?? 0
-            const diff = jumlah - prevValue
-
-            let tren = '-',
-              trenIcon = '',
-              trenClass = ''
-            if (prevValue === 0 && jumlah === 0) tren = '-'
-            else if (diff > 0) {
-              tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
-              trenIcon = 'bi bi-caret-up-fill'
-              trenClass = 'text-danger'
-            } else if (diff < 0) {
-              tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
-              trenIcon = 'bi bi-caret-down-fill'
-              trenClass = 'text-success'
-            } else {
-              tren = '0.00%'
-              trenIcon = 'bi bi-caret-right-fill'
-              trenClass = 'text-secondary'
-            }
-
-            return {
-              status,
-              jumlah,
-              persen: totalCurrentTB > 0 ? ((jumlah / totalCurrentTB) * 100).toFixed(1) : 0,
-              tren,
-              trenIcon,
-              trenClass,
-              color: tbColors[idx % tbColors.length],
-            }
-          })
-
-          // ----- BB/TB -----
-          const bbtbCurrent = res.data.bbtb?.data?.current || {}
-          const bbtbLast = res.data.bbtb?.data?.previous || {}
-          const totalCurrentBBTB = res.data.bbtb?.total?.current || 0
-          //const bbtbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd']
-          const bbtbColors = ['#E53935', '#FB8C00', '#43A047', '#FDD835' ,'#1E88E5', '#8E24AA']
-
-          this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah], idx) => {
-            const prevValue = bbtbLast[status] ?? 0
-            const diff = jumlah - prevValue
-
-            let tren = '-',
-              trenIcon = '',
-              trenClass = ''
-            if (prevValue === 0 && jumlah === 0) tren = '-'
-            else if (diff > 0) {
-              tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
-              trenIcon = 'bi bi-caret-up-fill'
-              trenClass = 'text-danger'
-            } else if (diff < 0) {
-              tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
-              trenIcon = 'bi bi-caret-down-fill'
-              trenClass = 'text-success'
-            } else {
-              tren = '0.00%'
-              trenIcon = 'bi bi-caret-right-fill'
-              trenClass = 'text-secondary'
-            }
-
-            return {
-              status,
-              jumlah,
-              persen: totalCurrentBBTB > 0 ? ((jumlah / totalCurrentBBTB) * 100).toFixed(1) : 0,
-              tren,
-              trenIcon,
-              trenClass,
-              color: bbtbColors[idx % bbtbColors.length],
-            }
-          })
-
-          // ==================== Render Pie Chart ====================
-          this.$nextTick(() => {
-            this.renderChart(
-              'pieChart_bb',
-              this.dataTable_bb,
-              this.dataTable_bb.map((r) => r.color),
-            )
-            this.renderChart(
-              'pieChart_tb',
-              this.dataTable_tb,
-              this.dataTable_tb.map((r) => r.color),
-            )
-            this.renderChart(
-              'pieChart_status',
-              this.dataTable_bbtb,
-              this.dataTable_bbtb.map((r) => r.color),
-            )
-          })
-        }
-
-        // ==================== BUMIL & CATIN (tidak perlu warna pie dinamis) ====================
-        if (this.activeMenu === 'bumil') {
-          this.detailBumil = res.data.detail
-          this.dataTable_bumil = (res.data.dataTable_bumil || []).map((row) => ({
-            status: row.status || '-',
-            jumlah: row.jumlah ?? 0,
-            persen: row.persen ?? 0,
-            tren: row.tren ?? '-',
-            trenIcon: row.trenIcon ?? '',
-            trenClass: row.trenClass ?? '',
-          }))
-        }
-
-        if (this.activeMenu === 'catin') {
-          const dataCatin = res.data.dataTable_catin
-          this.detailCatin = res.data.detail_catin_tren[0]
-          //console.log('catin: ', this.detailCatin);
-
-          this.dataTable_catin = Array.isArray(dataCatin)
-            ? dataCatin
-            : Object.values(dataCatin || {}).map((row) => ({
-              status: row.status || '-',
-              jumlah: row.jumlah ?? 0,
-              persen: row.persen ?? 0,
-              tren: row.tren ?? '-',
-              trenIcon: row.trenIcon ?? '',
-              trenClass: row.trenClass ?? '',
-            }))
         }
       } catch (e) {
         console.error('Error Ambil Data', e)
@@ -3904,13 +3790,19 @@ export default {
     renderChart(refName, dataTable, colors, labelKey = 'status', valueKey = 'persen') {
       let canvasRef = this.$refs[refName]
 
-      if (!canvasRef) {
-        console.warn(`⚠️ Canvas ref "${refName}" tidak ditemukan`)
+      // 🔥 Pastikan canvas visible
+      if (canvasRef.offsetWidth === 0 || canvasRef.offsetHeight === 0) return
+
+      if (!canvasRef || !canvasRef.getContext) {
+        console.warn(`⛔ Canvas ${refName} belum siap`)
         return
       }
 
       const ctx = canvasRef.getContext('2d')
-      if (!ctx) return
+      if (!ctx) {
+        console.warn(`⛔ Context null untuk ${refName}`)
+        return
+      }
 
       // Tentukan instance key
       const instanceKey = refName.replace('pieChart_', '').replace('_status', 'bbtb')
@@ -4334,6 +4226,126 @@ export default {
         });
       })
     },
+    getTrendStyle(status, diff, prevValue) {
+      let tren = ''
+      let trenIcon = ''
+      let trenClass = ''
+
+      const isNormal = /normal/i.test(status)
+
+      if (prevValue === 0 && diff === 0) {
+        return { tren, trenIcon, trenClass }
+      }
+
+      if (diff > 0) {
+        tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
+        trenIcon = 'bi bi-caret-up-fill'
+        trenClass = isNormal ? 'text-success' : 'text-danger'
+      } else if (diff < 0) {
+        tren = prevValue === 0 ? '100.00%' : ((diff / prevValue) * 100).toFixed(2) + '%'
+        trenIcon = 'bi bi-caret-down-fill'
+        trenClass = isNormal ? 'text-danger' : 'text-success'
+      } else {
+        tren = '0.00%'
+        trenIcon = 'bi bi-caret-right-fill'
+        trenClass = 'text-secondary'
+      }
+
+      return { tren, trenIcon, trenClass }
+    },
+    processDataAnak(data) {
+
+      this.detailAnak = data.detail || []
+
+      // ----- BB/U -----
+      const bbCurrent = data.bb?.data?.current || {}
+      const bbLast = data.bb?.data?.previous || {}
+      const totalCurrent = data.bb?.total?.current || 0
+      const bbColors = ['#E53935', '#FB8C00', '#43A047', '#1E88E5', '#8E24AA']
+
+      this.dataTable_bb = Object.entries(bbCurrent).map(([status, jumlah], idx) => {
+        const prevValue = bbLast[status] ?? 0
+        const diff = jumlah - prevValue
+
+        const { tren, trenIcon, trenClass } = this.getTrendStyle(status, diff, prevValue)
+
+        return {
+          status,
+          jumlah,
+          persen: totalCurrent > 0 ? ((jumlah / totalCurrent) * 100).toFixed(1) : 0,
+          tren,
+          trenIcon,
+          trenClass,
+          color: bbColors[idx % bbColors.length], // warna slice sinkron dengan chart
+        }
+      })
+
+      // ----- TB/U -----
+      const tbCurrent = data.tb?.data?.current || {}
+      const tbLast = data.tb?.data?.previous || {}
+      const totalCurrentTB = data.tb?.total?.current || 0
+      //const tbColors = ['#f7db7f', '#bfbbe4', '#7dae9b', '#e87d7b']
+      const tbColors = ['#E53935', '#FB8C00', '#43A047', '#1E88E5', '#8E24AA']
+
+      this.dataTable_tb = Object.entries(tbCurrent).map(([status, jumlah], idx) => {
+        const prevValue = tbLast[status] ?? 0
+        const diff = jumlah - prevValue
+
+       const { tren, trenIcon, trenClass } = this.getTrendStyle(status, diff, prevValue)
+
+        return {
+          status,
+          jumlah,
+          persen: totalCurrentTB > 0 ? ((jumlah / totalCurrentTB) * 100).toFixed(1) : 0,
+          tren,
+          trenIcon,
+          trenClass,
+          color: tbColors[idx % tbColors.length],
+        }
+      })
+
+      // ----- BB/TB -----
+      const bbtbCurrent = data.bbtb?.data?.current || {}
+      const bbtbLast = data.bbtb?.data?.previous || {}
+      const totalCurrentBBTB = data.bbtb?.total?.current || 0
+      //const bbtbColors = ['#f5ebb9', '#f7db7f', '#7dae9b', '#bfbbe4', '#e87d7b', '#eaafdd']
+      const bbtbColors = ['#E53935', '#FB8C00', '#43A047', '#FDD835' ,'#1E88E5', '#8E24AA']
+
+      this.dataTable_bbtb = Object.entries(bbtbCurrent).map(([status, jumlah], idx) => {
+        const prevValue = bbtbLast[status] ?? 0
+        const diff = jumlah - prevValue
+
+        const { tren, trenIcon, trenClass } = this.getTrendStyle(status, diff, prevValue)
+
+        return {
+          status,
+          jumlah,
+          persen: totalCurrentBBTB > 0 ? ((jumlah / totalCurrentBBTB) * 100).toFixed(1) : 0,
+          tren,
+          trenIcon,
+          trenClass,
+          color: bbtbColors[idx % bbtbColors.length],
+        }
+      })
+      // ==================== Render Pie Chart ====================
+      /* this.$nextTick(() => {
+        this.renderChart(
+          'pieChart_bb',
+          this.dataTable_bb,
+          this.dataTable_bb.map((r) => r.color),
+        )
+        this.renderChart(
+          'pieChart_tb',
+          this.dataTable_tb,
+          this.dataTable_tb.map((r) => r.color),
+        )
+        this.renderChart(
+          'pieChart_status',
+          this.dataTable_bbtb,
+          this.dataTable_bbtb.map((r) => r.color),
+        )
+      }) */
+    },
 
     // only Bumil
     mapToBumil(item) {
@@ -4453,7 +4465,7 @@ export default {
 
       // Log hasil pengolahan data
       //console.log('📊 Summary Hasil Pengolahan:', summary)
-      //if (this.activeMenu !== 'bumil') return
+      if (this.activeMenu !== 'bumil') return
 
       // 3. Setup Chart
       const ctx = this.$refs.bumilChart?.getContext('2d')
@@ -4702,7 +4714,18 @@ export default {
         })
       })
     },
+    processDataBumil(data) {
+      this.detailBumil = data.detail || []
 
+      this.dataTable_bumil = (data.dataTable_bumil || []).map(row => ({
+        status: row.status || '-',
+        jumlah: row.jumlah ?? 0,
+        persen: row.persen ?? 0,
+        tren: row.tren ?? '-',
+        trenIcon: row.trenIcon ?? '',
+        trenClass: row.trenClass ?? '',
+      }))
+    },
     // only Catin
     async generateIndikatorCatinBulanan() {
       try {
@@ -4725,7 +4748,7 @@ export default {
           },
         })
 
-        console.log('indikator: ', res.data || {});
+        //console.log('indikator: ', res.data || {});
 
         //const { labels, indikator } = res.data || {}
         const { labels = [], indikator = {} } = res.data || {}
@@ -4767,6 +4790,21 @@ export default {
       } catch (err) {
         console.error('❌ Gagal memuat indikator catin bulanan:', err)
       }
+    },
+    processDataCatin(data) {
+      this.detailCatin = data.detail_catin_tren?.[0] || {}
+
+      const raw = data.dataTable_catin || {}
+      this.dataTable_catin = Array.isArray(raw)
+        ? raw
+        : Object.values(raw).map(row => ({
+            status: row.status || '-',
+            jumlah: row.jumlah ?? 0,
+            persen: row.persen ?? 0,
+            tren: row.tren ?? '-',
+            trenIcon: row.trenIcon ?? '',
+            trenClass: row.trenClass ?? '',
+          }))
     },
   },
   computed: {
@@ -5118,7 +5156,6 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   async mounted() {
-
     this.isLoading = true
     this.isMobile = window.innerWidth < 768
 
@@ -5127,89 +5164,56 @@ export default {
     })
 
     try {
+      // 🔹 1. SET WILAYAH
       if (this.isAdmin) {
         await this.loadRegion()
         this.kelurahan = 'Semua Desa'
-      }else{
+      } else {
         await this.getWilayahUser()
-        this.kelurahan = 'Desa '+ this.filters.kelurahan
-        console.log('nama'+this.kelurahan);
+        this.kelurahan = 'Desa ' + this.filters.kelurahan
 
         const label = this.filters.kelurahan
         localStorage.setItem('kelurahan_label', label)
         eventBus.emit('kelurahanChanged', label)
       }
 
+      // 🔹 2. LABEL & PERIODE
       this.periodeLabel = this.getPeriodeLabel()
-      this.$nextTick(() => {
-        this.renderChart(
-          'pieChart_bb',
-          this.dataTable_bb,
-          this.dataTable_bb.map(r => r.color)
-        )
-        this.renderChart(
-          'pieChart_tb',
-          this.dataTable_tb,
-          this.dataTable_tb.map(r => r.color)
-        )
-        this.renderChart(
-          'pieChart_status',
-          this.dataTable_bbtb,
-          this.dataTable_bbtb.map(r => r.color)
-        )
-      })
-
-      // 1️⃣ Ambil wilayah user
-      //await this.getWilayahUser()
-
-      //console.log(this.filters);
-
-      // 3️⃣ Generate bulan terakhir 12 bulan
       this.bulanLabels = this.getLast12Months()
+      this.generatePeriodeOptions()
 
-      // 4️⃣ Jalankan logika indikator bulanan untuk catin
-
-      // set menu default → 'anak'
+      // 🔹 3. DEFAULT MENU
       this.setMenu('anak')
-      //await this.generateIndikatorCatinBulanan();
 
-      // 5️⃣ Set menu default → anak
-      await this.hitungStatistik() // hitung ulang sesuai menu 'anak'
+      // 🔹 4. HITUNG DATA (WAJIB SEBELUM CHART)
+      await this.hitungStatistik()
       await this.generateInfoBoxes()
       await this.generateDataTable()
       await this.masalahGanda()
       await this.hitungIntervensi()
-      await this.generateInfoBoxes()
 
+      // 🔹 5. RENDER CHART SETELAH DATA SIAP
+      this.renderAllCharts()
+
+      // 🔹 6. CHART & SVG LAINNYA
       this.generateIndikatorBumilBulanan()
-
       this.renderGiziGandaGiziAnak()
       this.renderFunnelChart()
-      //this.renderSudahChart();
-      this.renderBumilChart()
+      //this.renderBumilChart()
       this.rendersvgChart()
       this.rendersvgChart_Bumil()
       this.rendersvgChart_Catin()
-      //this.generateIndikatorCatinBulanan();
-      // 6️⃣ Generate data table sesuai tipe menu
-      //this.generateDataTableCatin();
 
-      // 7️⃣ Fetch stats tambahan jika perlu
+      // 🔹 7. FETCH TAMBAHAN
       await this.fetchStats()
 
-      // 8️⃣ Generate pilihan periode
-      this.generatePeriodeOptions()
-
-      // 9️⃣ Pastikan filter kelurahan sudah terisi
-      //this.filters.kelurahan = this.kelurahan
-
-      // 11️⃣ Setup resize listener untuk responsive
+      // 🔹 8. RESPONSIVE
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
+
     } catch (err) {
       console.error('❌ Error loading data:', err)
     } finally {
-      // Delay kecil biar loading animation nggak blink
       setTimeout(() => {
         this.isLoading = false
       }, 300)
@@ -5229,47 +5233,47 @@ export default {
       this.handlePosyanduChange(val)
     },
 
-    async activeMenu() {
-      this.isLoading = true   // 🔄 START LOADING
+    async activeMenu(val) {
+      this.isLoading = true
 
       try {
-        // =========================
-        // 1️⃣ LOAD DATA (ASYNC)
-        // =========================
+        // 1️⃣ DATA
         await this.hitungIntervensi()
         await this.hitungStatistik()
         await this.generateInfoBoxes()
         await this.generateDataTable()
         await this.masalahGanda()
 
-        if (this.activeMenu === 'bumil') {
+        if (val === 'bumil') {
           await this.generateIndikatorBumilBulanan()
         }
 
-        if (this.activeMenu === 'catin') {
+        if (val === 'catin') {
           await this.generateIndikatorCatinBulanan()
         }
 
-        // =========================
-        // 2️⃣ PASTIKAN DOM SIAP
-        // =========================
-        await this.$nextTick()
+        // 🔥 HANCURKAN SEMUA CHART SEBELUM PINDAH
+        this.destroyAllCharts()
 
-        // =========================
-        // 3️⃣ RENDER CHART
-        // =========================
-        if (this.activeMenu === 'anak') {
+        // 2️⃣ TUNGGU DOM + V-IF SELESAI
+        await this.$nextTick()
+        await new Promise(r => requestAnimationFrame(r))
+        await new Promise(r => setTimeout(r, 0))
+
+        // 3️⃣ RENDER SESUAI MENU
+        if (val === 'anak') {
           this.renderGiziGandaGiziAnak()
           this.rendersvgChart()
+          this.renderAllCharts()
         }
 
-        if (this.activeMenu === 'bumil') {
-          this.rendersvgChart_Bumil()
+        if (val === 'bumil') {
           this.renderBumilChart()
           this.renderIntervensiBumilChart()
+          this.rendersvgChart_Bumil()
         }
 
-        if (this.activeMenu === 'catin') {
+        if (val === 'catin') {
           this.rendersvgChart_Catin()
         }
 
@@ -5278,12 +5282,10 @@ export default {
       } catch (err) {
         console.error('❌ Error saat ganti menu:', err)
       } finally {
-        // ⏳ delay kecil biar smooth
-        setTimeout(() => {
-          this.isLoading = false
-        }, 200)
+        this.isLoading = false
       }
-    },
+    }
+
   },
 
 }
