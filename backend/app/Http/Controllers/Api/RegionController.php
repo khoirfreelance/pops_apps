@@ -47,7 +47,6 @@ class RegionController extends Controller
         ]);
     }
 
-
     public function getProvinsi()
     {
         $provinsi = Wilayah::select('provinsi as nama')
@@ -83,7 +82,7 @@ class RegionController extends Controller
 
     public function getKelurahan(Request $request)
     {
-        $kelurahan = Wilayah::select('kelurahan as nama')
+        $kelurahan = Wilayah::select('kelurahan as nama', 'id as idWilayah')
             ->where('provinsi', $request->provinsi)
             ->where('kota', $request->kota)
             ->where('kecamatan', $request->kecamatan)

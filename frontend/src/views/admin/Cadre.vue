@@ -255,43 +255,6 @@
                     </small>
                   </div>
 
-                  <!-- Role & Unit Posyandu -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Role</label>
-                    <select class="form-select shadow-sm" v-model="form.role">
-                      <option value="">Pilih</option>
-                      <option value="Super Admin">Super Admin</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Bidan">Bidan</option>
-                      <option value="Kader PKK">Kader PKK</option>
-                      <option value="Kader KB">Kader KB</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Unit Posyandu</label>
-                    <template v-if="form.unit_posyandu === '__new__'">
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.unit_posyandu_new"
-                        placeholder="Tambah unit posyandu baru"
-                      />
-                    </template>
-                    <template v-else>
-                      <select
-                        class="form-select shadow-sm"
-                        v-model="form.unit_posyandu"
-                        @change="loadPosyandu"
-                      >
-                        <option value="">Pilih</option>
-                        <option v-for="item in posyanduList" :key="item.nama" :value="item.nama">
-                          {{ item.nama }}
-                        </option>
-                        <option value="__new__">+ Tambah baru</option>
-                      </select>
-                    </template>
-                  </div>
-
                   <!-- Provinsi -->
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold text-secondary">Provinsi</label>
@@ -387,15 +350,51 @@
                       <select
                         class="form-select shadow-sm"
                         v-model="form.kelurahan"
-
+                        @change="handleRegionChange"
                       >
                         <option value="">Pilih</option>
-                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
+                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.idWilayah">
                           {{ item.nama }}
                         </option>
                         <option value="__new__">+ Tambah baru</option>
                       </select>
                     </template>
+                  </div>
+
+                  <!-- Role & Unit Posyandu -->
+                   <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Unit Posyandu</label>
+                    <template v-if="form.unit_posyandu === '__new__'">
+                      <input
+                        type="text"
+                        class="form-control shadow-sm"
+                        v-model="form.unit_posyandu_new"
+                        placeholder="Tambah unit posyandu baru"
+                      />
+                    </template>
+                    <template v-else>
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.unit_posyandu"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in posyanduList" :key="item.nama_posyandu" :value="item.nama_posyandu">
+                          {{ item.nama_posyandu }}
+                        </option>
+                        <option value="__new__">+ Tambah baru</option>
+                      </select>
+                    </template>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-secondary">Role</label>
+                    <select class="form-select shadow-sm" v-model="form.role">
+                      <option value="">Pilih</option>
+                      <option value="Super Admin">Super Admin</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Bidan">Bidan</option>
+                      <option value="Kader PKK">Kader PKK</option>
+                      <option value="Kader KB">Kader KB</option>
+                    </select>
                   </div>
                 </form>
               </div>
@@ -584,6 +583,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      progressLevel:null,
       roleList: [],
       tpkList:[],
       configCacheKey: 'site_config_cache',
@@ -718,6 +718,35 @@ export default {
     },
   },
   methods: {
+    handleRegionChange() {
+      const idWilayah = this.form.kelurahan
+      console.log(idWilayah);
+
+      // 🔁 DEFAULT / ALL
+      this.fetchPosyanduByWilayah(idWilayah)
+    },
+    async fetchPosyanduByWilayah(id_wilayah) {
+      if (!id_wilayah) {
+        console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
+        return
+      }
+
+      try {
+        const res = await axios.get(`${baseURL}/api/posyandu/${id_wilayah}/wilayah`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        console.log(res.data);
+
+        this.posyanduList = res.data?.data || res.data || []
+        //console.log("Posyandu list:", this.posyanduList);
+      } catch (error) {
+        console.error('Gagal mengambil data posyandu:', error)
+        this.posyanduList = []
+      }
+    },
     async loadTPK(){
       try {
         const res = await axios.get(`${baseURL}/api/member/tpk`,{
@@ -837,7 +866,7 @@ export default {
         });
       }
     },
-    async loadPosyandu() {
+    /* async loadPosyandu() {
       try {
         const res = await axios.get(`${baseURL}/api/posyandu`,{
           headers: {
@@ -852,7 +881,7 @@ export default {
       } catch (err) {
         console.error("Error load posyandu:", err);
       }
-    },
+    }, */
     async loadCadre() {
       try {
         const res = await axios.get(`${baseURL}/api/cadre`,{
@@ -911,6 +940,8 @@ export default {
             kecamatan: this.form.kecamatan
           }
         });
+        //console.log(res.data);
+
         this.kelurahanList = res.data;
         this.form.kelurahan = "";
       }
@@ -1209,7 +1240,7 @@ export default {
         this.loadConfigWithCache(),
         this.loadCadre(),
         this.loadProvinsi(),
-        this.loadPosyandu(),
+        //this.loadPosyandu(),
         this.loadTPK(),
         //this.getPendingData(),
         //this.getWilayahUser(),
