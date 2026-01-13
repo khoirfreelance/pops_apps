@@ -536,7 +536,7 @@
                       <p class="fw-bold mb-1 text-danger">
                         *Preview:
                       </p>
-                      <div class="table-scroll-x">
+                      <div class="table-responsive">
                         <table class="table table-bordered table-sm border-danger" style="font-size: 80%;">
                           <thead>
                             <tr>
@@ -745,6 +745,7 @@ import Welcome from '@/components/Welcome.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import { Modal } from 'bootstrap'
 import 'vue3-easy-data-table/dist/style.css'
+import * as XLSX from 'xlsx'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -985,17 +986,45 @@ export default {
     },
 
     items_kunAn() {
-      return this.filteredAnak.map(item => ({
-        nik: item.nik ?? "-",
-        nama_anak: item.nama ?? "-",
-        nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
-        gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
-        tgl_lahir: this.formatDate(item.kelahiran?.[0]?.tgl_lahir),
-        bb: item.posyandu?.[0]?.bb ?? "-",
-        tb: item.posyandu?.[0]?.tb ?? "-",
-        unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
-        action: { ...item }
-      }));
+      const latestByNik = {}
+
+      this.filteredAnak.forEach(item => {
+        const nik = item.nik ?? "-"
+        const currentTgl = item.posyandu?.[0]?.tgl_ukur
+          ? new Date(item.posyandu[0].tgl_ukur)
+          : null
+
+        // kalau NIK belum ada → simpan
+        if (!latestByNik[nik]) {
+          latestByNik[nik] = item
+          return
+        }
+
+        // bandingkan dengan data yg sudah ada
+        const savedTgl = latestByNik[nik].posyandu?.[0]?.tgl_ukur
+          ? new Date(latestByNik[nik].posyandu[0].tgl_ukur)
+          : null
+
+        // ambil yang TERBARU
+        if (currentTgl && (!savedTgl || currentTgl > savedTgl)) {
+          latestByNik[nik] = item
+        }
+      })
+
+      return Object.values(latestByNik)
+        .sort((a, b) => a.id - b.id) // optional: urut id
+        .map(item => ({
+          id: item.id,
+          nik: item.nik ?? "-",
+          nama_anak: item.nama ?? "-",
+          nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
+          gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
+          tgl_lahir: this.formatDate(item.kelahiran?.[0]?.tgl_lahir),
+          bb: item.posyandu?.[0]?.bb ?? "-",
+          tb: item.posyandu?.[0]?.tb ?? "-",
+          unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
+          action: { ...item }
+        }))
     },
 
     // ==================== BUMIL ====================
@@ -1015,7 +1044,31 @@ export default {
     },
 
     items_bumil() {
-      return this.filteredBumil.map(item => ({
+      const latestByNik = {}
+
+      this.filteredBumil.forEach(item => {
+        const nik = item.nik_ibu ?? "-"
+        const currentTgl = item.riwayat_pemeriksaan?.[0]?.tanggal_pemeriksaan
+          ? new Date(item.riwayat_pemeriksaan[0].tanggal_pemeriksaan)
+          : null
+
+        // kalau belum ada → simpan
+        if (!latestByNik[nik]) {
+          latestByNik[nik] = item
+          return
+        }
+
+        const savedTgl = latestByNik[nik].riwayat_pemeriksaan?.[0]?.tanggal_pemeriksaan
+          ? new Date(latestByNik[nik].riwayat_pemeriksaan[0].tanggal_pemeriksaan)
+          : null
+
+        // ambil pemeriksaan TERBARU
+        if (currentTgl && (!savedTgl || currentTgl > savedTgl)) {
+          latestByNik[nik] = item
+        }
+      })
+
+      return Object.values(latestByNik).map(item => ({
         nik_ibu: item.nik_ibu ?? "-",
         nama_ibu: item.nama_ibu ?? "-",
         nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
@@ -1028,7 +1081,7 @@ export default {
         tgl_pendampingan: this.formatDate(item.tanggal_pendampingan) ?? "-",
         jml_anak: item.jumlah_anak ?? "-",
         action: { ...item }
-      }));
+      }))
     },
 
     // ==================== CATIN ====================
@@ -1063,12 +1116,26 @@ export default {
       return arr;
     },
 
-
     items_catin() {
-      return this.filteredCatin.map(item => {
-        const pemeriksaan = Array.isArray(item.riwayat_pemeriksaan)
-          ? item.riwayat_pemeriksaan[0]
-          : null;
+      const unique = Object.values(
+        this.filteredCatin.reduce((acc, item) => {
+          const nik = item.nik_perempuan ?? "-"
+          const curr = item.riwayat_pemeriksaan?.[0]?.tanggal_pemeriksaan
+          const prev = acc[nik]?.riwayat_pemeriksaan?.[0]?.tanggal_pemeriksaan
+
+          if (
+            !acc[nik] ||
+            (curr && (!prev || new Date(curr) > new Date(prev)))
+          ) {
+            acc[nik] = item
+          }
+
+          return acc
+        }, {})
+      )
+
+      return unique.map(item => {
+        const pemeriksaan = item.riwayat_pemeriksaan?.[0] ?? null
 
         return {
           nik: item.nik_perempuan ?? "-",
@@ -1081,9 +1148,10 @@ export default {
           lila_perempuan: pemeriksaan?.lila_perempuan ?? "-",
           tanggal_menikah: this.formatDate(item.tgl_pernikahan) ?? "-",
           action: { ...item }
-        };
-      });
-    },
+        }
+      })
+    }
+
 
   },
   methods: {
@@ -1757,7 +1825,7 @@ export default {
         ['B', 'kB', 'MB', 'GB', 'TB'][i]
       )
     },
-    async loadFilePreview(file) {
+    /* async loadFilePreview(file) {
       if (!file) return
 
       const allowed = ['.csv', '.xlsx', '.xls']
@@ -1854,6 +1922,72 @@ export default {
           return;
       }
 
+    } */
+    async loadFilePreview(file) {
+      if (!file) return
+
+      const ext = file.name.split('.').pop().toLowerCase()
+
+      if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+        this.fileError = 'Hanya file CSV atau Excel (XLS/XLSX) yang diperbolehkan.'
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      // === CSV ===
+      if (ext === 'csv') {
+        const text = await file.text()
+
+        const rawLines = text
+          .split(/\r?\n/)
+          .filter(Boolean)
+          .slice(0, 4)
+
+        if (!rawLines.length) {
+          this.filePreviewTable = []
+          return
+        }
+
+        const delimiter = rawLines[0].includes(';') ? ';' : ','
+
+        let table = rawLines.map(line => line.split(delimiter))
+
+        table = table.map(row =>
+          row.length > 10 ? [...row.slice(0, 10), '...'] : row
+        )
+
+        this.filePreviewTable = table
+        return
+      }
+
+      // === EXCEL ===
+      if (ext === 'xlsx' || ext === 'xls') {
+        this.previewExcel(file)
+      }
+    },
+    previewExcel(file) {
+      const reader = new FileReader()
+
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result)
+        const workbook = XLSX.read(data, { type: 'array' })
+
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+
+        const rows = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          blankrows: false
+        })
+
+        this.filePreviewTable = rows.slice(0, 4)
+      }
+
+      reader.readAsArrayBuffer(file)
     },
     formatDate(dateString) {
       if (!dateString) return '-'
@@ -1892,7 +2026,7 @@ export default {
           default:
             return;
         }
-        //console.log(this.dataLoad);
+        console.log(this.dataLoad);
 
       } catch (e) {
         console.error('Gagal ambil data:', e);
