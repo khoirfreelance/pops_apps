@@ -19,6 +19,7 @@ use App\Imports\CatinImportPendampingan;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 
 class CatinController extends Controller
 {
