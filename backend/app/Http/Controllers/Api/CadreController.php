@@ -85,6 +85,7 @@ class CadreController extends Controller
             'email_verified_at' => NOW(),
             'phone' => $request->phone,
             'role' => $request->role,
+            'id_wilayah'=> $wilayah->id,
             'status' => $request->status,
             'is_pending' => $isPendingUser,
             'password' => Hash::make($request->password),

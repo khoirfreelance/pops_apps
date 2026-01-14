@@ -353,7 +353,7 @@
                         @change="handleRegionChange"
                       >
                         <option value="">Pilih</option>
-                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.idWilayah">
+                        <option v-for="item in kelurahanList" :key="item.idWilayah" :value="item.idWilayah">
                           {{ item.nama }}
                         </option>
                         <option value="__new__">+ Tambah baru</option>
@@ -718,6 +718,18 @@ export default {
     },
   },
   methods: {
+    getKelurahanNameById(id) {
+      const found = this.kelurahanList.find(
+        item => item.idWilayah === id
+      )
+
+      if (found) {
+        this.form.idWilayah = found.idWilayah
+        return found.nama
+      }
+
+      return ''
+    },
     handleRegionChange() {
       const idWilayah = this.form.kelurahan
       console.log(idWilayah);
@@ -1007,6 +1019,7 @@ export default {
         kecamatan: '',
         kota: '',
         provinsi: '',
+        idWilayah:'',
         kelurahan_new: '',
         kecamatan_new: '',
         kota_new: '',
@@ -1034,6 +1047,11 @@ export default {
     normalizeFormPayload(form) {
       const normalized = { ...form }
 
+      // convert kelurahan ID ke nama
+      if (normalized.kelurahan && normalized.kelurahan !== '__new__') {
+        normalized.kelurahan = this.getKelurahanNameById(normalized.kelurahan)
+      }
+
       Object.keys(normalized).forEach(key => {
         if (key.endsWith('_new')) {
           const baseKey = key.replace('_new', '')
@@ -1043,7 +1061,6 @@ export default {
             normalized[baseKey] = value
           }
 
-          // optional: hapus field _new dari payload
           delete normalized[key]
         }
       })
@@ -1056,16 +1073,15 @@ export default {
       this.animatedProgress = 0
 
       try {
-        console.log("Payload sebelum dikirim:", this.form)
-
         const payload = this.normalizeFormPayload(this.form)
+        console.log("Payload sebelum dikirim:", payload)
         // simpan ke backend
-        await axios.post(`${baseURL}/api/cadre`, payload,{
+        /*await axios.post(`${baseURL}/api/cadre`, payload,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
-        })
+        })*/
 
         // refresh table
         await this.resetForm()
