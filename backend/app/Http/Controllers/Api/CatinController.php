@@ -1415,26 +1415,40 @@ class CatinController extends Controller
     public function delete($nik)
     {
         try {
-            // Temukan record berdasarkan NIK
-            $bride = Catin::where('nik_perempuan', $nik)->first();
-            $intervensi = Intervensi::where('nik_subjek', $nik)->first();
-            if (!$bride && !$intervensi) {
+            DB::beginTransaction();
+
+            $deleted = false;
+
+            // Catin (perempuan)
+            if (Catin::where('nik_perempuan', $nik)->exists()) {
+                Catin::where('nik_perempuan', $nik)->delete();
+                $deleted = true;
+            }
+
+            // Intervensi
+            if (Intervensi::where('nik_subjek', $nik)->exists()) {
+                Intervensi::where('nik_subjek', $nik)->delete();
+                $deleted = true;
+            }
+
+            if (!$deleted) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Data dengan NIK tersebut tidak ditemukan.'
                 ], 404);
             }
 
-            // Hapus
-            $bride->delete();
-            $intervensi->delete();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data berhasil dihapus.'
+                'message' => 'Semua data terkait NIK berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan server.',
@@ -1442,6 +1456,7 @@ class CatinController extends Controller
             ], 500);
         }
     }
+
 
     public function store(Request $request)
     {
@@ -1591,7 +1606,7 @@ class CatinController extends Controller
                 new CatinImportPendampingan(auth()->id()),
                 $request->file('file')
             );
-            
+
 
             return response()->json([
                 'success' => true,

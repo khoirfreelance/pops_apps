@@ -1235,6 +1235,17 @@ export default {
         document.body.style.removeProperty('padding-right')
       }, 300) // delay biar nunggu animasi fade
     },
+    async refreshData() {
+      try {
+        this.isTableLoading = true // optional (kalau ada spinner table)
+        await this.loadData()
+      } catch (e) {
+        console.error('Gagal refresh data:', e)
+      } finally {
+        this.isTableLoading = false
+      }
+    },
+
     // Prefill form
     editItem(item) {
       switch (this.activeMenu) {
@@ -1354,7 +1365,7 @@ export default {
                 }
               )
 
-              await this.loadData()
+              await this.refreshData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1373,7 +1384,7 @@ export default {
                 }
               )
 
-              await this.loadData()
+              await this.refreshData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1394,7 +1405,7 @@ export default {
                 }
               )
 
-              await this.loadData()
+              await this.refreshData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1413,7 +1424,7 @@ export default {
                 }
               )
 
-              await this.loadData()
+              await this.refreshData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1434,7 +1445,7 @@ export default {
                 }
               )
 
-              await this.loadData()
+              await this.refreshData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1453,7 +1464,7 @@ export default {
                 }
               )
 
-              await this.loadData()
+              await this.refreshData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1802,7 +1813,7 @@ export default {
         this.formOpen_catin = false
         this.isUploadOpen = !this.isUploadOpen
         this.removeFile()
-        await this.loadData()
+        await this.refreshData()
         setTimeout(() => (this.showAlert = false), 3000)
       } catch (err) {
         console.error('Upload error:', err)
@@ -1813,19 +1824,19 @@ export default {
 
         this.showError(message)
       } finally {
-  this.isLoadingImport = false
+        this.isLoadingImport = false
 
-  // 🛑 reset total state progress
-  this.uploadProgress = 0
-  this.importProgress = 0
-  this.animatedProgress = 0
+        // 🛑 reset total state progress
+        this.uploadProgress = 0
+        this.importProgress = 0
+        this.animatedProgress = 0
 
-  // jika pakai interval / RAF
-  if (this.progressTimer) {
-    clearInterval(this.progressTimer)
-    this.progressTimer = null
-  }
-}
+        // jika pakai interval / RAF
+        if (this.progressTimer) {
+          clearInterval(this.progressTimer)
+          this.progressTimer = null
+        }
+      }
 
     },
     removeFile() {
@@ -2074,7 +2085,8 @@ export default {
     try {
       await Promise.all([
         this.loadConfigWithCache(),
-        this.loadData(),
+        this.refreshData(),
+        //this.loadData(),
         //this.getWilayahUser(),
         this.handleResize(),
 
