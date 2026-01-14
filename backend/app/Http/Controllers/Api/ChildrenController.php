@@ -1115,6 +1115,27 @@ class ChildrenController extends Controller
         ], 200);
     }
 
+    private function detectDelimiter($filePath)
+    {
+        $delimiters = [',', ';'];
+        $handle = fopen($filePath, 'r');
+        $firstLine = fgets($handle);
+        fclose($handle);
+
+        $maxCount = 0;
+        $selectedDelimiter = ',';
+
+        foreach ($delimiters as $delimiter) {
+            $count = count(str_getcsv($firstLine, $delimiter));
+            if ($count > $maxCount) {
+                $maxCount = $count;
+                $selectedDelimiter = $delimiter;
+            }
+        }
+
+        return $selectedDelimiter;
+    }
+
     public function import_intervensi(Request $request)
     {
         if (!$request->hasFile('file')) {
@@ -1123,12 +1144,13 @@ class ChildrenController extends Controller
 
         $file = $request->file('file');
         $path = $file->getRealPath();
+        $delimiter = $this->detectDelimiter($path);
         $handle = fopen($path, 'r');
 
         $rows = [];
         $count = 0;
 
-        while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+        while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
             // Lewati baris kosong atau header
             if ($count === 0 && str_contains(strtolower($row[0]), 'petugas')) {
                 $count++;
@@ -3124,26 +3146,47 @@ class ChildrenController extends Controller
     public function delete($nik)
     {
         try {
-            // Temukan record berdasarkan NIK
-            $child = Kunjungan::where('nik', $nik)->first();
-            $intervensi = Intervensi::where('nik_subjek', $nik)->first();
-            if (!$child && !$intervensi) {
+            DB::beginTransaction();
+
+            $deleted = false;
+
+            // Kunjungan
+            if (Kunjungan::where('nik', $nik)->exists()) {
+                Kunjungan::where('nik', $nik)->delete();
+                $deleted = true;
+            }
+
+            // Intervensi
+            if (Intervensi::where('nik_subjek', $nik)->exists()) {
+                Intervensi::where('nik_subjek', $nik)->delete();
+                $deleted = true;
+            }
+
+            // Child / Pendampingan
+            if (Child::where('nik_anak', $nik)->exists()) {
+                Child::where('nik_anak', $nik)->delete();
+                $deleted = true;
+            }
+
+
+            if (!$deleted) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data dengan NIK tersebut tidak ditemukan.'
+                    'message' => 'Data dengan NIK tersebut tidak ditemukan di semua tabel.'
                 ], 404);
             }
 
-            // Hapus
-            $child->delete();
-            $intervensi->delete();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data berhasil dihapus.'
+                'message' => 'Semua data terkait NIK berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan server.',

@@ -13,6 +13,7 @@ use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 use App\Imports\PregnancyImportPendampingan;
 
 class PregnancyController extends Controller
@@ -603,6 +604,27 @@ class PregnancyController extends Controller
         return is_numeric($clean) ? floatval($clean) : null;
     }
 
+    private function detectDelimiter($filePath)
+    {
+        $delimiters = [',', ';'];
+        $handle = fopen($filePath, 'r');
+        $firstLine = fgets($handle);
+        fclose($handle);
+
+        $maxCount = 0;
+        $selectedDelimiter = ',';
+
+        foreach ($delimiters as $delimiter) {
+            $count = count(str_getcsv($firstLine, $delimiter));
+            if ($count > $maxCount) {
+                $maxCount = $count;
+                $selectedDelimiter = $delimiter;
+            }
+        }
+
+        return $selectedDelimiter;
+    }
+
     public function import_intervensi(Request $request)
     {
         if (!$request->hasFile('file')) {
@@ -611,12 +633,14 @@ class PregnancyController extends Controller
 
         $file = $request->file('file');
         $path = $file->getRealPath();
+
+        $delimiter = $this->detectDelimiter($path);
         $handle = fopen($path, 'r');
 
         $rows = [];
         $count = 0;
 
-        while (($row = fgetcsv($handle, 1000, ',', '"')) !== false) {
+        while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
             // Lewati baris kosong atau header
             if ($count === 0 && str_contains(strtolower($row[0]), 'petugas')) {
                 $count++;
@@ -1922,26 +1946,40 @@ class PregnancyController extends Controller
     public function delete($nik)
     {
         try {
-            // Temukan record berdasarkan NIK
-            $pregnancy = Pregnancy::where('nik_ibu', $nik)->first();
-            $intervensi = Intervensi::where('nik_subjek', $nik)->first();
-            if (!$pregnancy && !$intervensi) {
+            DB::beginTransaction();
+
+            $deleted = false;
+
+            // Pregnancy (Ibu hamil)
+            if (Pregnancy::where('nik_ibu', $nik)->exists()) {
+                Pregnancy::where('nik_ibu', $nik)->delete();
+                $deleted = true;
+            }
+
+            // Intervensi
+            if (Intervensi::where('nik_subjek', $nik)->exists()) {
+                Intervensi::where('nik_subjek', $nik)->delete();
+                $deleted = true;
+            }
+
+            if (!$deleted) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'message' => 'Data dengan NIK tersebut tidak ditemukan.'
                 ], 404);
             }
 
-            // Hapus
-            $pregnancy->delete();
-            $intervensi->delete();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data berhasil dihapus.'
+                'message' => 'Semua data terkait NIK berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan server.',

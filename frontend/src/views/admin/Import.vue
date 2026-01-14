@@ -1156,6 +1156,16 @@ export default {
 
   },
   methods: {
+    async refreshData() {
+      try {
+        this.isTableLoading = true // optional (kalau ada spinner table)
+        await this.loadData()
+      } catch (e) {
+        console.error('Gagal refresh data:', e)
+      } finally {
+        this.isTableLoading = false
+      }
+    },
     handleFileChange(e) {
       const file = e.target.files[0]
       this.loadFilePreview(file)
