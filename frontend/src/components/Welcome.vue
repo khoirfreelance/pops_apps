@@ -34,7 +34,7 @@
 import axios from 'axios'
 import { eventBus } from '@/eventBus'
 
-const API_PORT = 8000
+const API_PORT = 8001
 const { protocol, hostname } = window.location
 const baseURL = `${protocol}//${hostname}:${API_PORT}`
 

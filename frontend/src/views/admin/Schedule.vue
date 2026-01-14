@@ -343,11 +343,11 @@ import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
 
 // PORT backend kamu
-const API_PORT = 8000;
+const API_PORT = 8001;
 
 // Bangun base URL dari window.location
 const { protocol, hostname } = window.location;
-// contoh hasil: "http://192.168.0.5:8000"
+// contoh hasil: "http://192.168.0.5:8001"
 const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 
 export default {
