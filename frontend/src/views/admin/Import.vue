@@ -128,10 +128,10 @@
                     <ul>
                       <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
-                      <!-- <li>
+                      <li>
                         Silahkan unduh contoh dengan klik
                         <a :href="exampleFile">Example.csv</a>
-                      </li> -->
+                      </li>
                     </ul>
                   </div>
 

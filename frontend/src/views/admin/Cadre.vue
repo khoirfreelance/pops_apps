@@ -722,7 +722,13 @@ export default {
       const found = this.kelurahanList.find(
         item => item.idWilayah === id
       )
-      return found ? found.nama : ''
+
+      if (found) {
+        this.form.idWilayah = found.idWilayah
+        return found.nama
+      }
+
+      return ''
     },
     handleRegionChange() {
       const idWilayah = this.form.kelurahan
@@ -1013,6 +1019,7 @@ export default {
         kecamatan: '',
         kota: '',
         provinsi: '',
+        idWilayah:'',
         kelurahan_new: '',
         kecamatan_new: '',
         kota_new: '',
