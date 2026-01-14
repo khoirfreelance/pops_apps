@@ -886,7 +886,7 @@ const currentMonthYear = new Date().toLocaleDateString('id-ID', {
 /* =========================
    API CONFIG
 ========================== */
-const baseURL = 'http://localhost:8001'
+const baseURL = 'http://localhost:8000'
 
 /* =========================
    SLIDER TEXT STATE
