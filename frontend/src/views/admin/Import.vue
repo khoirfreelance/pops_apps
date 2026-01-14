@@ -762,6 +762,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      progressLevel:null,
       formOpen_bumil: '',
       formOpen_catin: '',
       isLoadingImport: false,
@@ -1724,13 +1725,15 @@ export default {
 
       // 3️⃣ Tentukan endpoint sesuai menu aktif
       let UPLOAD_URL
+      console.log('active: ',this.activeMenu,'activity: ',this.aktifitas);
+
       switch (this.activeMenu) {
         case 'anak':
           switch (this.aktifitas) {
             case 'kunjungan':
               UPLOAD_URL = `${baseURL}/api/children/import_kunjungan`
               break
-            case 'pendampingan':
+            case 'pendampingan_anak':
               UPLOAD_URL = `${baseURL}/api/children/import_pendampingan`
               break
             case 'intervensi_anak':
@@ -1756,7 +1759,7 @@ export default {
       }
 
       if (!UPLOAD_URL) {
-        this.showError('Endpoint upload tidak ditemukan.')
+        this.showError('Endpoint upload tidak ditemukan.',UPLOAD_URL)
         return
       }
 
@@ -1785,14 +1788,21 @@ export default {
             }
           }
         })
+        // 🔥 pastikan progress berhenti
+        this.uploadProgress = 100
+        this.animatedProgress = 100
+        this.importProgress = 100
+
+        await this.$nextTick()
 
         // ✅ sukses
         this.showSuccess(res.data.message || 'Data berhasil diimport!')
         this.formOpen = false
         this.formOpen_bumil = false
         this.formOpen_catin = false
-
+        this.isUploadOpen = !this.isUploadOpen
         this.removeFile()
+        await this.loadData()
         setTimeout(() => (this.showAlert = false), 3000)
       } catch (err) {
         console.error('Upload error:', err)
@@ -1803,10 +1813,20 @@ export default {
 
         this.showError(message)
       } finally {
-        this.isLoadingImport = false
-        /* this.uploading = false
-        this.uploadProgress = 0 */
-      }
+  this.isLoadingImport = false
+
+  // 🛑 reset total state progress
+  this.uploadProgress = 0
+  this.importProgress = 0
+  this.animatedProgress = 0
+
+  // jika pakai interval / RAF
+  if (this.progressTimer) {
+    clearInterval(this.progressTimer)
+    this.progressTimer = null
+  }
+}
+
     },
     removeFile() {
       this.file = null
@@ -2026,7 +2046,7 @@ export default {
           default:
             return;
         }
-        console.log(this.dataLoad);
+        //console.log(this.dataLoad);
 
       } catch (e) {
         console.error('Gagal ambil data:', e);

@@ -575,7 +575,7 @@ class PregnancyController extends Controller
             );
 
             return response()->json([
-                'message' => 'Berhasil import data calon pengantin',
+                'message' => 'Berhasil import data ibu hamil',
             ], 200);
 
         } catch (\Throwable $e) {
