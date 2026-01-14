@@ -12,6 +12,8 @@ use Carbon\Carbon;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\PregnancyImportPendampingan;
 
 class PregnancyController extends Controller
 {
@@ -377,9 +379,176 @@ class PregnancyController extends Controller
         ], 200);
     }
 
+    // public function import(Request $request)
+    // {
+    //     // ✅ Validasi file CSV
+    //     $validator = Validator::make($request->all(), [
+    //         'file' => 'required|mimes:csv,txt|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'Validasi gagal',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     $file = $request->file('file');
+    //     if (!$file->isValid()) {
+    //         return response()->json(['message' => 'File tidak valid.'], 400);
+    //     }
+
+    //     $path = $file->getRealPath();
+    //     $handle = fopen($path, 'r');
+
+    //     $header = null;
+    //     $rows = [];
+    //     $count = 0;
+
+    //     while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+    //         if (empty($data[0]))
+    //             continue;
+
+    //         if (!$header) {
+    //             $header = $data;
+    //             continue;
+    //         }
+
+    //         $count++;
+
+    //         // ✅ Ambil nilai mentah
+    //         $usia_ibu = floatval($data[4] ?? 0);
+    //         $tinggi_badan = $this->sanitizeNumeric($data[23] ?? 0);
+    //         $hb = $this->sanitizeNumeric($data[25] ?? 0);
+    //         $lila = $this->sanitizeNumeric($data[27] ?? 0);
+    //         $riwayat_4t = strtolower(trim($data[12] ?? ''));
+
+    //         // ✅ 1. Status Gizi LILA
+    //         // Berdasarkan Kemenkes: KEK jika LILA < 23.5 cm
+    //         $status_lila = null;
+    //         if ($lila > 0) {
+    //             $status_lila = ($lila < 23.5) ? 'KEK' : 'Normal';
+    //         }
+
+    //         // ✅ 2. Status Gizi Hb
+    //         // Berdasarkan WHO: anemia jika Hb < 11 g/dL
+    //         $status_hb = null;
+    //         if ($hb > 0) {
+    //             $status_hb = ($hb < 11) ? 'Anemia' : 'Normal';
+    //         }
+
+    //         // ✅ 3. Status Risiko Usia (berdasarkan 4T)
+    //         $status_risiko_final = ($usia_ibu < 20 || $usia_ibu > 35)
+    //             ? 'Berisiko'
+    //             : 'Normal';
+
+    //         $tinggi_badan = floatval(preg_replace('/[^0-9.]/', '', $data[23] ?? 0));
+
+    //         // Jika nilainya terlalu besar (misal 15512 cm, harusnya 155)
+    //         if ($tinggi_badan > 300) {
+    //             $tinggi_badan = $tinggi_badan / 100; // ubah ke cm realistis
+    //         }
+
+    //         // Hindari nilai tidak wajar
+    //         if ($tinggi_badan < 50 || $tinggi_badan > 250) {
+    //             $tinggi_badan = null;
+    //         }
+
+    //         $imt = $this->hitungIMT($data[22], $tinggi_badan);
+
+    //         // ✅ Mapping kolom CSV ke field sesuai model Pregnancy
+    //         $rows[] = [
+    //             'nama_petugas' => $data[0] ?? null,
+    //             'tanggal_pendampingan' => $this->convertDate($data[1] ?? null),
+    //             'nama_ibu' => $data[2] ?? null,
+    //             'nik_ibu' => $data[3] ?? null,
+    //             'usia_ibu' => $usia_ibu ?: null,
+    //             'nama_suami' => $data[5] ?? null,
+    //             'nik_suami' => $data[6] ?? null,
+    //             'pekerjaan_suami' => $data[7] ?? null,
+    //             'usia_suami' => $data[8] ?? null,
+    //             'kehamilan_ke' => $data[9] ?? null,
+    //             'jumlah_anak' => $data[10] ?? null,
+    //             'status_kehamilan' => $data[11] ?? null,
+    //             'riwayat_4t' => $data[12] ?? null,
+    //             'riwayat_penggunaan_kb' => $data[13] ?? null,
+    //             'riwayat_ber_kontrasepsi' => $data[14] ?? null,
+    //             'provinsi' => $data[15] ?? null,
+    //             'kota' => $data[16] ?? null,
+    //             'kecamatan' => $data[17] ?? null,
+    //             'kelurahan' => $data[18] ?? null,
+    //             'rt' => $data[19] ?? null,
+    //             'rw' => $data[20] ?? null,
+    //             'tanggal_pemeriksaan_terakhir' => $this->convertDate($data[21] ?? null),
+    //             'berat_badan' => $data[22] ?? null,
+    //             'tinggi_badan' => $tinggi_badan,
+    //             'kadar_hb' => $hb,
+    //             'status_gizi_hb' => $status_hb,
+    //             'lila' => $lila,
+    //             'status_gizi_lila' => $status_lila,
+    //             'status_risiko_usia' => $usia_ibu < 20 || $usia_ibu > 35 ? 'Berisiko' : 'Normal',
+    //             'riwayat_penyakit' => $data[29] ?? null,
+    //             'usia_kehamilan_minggu' => intval($data[30] ?? 0),
+    //             'taksiran_berat_janin' => $data[31] ?? null,
+    //             'tinggi_fundus' => $data[32] ?? null,
+    //             'hpl' => $this->convertDate($data[33] ?? null),
+    //             'terpapar_asap_rokok' => $data[34] ?? null,
+    //             'mendapat_ttd' => $data[35] ?? null,
+    //             'menggunakan_jamban' => $data[36] ?? null,
+    //             'menggunakan_sab' => $data[37] ?? null,
+    //             'fasilitas_rujukan' => $data[38] ?? null,
+    //             'riwayat_keguguran_iufd' => $data[39] ?? null,
+    //             'mendapat_kie' => $data[40] ?? null,
+    //             'mendapat_bantuan_sosial' => $data[41] ?? null,
+    //             'rencana_tempat_melahirkan' => $data[32] ?? null,
+    //             'rencana_asi_eksklusif' => $data[43] ?? null,
+    //             'rencana_tinggal_setelah' => $data[44] ?? null,
+    //             'rencana_kontrasepsi' => $data[45] ?? null,
+    //             'posyandu' => $data[46] ?? null,
+    //             'imt' => $imt
+    //         ];
+    //     }
+
+    //     fclose($handle);
+
+    //     // ✅ Simpan ke DB
+    //     if (!empty($rows)) {
+    //         foreach ($rows as $row) {
+    //             Pregnancy::create($row);
+
+    //             $wilayah = \App\Models\Wilayah::firstOrCreate([
+    //                 'provinsi' => $row['provinsi'],
+    //                 'kota' => $row['kota'],
+    //                 'kecamatan' => $row['kecamatan'],
+    //                 'kelurahan' => $row['kelurahan'],
+    //             ]);
+
+    //             \App\Models\Posyandu::firstOrCreate([
+    //                 'nama_posyandu' => $row['posyandu'] ?? '-',
+    //                 'id_wilayah' => $wilayah->id,
+    //                 'rt' => $row['rt'] ?? null,
+    //                 'rw' => $row['rw'] ?? null,
+    //             ]);
+
+    //             Log::create([
+    //                 'id_user' => Auth::id(),
+    //                 'context' => 'Ibu Hamil',
+    //                 'activity' => 'Import data kehamilan ibu ' . ($row['nama_ibu'] ?? '-'),
+    //                 'timestamp' => now(),
+    //             ]);
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'message' => "Berhasil import {$count} data kehamilan",
+    //         'count' => $count,
+    //         'row' => $rows
+    //     ], 200);
+
+
+    // }
     public function import(Request $request)
     {
-        // ✅ Validasi file CSV
         $validator = Validator::make($request->all(), [
             'file' => 'required|mimes:csv,txt|max:2048',
         ]);
@@ -392,158 +561,31 @@ class PregnancyController extends Controller
         }
 
         $file = $request->file('file');
+
         if (!$file->isValid()) {
-            return response()->json(['message' => 'File tidak valid.'], 400);
+            return response()->json([
+                'message' => 'File tidak valid.',
+            ], 400);
         }
 
-        $path = $file->getRealPath();
-        $handle = fopen($path, 'r');
+        try {
+            Excel::import(
+                new PregnancyImportPendampingan(Auth::id()),
+                $file
+            );
 
-        $header = null;
-        $rows = [];
-        $count = 0;
+            return response()->json([
+                'message' => 'Berhasil import data calon pengantin',
+            ], 200);
 
-        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-            if (empty($data[0]))
-                continue;
+        } catch (\Throwable $e) {
+            report($e);
 
-            if (!$header) {
-                $header = $data;
-                continue;
-            }
-
-            $count++;
-
-            // ✅ Ambil nilai mentah
-            $usia_ibu = floatval($data[4] ?? 0);
-            $tinggi_badan = $this->sanitizeNumeric($data[23] ?? 0);
-            $hb = $this->sanitizeNumeric($data[25] ?? 0);
-            $lila = $this->sanitizeNumeric($data[27] ?? 0);
-            $riwayat_4t = strtolower(trim($data[12] ?? ''));
-
-            // ✅ 1. Status Gizi LILA
-            // Berdasarkan Kemenkes: KEK jika LILA < 23.5 cm
-            $status_lila = null;
-            if ($lila > 0) {
-                $status_lila = ($lila < 23.5) ? 'KEK' : 'Normal';
-            }
-
-            // ✅ 2. Status Gizi Hb
-            // Berdasarkan WHO: anemia jika Hb < 11 g/dL
-            $status_hb = null;
-            if ($hb > 0) {
-                $status_hb = ($hb < 11) ? 'Anemia' : 'Normal';
-            }
-
-            // ✅ 3. Status Risiko Usia (berdasarkan 4T)
-            $status_risiko_final = ($usia_ibu < 20 || $usia_ibu > 35)
-                ? 'Berisiko'
-                : 'Normal';
-
-            $tinggi_badan = floatval(preg_replace('/[^0-9.]/', '', $data[23] ?? 0));
-
-            // Jika nilainya terlalu besar (misal 15512 cm, harusnya 155)
-            if ($tinggi_badan > 300) {
-                $tinggi_badan = $tinggi_badan / 100; // ubah ke cm realistis
-            }
-
-            // Hindari nilai tidak wajar
-            if ($tinggi_badan < 50 || $tinggi_badan > 250) {
-                $tinggi_badan = null;
-            }
-
-            $imt = $this->hitungIMT($data[22], $tinggi_badan);
-
-            // ✅ Mapping kolom CSV ke field sesuai model Pregnancy
-            $rows[] = [
-                'nama_petugas' => $data[0] ?? null,
-                'tanggal_pendampingan' => $this->convertDate($data[1] ?? null),
-                'nama_ibu' => $data[2] ?? null,
-                'nik_ibu' => $data[3] ?? null,
-                'usia_ibu' => $usia_ibu ?: null,
-                'nama_suami' => $data[5] ?? null,
-                'nik_suami' => $data[6] ?? null,
-                'pekerjaan_suami' => $data[7] ?? null,
-                'usia_suami' => $data[8] ?? null,
-                'kehamilan_ke' => $data[9] ?? null,
-                'jumlah_anak' => $data[10] ?? null,
-                'status_kehamilan' => $data[11] ?? null,
-                'riwayat_4t' => $data[12] ?? null,
-                'riwayat_penggunaan_kb' => $data[13] ?? null,
-                'riwayat_ber_kontrasepsi' => $data[14] ?? null,
-                'provinsi' => $data[15] ?? null,
-                'kota' => $data[16] ?? null,
-                'kecamatan' => $data[17] ?? null,
-                'kelurahan' => $data[18] ?? null,
-                'rt' => $data[19] ?? null,
-                'rw' => $data[20] ?? null,
-                'tanggal_pemeriksaan_terakhir' => $this->convertDate($data[21] ?? null),
-                'berat_badan' => $data[22] ?? null,
-                'tinggi_badan' => $tinggi_badan,
-                'kadar_hb' => $hb,
-                'status_gizi_hb' => $status_hb,
-                'lila' => $lila,
-                'status_gizi_lila' => $status_lila,
-                'status_risiko_usia' => $usia_ibu < 20 || $usia_ibu > 35 ? 'Berisiko' : 'Normal',
-                'riwayat_penyakit' => $data[29] ?? null,
-                'usia_kehamilan_minggu' => intval($data[30] ?? 0),
-                'taksiran_berat_janin' => $data[31] ?? null,
-                'tinggi_fundus' => $data[32] ?? null,
-                'hpl' => $this->convertDate($data[33] ?? null),
-                'terpapar_asap_rokok' => $data[34] ?? null,
-                'mendapat_ttd' => $data[35] ?? null,
-                'menggunakan_jamban' => $data[36] ?? null,
-                'menggunakan_sab' => $data[37] ?? null,
-                'fasilitas_rujukan' => $data[38] ?? null,
-                'riwayat_keguguran_iufd' => $data[39] ?? null,
-                'mendapat_kie' => $data[40] ?? null,
-                'mendapat_bantuan_sosial' => $data[41] ?? null,
-                'rencana_tempat_melahirkan' => $data[32] ?? null,
-                'rencana_asi_eksklusif' => $data[43] ?? null,
-                'rencana_tinggal_setelah' => $data[44] ?? null,
-                'rencana_kontrasepsi' => $data[45] ?? null,
-                'posyandu' => $data[46] ?? null,
-                'imt' => $imt
-            ];
+            return response()->json([
+                'message' => 'Gagal melakukan import data',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        fclose($handle);
-
-        // ✅ Simpan ke DB
-        if (!empty($rows)) {
-            foreach ($rows as $row) {
-                Pregnancy::create($row);
-
-                $wilayah = \App\Models\Wilayah::firstOrCreate([
-                    'provinsi' => $row['provinsi'],
-                    'kota' => $row['kota'],
-                    'kecamatan' => $row['kecamatan'],
-                    'kelurahan' => $row['kelurahan'],
-                ]);
-
-                \App\Models\Posyandu::firstOrCreate([
-                    'nama_posyandu' => $row['posyandu'] ?? '-',
-                    'id_wilayah' => $wilayah->id,
-                    'rt' => $row['rt'] ?? null,
-                    'rw' => $row['rw'] ?? null,
-                ]);
-
-                Log::create([
-                    'id_user' => Auth::id(),
-                    'context' => 'Ibu Hamil',
-                    'activity' => 'Import data kehamilan ibu ' . ($row['nama_ibu'] ?? '-'),
-                    'timestamp' => now(),
-                ]);
-            }
-        }
-
-        return response()->json([
-            'message' => "Berhasil import {$count} data kehamilan",
-            'count' => $count,
-            'row' => $rows
-        ], 200);
-
-
     }
 
     // Tambahkan fungsi helper di dalam class
@@ -794,7 +836,8 @@ class PregnancyController extends Controller
                             $jumlah++;
                         if ($status === 'Berisiko' && $riskStatus === 'BERISIKO')
                             $jumlah++;
-                        if ($status == 'Normal'
+                        if (
+                            $status == 'Normal'
                             && $hbStatus == 'NORMAL'
                             && $lilaStatus == 'NORMAL'
                             && $riskStatus == 'NORMAL'
@@ -997,8 +1040,8 @@ class PregnancyController extends Controller
                 $main = $items->sortByDesc('tgl_pendampingan')->first();
 
                 $intervensi = Intervensi::where('nik_subjek', $main->nik_ibu)
-                ->orderBy('tgl_intervensi', 'DESC')
-                ->first();
+                    ->orderBy('tgl_intervensi', 'DESC')
+                    ->first();
 
                 return [
                     'id' => $main->nik_ibu ?? '-',
@@ -1010,10 +1053,10 @@ class PregnancyController extends Controller
                     'kek' => $main->status_gizi_lila ?? '-',
                     'risiko' => $main->status_risiko_usia ?? '-',
                     'tanggal' => optional($main->tanggal_pemeriksaan_terakhir)->format('Y-m-d'),
-                    'jenis'    => $intervensi->kategori ?? '-',
+                    'jenis' => $intervensi->kategori ?? '-',
                 ];
             })
-        ->values();
+            ->values();
     }
 
     public function tren(Request $request)
@@ -1029,7 +1072,7 @@ class PregnancyController extends Controller
             $dataRaw = $data;
             // Filter default wilayah user
             if (!empty($filterKelurahan)) {
-                $data->where('kelurahan',$filterKelurahan);
+                $data->where('kelurahan', $filterKelurahan);
             }
 
             // 2️⃣ Filter tambahan request
@@ -1104,7 +1147,7 @@ class PregnancyController extends Controller
                 // Format tampilan tren
                 $tren = $trendPercent === 0
                     ? ''
-                    : ($trendPercent > 0 ? "{$trendPercent}%" : "". abs($trendPercent) ."%");
+                    : ($trendPercent > 0 ? "{$trendPercent}%" : "" . abs($trendPercent) . "%");
 
                 $trenClass = $trendPercent > 0
                     ? 'text-danger'
@@ -1449,7 +1492,8 @@ class PregnancyController extends Controller
         // check 'intervensi' text/json
         if (isset($row->intervensi) && !empty($row->intervensi)) {
             $intervensi = $row->intervensi->first();
-            if(empty($intervensi)) return false;
+            if (empty($intervensi))
+                return false;
             $interv = $intervensi->kategori;
             if (is_string($interv)) {
                 $s = strtolower($interv);
@@ -1620,16 +1664,16 @@ class PregnancyController extends Controller
         try {
             $query = Pregnancy::query();
 
-            if ($request->filled('provinsi')){
+            if ($request->filled('provinsi')) {
                 $query->where('provinsi', $request->provinsi);
             }
-            if ($request->filled('kota')){
+            if ($request->filled('kota')) {
                 $query->where('kota', $request->kota);
             }
-            if ($request->filled('kecamatan')){
+            if ($request->filled('kecamatan')) {
                 $query->where('kecamatan', $request->kecamatan);
             }
-            if ($request->filled('kelurahan')){
+            if ($request->filled('kelurahan')) {
                 $query->where('kelurahan', $request->kelurahan);
             }
 
@@ -1679,7 +1723,7 @@ class PregnancyController extends Controller
 
             // Hitung
             foreach ($groupedByMonth as $monthKey => $rows) {
-                $label = Carbon::createFromFormat('Y-m-d', $monthKey."-01")->format('M Y');
+                $label = Carbon::createFromFormat('Y-m-d', $monthKey . "-01")->format('M Y');
                 $idx = $months->search($label);
                 if ($idx === false)
                     continue;
@@ -1881,7 +1925,7 @@ class PregnancyController extends Controller
             // Temukan record berdasarkan NIK
             $pregnancy = Pregnancy::where('nik_ibu', $nik)->first();
             $intervensi = Intervensi::where('nik_subjek', $nik)->first();
-            if (!$child && !$intervensi) {
+            if (!$pregnancy && !$intervensi) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Data dengan NIK tersebut tidak ditemukan.'
@@ -1913,16 +1957,16 @@ class PregnancyController extends Controller
 
             // 1. Validasi input
             $validated = $request->validate([
-                'nik'               => 'required|string',
-                'tgl_pengukuran'    => 'required|date',
-                'tgl_lahir'         => 'required|date',
-                'bb'                => 'required|numeric',
-                'tb'                => 'required|numeric',
-                'lika'              => 'nullable|numeric',
-                'gender'            => 'required|string',
+                'nik' => 'required|string',
+                'tgl_pengukuran' => 'required|date',
+                'tgl_lahir' => 'required|date',
+                'bb' => 'required|numeric',
+                'tb' => 'required|numeric',
+                'lika' => 'nullable|numeric',
+                'gender' => 'required|string',
             ]);
             $usia = $this->hitungUmurBulan($validated['tgl_lahir'], $validated['tgl_pengukuran']);
-            $jk = $validated['gender'] == 'Perempuan'? 'P':'L';
+            $jk = $validated['gender'] == 'Perempuan' ? 'P' : 'L';
             $z_bbu = $this->hitungZScore('BB/U', $jk, $usia, $validated['bb']);
             $z_tbu = $this->hitungZScore('TB/U', $jk, $usia, $validated['tb']);
             $z_bbtb = $this->hitungZScore('BB/TB', $jk, $validated['tb'], $validated['bb']);
@@ -1940,29 +1984,29 @@ class PregnancyController extends Controller
 
             // 2. Simpan data ke tabel kunjungan
             $data = Kunjungan::create([
-                'petugas'     => $user->name,
-                'nik'         => $validated['nik'],
-                'nama_anak'   => $request->nama_anak,
-                'jk'          => $jk,
-                'tgl_lahir'   => Carbon::parse($validated['tgl_lahir']),
-                'bb_lahir'    => $kunjungan->bb_lahir,
-                'tb_lahir'    => $kunjungan->tb_lahir,
+                'petugas' => $user->name,
+                'nik' => $validated['nik'],
+                'nama_anak' => $request->nama_anak,
+                'jk' => $jk,
+                'tgl_lahir' => Carbon::parse($validated['tgl_lahir']),
+                'bb_lahir' => $kunjungan->bb_lahir,
+                'tb_lahir' => $kunjungan->tb_lahir,
                 'nama_ortu' => $kunjungan->nama_ortu,
                 'peran' => $kunjungan->peran,
-                'nik_ortu'=> $kunjungan->nik_ortu,
-                'alamat'=> $kunjungan->alamat,
-                'provinsi'=> $kunjungan->provinsi,
-                'kota'=> $kunjungan->kota,
-                'kecamatan'=> $kunjungan->kecamatan,
-                'kelurahan'=> $kunjungan->kelurahan,
-                'rw'=> $kunjungan->rw,
-                'rt'=> $kunjungan->rt,
-                'puskesmas'=> $kunjungan->puskesmas,
-                'posyandu'=> $request->unit_posyandu ? $request->unit_posyandu:$kunjungan->posyandu,
+                'nik_ortu' => $kunjungan->nik_ortu,
+                'alamat' => $kunjungan->alamat,
+                'provinsi' => $kunjungan->provinsi,
+                'kota' => $kunjungan->kota,
+                'kecamatan' => $kunjungan->kecamatan,
+                'kelurahan' => $kunjungan->kelurahan,
+                'rw' => $kunjungan->rw,
+                'rt' => $kunjungan->rt,
+                'puskesmas' => $kunjungan->puskesmas,
+                'posyandu' => $request->unit_posyandu ? $request->unit_posyandu : $kunjungan->posyandu,
                 'tgl_pengukuran' => Carbon::parse($validated['tgl_pengukuran']),
                 'usia_saat_ukur' => $usia,
-                'bb'=> $validated['bb'],
-                'tb'=> $validated['tb'],
+                'bb' => $validated['bb'],
+                'tb' => $validated['tb'],
                 'lika' => $validated['lika'],
                 'bb_u' => $status_bbu,
                 'zs_bb_u' => $z_bbu,
@@ -1971,32 +2015,32 @@ class PregnancyController extends Controller
                 'bb_tb' => $status_bbtb,
                 'zs_bb_tb' => $z_bbtb,
                 'naik_berat_badan' => $naikBB,
-                'diasuh_oleh'=> $kunjungan->diasuh_oleh,
-                'asi'=> $kunjungan->asi,
-                'imunisasi'=> $kunjungan->imunisasi,
-                'rutin_posyandu'=> $kunjungan->rutin_posyandu,
-                'penyakit_bawaan'=> $kunjungan->penyakit_bawaan,
-                'penyakit_6bulan'=> $kunjungan->penyakit_6bulan,
-                'terpapar_asap_rokok'=> $kunjungan->terpapar_asap_rokok,
-                'penggunaan_jamban_sehat'=> $kunjungan->penggunaan_jamban_sehat,
-                'penggunaan_sab'=> $kunjungan->penggunaan_sab,
-                'memiliki_jaminan'=> $kunjungan->memiliki_jaminan,
-                'kie'=> $kunjungan->kie,
-                'mendapatkan_bantuan'=> $kunjungan->mendapatkan_bantuan,
-                'catatan'=> $kunjungan->puskesmas,
-                'kpsp'=> $kunjungan->kpsp,
-                'no_kk'=> $kunjungan->no_kk
+                'diasuh_oleh' => $kunjungan->diasuh_oleh,
+                'asi' => $kunjungan->asi,
+                'imunisasi' => $kunjungan->imunisasi,
+                'rutin_posyandu' => $kunjungan->rutin_posyandu,
+                'penyakit_bawaan' => $kunjungan->penyakit_bawaan,
+                'penyakit_6bulan' => $kunjungan->penyakit_6bulan,
+                'terpapar_asap_rokok' => $kunjungan->terpapar_asap_rokok,
+                'penggunaan_jamban_sehat' => $kunjungan->penggunaan_jamban_sehat,
+                'penggunaan_sab' => $kunjungan->penggunaan_sab,
+                'memiliki_jaminan' => $kunjungan->memiliki_jaminan,
+                'kie' => $kunjungan->kie,
+                'mendapatkan_bantuan' => $kunjungan->mendapatkan_bantuan,
+                'catatan' => $kunjungan->puskesmas,
+                'kpsp' => $kunjungan->kpsp,
+                'no_kk' => $kunjungan->no_kk
             ]);
 
             return response()->json([
                 'message' => 'Data berhasil disimpan',
-                'data'    => $data
+                'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal menyimpan data',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -2006,11 +2050,11 @@ class PregnancyController extends Controller
         try {
             // 1. Validasi input
             $validated = $request->validate([
-                'nama_ortu'      => 'nullable|string',
-                'bb'             => 'nullable|numeric',
-                'tb'             => 'nullable|numeric',
-                'lika'           => 'nullable|numeric',
-                'gender'         => 'nullable|string',
+                'nama_ortu' => 'nullable|string',
+                'bb' => 'nullable|numeric',
+                'tb' => 'nullable|numeric',
+                'lika' => 'nullable|numeric',
+                'gender' => 'nullable|string',
             ]);
 
             // 2. Cari data berdasarkan NIK
@@ -2023,22 +2067,22 @@ class PregnancyController extends Controller
 
             // 3. Update field
             $data->update([
-                'nik'            => $request->nik ?? $data->nik,
-                'nama_ortu'      => $validated['nama_ortu'] ?? $data->nama_ortu,
-                'bb'             => $validated['bb'],
-                'tb'             => $validated['tb'],
-                'lika'           => $validated['lika'] ?? null,
+                'nik' => $request->nik ?? $data->nik,
+                'nama_ortu' => $validated['nama_ortu'] ?? $data->nama_ortu,
+                'bb' => $validated['bb'],
+                'tb' => $validated['tb'],
+                'lika' => $validated['lika'] ?? null,
             ]);
 
             return response()->json([
                 'message' => 'Data berhasil diperbarui',
-                'data'    => $data
+                'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal update data',
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage()
             ], 500);
         }
     }

@@ -267,7 +267,4 @@ class CatinImportPendampingan implements
 
         return (float) $value;
     }
-
-
-
 }

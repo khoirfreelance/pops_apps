@@ -432,7 +432,7 @@ class CatinController extends Controller
         ];
     }
 
-    private function parseBulanTahun(string $periode, bool $akhirBulan = false): \Carbon\Carbon
+    private function parseBulanTahun(string $periode, bool $akhirBulan = false): Carbon
     {
         // Daftar bulan dalam Bahasa Indonesia
         $bulanMap = [
@@ -456,12 +456,12 @@ class CatinController extends Controller
             $bulan = $bulanMap[$parts[0]];
             $tahun = (int) $parts[1];
 
-            $date = \Carbon\Carbon::createFromDate($tahun, $bulan, 1);
+            $date = Carbon::createFromDate($tahun, $bulan, 1);
             return $akhirBulan ? $date->endOfMonth() : $date->startOfMonth();
         }
 
         // fallback jika format salah
-        return \Carbon\Carbon::now();
+        return Carbon::now();
     }
 
     public function show($nik_perempuan)
