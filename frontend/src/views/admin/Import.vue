@@ -960,11 +960,11 @@ export default {
         case "intervensi_anak":
           return "/example_intervensi_anak.xlsx";
         case "pendampingan_bumil":
-          return "/example_bumil.xlsx";
+          return "/example_pendampingan_bumil.xlsx";
         case "intervensi_bumil":
           return "/example_intervensi_bumil.xlsx";
         case "pendampingan_catin":
-          return "/example_catin.xlsx";
+          return "/example_pendampingan_catin.xlsx";
         default:
           return "#";
       }
