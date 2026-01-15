@@ -126,11 +126,11 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
+                      <li>Pastikan data yang diimport, berformat csv</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a :href="exampleFile">Example.csv</a>
+                        <a :href="exampleFile">Example</a>
                       </li>
                     </ul>
                   </div>
@@ -324,11 +324,11 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
+                      <li>Pastikan data yang diimport, berformat csv</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a :href="exampleFile">Example.csv</a>
+                        <a :href="exampleFile">Example</a>
                       </li>
                     </ul>
                   </div>
@@ -518,11 +518,11 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
+                      <li>Pastikan data yang diimport, berformat csv</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a :href="exampleFile">Example.csv</a>
+                        <a :href="exampleFile">Example</a>
                       </li>
                     </ul>
                   </div>
@@ -748,11 +748,11 @@ import 'vue3-easy-data-table/dist/style.css'
 import * as XLSX from 'xlsx'
 
 // PORT backend kamu
-const API_PORT = 8000;
+const API_PORT = 8001;
 
 // Bangun base URL dari window.location
 const { protocol, hostname } = window.location;
-// contoh hasil: "http://192.168.0.5:8000"
+// contoh hasil: "http://192.168.0.5:8001"
 const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 // inisialisasi DataTables agar pakai styling Bootstrap 5
 
@@ -954,17 +954,17 @@ export default {
     exampleFile() {
       switch (this.aktifitas) {
         case "kunjungan":
-          return "/example_kunjungan_posyandu.csv";
+          return "/example_kunjungan_posyandu.xlsx";
         case "pendampingan_anak":
-          return "/example_pendampingan_anak.csv";
+          return "/example_pendampingan_anak.xlsx";
         case "intervensi_anak":
-          return "/example_intervensi_anak.csv";
+          return "/example_intervensi_anak.xlsx";
         case "pendampingan_bumil":
-          return "/example_bumil.csv";
+          return "/example_bumil.xlsx";
         case "intervensi_bumil":
-          return "/example_intervensi_bumil.csv";
+          return "/example_intervensi_bumil.xlsx";
         case "pendampingan_catin":
-          return "/example_catin.csv";
+          return "/example_catin.xlsx";
         default:
           return "#";
       }
@@ -1156,6 +1156,16 @@ export default {
 
   },
   methods: {
+    async refreshData() {
+      try {
+        this.isTableLoading = true // optional (kalau ada spinner table)
+        await this.loadData()
+      } catch (e) {
+        console.error('Gagal refresh data:', e)
+      } finally {
+        this.isTableLoading = false
+      }
+    },
     handleFileChange(e) {
       const file = e.target.files[0]
       this.loadFilePreview(file)
@@ -1235,17 +1245,6 @@ export default {
         document.body.style.removeProperty('padding-right')
       }, 300) // delay biar nunggu animasi fade
     },
-    async refreshData() {
-      try {
-        this.isTableLoading = true // optional (kalau ada spinner table)
-        await this.loadData()
-      } catch (e) {
-        console.error('Gagal refresh data:', e)
-      } finally {
-        this.isTableLoading = false
-      }
-    },
-
     // Prefill form
     editItem(item) {
       switch (this.activeMenu) {
@@ -1365,7 +1364,7 @@ export default {
                 }
               )
 
-              await this.refreshData()
+              await this.loadData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1384,7 +1383,7 @@ export default {
                 }
               )
 
-              await this.refreshData()
+              await this.loadData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1405,7 +1404,7 @@ export default {
                 }
               )
 
-              await this.refreshData()
+              await this.loadData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1424,7 +1423,7 @@ export default {
                 }
               )
 
-              await this.refreshData()
+              await this.loadData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1445,7 +1444,7 @@ export default {
                 }
               )
 
-              await this.refreshData()
+              await this.loadData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1464,7 +1463,7 @@ export default {
                 }
               )
 
-              await this.refreshData()
+              await this.loadData()
               this.resetForm()
               this.showSuccess(res.data.message)
               setTimeout(() => (this.showSuccess(res.data.message)), 3000)
@@ -1484,16 +1483,19 @@ export default {
     },
     // Delete via backend
     async delItem(item) {
-      const nik = item.nik
-      const confirmed = await this.confirmModal("Yakin ingin menghapus data ini?")
+      console.log('isi item:',item);
+      const nama = item.nama_anak || item.nama_perempuan || item.nama_ibu
+      let nik = null
+      const confirmed = await this.confirmModal("Yakin ingin menghapus data "+nama+"?")
       if (!confirmed) return
 
-      let res = null // <<< ini penting
+      //let res = null // <<< ini penting
 
       try {
         switch (this.activeMenu) {
           case 'anak':
-            res = await axios.delete(`${baseURL}/api/children/${nik}`, {
+            nik = item.nik
+            await axios.delete(`${baseURL}/api/children/${nik}`, {
               headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1502,7 +1504,8 @@ export default {
             break;
 
           case 'bumil':
-            res = await axios.delete(`${baseURL}/api/pregnancy/${nik}`, {
+            nik = item.nik_ibu
+            await axios.delete(`${baseURL}/api/pregnancy/${nik}`, {
               headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1511,7 +1514,8 @@ export default {
             break;
 
           case 'catin':
-            res = await axios.delete(`${baseURL}/api/bride/${nik}`, {
+            nik = item.nik
+            await axios.delete(`${baseURL}/api/bride/${nik}`, {
               headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1520,8 +1524,11 @@ export default {
             break;
         }
 
-        this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
-
+        //this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
+        this.showSuccess("Data "+nama+" berhasil dihapus!")
+        this.isLoading = true
+        await this.loadData()
+        this.isLoading = false
       } catch (e) {
         this.showError(e)
       }
@@ -1677,8 +1684,6 @@ export default {
       this.previewFileContent(file)
     },
     validateFile(file) {
-      // ext
-      console.log('ini filenya:', file);
 
       const nameParts = (file.name || '').split('.')
       const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
@@ -1687,10 +1692,10 @@ export default {
       }
 
       // mime (beberapa browser pakai text/plain)
-      if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
+      //if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
         // dimungkinkan file.type kosong di beberapa OS, jadi jangan terlalu strict
-        return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
-      }
+        //return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
+      //}
 
       if (file.size > this.MAX_FILE_SIZE) {
         return { valid: false, message: `Ukuran file terlalu besar. Maks ${this.humanFileSize(this.MAX_FILE_SIZE)}.` }
@@ -1707,6 +1712,7 @@ export default {
 
         if (!lines.length) {
           this.filePreviewTable = []
+
           return
         }
 
@@ -1813,30 +1819,33 @@ export default {
         this.formOpen_catin = false
         this.isUploadOpen = !this.isUploadOpen
         this.removeFile()
-        await this.refreshData()
+        await this.loadData()
         setTimeout(() => (this.showAlert = false), 3000)
       } catch (err) {
-        console.error('Upload error:', err)
+        const detail = err.response?.data?.detail
+        console.log(detail);
 
         const message =
+          detail ||
           err.response?.data?.message ||
-          'Gagal upload file. Periksa format CSV atau koneksi server.'
+          'Format CSV tidak valid'
 
         this.showError(message)
+        console.error('Upload error:', err.response?.data)
       } finally {
-        this.isLoadingImport = false
+  this.isLoadingImport = false
 
-        // 🛑 reset total state progress
-        this.uploadProgress = 0
-        this.importProgress = 0
-        this.animatedProgress = 0
+  // 🛑 reset total state progress
+  this.uploadProgress = 0
+  this.importProgress = 0
+  this.animatedProgress = 0
 
-        // jika pakai interval / RAF
-        if (this.progressTimer) {
-          clearInterval(this.progressTimer)
-          this.progressTimer = null
-        }
-      }
+  // jika pakai interval / RAF
+  if (this.progressTimer) {
+    clearInterval(this.progressTimer)
+    this.progressTimer = null
+  }
+}
 
     },
     removeFile() {
@@ -1980,6 +1989,8 @@ export default {
 
         if (!rawLines.length) {
           this.filePreviewTable = []
+          this.filePreviewTable_bumil = []
+          this.filePreviewTable_catin = []
           return
         }
 
@@ -1991,7 +2002,20 @@ export default {
           row.length > 10 ? [...row.slice(0, 10), '...'] : row
         )
 
-        this.filePreviewTable = table
+        switch (this.activeMenu) {
+          case 'anak':
+            this.filePreviewTable = table
+            break;
+          case 'bumil':
+            this.filePreviewTable_bumil = table
+            break;
+          case 'catin':
+            this.filePreviewTable_catin = table
+            break;
+
+          default:
+            break;
+        }
         return
       }
 
@@ -2085,8 +2109,7 @@ export default {
     try {
       await Promise.all([
         this.loadConfigWithCache(),
-        this.refreshData(),
-        //this.loadData(),
+        this.loadData(),
         //this.getWilayahUser(),
         this.handleResize(),
 

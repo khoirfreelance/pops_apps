@@ -895,37 +895,44 @@ class ChildrenController extends Controller
 
     public function import_kunjungan(Request $request)
     {
-        //dd($request['file']);
-        $request->validate([
-            'file' => [
-                'required',
-                'file',
-                'max:5120',
-                function ($attr, $file, $fail) {
-                    $allowed = [
-                        'text/csv',
-                        'text/plain',
-                        'application/vnd.ms-excel',
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    ];
+        try {
+            $request->validate([
+                'file' => [
+                    'required',
+                    'file',
+                    'max:5120',
+                    function ($attr, $file, $fail) {
+                        $allowed = [
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ];
 
-                    if (!in_array($file->getMimeType(), $allowed)) {
-                        $fail('Tipe file tidak valid.');
-                    }
-                },
-            ],
-        ]);
+                        if (!in_array($file->getMimeType(), $allowed)) {
+                            $fail('Tipe file tidak valid.');
+                        }
+                    },
+                ],
+            ]);
 
-        DB::transaction(function () use ($request) {
-            Excel::import(
-                new ChildrenImportKunjungan(auth()->id()),
-                $request->file('file')
-            );
-        });
+            DB::transaction(function () use ($request) {
+                Excel::import(
+                    new ChildrenImportKunjungan(auth()->id()),
+                    $request->file('file')
+                );
+            });
 
-        return response()->json([
-            'message' => 'Import kunjungan berhasil',
-        ]);
+            return response()->json([
+                'message' => 'Import kunjungan berhasil',
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+            'message' => 'Gagal import CSV',
+            'detail' => $th->getMessage(),
+        ], 422);
+        }
+
     }
 
     public function import_pendampingan_v2(Request $request)
@@ -1144,7 +1151,6 @@ class ChildrenController extends Controller
 
         $file = $request->file('file');
         $path = $file->getRealPath();
-
         $delimiter = $this->detectDelimiter($path);
         $handle = fopen($path, 'r');
 
@@ -3149,32 +3155,34 @@ class ChildrenController extends Controller
         try {
             DB::beginTransaction();
 
-            $deleted = false;
+            $deletedKunjungan = false;
+            $deletedPendampingan = false;
+            $deletedIntervensi = false;
 
             // Kunjungan
             if (Kunjungan::where('nik', $nik)->exists()) {
                 Kunjungan::where('nik', $nik)->delete();
-                $deleted = true;
+                $deletedKunjungan = true;
             }
 
             // Intervensi
             if (Intervensi::where('nik_subjek', $nik)->exists()) {
                 Intervensi::where('nik_subjek', $nik)->delete();
-                $deleted = true;
+                $deletedIntervensi = true;
             }
 
             // Child / Pendampingan
             if (Child::where('nik_anak', $nik)->exists()) {
                 Child::where('nik_anak', $nik)->delete();
-                $deleted = true;
+                $deletedPendampingan = true;
             }
 
 
-            if (!$deleted) {
+            if (!$deletedKunjungan) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data dengan NIK tersebut tidak ditemukan di semua tabel.'
+                    'message' => 'Data dengan NIK '.$nik.' tidak ditemukan.'
                 ], 404);
             }
 
@@ -3182,7 +3190,7 @@ class ChildrenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Semua data terkait NIK berhasil dihapus.'
+                'message' => 'Data NIK '.$nik.' berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {
@@ -3195,7 +3203,6 @@ class ChildrenController extends Controller
             ], 500);
         }
     }
-
 
     public function store(Request $request)
     {
