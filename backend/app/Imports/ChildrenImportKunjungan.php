@@ -84,13 +84,24 @@ class ChildrenImportKunjungan implements
 
             $naikBB = $this->normalizeNaikBeratBadan($row["naik_berat_badan"]);
 
+            $jkRaw = trim($row['jk'] ?? '');
+            $jk = strtoupper($jkRaw);
+
+            $validateJK = in_array($jk, ['L', 'P']);
+
+            if (!$validateJK) {
+                throw new \Exception(
+                    "Format salah pada kolom JK. Nilai: '{$jkRaw}'. Gunakan L atau P."
+                );
+            }
+
             // =========================
             // 4. Simpan Kunjungan
             // =========================
             $kunjungan = Kunjungan::create([
                 'nik' => $row['nik'],
                 'nama_anak' => $this->normalizeText($row['nama'] ?? null),
-                'jk' => $this->normalizeText($row['jk'] ?? null),
+                'jk' => $this->normalizeText($jk ?? null),
                 'tgl_lahir' => $tglLahir,
                 'bb_lahir' =>  $this->normalizeDecimal($row['bb_lahir']??null),
                 'tb_lahir' => $this->normalizeDecimal($row['tb_lahir']??null),

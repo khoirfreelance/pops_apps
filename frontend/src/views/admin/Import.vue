@@ -1815,13 +1815,14 @@ export default {
         await this.loadData()
         setTimeout(() => (this.showAlert = false), 3000)
       } catch (err) {
-        console.error('Upload error:', err)
-
+        const detail = err.response?.data?.detail
         const message =
+          detail ||
           err.response?.data?.message ||
-          'Gagal upload file. Periksa format CSV atau koneksi server.'
+          'Format CSV tidak valid'
 
         this.showError(message)
+        console.error('Upload error:', err.response?.data)
       } finally {
   this.isLoadingImport = false
 

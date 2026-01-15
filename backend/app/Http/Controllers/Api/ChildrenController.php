@@ -895,37 +895,44 @@ class ChildrenController extends Controller
 
     public function import_kunjungan(Request $request)
     {
-        //dd($request['file']);
-        $request->validate([
-            'file' => [
-                'required',
-                'file',
-                'max:5120',
-                function ($attr, $file, $fail) {
-                    $allowed = [
-                        'text/csv',
-                        'text/plain',
-                        'application/vnd.ms-excel',
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    ];
+        try {
+            $request->validate([
+                'file' => [
+                    'required',
+                    'file',
+                    'max:5120',
+                    function ($attr, $file, $fail) {
+                        $allowed = [
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ];
 
-                    if (!in_array($file->getMimeType(), $allowed)) {
-                        $fail('Tipe file tidak valid.');
-                    }
-                },
-            ],
-        ]);
+                        if (!in_array($file->getMimeType(), $allowed)) {
+                            $fail('Tipe file tidak valid.');
+                        }
+                    },
+                ],
+            ]);
 
-        DB::transaction(function () use ($request) {
-            Excel::import(
-                new ChildrenImportKunjungan(auth()->id()),
-                $request->file('file')
-            );
-        });
+            DB::transaction(function () use ($request) {
+                Excel::import(
+                    new ChildrenImportKunjungan(auth()->id()),
+                    $request->file('file')
+                );
+            });
 
-        return response()->json([
-            'message' => 'Import kunjungan berhasil',
-        ]);
+            return response()->json([
+                'message' => 'Import kunjungan berhasil',
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+            'message' => 'Gagal import CSV',
+            'detail' => $th->getMessage(),
+        ], 422);
+        }
+
     }
 
     public function import_pendampingan_v2(Request $request)
