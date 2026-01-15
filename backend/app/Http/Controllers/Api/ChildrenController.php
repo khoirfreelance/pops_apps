@@ -3155,32 +3155,34 @@ class ChildrenController extends Controller
         try {
             DB::beginTransaction();
 
-            $deleted = false;
+            $deletedKunjungan = false;
+            $deletedPendampingan = false;
+            $deletedIntervensi = false;
 
             // Kunjungan
             if (Kunjungan::where('nik', $nik)->exists()) {
                 Kunjungan::where('nik', $nik)->delete();
-                $deleted = true;
+                $deletedKunjungan = true;
             }
 
             // Intervensi
             if (Intervensi::where('nik_subjek', $nik)->exists()) {
                 Intervensi::where('nik_subjek', $nik)->delete();
-                $deleted = true;
+                $deletedIntervensi = true;
             }
 
             // Child / Pendampingan
             if (Child::where('nik_anak', $nik)->exists()) {
                 Child::where('nik_anak', $nik)->delete();
-                $deleted = true;
+                $deletedPendampingan = true;
             }
 
 
-            if (!$deleted) {
+            if (!$deletedKunjungan) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data dengan NIK tersebut tidak ditemukan di semua tabel.'
+                    'message' => 'Data dengan NIK '.$nik.' tidak ditemukan.'
                 ], 404);
             }
 
@@ -3188,7 +3190,7 @@ class ChildrenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Semua data terkait NIK berhasil dihapus.'
+                'message' => 'Data NIK '.$nik.' berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {

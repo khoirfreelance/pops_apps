@@ -64,8 +64,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'riwayat_kb' => $row[17],
                     'alat_kontrasepsi' => $row[18],
 
-                    'provinsi' => $this->wilayahUser['provinsi'],
-                    'kota' => $this->wilayahUser['kota'],
+                    'provinsi' => strtoupper($this->wilayahUser['provinsi']),
+                    'kota' => strtoupper($this->wilayahUser['kota']),
                     'kecamatan' => strtoupper($row[19]),
                     'kelurahan' => strtoupper($row[20]),
                     'rt' => ltrim($row[21], "0"),
@@ -121,7 +121,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'kecamatan' => $data['kecamatan'],
                     'kelurahan' => $data['kelurahan'],
                 ]);
-                
+
                 $noKK = $data['nik_ayah'] ?? $data['nik_ibu'] ?? $data['nik_anak'] ?? null;
 
                 if ($noKK) {

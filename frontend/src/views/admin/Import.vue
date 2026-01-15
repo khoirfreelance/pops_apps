@@ -126,11 +126,11 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
+                      <li>Pastikan data yang diimport, berformat csv</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a :href="exampleFile">Example.csv</a>
+                        <a :href="exampleFile">Example</a>
                       </li>
                     </ul>
                   </div>
@@ -324,11 +324,11 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
+                      <li>Pastikan data yang diimport, berformat csv</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a :href="exampleFile">Example.csv</a>
+                        <a :href="exampleFile">Example</a>
                       </li>
                     </ul>
                   </div>
@@ -518,11 +518,11 @@
                 <div class="row g-2">
                   <div class="alert alert-success">
                     <ul>
-                      <li>Pastikan data yang diimport, berformat csv, xls, atau xlsx</li>
+                      <li>Pastikan data yang diimport, berformat csv</li>
                       <li>Pastikan data sudah lengkap sebelum di import</li>
                       <li>
                         Silahkan unduh contoh dengan klik
-                        <a :href="exampleFile">Example.csv</a>
+                        <a :href="exampleFile">Example</a>
                       </li>
                     </ul>
                   </div>
@@ -954,17 +954,17 @@ export default {
     exampleFile() {
       switch (this.aktifitas) {
         case "kunjungan":
-          return "/example_kunjungan_posyandu.csv";
+          return "/example_kunjungan_posyandu.xlsx";
         case "pendampingan_anak":
-          return "/example_pendampingan_anak.csv";
+          return "/example_pendampingan_anak.xlsx";
         case "intervensi_anak":
-          return "/example_intervensi_anak.csv";
+          return "/example_intervensi_anak.xlsx";
         case "pendampingan_bumil":
-          return "/example_bumil.csv";
+          return "/example_bumil.xlsx";
         case "intervensi_bumil":
-          return "/example_intervensi_bumil.csv";
+          return "/example_intervensi_bumil.xlsx";
         case "pendampingan_catin":
-          return "/example_catin.csv";
+          return "/example_catin.xlsx";
         default:
           return "#";
       }
@@ -1483,16 +1483,19 @@ export default {
     },
     // Delete via backend
     async delItem(item) {
-      const nik = item.nik
-      const confirmed = await this.confirmModal("Yakin ingin menghapus data ini?")
+      console.log('isi item:',item);
+      const nama = item.nama_anak || item.nama_perempuan || item.nama_ibu
+      let nik = null
+      const confirmed = await this.confirmModal("Yakin ingin menghapus data "+nama+"?")
       if (!confirmed) return
 
-      let res = null // <<< ini penting
+      //let res = null // <<< ini penting
 
       try {
         switch (this.activeMenu) {
           case 'anak':
-            res = await axios.delete(`${baseURL}/api/children/${nik}`, {
+            nik = item.nik
+            await axios.delete(`${baseURL}/api/children/${nik}`, {
               headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1501,7 +1504,8 @@ export default {
             break;
 
           case 'bumil':
-            res = await axios.delete(`${baseURL}/api/pregnancy/${nik}`, {
+            nik = item.nik_ibu
+            await axios.delete(`${baseURL}/api/pregnancy/${nik}`, {
               headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1510,7 +1514,8 @@ export default {
             break;
 
           case 'catin':
-            res = await axios.delete(`${baseURL}/api/bride/${nik}`, {
+            nik = item.nik
+            await axios.delete(`${baseURL}/api/bride/${nik}`, {
               headers: {
                 Accept: 'application/json',
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -1519,8 +1524,11 @@ export default {
             break;
         }
 
-        this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
-
+        //this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
+        this.showSuccess("Data "+nama+" berhasil dihapus!")
+        this.isLoading = true
+        await this.loadData()
+        this.isLoading = false
       } catch (e) {
         this.showError(e)
       }
@@ -1704,6 +1712,7 @@ export default {
 
         if (!lines.length) {
           this.filePreviewTable = []
+
           return
         }
 
@@ -1980,6 +1989,8 @@ export default {
 
         if (!rawLines.length) {
           this.filePreviewTable = []
+          this.filePreviewTable_bumil = []
+          this.filePreviewTable_catin = []
           return
         }
 
@@ -1991,7 +2002,20 @@ export default {
           row.length > 10 ? [...row.slice(0, 10), '...'] : row
         )
 
-        this.filePreviewTable = table
+        switch (this.activeMenu) {
+          case 'anak':
+            this.filePreviewTable = table
+            break;
+          case 'bumil':
+            this.filePreviewTable_bumil = table
+            break;
+          case 'catin':
+            this.filePreviewTable_catin = table
+            break;
+
+          default:
+            break;
+        }
         return
       }
 
