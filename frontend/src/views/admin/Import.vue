@@ -1676,8 +1676,6 @@ export default {
       this.previewFileContent(file)
     },
     validateFile(file) {
-      // ext
-      console.log('ini filenya:', file);
 
       const nameParts = (file.name || '').split('.')
       const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
@@ -1686,10 +1684,10 @@ export default {
       }
 
       // mime (beberapa browser pakai text/plain)
-      if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
+      //if (this.ACCEPTED_MIME.length && !this.ACCEPTED_MIME.includes(file.type) && file.type !== '') {
         // dimungkinkan file.type kosong di beberapa OS, jadi jangan terlalu strict
-        return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
-      }
+        //return { valid: false, message: 'Tipe file tidak valid (MIME mismatch).' }
+      //}
 
       if (file.size > this.MAX_FILE_SIZE) {
         return { valid: false, message: `Ukuran file terlalu besar. Maks ${this.humanFileSize(this.MAX_FILE_SIZE)}.` }
@@ -1816,6 +1814,8 @@ export default {
         setTimeout(() => (this.showAlert = false), 3000)
       } catch (err) {
         const detail = err.response?.data?.detail
+        console.log(detail);
+
         const message =
           detail ||
           err.response?.data?.message ||
