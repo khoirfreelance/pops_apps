@@ -68,27 +68,50 @@ class CatinImportPendampingan implements
 
     private function processRow(array $row): void
     {
-        //dump($this->convertDate($row[37] ?? null));
-        //dd($row);
         $berat = $row[21] != null ? $this->normalizeDecimal($row[21]) : null;
         $tinggi = $row[22] != null ? $this->normalizeDecimal($row[22]) : null;
         $lila = $row[26] != null ? $this->normalizeDecimal($row[26]) : null;
         $hb = $row[24] != null ? $this->normalizeDecimal($row[24]) : null;
         $usia_perempuan = $row[6] != null ? (int) $row[6] : null;
         DB::transaction(function () use ($row, $berat, $tinggi, $lila, $hb, $usia_perempuan) {
+            // =========================
+            // 0. Validasi data import
+            // =========================
+
+            $nik = $this->normalizeNIK($row[4] ?? null);
+            $nama = $this->normalizeText($row[3] ?? null);
+            $tglUkur = $this->convertDate($row[2] ?? null);
+
+            if (!$nik || !$tglUkur) {
+                throw new \Exception(
+                    "NIK atau tanggal pendampingan kosong / tidak valid pada data {$nama}"
+                );
+            }
+
+            $duplikat = Catin::where('nik_perempuan', $nik)
+                ->whereDate('tanggal_pendampingan', $tglUkur)
+                ->first();
+
+            if ($duplikat) {
+                throw new \Exception(
+                    "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
+                    . $duplikat->created_at->format('d-m-Y')
+                );
+            }
+
             $catin = Catin::create(attributes: [
-                'nama_petugas' => $row[1] ?? null,
+                'nama_petugas' => $this->normalizeText($row[1] ?? null),
                 'tanggal_pendampingan' => $this->convertDate($row[2] ?? null),
 
-                'nama_perempuan' => $row[3] ?? null,
-                'nik_perempuan' => $row[4] ?? null,
-                'pekerjaan_perempuan' => $row[5] ?? null,
+                'nama_perempuan' => $this->normalizeText($row[3] ?? null),
+                'nik_perempuan' => $this->normalizeNIK($row[4] ?? null),
+                'pekerjaan_perempuan' => $this->normalizeText($row[5] ?? null),
                 'usia_perempuan' => $usia_perempuan ?? 0,
                 'hp_perempuan' => $row[7] ?? null,
 
-                'nama_laki' => $row[8] ?? null,
-                'nik_laki' => $row[9] ?? null,
-                'pekerjaan_laki' => $row[10] ?? null,
+                'nama_laki' => $this->normalizeText($row[8] ?? null),
+                'nik_laki' => $this->normalizeNIK($row[9] ?? null),
+                'pekerjaan_laki' => $this->normalizeText($row[10] ?? null),
                 'usia_laki' => $row[11] ?? 0,
                 'hp_laki' => $row[12] ?? null,
 
@@ -96,13 +119,13 @@ class CatinImportPendampingan implements
 
                 //'provinsi' => $this->wilayahUser['provinsi'] ?? null,
                 //'kota' => $this->wilayahUser['kota'] ?? null,
-                'provinsi' => $row[14] ?? null,
-                'kota' => $row[15] ?? null,
-                'kecamatan' => $row[16] ?? null,
-                'kelurahan' => $row[17] ?? null,
+                'provinsi' => $this->normalizeText($row[14] ?? null),
+                'kota' => $this->normalizeText($row[15] ?? null),
+                'kecamatan' => $this->normalizeText($row[16] ?? null),
+                'kelurahan' => $this->normalizeText($row[17] ?? null),
                 'rw' => $row[18] ?? null,
                 'rt' => $row[19] ?? null,
-                'posyandu' => $this->posyanduUser ?? null,
+                'posyandu' => $this->normalizeText($this->posyanduUser ?? null),
 
                 'tanggal_pemeriksaan' => $row[20] != null ? $this->convertDate($row[20]) : null,
                 'berat_perempuan' => $berat,
@@ -130,10 +153,14 @@ class CatinImportPendampingan implements
             ]);
 
             $wilayah = Wilayah::firstOrCreate([
-                'provinsi' => $this->wilayahUser['provinsi'],
+                'provinsi' => $this->normalizeText($row[14] ?? null),
+                'kota' => $this->normalizeText($row[15] ?? null),
+                'kecamatan' => $this->normalizeText($row[16] ?? null),
+                'kelurahan' => $this->normalizeText($row[17] ?? null),
+                /* 'provinsi' => $this->wilayahUser['provinsi'],
                 'kota' => $this->wilayahUser['kota'],
                 'kecamatan' => $row['14'] ?? null,
-                'kelurahan' => $row['15'] ?? null,
+                'kelurahan' => $row['15'] ?? null, */
             ]);
 
             // Takeout cause posyandu get from cadre of user doing the import
@@ -157,12 +184,93 @@ class CatinImportPendampingan implements
      * Helper functions
      * ========================= */
 
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+
+    private function normalizeText($value)
+    {
+        return $value ? strtoupper(trim($value)) : null;
+    }
+
     private function toBool($val)
     {
         return in_array(strtolower(trim($val)), ['ya', 'y', 'true', '1']) ? true : false;
     }
 
     private function convertDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
+    }
+    /* private function convertDate($date)
     {
         if (!$date)
             return null;
@@ -172,9 +280,18 @@ class CatinImportPendampingan implements
         try {
             return Carbon::parse($date)->format('Y-m-d');
         } catch (\Exception $e) {
-            return null;
+            throw new \Exception(
+                "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+                . "Format yang diperbolehkan adalah:<br>"
+                . "<ul class='text-start'>"
+                . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+                . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+                . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+                . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+                . "</ul>"
+            );
         }
-    }
+    } */
 
     protected function loadWilayahUser(): void
     {

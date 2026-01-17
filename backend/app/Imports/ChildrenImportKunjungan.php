@@ -8,6 +8,7 @@ use App\Models\Posyandu;
 use App\Models\Keluarga;
 use App\Models\Log;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -58,6 +59,31 @@ class ChildrenImportKunjungan implements
     {
         //dd($row);
         return DB::transaction(function () use ($row) {
+            $user = Auth::user();
+
+            // =========================
+            // 0. Validasi data import
+            // =========================
+            $nik = $this->normalizeNik($row['nik'] ?? null);
+            $nama = $this->normalizeText($row['nama'] ?? '-');
+            $tglUkur = $this->convertDate($row['tanggal_pengukuran'] ?? null);
+
+            if (!$nik || !$tglUkur) {
+                throw new \Exception(
+                    "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}"
+                );
+            }
+
+            $duplikat = Kunjungan::where('nik', $nik)
+                ->whereDate('tgl_pengukuran', $tglUkur)
+                ->first();
+
+            if ($duplikat) {
+                throw new \Exception(
+                    "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
+                    . $duplikat->created_at->format('d-m-Y')
+                );
+            }
 
             // =========================
             // 1. Parse tanggal
@@ -99,7 +125,7 @@ class ChildrenImportKunjungan implements
             // 4. Simpan Kunjungan
             // =========================
             $kunjungan = Kunjungan::create([
-                'nik' => $row['nik'],
+                'nik' => $this->normalizeNik($row['nik'] ?? null),
                 'nama_anak' => $this->normalizeText($row['nama'] ?? null),
                 'jk' => $this->normalizeText($jk ?? null),
                 'tgl_lahir' => $tglLahir,
@@ -130,6 +156,8 @@ class ChildrenImportKunjungan implements
                 'bb_tb' => $this->normalizeStatus($status_bbtb),
                 'zs_bb_tb' => $z_bbtb,
                 'naik_berat_badan' => $naikBB,
+                'catatan' => 'Perekaman data '.$row['nama'].' pada '.$tglUkur.' dengan hasil '.$this->normalizeStatus($status_bbtb).' secara import data',
+                'petugas' => $user->name,
             ]);
 
             // =========================
@@ -185,6 +213,25 @@ class ChildrenImportKunjungan implements
      * Helper (reuse existing)
      * ====================== */
 
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+
     private function normalizeText($value)
     {
         return $value ? strtoupper(trim($value)) : null;
@@ -197,6 +244,64 @@ class ChildrenImportKunjungan implements
 
     // Irul Custom ConvertDate
     private function convertDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
+    }
+
+    /* private function convertDate($date)
     {
         if (!$date) {
             return null;
@@ -236,7 +341,7 @@ class ChildrenImportKunjungan implements
         }
 
         return null;
-    }
+    } */
 
     /* private function convertDate($date)
     {

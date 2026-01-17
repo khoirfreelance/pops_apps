@@ -924,7 +924,7 @@ class ChildrenController extends Controller
             });
 
             return response()->json([
-                'message' => 'Import kunjungan berhasil',
+                'message' => 'Berhasil mengunggah data anak',
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -943,13 +943,13 @@ class ChildrenController extends Controller
             });
 
             return response()->json([
-                'message' => 'Import berhasil (semua data valid)',
+                'message' => 'Berhasil mengunggah data pendampingan anak',
             ], 200);
 
         } catch (\Throwable $e) {
 
             return response()->json([
-                'message' => 'Import GAGAL — semua data dibatalkan',
+                'message' => 'Gagal Menggunggah data - semua data batal diunggah',
                 'error' => $e->getMessage(),
             ], 422);
         }
@@ -1122,6 +1122,30 @@ class ChildrenController extends Controller
         ], 200);
     }
 
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+
+    private function normalizeText($value)
+    {
+        return $value ? strtoupper(trim($value)) : null;
+    }
+
     private function detectDelimiter($filePath)
     {
         $delimiters = [',', ';'];
@@ -1167,23 +1191,23 @@ class ChildrenController extends Controller
                 continue;
 
             Intervensi::create([
-                'petugas' => $row[0] ?? null,
-                'tgl_intervensi' => isset($row[1]) ? date('Y-m-d', strtotime($row[1])) : null,
-                'desa' => $row[2] ?? null,
-                'nama_subjek' => $row[3] ?? null,
-                'nik_subjek' => $row[4] ?? null,
-                'status_subjek' => 'anak',
-                'jk' => $row[5] ?? null,
-                'tgl_lahir' => isset($row[6]) ? date('Y-m-d', strtotime($row[6])) : null,
-                'nama_wali' => $row[7] ?? null,
-                'nik_wali' => $row[8] ?? null,
-                'status_wali' => $row[9] ?? null,
+                'petugas' => $this->normalizeText($row[0] ?? null),
+                'tgl_intervensi' => $this->convertDate(isset($row[1])?? null),
+                'desa' => $this->normalizeText($row[2] ?? null),
+                'nama_subjek' => $this->normalizeText($row[3] ?? null),
+                'nik_subjek' => $this->normalizeNik($row[4] ?? null),
+                'status_subjek' => 'ANAK',
+                'jk' => $this->normalizeText($row[5] ?? null),
+                'tgl_lahir' => $this->convertDate(isset($row[6])?? null),
+                'nama_wali' => $this->normalizeText($row[7] ?? null),
+                'nik_wali' => $this->normalizeNik($row[8] ?? null),
+                'status_wali' => $this->normalizeText($row[9] ?? null),
                 'rt' => $row[10] ?? null,
                 'rw' => $row[11] ?? null,
-                'posyandu' => $row[12] ?? null,
-                'umur_subjek' => floor($this->hitungUmurBulan($row[6], $row[1])) . 'Bulan',
+                'posyandu' => $this->normalizeText($row[12] ?? null),
+                'umur_subjek' => floor($this->hitungUmurBulan($row[6], $row[1])) . ' Bulan',
                 'bantuan' => $row[13] ?? null,
-                'kategori' => $row[14] ?? null,
+                'kategori' => $this->normalizeText($row[14] ?? null),
             ]);
 
             $count++;
@@ -1191,7 +1215,7 @@ class ChildrenController extends Controller
 
         fclose($handle);
 
-        return response()->json(['message' => "Berhasil impor {$count} data intervensi."]);
+        return response()->json(['message' => "Berhasil unggah data intervensi."]);
     }
 
     /** Hitung umur (bulan) */
@@ -1210,30 +1234,31 @@ class ChildrenController extends Controller
     /** Hitung Z-Score sesuai jenis pengukuran */
     private function hitungZScore($tipe, $jk, $usiaOrTb, $bb)
     {
-        $sex = ($jk == 'L' || $jk == 'l' || $jk == 1) ? 1 : 2;
+        $sex = in_array($jk, ['l', 'laki-laki', 'male', '1']) ? 1 : 2;
 
         switch ($tipe) {
             case 'BB/U':
-                $usia = round($usiaOrTb);
                 $row = \DB::table('who_weight_for_age')
                     ->where('sex', $sex)
-                    ->where('age_month', $usia)
+                    ->orderByRaw('ABS(age_month - ?)', [$usiaOrTb])
                     ->first();
+
                 break;
 
             case 'TB/U':
-                $usia = round($usiaOrTb);
-                $row = \DB::table('who_height_for_age')
+                $row = \DB::table('who_weight_for_height')
                     ->where('sex', $sex)
-                    ->where('age_month', $usia)
+                    ->orderByRaw('ABS(height_cm - ?)', [$usiaOrTb])
                     ->first();
+
                 break;
 
             case 'BB/TB':
-                $tb = round($usiaOrTb);
+                if ($usiaOrTb < 45 || $usiaOrTb > 120) return null;
+
                 $row = \DB::table('who_weight_for_height')
                     ->where('sex', $sex)
-                    ->where('height_cm', $tb)
+                    ->orderByRaw('ABS(height_cm - ?)', [$usiaOrTb])
                     ->first();
                 break;
 
@@ -1272,7 +1297,7 @@ class ChildrenController extends Controller
             return 'Normal';
         if ($z <= 2)
             return 'Risiko BB Lebih';
-        return 'Overweight';
+        return 'BB Lebih';
     }
 
     private function statusTBU($z)
@@ -1299,10 +1324,10 @@ class ChildrenController extends Controller
         if ($z <= 1)
             return 'Normal';
         if ($z <= 2)
-            return 'Possible risk of Overweight';
+            return 'Possible Risk of Overweight';
         if ($z <= 3)
             return 'Overweight';
-        return 'Obesitas';
+        return 'Obese';
     }
 
     /** Cek apakah berat badan naik dibanding pengukuran terakhir */
@@ -1330,7 +1355,66 @@ class ChildrenController extends Controller
 
     /** Konversi tanggal dari dd/mm/yyyy ke
      * yyy-mm-dd */
+    // Irul Custom ConvertDate
     private function convertDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
+    }
+
+    /* private function convertDate($date)
     {
         if (!$date)
             return null;
@@ -1341,7 +1425,7 @@ class ChildrenController extends Controller
                 : "{$parts[0]}-{$parts[1]}-{$parts[2]}";
         }
         return null;
-    }
+    } */
 
     private function mapDetailAnak($rows)
     {
@@ -3177,6 +3261,12 @@ class ChildrenController extends Controller
                 $deletedPendampingan = true;
             }
 
+            \App\Models\Log::create([
+                'id_user' => \Auth::id(),
+                'context' => 'Data Anak',
+                'activity' => 'Hapus data anak ' . ($nik ?? '-'),
+                'timestamp' => now(),
+            ]);
 
             if (!$deletedKunjungan) {
                 DB::rollBack();
@@ -3220,7 +3310,8 @@ class ChildrenController extends Controller
                 'gender' => 'required|string',
             ]);
             $usia = $this->hitungUmurBulan($validated['tgl_lahir'], $validated['tgl_pengukuran']);
-            $jk = $validated['gender'] == 'Perempuan' ? 'P' : 'L';
+            $jk = $validated['gender'] == 'Perempuan' ? 'p' : 'l';
+            //$jk = strtolower($validated['gender']);
             $z_bbu = $this->hitungZScore('BB/U', $jk, $usia, $validated['bb']);
             $z_tbu = $this->hitungZScore('TB/U', $jk, $usia, $validated['tb']);
             $z_bbtb = $this->hitungZScore('BB/TB', $jk, $validated['tb'], $validated['bb']);
@@ -3281,19 +3372,26 @@ class ChildrenController extends Controller
                 'memiliki_jaminan' => $kunjungan->memiliki_jaminan,
                 'kie' => $kunjungan->kie,
                 'mendapatkan_bantuan' => $kunjungan->mendapatkan_bantuan,
-                'catatan' => $kunjungan->puskesmas,
+                'catatan' => 'Perekaman data '.$request->nama_anak.' pada '.Carbon::parse($validated['tgl_pengukuran']).' dengan hasil '.$status_bbtb.' secara manual input data',
                 'kpsp' => $kunjungan->kpsp,
                 'no_kk' => $kunjungan->no_kk
             ]);
 
+            \App\Models\Log::create([
+                'id_user' => \Auth::id(),
+                'context' => 'Data Anak',
+                'activity' => 'Rekam data anak ' . ($request->nama_anak ?? '-'),
+                'timestamp' => now(),
+            ]);
+
             return response()->json([
-                'message' => 'Data berhasil disimpan',
+                'message' => 'Data '.$request->nama_anak.' berhasil disimpan',
                 'data' => $data
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Gagal menyimpan data',
+                'message' => 'Gagal menyimpan data '.$request->nama_anak,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -3302,6 +3400,8 @@ class ChildrenController extends Controller
     public function update(Request $request, $nik)
     {
         try {
+            $user = Auth::user();
+
             // 1. Validasi input
             $validated = $request->validate([
                 'nama_ortu' => 'nullable|string',
@@ -3312,20 +3412,18 @@ class ChildrenController extends Controller
             ]);
 
             // 2. Cari data berdasarkan NIK
-            $data = Kunjungan::where('nik', $nik)->first();
-            if (!$data) {
-                return response()->json([
-                    'message' => 'Data tidak ditemukan'
-                ], 404);
-            }
-
-            // 3. Update field
-            $data->update([
+            $data = Kunjungan::where('nik', $nik)->update([
                 'nik' => $request->nik ?? $data->nik,
                 'nama_ortu' => $validated['nama_ortu'] ?? $data->nama_ortu,
                 'bb' => $validated['bb'],
                 'tb' => $validated['tb'],
-                'lika' => $validated['lika'] ?? null,
+            ]);
+
+            \App\Models\Log::create([
+                'id_user' => \Auth::id(),
+                'context' => 'Data Anak',
+                'activity' => 'Ubah data anak ' . ($nik ?? '-'),
+                'timestamp' => now(),
             ]);
 
             return response()->json([

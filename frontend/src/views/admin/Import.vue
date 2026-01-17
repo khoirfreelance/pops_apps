@@ -59,7 +59,7 @@
           <div class="tab-content" id="myTabContent">
             <!-- Import Anak -->
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
-              <div v-if="formOpen" class="card p-3 my-3">
+              <div v-if="formOpen" class="card p-3 my-3" id="form_anak">
                 <div class="d-flex justify-content-between">
                   <h3>Form Gizi Anak</h3>
                   <button class="btn btn-outline-danger" @click="formOpen = !formOpen">
@@ -87,20 +87,36 @@
                     <input type="date" class="form-control" v-model="form.tgl_pengukuran">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-4" v-if="form.mode === 'input'">
                     <label>Berat Badan (kg)</label>
                     <input type="text" class="form-control" v-model="form.bb">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-4" v-if="form.mode === 'input'">
                     <label>Tinggi Badan (cm)</label>
                     <input type="text" class="form-control" v-model="form.tb">
                   </div>
 
-                  <div class="col-md-4">
+                  <!-- <div class="col-md-4">
                     <label>Lingkar Kepala</label>
                     <input type="text" class="form-control" v-model="form.lika">
                   </div>
+
+                  <div v-if="form.mode === 'update' && activeMenu === 'anak'" class="col-md-3">
+                    <label>NO KK</label>
+                    <input type="text" class="form-control" v-model="form.no_kk">
+                  </div>
+
+                  <div v-if="form.mode === 'update' && activeMenu === 'anak'" class="col-md-3">
+                    <label>NIK Wali</label>
+                    <input type="text" class="form-control" v-model="form.nik_ortu">
+                  </div>
+
+                  <div v-if="form.mode === 'update' && activeMenu === 'anak'" class="col-md-3">
+                    <label>Peran Wali</label>
+                    <input type="text" class="form-control" v-model="form.peran">
+                  </div> -->
+
                   <input type="hidden" v-model="form.tgl_lahir">
                   <input type="hidden" v-model="form.gender">
 
@@ -253,7 +269,7 @@
 
             <!-- Import Bumil -->
             <div class="tab-pane fade" id="bumil-tab-pane" role="tabpanel" tabindex="0">
-              <div v-if="formOpen_bumil" class="card p-3 my-3">
+              <div v-if="formOpen_bumil" id="form_bumil" class="card p-3 my-3">
                 <div class="d-flex justify-content-between">
                   <h3>Form Ibu Hamil</h3>
                   <button class="btn btn-outline-danger" @click="formOpen_bumil = !formOpen_bumil">
@@ -261,46 +277,54 @@
                   </button>
                 </div>
                 <div class="row g-2">
-                  <div class="col-md-4">
+                  <div :class="form_bumil.mode === 'update' ? 'col-md-6' : 'col-md-4'">
                     <label>NIK</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nik_ibu" readonly>
+                    <input type="text" class="form-control" v-model="form_bumil.nik_ibu" :readonly="form_bumil.mode === 'input'">
                   </div>
 
-                  <div class="col-md-4">
+                  <div :class="form_bumil.mode === 'update' ? 'col-md-6' : 'col-md-4'">
                     <label>Nama Ibu</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nama_ibu"
-                      :readonly="form.mode === 'input'">
+                    <input type="text" class="form-control" v-model="form_bumil.nama_ibu" :readonly="form_bumil.mode === 'input'">
                   </div>
 
-                  <!-- <div v-if="form.mode === 'update'" class="col-md-4">
-                    <label>Nama Suami</label>
-                    <input type="text" class="form-control" v-model="form_bumil.nama_suami">
-                  </div> -->
+                  <div :class="form_bumil.mode === 'update' ? 'col-md-6' : 'col-md-4'">
+                    <label>NIK Suami</label>
+                    <input type="text" class="form-control" v-model="form_bumil.nik_suami" :readonly="form_bumil.mode === 'input'">
+                  </div>
 
-                  <div v-if="form.mode === 'input'" class="col-md-4">
+                  <div :class="form_bumil.mode === 'update' ? 'col-md-6' : 'col-md-4'">
+                    <label>Nama Suami</label>
+                    <input type="text" class="form-control" v-model="form_bumil.nama_suami" :readonly="form_bumil.mode === 'input'">
+                  </div>
+
+                  <div v-if="form_bumil.mode === 'input'" class="col-md-4">
                     <label>Tanggal Pendampingan</label>
                     <input type="date" class="form-control" v-model="form_bumil.tanggal_pendampingan">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-4" v-if="form_bumil.mode === 'input'">
                     <label>Berat Badan (kg)</label>
                     <input type="text" class="form-control" v-model="form_bumil.bb">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-4" v-if="form_bumil.mode === 'input'">
                     <label>Tinggi Badan (cm)</label>
                     <input type="text" class="form-control" v-model="form_bumil.tb">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-4" v-if="form_bumil.mode === 'input'">
                     <label>Lingkar Lengan</label>
                     <input type="text" class="form-control" v-model="form_bumil.lila">
                   </div>
 
-                  <div class="col-md-4">
+                  <div class="col-md-4" v-if="form_bumil.mode === 'input'">
                     <label>Hb</label>
                     <input type="text" class="form-control" v-model="form_bumil.hb">
                   </div>
+                  <input type="hidden" v-model="form_bumil.jml_anak">
+                  <input type="hidden" v-model="form_bumil.usia_ibu">
+                  <input type="hidden" v-model="form_bumil.usia_kehamilan">
+                  <input type="hidden" v-model="form_bumil.hpl">
 
                   <div class="col-12">
                     <button class="btn btn-primary mt-3" @click="submitUpdate">
@@ -447,7 +471,7 @@
 
             <!-- Import Catin -->
             <div class="tab-pane fade" id="catin-tab-pane" role="tabpanel" tabindex="0">
-              <div v-if="formOpen_catin" class="card p-3 my-3">
+              <div v-if="formOpen_catin" class="card p-3 my-3" id="form_catin">
                 <div class="d-flex justify-content-between">
                   <h3>Form Calon Pengantin</h3>
                   <button class="btn btn-outline-danger" @click="formOpen_catin = !formOpen_catin">
@@ -463,35 +487,55 @@
                   <div class="col-md-4">
                     <label>Nama Calon Perempuan</label>
                     <input type="text" class="form-control" v-model="form_catin.nama_perempuan"
-                      :readonly="form.mode === 'input'">
+                      :readonly="form_catin.mode === 'input'">
                   </div>
 
-                  <div v-if="form.mode === 'update'" class="col-md-4">
+                  <div class="col-md-4">
+                    <label>Usia Calon Perempuan</label>
+                    <input type="number" class="form-control" v-model="form_catin.usia_perempuan">
+                  </div>
+
+                  <div class="col-md-4">
+                    <label>NIK Pasangan</label>
+                    <input type="text" class="form-control" v-model="form_catin.nik_laki" :readonly="form_catin.mode === 'input'">
+                  </div>
+
+                  <div class="col-md-4">
                     <label>Nama Pasangan</label>
-                    <input type="text" class="form-control" v-model="form_catin.nama_laki">
+                    <input type="text" class="form-control" v-model="form_catin.nama_laki" :readonly="form_catin.mode === 'input'">
                   </div>
 
-                  <div v-if="form.mode === 'input'" class="col-md-4">
+                  <div class="col-md-4">
+                    <label>Usia Pasangan</label>
+                    <input type="number" class="form-control" v-model="form_catin.usia_laki">
+                  </div>
+
+                  <div v-if="form_catin.mode === 'update'" class="col-md-12">
+                    <label>Rencana Tanggal Menikah</label>
+                    <input type="date" class="form-control" v-model="form_catin.tanggal_menikah">
+                  </div>
+
+                  <div v-if="form_catin.mode === 'input'" class="col-md-12">
                     <label>Tanggal Pendampingan</label>
                     <input type="date" class="form-control" v-model="form_catin.tanggal_pendampingan">
                   </div>
 
-                  <div class="col-md-3">
+                  <div v-if="form_catin.mode === 'input'"  class="col-md-4">
                     <label>Berat Badan (kg)</label>
                     <input type="text" class="form-control" v-model="form_catin.berat_perempuan">
                   </div>
 
-                  <div class="col-md-3">
+                  <div v-if="form_catin.mode === 'input'"  class="col-md-4">
                     <label>Tinggi Badan (cm)</label>
                     <input type="text" class="form-control" v-model="form_catin.tinggi_perempuan">
                   </div>
 
-                  <div class="col-md-3">
+                  <div v-if="form_catin.mode === 'input'"  class="col-md-4">
                     <label>Hb</label>
                     <input type="text" class="form-control" v-model="form_catin.kadar_hb">
                   </div>
 
-                  <div class="col-md-3">
+                  <div v-if="form.mode === 'input'"  class="col-md-4">
                     <label>Lingkar Lengan</label>
                     <input type="text" class="form-control" v-model="form_catin.lila_perempuan">
                   </div>
@@ -652,7 +696,7 @@
         </div>
       </div>
     </div>
-    <p class="text-white mt-3">Mengimpor data... {{ currentRow }}/{{ totalRows }} baris</p>
+    <p class="text-white mt-3">Sedang {{transaksi}} data...</p>
   </div>
 
   <!-- Modal Success -->
@@ -732,7 +776,7 @@
         </div>
       </div>
     </div>
-    <p class="text-white mt-3">Menyimpan data... {{ currentRow }}/{{ totalRows }} baris</p>
+    <p class="text-white mt-3">Sedang {{transaksi}} data...</p>
   </div>
 </template>
 
@@ -746,6 +790,7 @@ import EasyDataTable from 'vue3-easy-data-table'
 import { Modal } from 'bootstrap'
 import 'vue3-easy-data-table/dist/style.css'
 import * as XLSX from 'xlsx'
+import Swal from 'sweetalert2'
 
 // PORT backend kamu
 const API_PORT = 8001;
@@ -762,6 +807,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      transaksi:'',
       progressLevel:null,
       formOpen_bumil: '',
       formOpen_catin: '',
@@ -782,28 +828,39 @@ export default {
         unit_posyandu: "",
         gender: "",
         tgl_lahir: "",
+        no_kk:"",
+        peran: "",
+        nik_ortu: "",
       },
       form_bumil: {
         mode: "",
         tanggal_pendampingan: "",
         nik_ibu: "",
+        nik_suami: "",
         nama_ibu: "",
         nama_suami: "",
         hb: "",
         bb: "",
         tb: "",
         lila: "",
+        jml_anak: "",
+        usia_ibu: "",
+        usia_kehamilan: "",
       },
       form_catin: {
         mode: "",
         tanggal_pendampingan: "",
         nik: "",
+        nik_laki:"",
+        usia_perempuan:"",
+        usia_laki:"",
         kadar_hb: "",
         nama_perempuan: "",
         nama_laki: "",
         berat_perempuan: "",
         tinggi_perempuan: "",
         lika_perempuan: "",
+        tanggal_menikah:"",
       },
       sortKey: '',
       sortOrder: 'asc',
@@ -866,23 +923,28 @@ export default {
       ],
       headers_bumil: [
         { text: "NIK", value: "nik_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Nama", value: "nama_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
-        { text: "Kehamilan ke", value: "kehamilan_ke", sortable: true, width: 130, class: "align-middle text-center cursor-pointer" },
+        { text: "Nama", value: "nama_ibu", width: 130, sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Suami", value: "nama_suami", width: 130, sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Kehamilan ke", value: "kehamilan_ke", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Hb", value: "kadar_hb", sortable: true, align: "center", class: "align-middle text-center cursor-pointer" },
         { text: "Lila", value: "lila", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Usia (Thn)", value: "usia_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "HPL", value: "hpl", sortable: true, width:100 ,class: "align-middle text-center cursor-pointer" },
         { text: "Tgl Pendampingan", value: "tgl_pendampingan", sortable: true, width: 130, class: "align-middle text-center cursor-pointer" },
+        { text: "Intervensi", value: "intervensi", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
         { text: 'NIK', value: 'nik', sortable: true },
-        { text: 'Nama Anak', value: 'nama_anak', sortable: true },
-        { text: 'Nama Orang Tua', value: 'nama_ortu', sortable: true },
-        { text: 'Jenis Kelamin', value: 'gender', sortable: true },
-        { text: 'Tanggal Lahir', value: 'tgl_lahir', sortable: true },
+        { text: 'Nama', value: 'nama_anak', sortable: true },
+        { text: 'Orang Tua', value: 'nama_ortu', sortable: true },
+        { text: 'JK', value: 'gender', sortable: true },
+        { text: 'Tgl Lahir', value: 'tgl_lahir', sortable: true },
         { text: 'BB', value: 'bb', sortable: true },
         { text: 'TB', value: 'tb', sortable: true },
-        { text: 'Unit Posyandu', value: 'unit_posyandu', sortable: true },
+        { text: 'Tgl Pengukuran Terakhir', value: 'tgl_pengukuran', sortable: true },
+        { text: 'Posyandu', value: 'unit_posyandu', sortable: true },
+        { text: 'Intervensi', value: 'intervensi', sortable: true },
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
       formOpen: false,
@@ -930,6 +992,7 @@ export default {
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       ],
       MAX_FILE_SIZE: 50 * 1024 * 1024, // 5 MB
+      PreviewTable_catin:[],
       filePreviewTable: [],
       filePreviewTable_catin: [],
       filePreviewTable_bumil: []
@@ -991,29 +1054,37 @@ export default {
 
       this.filteredAnak.forEach(item => {
         const nik = item.nik ?? "-"
-        const currentTgl = item.posyandu?.[0]?.tgl_ukur
-          ? new Date(item.posyandu[0].tgl_ukur)
+
+        // 🔑 ambil posyandu TERBARU dari item ini
+        const latestPosyandu = Array.isArray(item.posyandu) && item.posyandu.length
+          ? [...item.posyandu].sort(
+              (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
+            )[0]
+          : null
+
+        const currentTgl = latestPosyandu?.tgl_ukur
+          ? new Date(latestPosyandu.tgl_ukur)
           : null
 
         // kalau NIK belum ada → simpan
         if (!latestByNik[nik]) {
-          latestByNik[nik] = item
+          latestByNik[nik] = { ...item, latestPosyandu }
           return
         }
 
-        // bandingkan dengan data yg sudah ada
-        const savedTgl = latestByNik[nik].posyandu?.[0]?.tgl_ukur
-          ? new Date(latestByNik[nik].posyandu[0].tgl_ukur)
+        // bandingkan dengan data tersimpan
+        const savedTgl = latestByNik[nik].latestPosyandu?.tgl_ukur
+          ? new Date(latestByNik[nik].latestPosyandu.tgl_ukur)
           : null
 
         // ambil yang TERBARU
         if (currentTgl && (!savedTgl || currentTgl > savedTgl)) {
-          latestByNik[nik] = item
+          latestByNik[nik] = { ...item, latestPosyandu }
         }
       })
 
       return Object.values(latestByNik)
-        .sort((a, b) => a.id - b.id) // optional: urut id
+        .sort((a, b) => a.id - b.id)
         .map(item => ({
           id: item.id,
           nik: item.nik ?? "-",
@@ -1021,9 +1092,14 @@ export default {
           nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
           gender: item.jk === "L" ? "Laki-laki" : "Perempuan",
           tgl_lahir: this.formatDate(item.kelahiran?.[0]?.tgl_lahir),
-          bb: item.posyandu?.[0]?.bb ?? "-",
-          tb: item.posyandu?.[0]?.tb ?? "-",
-          unit_posyandu: item.posyandu?.[0]?.posyandu ?? "-",
+
+          // ✅ PAKAI DATA POSYANDU TERBARU
+          bb: item.latestPosyandu?.bb ?? "-",
+          tb: item.latestPosyandu?.tb ?? "-",
+          tgl_pengukuran: item.latestPosyandu?.tgl_ukur ?? "-",
+          unit_posyandu: item.latestPosyandu?.posyandu ?? "-",
+
+          intervensi: item.intervensi?.[0]?.jenis ?? "-",
           action: { ...item }
         }))
     },
@@ -1046,6 +1122,7 @@ export default {
 
     items_bumil() {
       const latestByNik = {}
+      //console.log(item);
 
       this.filteredBumil.forEach(item => {
         const nik = item.nik_ibu ?? "-"
@@ -1072,15 +1149,19 @@ export default {
       return Object.values(latestByNik).map(item => ({
         nik_ibu: item.nik_ibu ?? "-",
         nama_ibu: item.nama_ibu ?? "-",
-        nama_ortu: item.keluarga?.[0]?.nama_ortu ?? "-",
+        nik_suami: item.nik_suami ?? "-",
+        nama_suami: item.nama_suami ?? "-",
+        hpl: this.formatDate(item.hpl) ?? "-",
         kehamilan_ke: item.kehamilan_ke ?? "-",
         kadar_hb: item.riwayat_pemeriksaan?.[0]?.kadar_hb ?? "-",
         lila: item.riwayat_pemeriksaan?.[0]?.lila ?? "-",
         usia_ibu: item.usia_ibu ?? "-",
+        usia_kehamilan: item.riwayat_pemeriksaan?.[0]?.usia_kehamilan_minggu ?? "-",
         bb: item.riwayat_pemeriksaan?.[0]?.berat_badan ?? "-",
         tb: item.riwayat_pemeriksaan?.[0]?.tinggi_badan ?? "-",
         tgl_pendampingan: this.formatDate(item.tanggal_pendampingan) ?? "-",
-        jml_anak: item.jumlah_anak ?? "-",
+        jml_anak: item.jumlah_anak ?? 0,
+        intervensi: item.intervensi?.[0]?.intervensi ?? "-",
         action: { ...item }
       }))
     },
@@ -1140,13 +1221,16 @@ export default {
 
         return {
           nik: item.nik_perempuan ?? "-",
+          nik_laki: item.nik_laki ?? "-",
           nama_perempuan: item.nama_perempuan ?? "-",
           nama_laki: item.nama_laki ?? "-",
           usia_perempuan: item.usia_perempuan ?? "-",
+          usia_laki: item.usia_laki ?? "-",
           bb: pemeriksaan?.berat_perempuan ?? "-",
           tb: pemeriksaan?.tinggi_perempuan ?? "-",
           hb_perempuan: pemeriksaan?.hb_perempuan ?? "-",
           lila_perempuan: pemeriksaan?.lila_perempuan ?? "-",
+
           tanggal_menikah: this.formatDate(item.tgl_pernikahan) ?? "-",
           action: { ...item }
         }
@@ -1156,15 +1240,47 @@ export default {
 
   },
   methods: {
-    async refreshData() {
-      try {
-        this.isTableLoading = true // optional (kalau ada spinner table)
-        await this.loadData()
-      } catch (e) {
-        console.error('Gagal refresh data:', e)
-      } finally {
-        this.isTableLoading = false
+    formatDateToInput(date) {
+      if (!date) return null
+
+      // kalau sudah yyyy-mm-dd, langsung pakai
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return date
       }
+
+      // asumsi dd-mm-yyyy
+      const [day, month, year] = date.split('-')
+      return `${year}-${month}-${day}`
+    },
+    async finishImport(message) {
+      // pastikan progress mentok
+      this.importProgress = 100
+
+      // animasi ke 100
+      await new Promise(resolve => {
+        const interval = setInterval(() => {
+          if (this.animatedProgress >= 100) {
+            clearInterval(interval)
+            resolve()
+          } else {
+            this.animatedProgress += 5
+          }
+        }, 30)
+      })
+
+      // matikan loading
+      this.isLoadingImport = false
+
+      // tampilkan success SETELAH loading mati
+      Swal.fire({
+        icon: 'success',
+        text: message,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-primary mx-1',
+          cancelButton: 'btn btn-outline-secondary mx-1'
+        }
+      })
     },
     handleFileChange(e) {
       const file = e.target.files[0]
@@ -1245,6 +1361,38 @@ export default {
         document.body.style.removeProperty('padding-right')
       }, 300) // delay biar nunggu animasi fade
     },
+    capitalizeName(name) {
+      return (name || '')
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase())
+    },
+    scrollToForm() {
+      this.$nextTick(() => {
+        let formId = null
+
+        switch (this.activeMenu) {
+          case 'anak':
+            formId = 'form_anak'
+            break
+          case 'bumil':
+            formId = 'form_bumil'
+            break
+          case 'catin':
+            formId = 'form_catin'
+            break
+        }
+
+        if (formId) {
+          const el = document.getElementById(formId)
+          if (el) {
+            el.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            })
+          }
+        }
+      })
+    },
     // Prefill form
     editItem(item) {
       switch (this.activeMenu) {
@@ -1253,6 +1401,9 @@ export default {
           this.form = {
             ...this.form,
             mode: 'update',
+            no_kk:item.no_kk,
+            peran: item.peran,
+            nik_ortu: item.nik_ortu,
             nik: item.nik ?? "",
             nama_anak: item.nama_anak ?? "",
             nama_ortu: item.nama_ortu ?? "",
@@ -1264,12 +1415,14 @@ export default {
           };
           break;
         case 'bumil':
+          console.log('edit item:',item);
           this.formOpen_bumil = true;
           this.form_bumil = {
             ...this.form_bumil,
-            mode: 'input',
+            mode: 'update',
             nik_ibu: item.nik_ibu ?? "",
             nama_ibu: item.nama_ibu ?? "",
+            nik_suami: item.nik_suami ?? "",
             nama_suami: item.nama_suami ?? "",
             bb: item.bb ?? "",
             tb: item.tb ?? "",
@@ -1277,26 +1430,41 @@ export default {
             hb: item.kadar_hb ?? "",
           };
           break;
-
         case 'catin':
+          console.log(item);
 
           this.formOpen_catin = true;
           this.form_catin = {
             ...this.form_catin,
-            mode: 'input',
-            nik: item.nik ?? "",
-            tanggal_pendampingan: item.tanggal_pendampingan ?? "",
-            nama_perempuan: item.nama_perempuan ?? "",
-            nama_laki: item.nama_laki ?? "",
-            kadar_hb: item.hb_perempuan ?? "",
-            berat_perempuan: item.bb ?? "",
-            tinggi_perempuan: item.tb ?? "",
-            lila_perempuan: item.lila_perempuan ?? "",
+            mode: 'update',
+            nik: item.nik ?? null,
+            nik_laki:item.nik_laki ?? null,
+            tanggal_menikah: this.formatDateToInput(item.tanggal_menikah) ?? null,
+            nama_perempuan: item.nama_perempuan ?? null,
+            nama_laki: item.nama_laki ?? null,
+            usia_perempuan: item.usia_perempuan ?? null,
+            usia_laki: item.usia_laki ?? null,
           };
           break;
         default:
           return;
       }
+      this.scrollToForm()
+    },
+    hitungUsiaKehamilanSaatIni(tglPendampingan, usiaKehamilanAwal) {
+      if (!tglPendampingan || !usiaKehamilanAwal) return usiaKehamilanAwal
+
+      // format "DD-MM-YYYY" → Date
+      const [day, month, year] = tglPendampingan.split('-')
+      const tglPendampinganDate = new Date(year, month - 1, day)
+
+      const today = new Date()
+
+      const diffMs = today - tglPendampinganDate
+      const diffHari = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+      const diffMinggu = Math.floor(diffHari / 7)
+
+      return usiaKehamilanAwal + diffMinggu
     },
     inputItem(item) {
       switch (this.activeMenu) {
@@ -1315,38 +1483,68 @@ export default {
             tgl_lahir: item.tgl_lahir ?? ""
           };
           break;
-        case 'bumil':
+        case 'bumil':{
+
+          const usiaKehamilanSaatIni = this.hitungUsiaKehamilanSaatIni(
+            item.tgl_pendampingan,
+            item.usia_kehamilan
+          )
+
           this.formOpen_bumil = true;
           this.form_bumil = {
             ...this.form_bumil,
             mode: 'input',
             nik_ibu: item.nik_ibu ?? "",
             nama_ibu: item.nama_ibu ?? "",
-            nama_suami: item.nama_suami ?? ""
+            nik_suami: item.nik_suami ?? "",
+            nama_suami: item.nama_suami ?? "",
+            usia_kehamilan: item.usia_kehamilan ?? 0,
+            usia_kehamilan_saat_ini: usiaKehamilanSaatIni,
+            // ⬇️ PENTING: kosongkan input pemeriksaan
+            bb: "",
+            tb: "",
+            lila: "",
+            hb: "",
+
+            // optional kalau ada
+            tanggal_pendampingan: ""
           };
           break;
-
+        }
         case 'catin':
           this.formOpen_catin = true;
           this.form_catin = {
             ...this.form_catin,
             mode: 'input',
             nik: item.nik ?? "",
-            tanggal_pendampingan: item.tanggal_pendampingan ?? "",
-            nama_perempuan: item.nama_perempuan ?? "",
-            nama_laki: item.nama_laki ?? "",
-            kadar_hb: item.kadar_hb ?? "",
+            nik_laki: item.nik_laki ?? "",
+            tanggal_pendampingan: "",
+            usia_perempuan: item.usia_perempuan ?? null,
+            usia_laki: item.usia_laki ?? null,
+            nama_perempuan: item.nama_perempuan ?? null,
+            nama_laki: item.nama_laki ?? null,
+            kadar_hb: "",
+            berat_perempuan: "",
+            tinggi_perempuan: "",
+            lika_perempuan: "",
           };
           break;
         default:
           return;
       }
+      this.scrollToForm()
     },
     async submitUpdate() {
+      this.transaksi = 'menyimpan'
       this.isLoadingImport = true
       this.importProgress = 0
       this.animatedProgress = 0
 
+      await this.$nextTick()
+      this.importProgress = 10
+      this.animatedProgress = 10
+
+      let nama = this.form.nama_anak || this.form_bumil.nama_ibu || this.form_catin.nama_perempuan
       try {
         switch (this.activeMenu) {
           case 'anak':
@@ -1364,10 +1562,41 @@ export default {
                 }
               )
 
+              this.importProgress = 70
+              this.animatedProgress = 70
               await this.loadData()
+              this.importProgress = 90
+              this.animatedProgress = 90
               this.resetForm()
-              this.showSuccess(res.data.message)
-              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+              this.importProgress = 100
+
+              // animasi ke 100
+              await new Promise(resolve => {
+                const interval = setInterval(() => {
+                  if (this.animatedProgress >= 100) {
+                    clearInterval(interval)
+                    resolve()
+                  } else {
+                    this.animatedProgress += 5
+                  }
+                }, 30)
+              })
+
+              // matikan loading
+              this.isLoadingImport = false
+              console.log(res.data.message);
+              Swal.fire({
+                icon: 'success',
+                html: `Data <b>${this.capitalizeName(nama)}</b> berhasil diperbarui`,
+                buttonsStyling: false,
+                customClass: {
+                  confirmButton: 'btn btn-primary mx-1',
+                  cancelButton: 'btn btn-outline-secondary mx-1'
+                }
+              })
+
+              //this.showSuccess(`Data <strong>${this.capitalizeName(nama)}</strong> berhasil diperbarui`)
+              //setTimeout(() => (this.isLoading = false, this.showSuccess(res.data.message)), 3000)
             }
             // MODE INPUT → POST
             else {
@@ -1383,17 +1612,47 @@ export default {
                 }
               )
 
+              this.importProgress = 70
+              this.animatedProgress = 70
               await this.loadData()
+              this.importProgress = 90
+              this.animatedProgress = 90
               this.resetForm()
-              this.showSuccess(res.data.message)
-              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+              this.importProgress = 100
+
+              // animasi ke 100
+              await new Promise(resolve => {
+                const interval = setInterval(() => {
+                  if (this.animatedProgress >= 100) {
+                    clearInterval(interval)
+                    resolve()
+                  } else {
+                    this.animatedProgress += 5
+                  }
+                }, 30)
+              })
+
+              // matikan loading
+              this.isLoadingImport = false
+
+              console.log(res.data.message);
+              Swal.fire({
+                icon: 'success',
+                html: `Data pengukuran <b>${this.capitalizeName(nama)}</b> berhasil ditambahkan`,
+                buttonsStyling: false,
+                customClass: {
+                  confirmButton: 'btn btn-primary mx-1',
+                  cancelButton: 'btn btn-outline-secondary mx-1'
+                }
+              })
+
             }
             break;
           case 'bumil':
             // MODE UPDATE → PUT
             if (this.form_bumil.mode === 'update') {
               const res = await axios.put(
-                `${baseURL}/api/pregnancy/${this.form_bumil.nik}`,
+                `${baseURL}/api/pregnancy/${this.form_bumil.nik_ibu}`,
                 this.form_bumil,
                 {
                   headers: {
@@ -1404,10 +1663,42 @@ export default {
                 }
               )
 
+              this.importProgress = 70
+              this.animatedProgress = 70
               await this.loadData()
+              this.importProgress = 90
+              this.animatedProgress = 90
               this.resetForm()
-              this.showSuccess(res.data.message)
-              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+              this.importProgress = 100
+
+              // animasi ke 100
+              await new Promise(resolve => {
+                const interval = setInterval(() => {
+                  if (this.animatedProgress >= 100) {
+                    clearInterval(interval)
+                    resolve()
+                  } else {
+                    this.animatedProgress += 5
+                  }
+                }, 30)
+              })
+
+              // matikan loading
+              this.isLoadingImport = false
+
+              console.log(res.data.message);
+              console.log(nama);
+
+              Swal.fire({
+                icon: 'success',
+                html: `Data <b>${this.capitalizeName(nama)}</b> berhasil diperbarui`,
+                buttonsStyling: false,
+                customClass: {
+                  confirmButton: 'btn btn-primary mx-1',
+                  cancelButton: 'btn btn-outline-secondary mx-1'
+                }
+              })
+              //this.showSuccess(res.data.message)
             }
             // MODE INPUT → POST
             else {
@@ -1423,17 +1714,46 @@ export default {
                 }
               )
 
+              this.importProgress = 70
+              this.animatedProgress = 70
               await this.loadData()
+              this.importProgress = 90
+              this.animatedProgress = 90
               this.resetForm()
-              this.showSuccess(res.data.message)
-              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+              this.importProgress = 100
+
+              // animasi ke 100
+              await new Promise(resolve => {
+                const interval = setInterval(() => {
+                  if (this.animatedProgress >= 100) {
+                    clearInterval(interval)
+                    resolve()
+                  } else {
+                    this.animatedProgress += 5
+                  }
+                }, 30)
+              })
+
+              // matikan loading
+              this.isLoadingImport = false
+              console.log(res.data.message);
+              Swal.fire({
+                icon: 'success',
+                html: `Data pendampingan <b>${this.capitalizeName(nama)}</b> berhasil ditambahkan`,
+                buttonsStyling: false,
+                customClass: {
+                  confirmButton: 'btn btn-primary mx-1',
+                  cancelButton: 'btn btn-outline-secondary mx-1'
+                }
+              })
+              //this.showSuccess(res.data.message)
             }
             break;
           case 'catin':
             // MODE UPDATE → PUT
             if (this.form_catin.mode === 'update') {
               const res = await axios.put(
-                `${baseURL}/api/bride/${this.form_catin.nik_perempuan}`,
+                `${baseURL}/api/bride/${this.form_catin.nik}`,
                 this.form_catin,
                 {
                   headers: {
@@ -1444,15 +1764,44 @@ export default {
                 }
               )
 
+              this.importProgress = 70
+              this.animatedProgress = 70
               await this.loadData()
+              this.importProgress = 90
+              this.animatedProgress = 90
               this.resetForm()
-              this.showSuccess(res.data.message)
-              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+              this.importProgress = 100
+
+              // animasi ke 100
+              await new Promise(resolve => {
+                const interval = setInterval(() => {
+                  if (this.animatedProgress >= 100) {
+                    clearInterval(interval)
+                    resolve()
+                  } else {
+                    this.animatedProgress += 5
+                  }
+                }, 30)
+              })
+
+              // matikan loading
+              this.isLoadingImport = false
+              const msg = res.data.message;
+              Swal.fire({
+                icon: 'success',
+                html: msg ?? `Data <b>${this.capitalizeName(nama)}</b> berhasil diperbarui`,
+                buttonsStyling: false,
+                customClass: {
+                  confirmButton: 'btn btn-primary mx-1',
+                  cancelButton: 'btn btn-outline-secondary mx-1'
+                }
+              })
+              //this.showSuccess(res.data.message)
             }
             // MODE INPUT → POST
             else {
               const res = await axios.post(
-                `${baseURL}/api/pregnancy`,
+                `${baseURL}/api/bride`,
                 this.form_catin,
                 {
                   headers: {
@@ -1463,10 +1812,39 @@ export default {
                 }
               )
 
+              this.importProgress = 70
+              this.animatedProgress = 70
               await this.loadData()
+              this.importProgress = 90
+              this.animatedProgress = 90
               this.resetForm()
-              this.showSuccess(res.data.message)
-              setTimeout(() => (this.showSuccess(res.data.message)), 3000)
+              this.importProgress = 100
+
+              // animasi ke 100
+              await new Promise(resolve => {
+                const interval = setInterval(() => {
+                  if (this.animatedProgress >= 100) {
+                    clearInterval(interval)
+                    resolve()
+                  } else {
+                    this.animatedProgress += 5
+                  }
+                }, 30)
+              })
+
+              // matikan loading
+              this.isLoadingImport = false
+              console.log(res.data.message);
+              Swal.fire({
+                icon: 'success',
+                html: `Data pengukuran <b>${this.capitalizeName(nama)}</b> berhasil ditambahkan`,
+                buttonsStyling: false,
+                customClass: {
+                  confirmButton: 'btn btn-primary mx-1',
+                  cancelButton: 'btn btn-outline-secondary mx-1'
+                }
+              })
+              //this.showSuccess(res.data.message)
             }
             break;
           default:
@@ -1474,23 +1852,52 @@ export default {
         }
 
       } catch (e) {
-        //console.error(e)
-        this.showError(e)
-        //alert("Gagal menyimpan data")
-      } finally {
+        this.importProgress = 0
+        this.animatedProgress = 0
         this.isLoadingImport = false
+        //console.error(e)
+        Swal.fire({
+          title: 'Error',
+          html: e.data?.error || 'Terjadi kesalahan input data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        //this.showError(e)
+        //alert("Gagal menyimpan data")
       }
     },
     // Delete via backend
     async delItem(item) {
-      console.log('isi item:',item);
+      this.transaksi = 'menghapus'
+      //console.log('isi item:',item);
       const nama = item.nama_anak || item.nama_perempuan || item.nama_ibu
       let nik = null
-      const confirmed = await this.confirmModal("Yakin ingin menghapus data "+nama+"?")
-      if (!confirmed) return
 
-      //let res = null // <<< ini penting
+      const result = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus data <strong>${this.capitalizeName(nama)}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
 
+      if (!result.isConfirmed) return
+
+
+      this.isLoadingImport = true
+      this.importProgress = 10
+      this.animatedProgress = 10
       try {
         switch (this.activeMenu) {
           case 'anak':
@@ -1524,13 +1931,50 @@ export default {
             break;
         }
 
-        //this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
-        this.showSuccess("Data "+nama+" berhasil dihapus!")
-        this.isLoading = true
+        this.importProgress = 70
+        this.animatedProgress = 70
         await this.loadData()
-        this.isLoading = false
+        this.importProgress = 100
+
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        //console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          html: `Data <b>${this.capitalizeName(nama)}</b> berhasil dihapus!`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
       } catch (e) {
-        this.showError(e)
+        this.importProgress = 0
+        this.animatedProgress = 0
+        this.isLoadingImport = false
+        //console.error(e)
+        Swal.fire({
+          title: 'Error',
+          text: e.data?.message || 'Terjadi kesalahan input data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
     toggleSidebar() {
@@ -1577,51 +2021,7 @@ export default {
         this.logoLoaded = false
       }
     },
-    /* async getWilayahUser() {
-      const res = await axios.get(`${baseURL}/api/user/region`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      })
 
-      const wilayah = res.data
-
-      this.filters.kelurahan_id    = wilayah.id_wilayah
-      this.filters.provinsi = wilayah.provinsi
-      this.filters.kota = wilayah.kota
-      this.filters.kecamatan = wilayah.kecamatan
-      this.filters.kelurahan = wilayah.kelurahan
-
-      this.listKelurahan = [
-        {
-          label: 'Kelurahan',
-          options: [
-            {
-              id: wilayah.id_wilayah,
-              label: wilayah.kelurahan,
-            },
-          ],
-        },
-      ]
-    }, */
-    /* async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        const data = res.data
-        this.kelurahan = data.kelurahan
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
-        //this.kelurahan = '-'
-      }
-    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -1729,14 +2129,32 @@ export default {
     async uploadCSV() {
       // 1️⃣ Cek file ada atau tidak
       if (!this.file) {
-        this.showError('Tidak ada file untuk di-upload.')
+        Swal.fire({
+          title: 'Error',
+          text: 'Tidak ada file untuk di-upload.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         return
       }
 
       // 2️⃣ Validasi file (OPSI 1)
       const validation = this.validateFile(this.file)
       if (!validation.valid) {
-        this.showError(validation.message)
+        Swal.fire({
+          title: 'Error',
+          text: validation.message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         return
       }
 
@@ -1776,22 +2194,32 @@ export default {
       }
 
       if (!UPLOAD_URL) {
-        this.showError('Endpoint upload tidak ditemukan.',UPLOAD_URL)
+        Swal.fire({
+          title: 'Error',
+          text: 'Endpoint upload tidak ditemukan.',UPLOAD_URL,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         return
       }
 
       const formData = new FormData()
       formData.append('file', this.file)
 
+      this.transaksi = 'mengunggah'
       this.isLoadingImport = true
       this.importProgress = 0
       this.animatedProgress = 0
 
+      await this.$nextTick()
+      this.importProgress = 10
+      this.animatedProgress = 10
+
       try {
-
-        //this.uploading = true
-        //this.uploadProgress = 0
-
         const res = await axios.post(UPLOAD_URL, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -1807,46 +2235,83 @@ export default {
         })
         // 🔥 pastikan progress berhenti
         this.uploadProgress = 100
-        this.animatedProgress = 100
-        this.importProgress = 100
 
-        await this.$nextTick()
-
-        // ✅ sukses
-        this.showSuccess(res.data.message || 'Data berhasil diimport!')
+        this.importProgress = 50
+        this.animatedProgress = 50
         this.formOpen = false
         this.formOpen_bumil = false
         this.formOpen_catin = false
         this.isUploadOpen = !this.isUploadOpen
+        this.isUploadOpen_bumil = !this.isUploadOpen_bumil
+        this.isUploadOpen_catin = !this.isUploadOpen_catin
         this.removeFile()
+
+        this.importProgress = 70
+        this.animatedProgress = 70
         await this.loadData()
-        setTimeout(() => (this.showAlert = false), 3000)
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        // ✅ sukses
+        console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          text: res.data.message || 'Data berhasil diimport!',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
+        //this.showSuccess(res.data.message || 'Data berhasil diimport!')
+
       } catch (err) {
         const detail = err.response?.data?.detail
-        console.log(detail);
+        console.log(err);
 
         const message =
           detail ||
           err.response?.data?.message ||
           'Format CSV tidak valid'
 
-        this.showError(message)
+        Swal.fire({
+          title: 'Error',
+          html: message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         console.error('Upload error:', err.response?.data)
       } finally {
-  this.isLoadingImport = false
+        this.isLoadingImport = false
 
-  // 🛑 reset total state progress
-  this.uploadProgress = 0
-  this.importProgress = 0
-  this.animatedProgress = 0
+        // 🛑 reset total state progress
+        this.uploadProgress = 0
+        this.importProgress = 0
+        this.animatedProgress = 0
 
-  // jika pakai interval / RAF
-  if (this.progressTimer) {
-    clearInterval(this.progressTimer)
-    this.progressTimer = null
-  }
-}
-
+        // jika pakai interval / RAF
+        if (this.progressTimer) {
+          clearInterval(this.progressTimer)
+          this.progressTimer = null
+        }
+      }
     },
     removeFile() {
       this.file = null
@@ -1865,104 +2330,7 @@ export default {
         ['B', 'kB', 'MB', 'GB', 'TB'][i]
       )
     },
-    /* async loadFilePreview(file) {
-      if (!file) return
 
-      const allowed = ['.csv', '.xlsx', '.xls']
-
-      if (!allowed.some(ext => file.name.toLowerCase().endsWith(ext))) {
-        this.fileError = 'Hanya file CSV atau Excel (XLS/XLSX) yang diperbolehkan.'
-        return
-      }
-
-      this.file = file
-      this.fileName = file.name
-      this.fileSize = file.size
-      this.fileError = ''
-
-      const text = await file.text()
-
-      // Ambil 3 baris pertama
-      const rawLines = text.split(/\r?\n/).filter(Boolean).slice(0, 3)
-
-      switch (this.activeMenu) {
-        case 'anak':
-          if (rawLines.length === 0) {
-            this.filePreviewTable = []
-            return
-          }
-
-          // Deteksi delimiter otomatis
-          // eslint-disable-next-line no-case-declarations
-          const delimiter = rawLines[0].includes(';') ? ';' : ','
-
-          // Parse CSV
-          // eslint-disable-next-line no-case-declarations
-          let table = rawLines.map(line => line.split(delimiter))
-
-          // === CROP KOLOM ===
-          table = table.map(row => {
-            if (row.length > 6) {
-              return [...row.slice(0, 10), '...'] // max 5 + "..."
-            }
-            return row
-          })
-
-          this.filePreviewTable = table
-          break;
-        case 'bumil':
-          if (rawLines.length === 0) {
-            this.filePreviewTable_bumil = []
-            return
-          }
-
-          // Deteksi delimiter otomatis
-          // eslint-disable-next-line no-case-declarations
-          const delimiter_bumil = rawLines[0].includes(';') ? ';' : ','
-
-          // Parse CSV
-          // eslint-disable-next-line no-case-declarations
-          let table_bumil = rawLines.map(line => line.split(delimiter_bumil))
-
-          // === CROP KOLOM ===
-          table_bumil = table_bumil.map(row => {
-            if (row.length > 6) {
-              return [...row.slice(0, 10), '...'] // max 5 + "..."
-            }
-            return row
-          })
-
-          this.filePreviewTable_bumil = table_bumil
-          break;
-        case 'catin':
-          if (rawLines.length === 0) {
-            this.filePreviewTable_catin = []
-            return
-          }
-
-          // Deteksi delimiter otomatis
-          // eslint-disable-next-line no-case-declarations
-          const delimiter_catin = rawLines[0].includes(';') ? ';' : ','
-
-          // Parse CSV
-          // eslint-disable-next-line no-case-declarations
-          let table_catin = rawLines.map(line => line.split(delimiter_catin))
-
-          // === CROP KOLOM ===
-          table_catin = table_catin.map(row => {
-            if (row.length > 6) {
-              return [...row.slice(0, 10), '...'] // max 5 + "..."
-            }
-            return row
-          })
-
-          this.filePreviewTable_catin = table_catin
-          break;
-        default:
-          return;
-      }
-
-    } */
     async loadFilePreview(file) {
       if (!file) return
 
