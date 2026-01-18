@@ -203,7 +203,7 @@
         </div>
 
         <ul class="tooltip-list">
-          <!-- <div
+          <div
             v-if="tooltip.list && tooltip.list.length > 1"
             style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px"
           >
@@ -221,7 +221,7 @@
             >
               ▶
             </button>
-          </div> -->
+          </div>
 
           <template v-for="(val, key) in tooltip.data" :key="key">
             <li v-if="key && key.toString().trim().toLowerCase() !== 'kota'">
