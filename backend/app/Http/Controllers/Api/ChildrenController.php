@@ -1205,7 +1205,7 @@ class ChildrenController extends Controller
                 );
             }
 
-            $duplikat = intervensi::where('nik_subjek', $nik)
+            $duplikat = Intervensi::where('nik_subjek', $nik)
                 ->whereDate('tgl_intervensi', $tglUkur)
                 ->first();
 
@@ -1231,7 +1231,10 @@ class ChildrenController extends Controller
                 'rt' => $row[10] ?? null,
                 'rw' => $row[11] ?? null,
                 'posyandu' => $this->normalizeText($row[12] ?? null),
-                'umur_subjek' => floor($this->hitungUmurBulan($row[6], $row[1])) . ' Bulan',
+                'umur_subjek' => $this->hitungUmurBulan(
+                        $this->convertDate($row[6] ?? null),
+                        $this->convertDate($row[1] ?? null)
+                    ),
                 'bantuan' => $row[13] ?? null,
                 'kategori' => $this->normalizeText($row[14] ?? null),
             ]);
