@@ -655,6 +655,31 @@ class PregnancyController extends Controller
                 continue;
             }
 
+            // =========================
+            // 0. Validasi data import
+            // =========================
+
+            $nik = $this->normalizeNik($row[4] ?? null);
+            $nama = $this->normalizeText($row[3] ?? null);
+            $tglUkur = $this->convertDate($row[1]?? null);
+
+            if (!$nik || !$tglUkur) {
+                throw new \Exception(
+                    "NIK atau tanggal intervensi kosong / tidak valid pada data {$nama}"
+                );
+            }
+
+            $duplikat = intervensi::where('nik_subjek', $nik)
+                ->whereDate('tgl_intervensi', $tglUkur)
+                ->first();
+
+            if ($duplikat) {
+                throw new \Exception(
+                    "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
+                    . $duplikat->created_at->format('d-m-Y')
+                );
+            }
+
             Intervensi::create([
                 'petugas' => $this->normalizeText($row[0]?? null) ,
                 'tgl_intervensi' => $this->convertDate($row[1]?? null),
