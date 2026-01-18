@@ -42,7 +42,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 // =========================
                 // 0. Validasi data import
                 // =========================
-                $nik = $this-normalizeNik($row[4] ?? null);
+                $nik = $this->normalizeNik($row[4] ?? null);
                 $nama = strtoupper($row[3]??'-');
                 $tglUkur = $this->convertDate($row[2]);
 
@@ -73,12 +73,12 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'usia' => ltrim(trim($row[6]), "0"),
 
                     'nama_ayah' => strtoupper($row[7]),
-                    'nik_ayah' => $this-normalizeNik($row[8] ?? null),
+                    'nik_ayah' => $this->normalizeNik($row[8] ?? null),
                     'pekerjaan_ayah' => strtoupper($row[9]),
                     'usia_ayah' => $row[10],
 
                     'nama_ibu' => strtoupper($row[11]),
-                    'nik_ibu' => $this-normalizeNik($row[12] ?? null),
+                    'nik_ibu' => $this->normalizeNik($row[12] ?? null),
                     'pekerjaan_ibu' => strtoupper($row[13]),
                     'usia_ibu' => $row[14],
 
@@ -272,6 +272,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
+            'm/d/Y',
             'd/m/Y',
             'd-m-Y',
             'Y/m/d',

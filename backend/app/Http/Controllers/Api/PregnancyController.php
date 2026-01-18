@@ -701,6 +701,7 @@ class PregnancyController extends Controller
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
+            'm/d/Y',
             'd/m/Y',
             'd-m-Y',
             'Y/m/d',

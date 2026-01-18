@@ -133,7 +133,7 @@
 
               <div v-if="isUploadOpen" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
-                  <h5>Kelola Data</h5>
+                  <h5>Kelola Data {{ aktifitas }}</h5>
                   <button @click="isUploadOpen = !isUploadOpen" class="btn btn-sm btn-outline-danger mb-2">
                     X
                   </button>
@@ -220,16 +220,16 @@
                     <input type="text" class="form-control form-control-sm" style="width: 220px;"
                       placeholder="Ketik NIK atau Nama" v-model="searchQuery_kunAn">
 
-                    <button class="btn btn-primary btn-sm" type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'kunjungan'">
+                    <button :class="aktifitas === 'Kunjungan Posyandu'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'Kunjungan Posyandu'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Kunjungan
                     </button>
-                    <button class="btn btn-success btn-sm" type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'pendampingan_anak'">
+                    <button :class="aktifitas === 'Pendampingan Anak'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'Pendampingan Anak'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
-                    <button class="btn btn-outline-primary btn-sm" type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'intervensi_anak'">
+                    <button :class="aktifitas === 'Intervensi Anak'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'Intervensi Anak'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                     </button>
                   </div>
@@ -339,7 +339,7 @@
 
               <div v-if="isUploadOpen_bumil" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
-                  <h5>Kelola Data</h5>
+                  <h5>Kelola Data {{ aktifitas }}</h5>
                   <button @click="isUploadOpen_bumil = !isUploadOpen_bumil" class="btn btn-sm btn-outline-danger mb-2">
                     X
                   </button>
@@ -426,12 +426,12 @@
                     <input type="text" class="form-control form-control-sm" style="width: 220px;"
                       placeholder="Ketik NIK atau Nama" v-model="searchQuery_bumil">
 
-                    <button class="btn btn-primary btn-sm" type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'pendampingan_bumil'">
+                    <button :class="aktifitas === 'Pendampingan Bumil'?'btn btn-primary btn-sm':'btn btn-outline-primary btn-sm'" type="button"
+                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'Pendampingan Bumil'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
-                    <button class="btn btn-outline-primary btn-sm" type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'intervensi_bumil'">
+                    <button :class="aktifitas === 'Intervensi Bumil'?'btn btn-primary btn-sm':'btn btn-outline-primary btn-sm'" type="button"
+                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'Intervensi Bumil'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                     </button>
                   </div>
@@ -553,7 +553,7 @@
 
               <div v-if="isUploadOpen_catin" class="card p-3 my-3">
                 <div class="d-flex justify-content-between align-item-center">
-                  <h5>Kelola Data</h5>
+                  <h5>Kelola Data {{ aktifitas }}</h5>
                   <button @click="isUploadOpen_catin = !isUploadOpen_catin" class="btn btn-sm btn-outline-danger mb-2">
                     X
                   </button>
@@ -639,8 +639,8 @@
                     <input type="text" class="form-control form-control-sm" style="width: 220px;"
                       placeholder="Ketik NIK atau Nama" v-model="searchQuery_catin">
 
-                    <button class="btn btn-primary btn-sm" type="button"
-                      @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas = 'pendampingan_catin'">
+                    <button :class="aktifitas === 'Pendampingan Catin'?'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                      @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas = 'Pendampingan Catin'">
                       <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                     </button>
                   </div>
@@ -962,7 +962,7 @@ export default {
         pageLength: 10,
         destroy: true, // penting agar bisa di-refresh
       },
-      aktifitas: 'kunjungan',
+      aktifitas: 'Kunjungan Posyandu',
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -1016,17 +1016,17 @@ export default {
   computed: {
     exampleFile() {
       switch (this.aktifitas) {
-        case "kunjungan":
+        case "Kunjungan Posyandu":
           return "/example_kunjungan_posyandu.xlsx";
-        case "pendampingan_anak":
+        case "Pendampingan Anak":
           return "/example_pendampingan_anak.xlsx";
-        case "intervensi_anak":
+        case "Intervensi Anak":
           return "/example_intervensi_anak.xlsx";
-        case "pendampingan_bumil":
+        case "Pendampingan Bumil":
           return "/example_pendampingan_bumil.xlsx";
-        case "intervensi_bumil":
+        case "Intervensi Bumil":
           return "/example_intervensi_bumil.xlsx";
-        case "pendampingan_catin":
+        case "Pendampingan Catin":
           return "/example_pendampingan_catin.xlsx";
         default:
           return "#";
@@ -2165,13 +2165,13 @@ export default {
       switch (this.activeMenu) {
         case 'anak':
           switch (this.aktifitas) {
-            case 'kunjungan':
+            case 'Kunjungan Posyandu':
               UPLOAD_URL = `${baseURL}/api/children/import_kunjungan`
               break
-            case 'pendampingan_anak':
+            case 'Pendampingan Anak':
               UPLOAD_URL = `${baseURL}/api/children/import_pendampingan`
               break
-            case 'intervensi_anak':
+            case 'Intervensi Anak':
               UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
               break
           }
@@ -2179,10 +2179,10 @@ export default {
 
         case 'bumil':
           switch (this.aktifitas) {
-            case 'pendampingan_bumil':
+            case 'Pendampingan Bumil':
               UPLOAD_URL = `${baseURL}/api/pregnancy/import`
               break
-            case 'intervensi_bumil':
+            case 'Intervensi Bumil':
               UPLOAD_URL = `${baseURL}/api/pregnancy/import_intervensi`
               break
           }
