@@ -56,7 +56,7 @@
                   v-model="filter.no_tpk"
                   id="no_tpk"
                   class="form-control"
-                  placeholder="Cari berdasarkan No. Kartu Keluarga"
+                  placeholder="Cari berdasarkan No. TPK"
                 />
               </div>
 
@@ -298,6 +298,7 @@
                         class="form-select shadow-sm"
                         v-model="form.kota"
                         @change="loadKecamatan"
+                        :disabled="kotaDisabled"
 
                       >
                         <option value="">Pilih</option>
@@ -325,6 +326,7 @@
                         class="form-select shadow-sm"
                         v-model="form.kecamatan"
                         @change="loadKelurahan"
+                        :disabled="kecamatanDisabled"
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
@@ -351,6 +353,7 @@
                         class="form-select shadow-sm"
                         v-model="form.kelurahan"
                         @change="handleRegionChange"
+                        :disabled="kelurahanDisabled"
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kelurahanList" :key="item.idWilayah" :value="item.idWilayah">
@@ -376,6 +379,7 @@
                       <select
                         class="form-select shadow-sm"
                         v-model="form.unit_posyandu"
+                        :disabled="posyanduDisabled"
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in posyanduList" :key="item.nama_posyandu" :value="item.nama_posyandu">
@@ -568,6 +572,7 @@ import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
+import Swal from 'sweetalert2'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -615,6 +620,10 @@ export default {
       animatedProgress: 0,
       currentRow: 0,
       totalRows: 1,
+      kotaDisabled: true,
+      kecamatanDisabled: true,
+      kelurahanDisabled: true,
+      posyanduDisabled: true,
       form: {
         id: null,
         nik: '',
@@ -733,7 +742,7 @@ export default {
     handleRegionChange() {
       const idWilayah = this.form.kelurahan
       console.log(idWilayah);
-
+      this.posyanduDisabled = false
       // 🔁 DEFAULT / ALL
       this.fetchPosyanduByWilayah(idWilayah)
     },
@@ -920,6 +929,7 @@ export default {
       }
     },
     async loadKota() {
+      this.kotaDisabled = false
       if (this.form.provinsi && this.form.provinsi !== "__new__") {
         const res = await axios.get(`${baseURL}/api/region/kota`, {
           params: { provinsi: this.form.provinsi }
@@ -930,9 +940,11 @@ export default {
         this.form.kota = "";
         this.form.kecamatan = "";
         this.form.kelurahan = "";
+
       }
     },
     async loadKecamatan() {
+      this.kecamatanDisabled = false
       if (this.form.kota && this.form.kota !== "__new__") {
         const res = await axios.get(`${baseURL}/api/region/kecamatan`, {
           params: { provinsi: this.form.provinsi, kota: this.form.kota }
@@ -944,6 +956,7 @@ export default {
       }
     },
     async loadKelurahan() {
+      this.kelurahanDisabled = false
       if (this.form.kecamatan && this.form.kecamatan !== "__new__") {
         const res = await axios.get(`${baseURL}/api/region/kelurahan`, {
           params: {
@@ -1067,31 +1080,75 @@ export default {
 
       return normalized
     },
+    capitalizeName(name) {
+      return (name || '')
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase())
+    },
     async saveData() {
       this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
+      this.importProgress = 10
+      this.animatedProgress = 10
 
       try {
         const payload = this.normalizeFormPayload(this.form)
+        const nama = payload.nama
         console.log("Payload sebelum dikirim:", payload)
         // simpan ke backend
-        /*await axios.post(`${baseURL}/api/cadre`, payload,{
+        const res = await axios.post(`${baseURL}/api/cadre`, payload,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
-        })*/
+        })
 
-        // refresh table
-        await this.resetForm()
+        this.importProgress = 70
+        this.animatedProgress = 70
         await this.loadCadre()
-        //await this.getPendingData()
+        this.importProgress = 90
+        this.animatedProgress = 90
+        this.resetForm()
+        this.importProgress = 100
 
-        setTimeout(() => (this.showAlert = false), 3000)
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
 
+        // matikan loading
+        this.isLoadingImport = false
+        console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          html: `Data <b>${this.capitalizeName(nama)}</b> berhasil ditambahkan`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
       } catch (e) {
+        this.isLoadingImport = false
+        this.importProgress = 0
+        this.animatedProgress = 0
         console.error('Gagal simpan data:', e)
+        Swal.fire({
+          title: 'Error',
+          html: e.data?.error || 'Terjadi kesalahan input data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }finally{
         this.isLoadingImport = false
       }
@@ -1144,9 +1201,12 @@ export default {
     },
     async updateData() {
       try {
-       console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
-
-        await axios.put(
+        this.isLoadingImport = true
+        this.importProgress = 10
+        this.animatedProgress = 10
+        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+        const nama = this.form.nama
+        const res = await axios.put(
           `${baseURL}/api/cadre/${this.form.id}`,
           this.form, // data body
           {
@@ -1157,15 +1217,61 @@ export default {
           }
         )
 
-        //alert("Data berhasil diupdate")
+        this.importProgress = 70
+        this.animatedProgress = 70
         this.isFormOpen = false
         this.isPendingOpen = false
         //this.getPendingData()
+
+        this.importProgress = 90
+        this.animatedProgress = 90
         this.loadCadre()
-        const modal = new Modal(document.getElementById("successModal"))
-        modal.show()
+        this.importProgress = 100
+
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          html: `Data <b>${this.capitalizeName(nama)}</b> berhasil ditambahkan`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
+
+        //alert("Data berhasil diupdate")
+        /* const modal = new Modal(document.getElementById("successModal"))
+        modal.show() */
       } catch (err) {
         console.error("Gagal update:", err)
+
+        this.isLoadingImport = false
+        this.importProgress = 0
+        this.animatedProgress = 0
+        Swal.fire({
+          title: 'Error',
+          html: err.data?.error || 'Terjadi kesalahan input data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
     async deactive(email) {

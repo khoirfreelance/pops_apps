@@ -1872,7 +1872,7 @@ export default {
     },
     // Delete via backend
     async delItem(item) {
-      const nik = item.nik
+      let nik
       const confirmed = await this.confirmModal("Yakin ingin menghapus data ini?")
       if (!confirmed) return
 
@@ -2234,12 +2234,18 @@ export default {
       } catch (err) {
         console.error('Upload error:', err)
 
-        const message =
-          detail ||
-          err.response?.data?.message ||
-          'Format CSV tidak valid'
+        const message = err.response?.data?.message || 'Format CSV tidak valid'
 
-        this.showError(message)
+        Swal.fire({
+          title: 'Error',
+          html: message || 'Terjadi kesalahan saat unggah data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       } finally {
         this.isLoadingImport = false
 
