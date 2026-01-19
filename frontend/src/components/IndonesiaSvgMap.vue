@@ -203,7 +203,7 @@
         </div>
 
         <ul class="tooltip-list">
-          <!-- <div
+          <div
             v-if="tooltip.list && tooltip.list.length > 1"
             style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px"
           >
@@ -221,7 +221,7 @@
             >
               ▶
             </button>
-          </div> -->
+          </div>
 
           <template v-for="(val, key) in tooltip.data" :key="key">
             <li v-if="key && key.toString().trim().toLowerCase() !== 'kota'">
@@ -244,11 +244,11 @@ import { reactive, onMounted } from 'vue'
    HEATMAP DATA (FROM API)
 ========================== */
 // PORT backend kamu
-const API_PORT = 8000;
+const API_PORT = 8001;
 
 // Bangun base URL dari window.location
 const { protocol, hostname } = window.location;
-// contoh hasil: "http://192.168.0.5:8000"
+// contoh hasil: "http://192.168.0.5:8001"
 const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 const stats = reactive({})
 const kelurahanData = reactive({})
