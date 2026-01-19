@@ -68,10 +68,12 @@ class CatinImportPendampingan implements
 
     private function processRow(array $row): void
     {
-        $berat = $row[19] != null ? $this->normalizeDecimal($row[19]) : null;
-        $tinggi = $row[20] != null ? $this->normalizeDecimal($row[20]) : null;
-        $lila = $row[24] != null ? $this->normalizeDecimal($row[24]) : null;
-        $hb = $row[23] != null ? $this->normalizeDecimal($row[23]) : null;
+        //dump($this->convertDate($row[37] ?? null));
+        //dd($row);
+        $berat = $row[21] != null ? $this->normalizeDecimal($row[21]) : null;
+        $tinggi = $row[22] != null ? $this->normalizeDecimal($row[22]) : null;
+        $lila = $row[26] != null ? $this->normalizeDecimal($row[26]) : null;
+        $hb = $row[24] != null ? $this->normalizeDecimal($row[24]) : null;
         $usia_perempuan = $row[6] != null ? (int) $row[6] : null;
         DB::transaction(function () use ($row, $berat, $tinggi, $lila, $hb, $usia_perempuan) {
             $catin = Catin::create(attributes: [
@@ -92,31 +94,33 @@ class CatinImportPendampingan implements
 
                 'pernikahan_ke' => $row[13] ?? null,
 
-                'provinsi' => $this->wilayahUser['provinsi'] ?? null,
-                'kota' => $this->wilayahUser['kota'] ?? null,
-                'kecamatan' => $row[14] ?? null,
-                'kelurahan' => $row[15] ?? null,
-                'rw' => $row[16] ?? null,
-                'rt' => $row[17] ?? null,
+                //'provinsi' => $this->wilayahUser['provinsi'] ?? null,
+                //'kota' => $this->wilayahUser['kota'] ?? null,
+                'provinsi' => $row[14] ?? null,
+                'kota' => $row[15] ?? null,
+                'kecamatan' => $row[16] ?? null,
+                'kelurahan' => $row[17] ?? null,
+                'rw' => $row[18] ?? null,
+                'rt' => $row[19] ?? null,
                 'posyandu' => $this->posyanduUser ?? null,
 
-                'tanggal_pemeriksaan' => $row[18] != null ? $this->convertDate($row[18]) : null,
+                'tanggal_pemeriksaan' => $row[20] != null ? $this->convertDate($row[20]) : null,
                 'berat_perempuan' => $berat,
                 'tinggi_perempuan' => $tinggi,
                 'hb_perempuan' => $hb,
                 'lila_perempuan' => $lila,
-                'terpapar_rokok' => $this->toBool($row[26] ?? null),
-                'mendapat_ttd' => $this->toBool($row[27] ?? null),
-                'menggunakan_jamban' => $this->toBool($row[28] ?? null),
-                'sumber_air_bersih' => $this->toBool($row[29] ?? null),
-                'punya_riwayat_penyakit' => $this->toBool($row[30] ?? null),
-                'riwayat_penyakit' => $row[31] ?? null,
-                'mendapat_fasilitas_rujukan' => $this->toBool($row[31] ?? null),
-                'mendapat_kie' => $this->toBool($row[33] ?? null),
-                'mendapat_bantuan_pmt' => $this->toBool($row[33] ?? null),
+                'terpapar_rokok' => $this->toBool($row[28] ?? null),
+                'mendapat_ttd' => $this->toBool($row[29] ?? null),
+                'menggunakan_jamban' => $this->toBool($row[30] ?? null),
+                'sumber_air_bersih' => $this->toBool($row[31] ?? null),
+                'punya_riwayat_penyakit' => $this->toBool($row[32] ?? null),
+                'riwayat_penyakit' => $row[33] ?? null,
+                'mendapat_fasilitas_rujukan' => $this->toBool($row[34] ?? null),
+                'mendapat_kie' => $this->toBool($row[35] ?? null),
+                'mendapat_bantuan_pmt' => $this->toBool($row[36] ?? null),
 
-                'tanggal_rencana_menikah' => $this->convertDate($row[35] ?? null),
-                'rencana_tinggal' => $row[36] ?? null,
+                'tanggal_rencana_menikah' => $this->convertDate($row[37] ?? null),
+                'rencana_tinggal' => $row[38] ?? null,
 
                 'imt' => $this->hitungIMT($berat, $tinggi),
                 'status_kek' => $this->statusKEK($lila),
@@ -164,6 +168,7 @@ class CatinImportPendampingan implements
             return null;
 
         $date = str_replace('/', '-', trim($date));
+
         try {
             return Carbon::parse($date)->format('Y-m-d');
         } catch (\Exception $e) {

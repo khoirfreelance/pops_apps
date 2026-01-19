@@ -1435,7 +1435,7 @@ class CatinController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data dengan NIK tersebut tidak ditemukan.'
+                    'message' => 'Data dengan NIK '.$nik.' tidak ditemukan.'
                 ], 404);
             }
 
@@ -1443,7 +1443,7 @@ class CatinController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Semua data terkait NIK berhasil dihapus.'
+                'message' => 'Data NIK '.$nik.' berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {
@@ -1596,8 +1596,8 @@ class CatinController extends Controller
 
     public function import(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:csv,xlsx,xls|max:5120',
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|mimes:csv,txt|max:5120',
         ]);
 
         try {

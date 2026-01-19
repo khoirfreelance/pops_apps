@@ -551,7 +551,7 @@ class PregnancyController extends Controller
     public function import(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|mimes:csv,txt|max:2048',
+            'file' => 'required|mimes:csv,txt|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -1948,25 +1948,25 @@ class PregnancyController extends Controller
         try {
             DB::beginTransaction();
 
-            $deleted = false;
-
+            $deletedPendampingan = false;
+            $deletedIntervensi = false;
             // Pregnancy (Ibu hamil)
             if (Pregnancy::where('nik_ibu', $nik)->exists()) {
                 Pregnancy::where('nik_ibu', $nik)->delete();
-                $deleted = true;
+                $deletedPendampingan = true;
             }
 
             // Intervensi
             if (Intervensi::where('nik_subjek', $nik)->exists()) {
                 Intervensi::where('nik_subjek', $nik)->delete();
-                $deleted = true;
+                $deletedIntervensi = true;
             }
 
-            if (!$deleted) {
+            if (!$deletedPendampingan && !$deletedIntervensi) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data dengan NIK tersebut tidak ditemukan.'
+                    'message' => 'Data dengan NIK '.$nik.' tidak ditemukan.'
                 ], 404);
             }
 
@@ -1974,7 +1974,7 @@ class PregnancyController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Semua data terkait NIK berhasil dihapus.'
+                'message' => 'Data NIK '.$nik.' berhasil dihapus.'
             ], 200);
 
         } catch (\Exception $e) {
