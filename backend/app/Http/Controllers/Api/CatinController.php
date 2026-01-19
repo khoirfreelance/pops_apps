@@ -1419,15 +1419,10 @@ class CatinController extends Controller
 
             $deleted = false;
 
+
             // Catin (perempuan)
             if (Catin::where('nik_perempuan', $nik)->exists()) {
                 Catin::where('nik_perempuan', $nik)->delete();
-                $deleted = true;
-            }
-
-            // Intervensi
-            if (Intervensi::where('nik_subjek', $nik)->exists()) {
-                Intervensi::where('nik_subjek', $nik)->delete();
                 $deleted = true;
             }
 
@@ -1462,132 +1457,154 @@ class CatinController extends Controller
         try {
             $user = Auth::user();
 
-            // 1. Validasi input
+            // 1️⃣ Validasi (hanya yang mungkin dikirim FE)
             $validated = $request->validate([
                 'nik' => 'required|string',
-                'tgl_pengukuran' => 'required|date',
-                'tgl_lahir' => 'required|date',
-                'bb' => 'required|numeric',
-                'tb' => 'required|numeric',
-                'lika' => 'nullable|numeric',
-                'gender' => 'required|string',
+
+                'tanggal_pendampingan' => 'required|string',
+                'tanggal_menikah' => 'nullable|string',
+
+                'berat_perempuan' => 'nullable|numeric',
+                'tinggi_perempuan' => 'nullable|numeric',
+                'kadar_hb' => 'nullable|numeric',
+                'lila_perempuan' => 'nullable|numeric',
             ]);
-            $usia = $this->hitungUmurBulan($validated['tgl_lahir'], $validated['tgl_pengukuran']);
-            $jk = $validated['gender'] == 'Perempuan' ? 'P' : 'L';
-            $z_bbu = $this->hitungZScore('BB/U', $jk, $usia, $validated['bb']);
-            $z_tbu = $this->hitungZScore('TB/U', $jk, $usia, $validated['tb']);
-            $z_bbtb = $this->hitungZScore('BB/TB', $jk, $validated['tb'], $validated['bb']);
 
-            // Tentukan status berdasarkan z-score
-            $status_bbu = $this->statusBBU($z_bbu);
-            $status_tbu = $this->statusTBU($z_tbu);
-            $status_bbtb = $this->statusBBTB($z_bbtb);
-
-            // Cek apakah berat naik
-            $naikBB = $this->cekNaikBB($validated['nik'], $validated['bb'], $validated['tgl_pengukuran'], 'kunjungan');
-            $kunjungan = Kunjungan::where('nik', $validated['nik'])
-                ->orderBy('tgl_pengukuran', 'desc')
+            // 2️⃣ Ambil data TERAKHIR
+            $last = Catin::where('nik_perempuan', $validated['nik'])
+                ->orderBy('tanggal_pendampingan', 'desc')
                 ->first();
 
-            // 2. Simpan data ke tabel kunjungan
-            $data = Kunjungan::create([
-                'petugas' => $user->name,
-                'nik' => $validated['nik'],
-                'nama_anak' => $request->nama_anak,
-                'jk' => $jk,
-                'tgl_lahir' => Carbon::parse($validated['tgl_lahir']),
-                'bb_lahir' => $kunjungan->bb_lahir,
-                'tb_lahir' => $kunjungan->tb_lahir,
-                'nama_ortu' => $kunjungan->nama_ortu,
-                'peran' => $kunjungan->peran,
-                'nik_ortu' => $kunjungan->nik_ortu,
-                'alamat' => $kunjungan->alamat,
-                'provinsi' => $kunjungan->provinsi,
-                'kota' => $kunjungan->kota,
-                'kecamatan' => $kunjungan->kecamatan,
-                'kelurahan' => $kunjungan->kelurahan,
-                'rw' => $kunjungan->rw,
-                'rt' => $kunjungan->rt,
-                'puskesmas' => $kunjungan->puskesmas,
-                'posyandu' => $request->unit_posyandu ? $request->unit_posyandu : $kunjungan->posyandu,
-                'tgl_pengukuran' => Carbon::parse($validated['tgl_pengukuran']),
-                'usia_saat_ukur' => $usia,
-                'bb' => $validated['bb'],
-                'tb' => $validated['tb'],
-                'lika' => $validated['lika'],
-                'bb_u' => $status_bbu,
-                'zs_bb_u' => $z_bbu,
-                'tb_u' => $status_tbu,
-                'zs_tb_u' => $z_tbu,
-                'bb_tb' => $status_bbtb,
-                'zs_bb_tb' => $z_bbtb,
-                'naik_berat_badan' => $naikBB,
-                'diasuh_oleh' => $kunjungan->diasuh_oleh,
-                'asi' => $kunjungan->asi,
-                'imunisasi' => $kunjungan->imunisasi,
-                'rutin_posyandu' => $kunjungan->rutin_posyandu,
-                'penyakit_bawaan' => $kunjungan->penyakit_bawaan,
-                'penyakit_6bulan' => $kunjungan->penyakit_6bulan,
-                'terpapar_asap_rokok' => $kunjungan->terpapar_asap_rokok,
-                'penggunaan_jamban_sehat' => $kunjungan->penggunaan_jamban_sehat,
-                'penggunaan_sab' => $kunjungan->penggunaan_sab,
-                'memiliki_jaminan' => $kunjungan->memiliki_jaminan,
-                'kie' => $kunjungan->kie,
-                'mendapatkan_bantuan' => $kunjungan->mendapatkan_bantuan,
-                'catatan' => $kunjungan->puskesmas,
-                'kpsp' => $kunjungan->kpsp,
-                'no_kk' => $kunjungan->no_kk
-            ]);
+            // 3️⃣ Helper ambil data: request > last
+            $get = fn ($key) =>
+                $request->has($key)
+                    ? $request->input($key)
+                    : $last->{$key};
+
+            // 4️⃣ Build data FINAL
+            $data = [
+                // Identitas (selalu dari FE)
+                'nik_perempuan' => $validated['nik'],
+
+                // Pendampingan
+                'tanggal_pendampingan' => $this->convertDate($get('tanggal_pendampingan')),
+                'tanggal_pemeriksaan' => $this->convertDate($get('tanggal_pendampingan')),
+
+                // Pemeriksaan
+                'berat_perempuan' => $get('berat_perempuan'),
+                'tinggi_perempuan' => $get('tinggi_perempuan'),
+                'hb_perempuan' => $get('kadar_hb'),
+                'lila_perempuan' => $get('lila_perempuan'),
+
+                // Rencana menikah
+                'tanggal_rencana_menikah' => $this->convertDate(
+                    $request->has('tanggal_menikah')
+                        ? $request->tanggal_menikah
+                        : $last->tanggal_rencana_menikah
+                ),
+
+                // Salin SEMUA field identitas dari data lama
+                'nama_petugas' => $last->nama_petugas,
+                'nama_perempuan' => $last->nama_perempuan,
+                'pekerjaan_perempuan' => $last->pekerjaan_perempuan,
+                'usia_perempuan' => $last->usia_perempuan,
+                'hp_perempuan' => $last->hp_perempuan,
+
+                'nama_laki' => $last->nama_laki,
+                'nik_laki' => $last->nik_laki,
+                'pekerjaan_laki' => $last->pekerjaan_laki,
+                'usia_laki' => $last->usia_laki,
+                'hp_laki' => $last->hp_laki,
+
+                'pernikahan_ke' => $last->pernikahan_ke,
+
+                'provinsi' => $last->provinsi,
+                'kota' => $last->kota,
+                'kecamatan' => $last->kecamatan,
+                'kelurahan' => $last->kelurahan,
+                'rw' => $last->rw,
+                'rt' => $last->rt,
+                'posyandu' => $last->posyandu,
+
+                // Flags
+                'terpapar_rokok' => $last->terpapar_rokok,
+                'mendapat_ttd' => $last->mendapat_ttd,
+                'menggunakan_jamban' => $last->menggunakan_jamban,
+                'sumber_air_bersih' => $last->sumber_air_bersih,
+                'punya_riwayat_penyakit' => $last->punya_riwayat_penyakit,
+                'riwayat_penyakit' => $last->riwayat_penyakit,
+                'mendapat_fasilitas_rujukan' => $last->mendapat_fasilitas_rujukan,
+                'mendapat_kie' => $last->mendapat_kie,
+                'mendapat_bantuan_pmt' => $last->mendapat_bantuan_pmt,
+
+                // Meta
+                'created_by' => $user?->id,
+            ];
+
+            // 5️⃣ Hitung ulang status
+            $data['imt'] = $this->hitungIMT($data['berat_perempuan'], $data['tinggi_perempuan']);
+            $data['status_kek'] = $this->statusKEK($data['lila_perempuan']);
+            $data['status_hb'] = $this->statusHB($data['hb_perempuan']);
+            $data['status_risiko'] = $this->statusRisiko($data['usia_perempuan']);
+
+            // 6️⃣ CREATE BARU (riwayat)
+            $catin = Catin::create($data);
 
             return response()->json([
-                'message' => 'Data berhasil disimpan',
-                'data' => $data
-            ], 200);
+                'success' => true,
+                'message' => 'Pendampingan Catin berhasil disimpan',
+                'data' => $catin
+            ], 201);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Gagal menyimpan data',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
+
     public function update(Request $request, $nik)
     {
         try {
             // 1. Validasi input
             $validated = $request->validate([
-                'nama_ortu' => 'nullable|string',
-                'bb' => 'nullable|numeric',
-                'tb' => 'nullable|numeric',
-                'lika' => 'nullable|numeric',
-                'gender' => 'nullable|string',
+                'nik' => 'required|string',
+                'nik_laki' => 'nullable|string',
+                'nama_perempuan' => 'nullable|string',
+                'nama_laki' => 'nullable|string',
+                'usia_perempuan' => 'nullable|integer',
+                'usia_laki' => 'nullable|integer',
+                'tanggal_menikah' => 'nullable|string',
             ]);
 
-            // 2. Cari data berdasarkan NIK
-            $data = Kunjungan::where('nik', $nik)->first();
-            if (!$data) {
-                return response()->json([
-                    'message' => 'Data tidak ditemukan'
-                ], 404);
-            }
-
-            // 3. Update field
-            $data->update([
-                'nik' => $request->nik ?? $data->nik,
-                'nama_ortu' => $validated['nama_ortu'] ?? $data->nama_ortu,
-                'bb' => $validated['bb'],
-                'tb' => $validated['tb'],
-                'lika' => $validated['lika'] ?? null,
+            // 2. Update semua data catin
+            $catin = Catin::where('nik_perempuan', $nik)->update([
+                'nik_perempuan' =>  $this->normalizeNIK($validated['nik']),
+                'nik_laki' => $this->normalizeNIK($validated['nik_laki'] ?? null),
+                'nama_perempuan' =>  $this->normalizeText($validated['nama_perempuan'] ?? null),
+                'nama_laki' =>  $this->normalizeText($validated['nama_laki'] ?? null),
+                'usia_perempuan' => $validated['usia_perempuan'] ?? null,
+                'usia_laki' => $validated['usia_laki'] ?? null,
+                'tanggal_rencana_menikah' => $this->convertDate($validated['tanggal_menikah'] ?? null),
             ]);
 
             return response()->json([
-                'message' => 'Data berhasil diperbarui',
-                'data' => $data
+                'success' => true,
+                'message' => 'Data <strong>'.$this->normalizeText($validated['nama_perempuan']).'</strong> berhasil diperbarui',
+                'data' => $catin
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
+                'success' => false,
                 'message' => 'Gagal update data',
                 'error' => $e->getMessage()
             ], 500);
@@ -1619,10 +1636,33 @@ class CatinController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal import data',
-                'error' => $e->getMessage(),
+                'error' => 'Gagal import data',
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+
+    private function normalizeText($value)
+    {
+        return $value ? strtoupper(trim($value)) : null;
+    }
 }

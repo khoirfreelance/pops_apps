@@ -206,7 +206,7 @@
 
           <!-- FOOTER -->
           <div class="modal-footer justify-content-center">
-            <button class="btn btn-secondary" @click="showResultModal = false">
+            <button class="btn btn-secondary" @click="closeModal()">
               Tutup
             </button>
           </div>
@@ -277,78 +277,15 @@ export default {
       chartBB: null,
       chartTB: null,
       chartWFH: null,
-      // ====== WHO demo points (median & sd) untuk WFA (kg) ======
-      // boys
-      wfaBoys: [
-        { m: 0, median: 3.3, sd: 0.3 },
-        { m: 1, median: 4.5, sd: 0.35 },
-        { m: 2, median: 5.6, sd: 0.4 },
-        { m: 3, median: 6.4, sd: 0.45 },
-        { m: 4, median: 7.0, sd: 0.5 },
-        { m: 5, median: 7.5, sd: 0.55 },
-        { m: 6, median: 7.9, sd: 0.6 },
-        { m: 12, median: 9.6, sd: 0.8 },
-        { m: 24, median: 12.2, sd: 1.1 },
-        { m: 36, median: 14.3, sd: 1.4 },
-        { m: 48, median: 16.3, sd: 1.6 },
-        { m: 60, median: 18.3, sd: 1.8 },
-      ],
-      // girls
-      wfaGirls: [
-        { m: 0, median: 3.2, sd: 0.3 },
-        { m: 1, median: 4.2, sd: 0.35 },
-        { m: 2, median: 5.1, sd: 0.4 },
-        { m: 3, median: 5.8, sd: 0.45 },
-        { m: 4, median: 6.4, sd: 0.5 },
-        { m: 5, median: 6.9, sd: 0.55 },
-        { m: 6, median: 7.3, sd: 0.6 },
-        { m: 12, median: 8.9, sd: 0.8 },
-        { m: 24, median: 11.5, sd: 1.1 },
-        { m: 36, median: 13.9, sd: 1.4 },
-        { m: 48, median: 16.0, sd: 1.6 },
-        { m: 60, median: 18.2, sd: 1.8 },
-      ],
 
-      // ====== WHO demo points (median & sd) untuk HFA (cm) ======
-      // kira-kira dari tabel WHO (silakan ganti dengan tabel bulanan resmi untuk presisi)
-      hfaBoys: [
-        { m: 0, median: 49.9, sd: 1.9 },
-        { m: 1, median: 54.7, sd: 2.0 },
-        { m: 2, median: 58.4, sd: 2.1 },
-        { m: 3, median: 61.4, sd: 2.2 },
-        { m: 4, median: 63.9, sd: 2.3 },
-        { m: 5, median: 65.9, sd: 2.4 },
-        { m: 6, median: 67.6, sd: 2.5 },
-        { m: 12, median: 75.7, sd: 2.9 },
-        { m: 24, median: 87.8, sd: 3.2 },
-        { m: 36, median: 96.1, sd: 3.4 },
-        { m: 48, median: 103.3, sd: 3.6 },
-        { m: 60, median: 110.0, sd: 3.8 },
-      ],
-      hfaGirls: [
-        { m: 0, median: 49.1, sd: 1.9 },
-        { m: 1, median: 53.7, sd: 2.0 },
-        { m: 2, median: 57.1, sd: 2.1 },
-        { m: 3, median: 59.8, sd: 2.2 },
-        { m: 4, median: 62.1, sd: 2.3 },
-        { m: 5, median: 64.0, sd: 2.4 },
-        { m: 6, median: 65.7, sd: 2.5 },
-        { m: 12, median: 74.0, sd: 2.8 },
-        { m: 24, median: 86.4, sd: 3.2 },
-        { m: 36, median: 95.1, sd: 3.4 },
-        { m: 48, median: 102.7, sd: 3.6 },
-        { m: 60, median: 109.4, sd: 3.8 },
-      ],
+      wfaBoys: [],
+      wfaGirls: [],
+      hfaBoys: [],
+      hfaGirls: [],
       wfhBoys: [],
       wfhGirls: [],
       // Warna KMS (atas → bawah) yang kamu minta:
       kmsColors: {
-        /* top: '#F2D803',
-        midTop: '#84BA24',
-        mid: '#2CA339',
-        midMed: '#2DA83C', // dipakai utk median
-        midBottom: '#80B626',
-        bottom: '#DCBF1E', */
         top: '#555',
         midTop: '#cc0000',
         mid: '#444',
@@ -410,12 +347,25 @@ export default {
   },
   methods: {
     closeModal() {
+      this.birthDate = '',
+      this.gender = '',
+      this.currentWeight = null,
+      this.currentHeight = null,
       this.showResultModal = false
     },
     async onHitung() {
+      const wfhpre = this.whoData.wfh.wfh
+
       if (!this.birthDate || !this.gender || !this.currentWeight || !this.currentHeight) return
 
       this.ageMonths = this.calcAgeMonths(this.birthDate, new Date())
+
+      //umur menentukan range
+      const rangeKey = this.ageMonths <= 24 ? '0-24' : '25-60'
+      const data = wfhpre[rangeKey][0]
+
+      this.wfhBoys = data.L
+      this.wfhGirls = data.P
 
       const wfa = this.gender === 'female' ? this.wfaGirls : this.wfaBoys
       const hfa = this.gender === 'female' ? this.hfaGirls : this.hfaBoys
@@ -455,14 +405,31 @@ export default {
       this.renderTB(hfa)
       this.renderWFH(wfh)
     },
+
+    generateAgeLabels(min, max) {
+      const labels = []
+
+      for (let m = min; m <= max; m++) {
+        // 0–24: semua bulan
+        if (m <= 24) {
+          labels.push(m)
+          continue
+        }
+
+        // mulai 26: per 2 bulan
+        if (m >= 24 && m % 2 === 0) {
+
+          labels.push(m)
+        }
+      }
+
+      return labels
+    },
+
     // ====== Chart: BB/U ======
     renderBB(curve) {
       const { min, max } = this.getAgeRange()
-
-      const labels = Array.from(
-        { length: max - min + 1 },
-        (_, i) => i + min
-      )
+      const labels = this.generateAgeLabels(min, max)
       const sd = (m, key) => this.getPoint(curve, m)[key]
 
       const minus3 = labels.map(m => sd(m, 'sd3neg'))
@@ -485,6 +452,21 @@ export default {
             // Titik BB anak saat ini (hanya 1 titik)
             {
               label: 'BB Anak',
+              data: [
+                {
+                  x: this.ageMonths,
+                  y: this.currentWeight,
+                },
+              ],
+              parsing: false,
+              borderColor: '#0066ff',
+              backgroundColor: '#0066ff',
+              pointRadius: 6,
+              showLine: false,
+            },
+
+            /* {
+              label: 'BB Anak',
               data: labels.map((m) =>
                 m === this.ageMonths ? this.currentWeight : null
               ),
@@ -492,7 +474,7 @@ export default {
               backgroundColor: '#0066ff',
               pointRadius: labels.map((m) => (m === this.ageMonths ? 6 : 0)),
               showLine: false,
-            },
+            }, */
 
 
             // Kurva KMS (tanpa titik, dengan fill gradasi)
@@ -584,8 +566,25 @@ export default {
             point: { radius: 0 }, // tidak tampil titik di sepanjang garis
           },
           scales: {
-            x: { title: { display: true, text: `Umur (bulan) ${min}–${max}` }, ticks: { stepSize: 1 } },
-            y: { title: { display: true, text: 'Berat Badan (kg)' } },
+            x: {
+              type: 'linear',
+              min,
+              max,
+              title: {
+                display: true,
+                text: `Umur (bulan) ${min}–${max}`,
+              },
+              ticks: {
+                stepSize: 2, // ⬅️ ini kuncinya
+                callback: (v) => v,
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Berat Badan (kg)',
+              },
+            },
           },
         },
 
@@ -596,10 +595,7 @@ export default {
     renderTB(curve) {
       const { min, max } = this.getAgeRange()
 
-      const labels = Array.from(
-        { length: max - min + 1 },
-        (_, i) => i + min
-      )
+      const labels = this.generateAgeLabels(min, max)
       const sd = (m, key) => this.getPoint(curve, m)[key]
 
       const minus3 = labels.map(m => sd(m, 'sd3neg'))
@@ -622,14 +618,19 @@ export default {
             // Titik TB anak saat ini (hanya 1 titik)
             {
               label: 'TB Anak',
-              data: labels.map((m) =>
-                m === this.ageMonths ? this.currentHeight : null
-              ),
+              data: [
+                {
+                  x: this.ageMonths,
+                  y: this.currentHeight,
+                },
+              ],
+              parsing: false,
               borderColor: '#0066ff',
               backgroundColor: '#0066ff',
-              pointRadius: labels.map((m) => (m === this.ageMonths ? 6 : 0)),
+              pointRadius: 6,
               showLine: false,
             },
+
 
             // Kurva KMS (tanpa titik)
             {
@@ -720,32 +721,48 @@ export default {
             point: { radius: 0 }, // tidak tampil titik di sepanjang garis
           },
           scales: {
-            x: { title: {display: true, text: `Umur (bulan) ${min}–${max}` }, ticks: { stepSize: 1 }},
-            y: { title: { display: true, text: 'Tinggi Badan (cm)' } },
+            x: {
+              type: 'linear',
+              min,
+              max,
+              title: {
+                display: true,
+                text: `Umur (bulan) ${min}–${max}`,
+              },
+              ticks: {
+                stepSize: 2, // ⬅️ ini kuncinya
+                callback: (v) => v,
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Tinggi Badan (cm)',
+              },
+            },
           },
         },
       })
     },
 
     renderWFH(curve) {
-      const range = 10 // ±10 cm → total 20 cm
-      const hMin = Math.round(this.currentHeight) - range
-      const hMax = Math.round(this.currentHeight) + range
-      // normalize dulu
+      let minWFH, maxWFH
       const rawData = this.normalizeWFH(curve)
 
-      // FILTER DATA BERDASARKAN TINGGI
-      const data = rawData.filter(d => d.h >= hMin && d.h <= hMax)
+      let data = null
+        if (this.ageMonths <= 24) {
+          // 0–24 bulan
+          minWFH = 45
+          maxWFH = 110
+          data = rawData.filter(d => d.h >= minWFH && d.h <= maxWFH)
+        } else {
+          // 25–60 bulan
+          minWFH = 65
+          maxWFH = 120
+          data = rawData.filter(d => d.h >= minWFH && d.h <= maxWFH)
+        }
 
-      const labels = data.map(d => d.h)
-      const median = data.map(d => d.median)
-
-      const plus1 = data.map(d => d.sd1)
-      const minus1 = data.map(d => d.sd1neg)
-      const plus2 = data.map(d => d.sd2)
-      const minus2 = data.map(d => d.sd2neg)
-      const plus3 = data.map(d => d.sd3)
-      const minus3 = data.map(d => d.sd3neg)
+      const toXY = (key) => data.map(d => ({ x: d.h, y: d[key] }))
 
       if (this.chartWFH) this.chartWFH.destroy()
       const ctx = this.$refs.chartWFH.getContext('2d')
@@ -754,94 +771,38 @@ export default {
       this.chartWFH = new Chart(ctx, {
         type: 'line',
         data: {
-          labels,
           datasets: [
+            // 🔵 Titik anak
             {
               label: 'BB Anak',
-              data: labels.map(h =>
-                h === Math.round(this.currentHeight)
-                  ? this.currentWeight
-                  : null
-              ),
+              data: [
+                {
+                  x: this.currentHeight,
+                  y: this.currentWeight,
+                },
+              ],
+              parsing: false,
               borderColor: '#0066ff',
               backgroundColor: '#0066ff',
               pointRadius: 6,
               showLine: false,
             },
-            {
-              label: '-3SD',
-              data: minus3,
-              borderColor: C.top,
-              /* backgroundColor: this.hexA(C.top, 0.15),
-              fill: '+1', */
-              tension: 0.2,
-              pointRadius: 0,
-            },
-            {
-              label: '-2SD',
-              data: minus2,
-              borderColor: C.midTop,
-              /* backgroundColor: this.hexA(C.midTop, 0.15),
-              fill: '+1', */
-              tension: 0.2,
-              pointRadius: 0,
-            },
-            {
-              label: '-1SD',
-              data: minus1,
-              borderColor: C.mid,
-              /* backgroundColor: this.hexA(C.mid, 0.15),
-              fill: '+1', */
-              tension: 0.2,
-              pointRadius: 0,
-            },
-            {
-              label: 'Median',
-              data: median,
-              borderColor: C.midMed,
-              borderWidth: 2,
-              //fill: '+1',
-              tension: 0.2,
-              pointRadius: 0,
-            },
-            {
-              label: '+1SD',
-              data: plus1,
-              borderColor: C.midBottom,
-              /* backgroundColor: this.hexA(C.midBottom, 0.15),
-              fill: '+1', */
-              tension: 0.2,
-              pointRadius: 0,
-            },
-            {
-              label: '+2SD',
-              data: plus2,
-              borderColor: C.bottom,
-              /* backgroundColor: this.hexA(C.bottom, 0.15),
-              fill: '+1', */
-              tension: 0.2,
-              pointRadius: 0,
-            },
-            {
-              label: '+3SD',
-              data: plus3,
-              borderColor: C.top,
-              /* backgroundColor: this.hexA(C.top, 0.15),
-              fill: false, */
-              tension: 0.2,
-              pointRadius: 0,
-            },
+
+            // Kurva WHO
+            { label: '-3SD', data: toXY('sd3neg'), borderColor: C.top, tension: 0.2, pointRadius: 0 },
+            { label: '-2SD', data: toXY('sd2neg'), borderColor: C.midTop, tension: 0.2, pointRadius: 0 },
+            { label: '-1SD', data: toXY('sd1neg'), borderColor: C.mid, tension: 0.2, pointRadius: 0 },
+            { label: 'Median', data: toXY('median'), borderColor: C.midMed, borderWidth: 2, tension: 0.2, pointRadius: 0 },
+            { label: '+1SD', data: toXY('sd1'), borderColor: C.midBottom, tension: 0.2, pointRadius: 0 },
+            { label: '+2SD', data: toXY('sd2'), borderColor: C.bottom, tension: 0.2, pointRadius: 0 },
+            { label: '+3SD', data: toXY('sd3'), borderColor: C.top, tension: 0.2, pointRadius: 0 },
           ],
         },
         options: {
           responsive: true,
+          interaction: { mode: 'nearest', intersect: false },
           plugins: {
-            title: {
-              display: false,
-              text: 'BB/TB (WHO)',
-            },
             tooltip: {
-              enabled: true,
               callbacks: {
                 label: (ctx) => {
                   if (ctx.dataset.label === 'BB Anak') {
@@ -851,18 +812,26 @@ export default {
                 },
               },
             },
-            datalabels: { display: false }, // penting: hilangkan label di titik
-          },
-          interaction: { mode: 'index', intersect: false },
-          elements: {
-            point: { radius: 0 }, // tidak tampil titik di sepanjang garis
+            datalabels: { display: false },
           },
           scales: {
             x: {
-              title: { display: true, text: 'Tinggi / Panjang Badan (cm)' },
+              type: 'linear',
+              min: minWFH,
+              max: maxWFH,
+              ticks: {
+                stepSize: 5, // ⬅️ kelipatan 5
+              },
+              title: {
+                display: true,
+                text: 'Tinggi Badan (cm)',
+              },
             },
             y: {
-              title: { display: true, text: 'Berat Badan (kg)' },
+              title: {
+                display: true,
+                text: 'Berat Badan (kg)',
+              },
             },
           },
         },
@@ -882,7 +851,7 @@ export default {
     getAgeRange() {
       return this.ageMonths <= 24
         ? { min: 0, max: 24 }
-        : { min: 25, max: 60 }
+        : { min: 24, max: 60 }
     },
     getPoint(points, month) {
       return points.find(p => p.month === month) || points[points.length - 1]
@@ -914,8 +883,6 @@ export default {
       return 'Tinggi'
     },
     classifyWFH(z) {
-      console.log('classifyWFH: ',z);
-
       if (z < -3) return 'Gizi Buruk'
       if (z < -2) return 'Gizi Kurang'
       if (z <= 1) return 'Gizi Baik'
@@ -963,14 +930,14 @@ export default {
     this.hfaBoys = this.whoData.hfa.hfa.L
     this.hfaGirls = this.whoData.hfa.hfa.P
 
-    const wfh = this.whoData.wfh.wfh
+    //const wfh = this.whoData.wfh.wfh
 
     // umur menentukan range
-    const rangeKey = this.ageMonths <= 24 ? '0-24' : '25-60'
-    const data = wfh[rangeKey][0]
+    //const rangeKey = this.ageMonths <= 24 ? '0-24' : '25-60'
+    //const data = wfh[rangeKey][0]
 
-    this.wfhBoys = data.L
-    this.wfhGirls = data.P
+    //this.wfhBoys = data.L
+    //this.wfhGirls = data.P
   }
 }
 </script>

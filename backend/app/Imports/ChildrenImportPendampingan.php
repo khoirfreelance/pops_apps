@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Wilayah;
 use App\Models\Log;
 use App\Models\Keluarga;
+use App\Models\Cadre;
 use App\Models\AnggotaKeluarga;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -38,23 +39,46 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     throw new Exception("Format CSV tidak valid di baris " . ($index + 2));
                 }
 
+                // =========================
+                // 0. Validasi data import
+                // =========================
+                $nik = $this->normalizeNik($row[4] ?? null);
+                $nama = strtoupper($row[3]??'-');
+                $tglUkur = $this->convertDate($row[2]);
+
+                if (!$nik || !$tglUkur) {
+                    throw new \Exception(
+                        "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}"
+                    );
+                }
+
+                $duplikat = Child::where('nik_anak', $nik)
+                    ->whereDate('tgl_pendampingan', $tglUkur)
+                    ->first();
+
+                if ($duplikat) {
+                    throw new \Exception(
+                        "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
+                        . $duplikat->created_at->format('d-m-Y')
+                    );
+                }
                 // dd($this->wilayahUser['provinsi']);
 
                 $data = [
                     'petugas' => strtoupper($row[1]),
-                    'tgl_pendampingan' => $this->convertDate($row[2]),
-                    'nama_anak' => strtoupper($row[3]),
-                    'nik_anak' => $row[4],
+                    'tgl_pendampingan' => $tglUkur,
+                    'nama_anak' => $nama,
+                    'nik_anak' => $nik,
                     'jk' => $this->normalizeJenisKelamin($row[5]),
                     'usia' => ltrim(trim($row[6]), "0"),
 
                     'nama_ayah' => strtoupper($row[7]),
-                    'nik_ayah' => $row[8],
+                    'nik_ayah' => $this->normalizeNik($row[8] ?? null),
                     'pekerjaan_ayah' => strtoupper($row[9]),
                     'usia_ayah' => $row[10],
 
                     'nama_ibu' => strtoupper($row[11]),
-                    'nik_ibu' => $row[12],
+                    'nik_ibu' => $this->normalizeNik($row[12] ?? null),
                     'pekerjaan_ibu' => strtoupper($row[13]),
                     'usia_ibu' => $row[14],
 
@@ -64,8 +88,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'riwayat_kb' => $row[17],
                     'alat_kontrasepsi' => $row[18],
 
-                    'provinsi' => $this->wilayahUser['provinsi'],
-                    'kota' => $this->wilayahUser['kota'],
+                    'provinsi' => strtoupper($this->wilayahUser['provinsi']),
+                    'kota' => strtoupper($this->wilayahUser['kota']),
                     'kecamatan' => strtoupper($row[19]),
                     'kelurahan' => strtoupper($row[20]),
                     'rt' => ltrim($row[21], "0"),
@@ -121,7 +145,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'kecamatan' => $data['kecamatan'],
                     'kelurahan' => $data['kelurahan'],
                 ]);
-                
+
                 $noKK = $data['nik_ayah'] ?? $data['nik_ibu'] ?? $data['nik_anak'] ?? null;
 
                 if ($noKK) {
@@ -184,6 +208,26 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 }
 
+                /* $user = User::firstOrCreate([
+                    'nik' => null,
+                    'name' => strtoupper($row[1]),
+                    'email' => null,
+                    'email_verified_at' => null,
+                    'phone' => null,
+                    'role' => null,
+                    'id_wilayah'=> $wilayah->id,
+                    'status' => 1,
+                    'is_pending' => 1,
+                    'password' => null,
+                ]);
+
+                // simpan cadre
+                $cadre = Cadre::create([
+                    'id_tpk' => null,
+                    'id_user' => $user->id,
+                    'id_posyandu' => null,
+                    'status' => $request->no_tpk ? 'kader':'non-kader',
+                ]); */
 
                 // ✅ Log aktivitas
                 Log::create([
@@ -199,19 +243,84 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         }
     }
 
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+
     private function convertDate($date)
     {
         if (!$date) {
             return null;
         }
-        $parts = preg_split('/[\/\-]/', $date);
-        if (count($parts) === 3) {
-            return strlen($parts[2]) === 4
-                ? "{$parts[2]}-{$parts[1]}-{$parts[0]}"
-                : "{$parts[0]}-{$parts[1]}-{$parts[2]}";
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            'm/d/Y',
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
         }
-        return null;
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
     }
+
 
     private function hitungZScore($tipe, $jk, $usiaOrTb, $bb)
     {

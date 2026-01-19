@@ -7,8 +7,8 @@ use App\Models\User;
 use App\Models\Wilayah;
 use App\Models\Log;
 use App\Models\Keluarga;
-use App\Models\AnggotaKeluarga;
-use Illuminate\Support\Collection;
+use App\Models\Log;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -22,188 +22,271 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         $this->loadWilayahUser();
     }
 
-    public function startRow(): int
+    // Irul Additional
+    protected function detectDelimiter(string $path): string
     {
-        return 2; // skip header
+        $handle = fopen($path, 'r');
+        $firstLine = fgets($handle);
+        fclose($handle);
+
+        $comma = substr_count($firstLine, ',');
+        $semicolon = substr_count($firstLine, ';');
+
+        return $semicolon > $comma ? ';' : ',';
     }
 
-    public function collection(Collection $rows)
+    public function getCsvSettings(): array
     {
+        $path = request()->file('file')->getRealPath();
 
-        try {
-            foreach ($rows as $index => $row) {
+        return [
+            'delimiter' => $this->detectDelimiter($path),
+            'input_encoding' => 'UTF-8',
+        ];
+    }
+    /* public function getCsvSettings(): array
+    {
+        return [
+            'delimiter' => ',',
+            'input_encoding' => 'UTF-8',
+        ];
+    } */
 
-                // ❌ STOP kalau struktur tidak sesuai
-                if (count($row) < 45) {
-                    throw new Exception("Format CSV tidak valid di baris " . ($index + 2));
-                }
+    public function model(array $row)
+    {
+        //dd($row);
+        return DB::transaction(function () use ($row) {
 
-                // dd($this->wilayahUser['provinsi']);
+            // =========================
+            // 1. Parse tanggal
+            // =========================
+            $tglLahir = $this->convertDate($row['tgl_lahir'] ?? null);
+            $tglUkur  = $this->convertDate($row['tanggal_pengukuran'] ?? null);
+            //dump($tglLahir, $tglUkur);
+            // =========================
+            // 2. Hitung usia & status
+            // =========================
+            $usia = $this->hitungUmurBulan($tglLahir, $tglUkur);
 
-                $data = [
-                    'petugas' => strtoupper($row[1]),
-                    'tgl_pendampingan' => $this->convertDate($row[2]),
-                    'nama_anak' => strtoupper($row[3]),
-                    'nik_anak' => $row[4],
-                    'jk' => $this->normalizeJenisKelamin($row[5]),
-                    'usia' => ltrim(trim($row[6]), "0"),
+            $z_bbu  =  $this->normalizeDecimal($row["zs_bbu"] ?? null);
+            $z_tbu  =  $this->normalizeDecimal($row["zs_tbu"]?? null);
+            $z_bbtb = $this->normalizeDecimal( $row["zs_bbtb"]??null);
 
-                    'nama_ayah' => strtoupper($row[7]),
-                    'nik_ayah' => $row[8],
-                    'pekerjaan_ayah' => strtoupper($row[9]),
-                    'usia_ayah' => $row[10],
+            // =========================
+            // 3. Status gizi
+            // =========================
 
-                    'nama_ibu' => strtoupper($row[11]),
-                    'nik_ibu' => $row[12],
-                    'pekerjaan_ibu' => strtoupper($row[13]),
-                    'usia_ibu' => $row[14],
+            $status_bbu  = $this->statusBB($row["bbu"]);
+            $status_tbu  = $this->statusTB($row["tbu"]);
+            $status_bbtb = $this->statusBBTB($row["bbtb"]);
 
-                    'anak_ke' => $row[15],
+            $naikBB = $this->normalizeNaikBeratBadan($row["naik_berat_badan"]);
 
-                    'riwayat_4t' => $row[16],
-                    'riwayat_kb' => $row[17],
-                    'alat_kontrasepsi' => $row[18],
+            // =========================
+            // 4. Simpan Kunjungan
+            // =========================
+            $kunjungan = Kunjungan::create([
+                'nik' => $row['nik'],
+                'nama_anak' => $this->normalizeText($row['nama'] ?? null),
+                'jk' => $this->normalizeText($row['jk'] ?? null),
+                'tgl_lahir' => $tglLahir,
+                'bb_lahir' =>  $this->normalizeDecimal($row['bb_lahir']??null),
+                'tb_lahir' => $this->normalizeDecimal($row['tb_lahir']??null),
+                'nama_ortu' => $this->normalizeText($row['nama_ortu'] ?? null),
+                'alamat' => $this->normalizeText($row['alamat']),
+                'rt' => $row['rt'],
+                'rw' => $row['rw'],
+                'puskesmas' => $this->normalizeText($row['pukesmas']),
+                'posyandu' => $this->normalizeText($row['posyandu']),
+                'tgl_pengukuran' => $tglUkur,
+                'usia_saat_ukur' => $usia,
+                'bb' =>  $this->normalizeDecimal($row['berat']??null),
+                'tb' =>  $this->normalizeDecimal($row['tinggi']??null),
+                'lila' => $this->normalizeDecimal($row['lila'] ?? null),
+                'provinsi' => $this->normalizeText($row['prov']),
+                'kota' => $this->normalizeText($row['kabkota']),
+                //'provinsi' => $this->wilayahUser['provinsi'],
+                //'kota' => $this->wilayahUser['kota'],
+                'kecamatan' => $this->normalizeText($row['kec']),
+                'kelurahan' => $this->normalizeText($row['desakel']),
 
-                    'provinsi' => strtoupper($this->wilayahUser['provinsi']),
-                    'kota' => strtoupper($this->wilayahUser['kota']),
-                    'kecamatan' => strtoupper($row[19]),
-                    'kelurahan' => strtoupper($row[20]),
-                    'rt' => ltrim($row[21], "0"),
-                    'rw' => ltrim($row[22], "0"),
+                'bb_u' => $this->normalizeStatus($status_bbu),
+                'zs_bb_u' => $z_bbu,
+                'tb_u' => $this->normalizeStatus($status_tbu),
+                'zs_tb_u' => $z_tbu,
+                'bb_tb' => $this->normalizeStatus($status_bbtb),
+                'zs_bb_tb' => $z_bbtb,
+                'naik_berat_badan' => $naikBB,
+            ]);
 
-                    'bb_lahir' => $this->normalizeBeratGramToKg($row[23]),
-                    'tb_lahir' => $this->normalizePanjangMToCM($row[24]),
-                    'bb' => $this->normalizeBeratGramToKg($row[25]),
-                    'tb' => $this->normalizePanjangMToCM($row[26]),
+            // =========================
+            // 5. Wilayah & Posyandu
+            // =========================
+            $wilayah = Wilayah::firstOrCreate([
+                /* 'provinsi' => $this->wilayahUser['provinsi'],
+                'kota' => $this->wilayahUser['kota'], */
+                'provinsi' => $this->normalizeText($row['prov']),
+                'kota' => $this->normalizeText($row['kabkota']),
+                'kecamatan' => $this->normalizeText($row['kec']),
+                'kelurahan' => $this->normalizeText($row['desakel']),
+            ]);
 
-                    'status_gizi' => strtoupper($row[27]),
-                    'lila' => $row[28],
-                    'lika' => $row[29],
+            Posyandu::firstOrCreate([
+                'nama_posyandu' => $this->normalizeText($row['posyandu']),
+                'id_wilayah' => $wilayah->id,
+                'rt' => $row['rt'],
+                'rw' => $row['rw'],
+            ]);
 
-                    'asi' => $row[30],
-                    'imunisasi' => $row[31],
-                    'diasuh_oleh' => $row[32],
-                    'rutin_posyandu' => $row[33],
-
-                    'riwayat_penyakit_bawaan' => $row[34],
-                    'penyakit_bawaan' => $row[35],
-                    'riwayat_penyakit_6bulan' => $row[36],
-                    'penyakit_6bulan' => $row[37],
-
-                    'terpapar_asap_rokok' => $row[38],
-                    'penggunaan_jamban_sehat' => $row[39],
-                    'penggunaan_sab' => $row[40],
-                    'apabila_ada_penyakit' => $row[41],
-                    'memiliki_jaminan' => $row[42],
-                    'kie' => $row[43],
-                    'mendapatkan_bantuan' => $row[44],
-                ];
-
-                // Z-Score
-                $z_bbu = $this->hitungZScore('BB/U', $data['jk'], $data['usia'], $data['bb']);
-                $z_tbu = $this->hitungZScore('TB/U', $data['jk'], $data['usia'], $data['tb']);
-                $z_bbtb = $this->hitungZScore('BB/TB', $data['jk'], $data['tb'], $data['bb']);
-
-                $data = array_merge($data, [
-                    'zs_bb_u' => $z_bbu,
-                    'bb_u' => $this->statusBBU($z_bbu),
-                    'zs_tb_u' => $z_tbu,
-                    'tb_u' => $this->statusTBU($z_tbu),
-                    'zs_bb_tb' => $z_bbtb,
-                    'bb_tb' => $this->statusBBTB($z_bbtb),
-                ]);
-
-                Child::create($data);
-
-                $wilayah = Wilayah::firstOrCreate([
-                    'provinsi' => $data['provinsi'],
-                    'kota' => $data['kota'],
-                    'kecamatan' => $data['kecamatan'],
-                    'kelurahan' => $data['kelurahan'],
-                ]);
-
-                $noKK = $data['nik_ayah'] ?? $data['nik_ibu'] ?? $data['nik_anak'] ?? null;
-
-                if ($noKK) {
-                    $keluarga = Keluarga::firstOrCreate(
-                        [
-                            'no_kk' => $noKK,
-                        ],
-                        [
-                            'alamat' => 'desa ' . $data['kelurahan'] . ', kec. ' . $data['kecamatan'] . ', kota/kab. ' . $data['kota'],
-                            'rt' => $data['rt'] ?? null,
-                            'rw' => $data['rw'] ?? null,
-                            'id_wilayah' => $wilayah->id,
-                            'is_pending' => true,
-                        ]
-                    );
-                    $anggota = [
-                        'id_keluarga' => $keluarga->id,
-                        'nama' => $data['nama_anak'],
-                        'nik' => $data['nik_anak'],
-                        'jenis_kelamin' => $this->normalizeJenisKelamin($data['jk']),
-                        'status_hubungan' => 'Anak',
-                        'is_pending' => true,
-                    ];
-
-                    $anggota_ayah = [
-                        'id_keluarga' => $keluarga->id,
-                        'nama' => $data['nama_ayah'],
-                        'nik' => $data['nik_ayah'],
-                        'jenis_kelamin' => 'L',
-                        'status_hubungan' => 'Kepala Keluarga',
-                        'is_pending' => true,
-                    ];
-
-                    $anggota_ibu = [
-                        'id_keluarga' => $keluarga->id,
-                        'nama' => $data['nama_ibu'],
-                        'nik' => $data['nik_ibu'],
-                        'jenis_kelamin' => 'P',
-                        'status_hubungan' => 'Istri',
-                        'is_pending' => true,
-                    ];
-
-                    if ($data['nik_ayah']) {
-                        AnggotaKeluarga::firstOrCreate(["nik" => $anggota_ayah['nik']], $anggota_ayah);
-                    }else{
-                        AnggotaKeluarga::create($anggota_ayah);
-                    }
-
-                    if ($data['nik_ibu']) {
-                        AnggotaKeluarga::firstOrCreate(["nik" => $anggota_ibu['nik']], $anggota_ibu);
-                    }else{
-                        AnggotaKeluarga::create($anggota_ibu);
-                    }
-
-                    if ($data['nik_anak']) {
-                        AnggotaKeluarga::firstOrCreate(["nik" => $anggota['nik']], $anggota);
-                    }else{
-                        AnggotaKeluarga::create($anggota);
-                    }
-
-                }
-
-
-                // ✅ Log aktivitas
-                Log::create([
-                    'id_user' => \Auth::id(),
-                    'context' => 'Pendampingan Anak',
-                    'activity' => 'Import pendampingan anak ' . ($row['nama_anak'] ?? '-'),
-                    'timestamp' => now(),
-                ]);
+            // =========================
+            // 6. Keluarga
+            // =========================
+            if (!empty($row['no_kk'] ?? null)) {
+                Keluarga::firstOrCreate(
+                    ['no_kk' => $row['no_kk']],
+                    [
+                        'alamat' => $this->normalizeText($row['alamat']),
+                        'rt' => $row['rt'],
+                        'rw' => $row['rw'],
+                        'id_wilayah' => $wilayah->id,
+                        'is_pending' => false,
+                    ]
+                );
             }
 
-        } catch (Exception $e) {
-            throw $e; // ⬅️ penting supaya Excel::import gagal
-        }
+            // =========================
+            // 7. Log
+            // =========================
+            Log::create([
+                'id_user' => $this->userId,
+                'context' => 'Anak',
+                'activity' => 'Import data anak ' . ($row['nama'] ?? '-'),
+                'timestamp' => now(),
+            ]);
+
+            return $kunjungan;
+        });
     }
 
+    /* ======================
+     * Helper (reuse existing)
+     * ====================== */
+
+    private function normalizeText($value)
+    {
+        return $value ? strtoupper(trim($value)) : null;
+    }
+
+    private function normalizeStatus($value)
+    {
+        return $value ? ucwords(trim($value)) : null;
+    }
+
+    // Irul Custom ConvertDate
     private function convertDate($date)
     {
         if (!$date) {
             return null;
         }
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
+    }
+
+    /* private function convertDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $date = trim($date);
+
+        // 1️⃣ Coba format yang jelas dulu
+        $formats = [
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        foreach ($formats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // 2️⃣ Fallback: split manual (untuk CSV jelek)
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            // asumsi kalau bagian pertama 4 digit = tahun
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        return null;
+    }
+
+    /* private function convertDate($date)
+    {
+        if (!$date)
+            return null;
         $parts = preg_split('/[\/\-]/', $date);
         if (count($parts) === 3) {
             return strlen($parts[2]) === 4
