@@ -193,6 +193,12 @@
 
       <!-- CONTENT -->
       <div class="tooltip-content landing-tooltip">
+        <button
+          class="tooltip-close-btn"
+          @click="hideTooltip"
+        >
+          ✕
+        </button>
         <!-- HEADER -->
         <div class="tooltip-header">
           <div class="tooltip-location">
@@ -558,6 +564,34 @@ function toggleAutoSlide() {
   background: #d2ebe1;
   border-radius: 16px;
   padding: 16px;
+}
+.tooltip-close-btn {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  z-index: 9999;
+
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+
+  background: #dc3545;
+  border: 2px solid #fff;
+  color: #fff;
+
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.tooltip-close-btn:hover {
+  background: #a71d2a;
 }
 .tooltip-content li {
   list-style: none;
