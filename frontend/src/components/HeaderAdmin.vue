@@ -87,11 +87,11 @@ import Swal from 'sweetalert2'
 import axios from 'axios'
 
 // PORT backend kamu
-const API_PORT = 8001;
+const API_PORT = 8000;
 
 // Bangun base URL dari window.location
 const { protocol, hostname } = window.location;
-// contoh hasil: "http://192.168.0.5:8001"
+// contoh hasil: "http://192.168.0.5:8000"
 const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 
 export default {

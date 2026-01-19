@@ -233,7 +233,7 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
 
-const API_PORT = 8001
+const API_PORT = 8000
 const { protocol, hostname } = window.location
 const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
@@ -366,7 +366,7 @@ export default {
       try {
         const cached = localStorage.getItem(this.configCacheKey)
         const { protocol, hostname } = window.location
-        const base = `${protocol}//${hostname}:8001`
+        const base = `${protocol}//${hostname}:8000`
 
         if (cached) {
           const parsed = JSON.parse(cached)

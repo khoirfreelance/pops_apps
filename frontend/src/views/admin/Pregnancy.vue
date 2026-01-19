@@ -916,7 +916,7 @@ import { mapDataIbuHamilToExcel } from "@/mappers/dataIbuHamilMapper";
 import { mapFilterToExcel } from "@/mappers/mapFilterToExcel";
 import { eventBus } from '@/eventBus'
 
-const API_PORT = 8001
+const API_PORT = 8000
 const { protocol, hostname } = window.location
 const baseURL = `${protocol}//${hostname}:${API_PORT}`
 
