@@ -159,8 +159,7 @@
   :key="prov.id"
   class="map-pin-group"
   :transform="`translate(${prov.cx}, ${prov.cy}) scale(0.65)`"
-  @mousemove="moveTooltip($event, prov)"
-  @mouseleave="hideTooltip"
+  @click.stop="toggleTooltip($event, prov)"
   >
     <!-- PIN SHAPE -->
     <path
@@ -238,7 +237,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 
 /* =========================
    HEATMAP DATA (FROM API)
@@ -254,6 +253,7 @@ const stats = reactive({})
 const kelurahanData = reactive({})
 const currentIndex = reactive({ value: 0 })
 let slideTimer = null
+const activeProvKey = ref(null)
 
 
 /* =========================
@@ -401,12 +401,22 @@ function hideTooltip_old() {
 
 function hideTooltip() {
   tooltip.visible = false
+  activeProvKey.value = null
 
   if (slideTimer) {
     clearInterval(slideTimer)
     slideTimer = null
   }
 }
+
+/* function hideTooltip() {
+  tooltip.visible = false
+
+  if (slideTimer) {
+    clearInterval(slideTimer)
+    slideTimer = null
+  }
+} */
 
 
 function moveTooltip(event, prov) {
@@ -424,6 +434,40 @@ function moveTooltip(event, prov) {
   tooltip.y = event.clientY - 60
 
   // START AUTO SLIDE
+  if (slideTimer) clearInterval(slideTimer)
+
+  if (list.length > 1) {
+    slideTimer = setInterval(() => {
+      currentIndex.value =
+        (currentIndex.value + 1) % list.length
+      tooltip.data = list[currentIndex.value]
+    }, 2000)
+  }
+}
+
+function toggleTooltip(event, prov) {
+  const key = normalizeProvName(prov.name)
+  const list = kelurahanData[key] || []
+
+  // 🔁 Klik prov yang sama → toggle OFF
+  if (tooltip.visible && activeProvKey.value === key) {
+    hideTooltip()
+    return
+  }
+
+  // 🔄 Klik prov lain → reset & tampilkan
+  activeProvKey.value = key
+  currentIndex.value = 0
+
+  tooltip.visible = true
+  tooltip.name = prov.name
+  tooltip.list = list
+  tooltip.data = list.length ? list[0] : stats[key] || {}
+
+  tooltip.x = event.clientX + 24
+  tooltip.y = event.clientY - 60
+
+  // ⏱️ AUTO SLIDE
   if (slideTimer) clearInterval(slideTimer)
 
   if (list.length > 1) {
@@ -455,9 +499,6 @@ function prevItem() {
 }
 
 </script>
-
-
-
 
 <style scoped>
 .heatmap-wrapper {
