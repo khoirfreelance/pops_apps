@@ -22,7 +22,7 @@
             </a>
           </li>
 
-          <li class="nav-item d-lg-block text-muted mx-2">|</li>
+          <li class="nav-item d-lg-block text-muted mx-1">|</li>
 
           <li class="nav-item">
             <a class="nav-link text-success" href="#kalkulator">

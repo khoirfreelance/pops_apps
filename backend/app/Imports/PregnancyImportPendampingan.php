@@ -95,21 +95,21 @@ class PregnancyImportPendampingan implements
             }
 
 
-      $hb = $this->normalizeDecimal($row[24] ?? null);
-      // HARD VALIDATION (WAJIB)
-      if ($hb !== null && ($hb < 5 || $hb > 999)) {
-        $hb = null;
-      }
-      $lila = $this->normalizeDecimal($row[26] ?? null);
-      // HARD VALIDATION (WAJIB)
-      if ($lila !== null && ($lila < 10 || $lila > 999)) {
-        $lila = null;
-      }
-      $usia = isset($row[5]) ? (int) $row[5] : null;
-      // HARD VALIDATION (WAJIB)
-      if ($usia !== null && ($usia < 10 || $usia > 999)) {
-        $usia = null;
-      }
+            $hb = $this->normalizeDecimal($row[26] ?? null);
+            // HARD VALIDATION (WAJIB)
+            if ($hb !== null && ($hb < 5 || $hb > 999)) {
+                $hb = null;
+            }
+            $lila = $this->normalizeDecimal($row[28] ?? null);
+            // HARD VALIDATION (WAJIB)
+            if ($lila !== null && ($lila < 10 || $lila > 999)) {
+                $lila = null;
+            }
+            $usia = isset($row[5]) ? (int) $row[5] : null;
+            // HARD VALIDATION (WAJIB)
+            if ($usia !== null && ($usia < 10 || $usia > 999)) {
+                $usia = null;
+            }
 
             $imt = $this->hitungIMT($berat, $tinggi);
 
@@ -126,61 +126,63 @@ class PregnancyImportPendampingan implements
                 'pekerjaan_suami' => $this->normalizeText($row[8] ?? null),
                 'usia_suami' => isset($row[9]) ? (int) $row[9] : null,
 
-        'kehamilan_ke' => $row[10] ?? null,
-        'jumlah_anak' => $row[11] ?? null,
-        'status_kehamilan' => $row[12] ?? null,
-        'riwayat_4t' => $row[13] ?? null,
+                'kehamilan_ke' => $row[10] ?? null,
+                'jumlah_anak' => $jum_anak,
+                'status_kehamilan' => $row[12] ?? null,
+                'riwayat_4t' => $row[13] ?? null,
 
                 'riwayat_penggunaan_kb' => $row[14] ?? null,
                 'riwayat_ber_kontrasepsi' => $row[15] ?? null,
 
-        'provinsi' => $this->wilayahUser['provinsi'],
-        'kota' => $this->wilayahUser['kota'],
-        'kecamatan' => $row[16] ?? null,
-        'kelurahan' => $row[17] ?? null,
-        'rt' => $row[18] ?? null,
-        'rw' => $row[19] ?? null,
+                //'provinsi' => $this->wilayahUser['provinsi'],
+                //'kota' => $this->wilayahUser['kota'],
+                'provinsi' => $this->normalizeText($row[16] ?? null),
+                'kota' => $this->normalizeText($row[17] ?? null),
+                'kecamatan' => $this->normalizeText($row[18] ?? null),
+                'kelurahan' => $this->normalizeText($row[19] ?? null),
+                'rt' => $row[20] ?? null,
+                'rw' => $row[21] ?? null,
 
-        'tanggal_pemeriksaan_terakhir' => $this->convertDate($row[20] ?? null),
-        'berat_badan' => $berat,
-        'tinggi_badan' => $tinggi,
-        'kadar_hb' => $hb,
-        'lila' => $lila,
+                'tanggal_pemeriksaan_terakhir' => $this->convertDate($row[22] ?? null),
+                'berat_badan' => $berat,
+                'tinggi_badan' => $tinggi,
+                'kadar_hb' => $hb,
+                'lila' => $lila,
 
                 'imt' => $imt,
                 'status_gizi_hb' => $hb !== null ? ($hb < 11 ? 'Anemia' : 'Normal') : null,
                 'status_gizi_lila' => $lila !== null ? ($lila < 23.5 ? 'KEK' : 'Normal') : null,
                 'status_risiko_usia' => ($usia < 20 || $usia > 35) ? 'Berisiko' : 'Normal',
 
-        'riwayat_penyakit' => $row[28] ?? null,
-        'usia_kehamilan_minggu' => (int) ($row[29] ?? 0),
-        'taksiran_berat_janin' => $row[30] ?? null,
-        'tinggi_fundus' => $row[31] ?? null,
-        'hpl' => $this->convertDate($row[32] ?? null),
+                'riwayat_penyakit' => $row[30] ?? null,
+                'usia_kehamilan_minggu' => (int) ($row[31] ?? 0),
+                'taksiran_berat_janin' => $row[32] ?? null,
+                'tinggi_fundus' => $row[33] ?? null,
+                'hpl' => $this->convertDate($row[34] ?? null),
 
-        'terpapar_asap_rokok' => $this->toBool($row[33] ?? null),
-        'mendapat_ttd' => $this->toBool($row[34] ?? null),
-        'menggunakan_jamban' => $this->toBool($row[35] ?? null),
-        'menggunakan_sab' => $this->toBool($row[36] ?? null),
-        'fasilitas_rujukan' => $this->toBool($row[37] ?? null),
-        'riwayat_keguguran_iufd' => $this->toBool($row[38] ?? null),
-        'mendapat_kie' => $this->toBool($row[39] ?? null),
-        'mendapat_bantuan_sosial' => $this->toBool($row[40] ?? null),
+                'terpapar_asap_rokok' => $this->toBool($row[35] ?? null),
+                'mendapat_ttd' => $this->toBool($row[36] ?? null),
+                'menggunakan_jamban' => $this->toBool($row[37] ?? null),
+                'menggunakan_sab' => $this->toBool($row[38] ?? null),
+                'fasilitas_rujukan' => $this->toBool($row[39] ?? null),
+                'riwayat_keguguran_iufd' => $this->toBool($row[40] ?? null),
+                'mendapat_kie' => $this->toBool($row[41] ?? null),
+                'mendapat_bantuan_sosial' => $this->toBool($row[42] ?? null),
 
-        'rencana_tempat_melahirkan' => $row[41] ?? null,
-        'rencana_asi_eksklusif' => $row[42] ?? null,
-        'rencana_tinggal_setelah' => $row[43] ?? null,
-        'rencana_kontrasepsi' => $row[44] ?? null,
+                'rencana_tempat_melahirkan' => $row[43] ?? null,
+                'rencana_asi_eksklusif' => $row[44] ?? null,
+                'rencana_tinggal_setelah' => $row[45] ?? null,
+                'rencana_kontrasepsi' => $row[46] ?? null,
 
                 'posyandu' => $this->posyanduUser ?? null,
             ]);
 
-      Wilayah::firstOrCreate([
-        'provinsi' => $this->wilayahUser['provinsi'],
-        'kota' => $this->wilayahUser['kota'],
-        'kecamatan' => $pregnancy->kecamatan,
-        'kelurahan' => $pregnancy->kelurahan,
-      ]);
+            Wilayah::firstOrCreate([
+                'provinsi' => $this->normalizeText($pregnancy->provinsi),
+                'kota' => $this->normalizeText($pregnancy->kota),
+                'kecamatan' => $this->normalizeText($pregnancy->kecamatan),
+                'kelurahan' => $this->normalizeText($pregnancy->kelurahan),
+            ]);
 
             // Takeout cause posyandu get from cadre of user doing the import
             // Posyandu::firstOrCreate([

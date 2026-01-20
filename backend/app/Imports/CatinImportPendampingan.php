@@ -117,13 +117,15 @@ class CatinImportPendampingan implements
 
                 'pernikahan_ke' => $row[13] ?? null,
 
-                'provinsi' => $this->wilayahUser['provinsi'] ?? null,
-                'kota' => $this->wilayahUser['kota'] ?? null,
-                'kecamatan' => $row[14] ?? null,
-                'kelurahan' => $row[15] ?? null,
-                'rw' => $row[16] ?? null,
-                'rt' => $row[17] ?? null,
-                'posyandu' => $this->posyanduUser ?? null,
+                //'provinsi' => $this->wilayahUser['provinsi'] ?? null,
+                //'kota' => $this->wilayahUser['kota'] ?? null,
+                'provinsi' => $this->normalizeText($row[14] ?? null),
+                'kota' => $this->normalizeText($row[15] ?? null),
+                'kecamatan' => $this->normalizeText($row[16] ?? null),
+                'kelurahan' => $this->normalizeText($row[17] ?? null),
+                'rw' => $row[18] ?? null,
+                'rt' => $row[19] ?? null,
+                'posyandu' => $this->normalizeText($this->posyanduUser ?? null),
 
                 'tanggal_pemeriksaan' => $row[20] != null ? $this->convertDate($row[20]) : null,
                 'berat_perempuan' => $berat,
