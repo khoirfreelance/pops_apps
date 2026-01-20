@@ -2,23 +2,26 @@
 
 namespace App\Imports;
 
-use App\Models\Child;
-use App\Models\User;
+use App\Models\Kunjungan;
 use App\Models\Wilayah;
-use App\Models\Log;
+use App\Models\Posyandu;
 use App\Models\Keluarga;
 use App\Models\Log;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Exception;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
-class ChildrenImportPendampingan implements ToCollection, WithStartRow
+class ChildrenImportKunjungan implements
+    ToModel,
+    WithHeadingRow,
+    WithCustomCsvSettings
 {
     protected array $wilayahUser = [];
-    public function __construct(private int $userId)
-    {
+    public function __construct(private int $userId) {
         $this->loadWilayahUser();
     }
 
@@ -56,6 +59,31 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
     {
         //dd($row);
         return DB::transaction(function () use ($row) {
+            $user = Auth::user();
+
+            // =========================
+            // 0. Validasi data import
+            // =========================
+            $nik = $this->normalizeNik($row['nik'] ?? null);
+            $nama = $this->normalizeText($row['nama'] ?? '-');
+            $tglUkur = $this->convertDate($row['tanggal_pengukuran'] ?? null);
+
+            if (!$nik || !$tglUkur) {
+                throw new \Exception(
+                    "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}"
+                );
+            }
+
+            $duplikat = Kunjungan::where('nik', $nik)
+                ->whereDate('tgl_pengukuran', $tglUkur)
+                ->first();
+
+            if ($duplikat) {
+                throw new \Exception(
+                    "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
+                    . $duplikat->created_at->format('d-m-Y')
+                );
+            }
 
             // =========================
             // 1. Parse tanggal
@@ -82,13 +110,24 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
             $naikBB = $this->normalizeNaikBeratBadan($row["naik_berat_badan"]);
 
+            $jkRaw = trim($row['jk'] ?? '');
+            $jk = strtoupper($jkRaw);
+
+            $validateJK = in_array($jk, ['L', 'P']);
+
+            if (!$validateJK) {
+                throw new \Exception(
+                    "Format salah pada kolom JK. Nilai: '{$jkRaw}'. Gunakan L atau P."
+                );
+            }
+
             // =========================
             // 4. Simpan Kunjungan
             // =========================
             $kunjungan = Kunjungan::create([
-                'nik' => $row['nik'],
+                'nik' => $this->normalizeNik($row['nik'] ?? null),
                 'nama_anak' => $this->normalizeText($row['nama'] ?? null),
-                'jk' => $this->normalizeText($row['jk'] ?? null),
+                'jk' => $this->normalizeText($jk ?? null),
                 'tgl_lahir' => $tglLahir,
                 'bb_lahir' =>  $this->normalizeDecimal($row['bb_lahir']??null),
                 'tb_lahir' => $this->normalizeDecimal($row['tb_lahir']??null),
@@ -117,6 +156,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 'bb_tb' => $this->normalizeStatus($status_bbtb),
                 'zs_bb_tb' => $z_bbtb,
                 'naik_berat_badan' => $naikBB,
+                'catatan' => 'Perekaman data '.$row['nama'].' pada '.$tglUkur.' dengan hasil '.$this->normalizeStatus($status_bbtb).' secara import data',
+                'petugas' => $user->name,
             ]);
 
             // =========================
@@ -171,6 +212,25 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
     /* ======================
      * Helper (reuse existing)
      * ====================== */
+
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
 
     private function normalizeText($value)
     {
@@ -281,7 +341,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         }
 
         return null;
-    }
+    } */
 
     /* private function convertDate($date)
     {
@@ -294,119 +354,82 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 : "{$parts[0]}-{$parts[1]}-{$parts[2]}";
         }
         return null;
-    }
+    } */
 
-    private function hitungZScore($tipe, $jk, $usiaOrTb, $bb)
+    /** Hitung umur (bulan) */
+    private function hitungUmurBulan($tglLahir, $tglUkur)
     {
-        $sex = ($jk == 'L' || $jk == 'l' || $jk == 1 || $jk == "LAKI-LAKI") ? 1 : 2;
+        if (!$tglLahir || !$tglUkur)
+            return null;
 
-        switch ($tipe) {
-            case 'BB/U':
-                $usia = round($usiaOrTb);
-                $row = \DB::table('who_weight_for_age')
-                    ->where('sex', $sex)
-                    ->where('age_month', $usia)
-                    ->first();
-                break;
+        $lahir = new \DateTime($tglLahir);
+        $ukur = new \DateTime($tglUkur);
+        $diff = $lahir->diff($ukur);
 
-            case 'TB/U':
-                $usia = round($usiaOrTb);
-                $row = \DB::table('who_height_for_age')
-                    ->where('sex', $sex)
-                    ->where('age_month', $usia)
-                    ->first();
-                break;
-
-            case 'BB/TB':
-                $tb = round($usiaOrTb);
-                $row = \DB::table('who_weight_for_height')
-                    ->where('sex', $sex)
-                    ->where('height_cm', $tb)
-                    ->first();
-                break;
-
-            default:
-                return null;
-        }
-
-        if (!$row) {
+        return $diff->y * 12 + $diff->m + ($diff->d / 30);
+    }
+    private function normalizeDecimal($value)
+    {
+        if ($value === null || $value === '') {
             return null;
         }
 
-        return $this->hitungZScoreLMS($bb, $row->L, $row->M, $row->S);
+        // ganti koma menjadi titik
+        $value = str_replace(',', '.', $value);
+
+        return is_numeric($value) ? (float) $value : null;
     }
 
-    private function hitungZScoreLMS($nilai, $L, $M, $S)
+    private function statusBB($status){
+        $beratBadan = [
+            "Sangat Kurang" => "Severely Underweight",
+            "Kurang" => "Underweight",
+            "Normal" => "Normal",
+            "Risiko Berat Badan Lebih" => "Risiko BB Lebih",
+            "BB Lebih" => "BB Lebih",
+        ];
+        return $beratBadan[$status] ?? null;
+    }
+
+    private function statusTB($status){
+        $tinggiBadan = [
+            "Sangat Pendek" => "Severely Stunted",
+            "Pendek" => "Stunted",
+            "Normal" => "Normal",
+            "Tinggi" => "Tinggi",
+        ];
+        return $tinggiBadan[$status] ?? null;
+    }
+
+    private function statusBBTB($status){
+        $bbTb = [
+            "Gizi Buruk" => "Severely Wasted",
+            "Gizi Kurang" => "Wasted",
+            "Gizi Baik" => "Normal",
+            "Risiko Gizi Lebih" => "Possible Risk of Overweight",
+            "Gizi Lebih" => "Overweight",
+            "Obesitas" => "Obese",
+        ];
+        return $bbTb[$status] ?? null;
+    }
+
+    private function normalizeNaikBeratBadan($value)
     {
-        if ($L == 0) {
-            $z = log($nilai / $M) / $S;
-        } else {
-            $z = (pow(($nilai / $M), $L) - 1) / ($L * $S);
+        if (is_null($value)) {
+            return null;
         }
 
-        // Bulatkan ke 2 angka di belakang koma
-        return round($z, 2);
-    }
+        $value = strtolower(trim($value));
 
-
-    private function statusBBU($z)
-    {
-        $result = null;
-        if (is_null($z)) {
-            $result = null;
-        } elseif ($z < -3) {
-            $result = 'Severely Underweight';
-        } elseif ($z < -2) {
-            $result = 'Underweight';
-        } elseif ($z <= 1) {
-            $result = 'Normal';
-        } elseif ($z <= 2) {
-            $result = 'Risiko BB Lebih';
-        } else {
-            $result = 'Overweight';
-        }
-        return $result;
-    }
-
-    private function statusTBU($z)
-    {
-        $result = null;
-        if (is_null($z)) {
-            $result = null;
-        } elseif ($z < -3) {
-            $result = 'Severely Stunted';
-        } elseif ($z < -2) {
-            $result = 'Stunted';
-        } elseif ($z <= 2) {
-            $result = 'Normal';
-        } else {
-            $result = 'Tinggi';
-        }
-        return $result;
-    }
-
-    private function statusBBTB($z)
-    {
-        $result = null;
-
-        if ($z === null) {
-            $result = null;
-        } elseif ($z < -3) {
-            $result = 'Severely Wasted';
-        } elseif ($z < -2) {
-            $result = 'Wasted';
-        } elseif ($z <= 1) {
-            $result = 'Normal';
-        } elseif ($z <= 2) {
-            $result = 'Risk of Overweight';
-        } elseif ($z <= 3) {
-            $result = 'Overweight';
-        } else {
-            $result = 'Obese';
+        if (in_array($value, ['yes', 'ya', '1', 'true', 'T'])) {
+            return true;
+        } elseif (in_array($value, ['no', 'tidak', '0', 'false', 'F'])) {
+            return false;
         }
 
-        return $result;
+        return null;
     }
+
     protected function loadWilayahUser(): void
     {
         $user = User::find($this->userId);
@@ -430,54 +453,4 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
             'kelurahan' => $zona->kelurahan ?? null,
         ];
     }
-
-    protected function normalizeBeratGramToKg($berat)
-    {
-        if (is_null($berat) || $berat === '') {
-            return null;
-        }
-
-        $berat = floatval(str_replace(',', '.', trim($berat)));
-
-        // Jika berat lebih dari 100, anggap dalam gram
-        if ($berat > 100) {
-            return round($berat / 1000, 2); // Konversi ke kg
-        }
-
-        return round($berat, 2); // Sudah dalam kg
-    }
-
-    protected function normalizePanjangMToCM($panjang)
-    {
-        if (is_null($panjang) || $panjang === '') {
-            return null;
-        }
-
-        $panjang = floatval(str_replace(',', '.', trim($panjang)));
-
-        // Jika panjang kurang dari atau sama dengan 1, anggap dalam meter
-        if ($panjang <= 1) {
-            return round($panjang * 100, 2); // Konversi ke cm
-        }
-
-        return round($panjang, 2); // Sudah dalam cm
-    }
-
-    protected function normalizeJenisKelamin($jk)
-    {
-        if (is_null($jk) || $jk === '') {
-            return null;
-        }
-
-        $jk = strtoupper(trim($jk));
-
-        if (in_array($jk, ['L', 'LAKI-LAKI', 'PRIA', '1'])) {
-            return 'L';
-        } elseif (in_array($jk, ['P', 'PEREMPUAN', 'WANITA', '2'])) {
-            return 'P';
-        }
-
-        return null; // Nilai tidak valid
-    }
-
 }
