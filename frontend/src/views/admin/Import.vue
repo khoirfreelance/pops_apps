@@ -1016,18 +1016,18 @@ export default {
   computed: {
     exampleFile() {
       switch (this.aktifitas) {
-        case "kunjungan":
-          return "/example_kunjungan_posyandu.csv";
-        case "pendampingan_anak":
-          return "/example_pendampingan_anak.csv";
-        case "intervensi_anak":
-          return "/example_intervensi_anak.csv";
-        case "pendampingan_bumil":
-          return "/example_bumil.csv";
-        case "intervensi_bumil":
-          return "/example_intervensi_bumil.csv";
-        case "pendampingan_catin":
-          return "/example_catin.csv";
+        case "Kunjungan Posyandu":
+          return "/example_kunjungan_posyandu.xlsx";
+        case "Pendampingan Anak":
+          return "/example_pendampingan_anak.xlsx";
+        case "Intervensi Anak":
+          return "/example_intervensi_anak.xlsx";
+        case "Pendampingan Bumil":
+          return "/example_pendampingan_bumil.xlsx";
+        case "Intervensi Bumil":
+          return "/example_intervensi_bumil.xlsx";
+        case "Pendampingan Catin":
+          return "/example_pendampingan_catin.xlsx";
         default:
           return "#";
       }
@@ -1872,12 +1872,32 @@ export default {
     },
     // Delete via backend
     async delItem(item) {
-      const nik = item.nik
-      const confirmed = await this.confirmModal("Yakin ingin menghapus data ini?")
-      if (!confirmed) return
+      this.transaksi = 'menghapus'
+      //console.log('isi item:',item);
+      const nama = item.nama_anak || item.nama_perempuan || item.nama_ibu
+      let nik = null
 
-      let res = null // <<< ini penting
+      const result = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus data <strong>${this.capitalizeName(nama)}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
 
+      if (!result.isConfirmed) return
+
+
+      this.isLoadingImport = true
+      this.importProgress = 10
+      this.animatedProgress = 10
       try {
         switch (this.activeMenu) {
           case 'anak':
@@ -1911,8 +1931,35 @@ export default {
             break;
         }
 
-        this.showSuccess(res?.data?.message || "Data berhasil dihapus!")
+        this.importProgress = 70
+        this.animatedProgress = 70
+        await this.loadData()
+        this.importProgress = 100
 
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        //console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          html: `Data <b>${this.capitalizeName(nama)}</b> berhasil dihapus!`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
       } catch (e) {
         this.importProgress = 0
         this.animatedProgress = 0
@@ -2232,14 +2279,25 @@ export default {
         //this.showSuccess(res.data.message || 'Data berhasil diimport!')
 
       } catch (err) {
-        console.error('Upload error:', err)
+        const detail = err.response?.data?.detail
+        console.log(err);
 
         const message =
           detail ||
           err.response?.data?.message ||
           'Format CSV tidak valid'
 
-        this.showError(message)
+        Swal.fire({
+          title: 'Error',
+          html: message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        console.error('Upload error:', err.response?.data)
       } finally {
         this.isLoadingImport = false
 
