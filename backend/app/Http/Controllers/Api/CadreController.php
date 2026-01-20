@@ -157,7 +157,7 @@ class CadreController extends Controller
                 'email'      => $request->email,
                 'phone'      => $request->phone,
                 'role'       => $request->role,
-                'status'     => $request->status,
+                'status'     => $request->statusUser,
                 'is_pending' => $isPendingUser,
             ];
 
@@ -200,7 +200,6 @@ class CadreController extends Controller
         }
     }
 
-
     public function pendingData()
     {
         $cadres = Cadre::with(['tpk', 'user', 'posyandu'])
@@ -242,7 +241,9 @@ class CadreController extends Controller
             ->firstOrFail();
 
         $data = [
-            'id'            => $cadre->id,
+            'isActive'      => $cadre->user->status ?? null,
+            'idTPK'         => $cadre->id,
+            'id'            => $cadre->id_user,
             'no_tpk'        => $cadre->tpk->no_tpk ?? null,
             'nama'          => $cadre->user->name ?? null,
             'nik'           => $cadre->user->nik ?? null,

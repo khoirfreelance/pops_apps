@@ -626,6 +626,7 @@ export default {
       posyanduDisabled: true,
       form: {
         id: null,
+        idTPK: null,
         nik: '',
         no_tpk_new: '',
         no_tpk: '',
@@ -1168,6 +1169,8 @@ export default {
 
         // mapping ke form sesuai struktur
         this.form = {
+          statusUser: data.isActive,
+          idTPK: data.idTPK,
           id: data.id,
           nik: data.nik,
           no_tpk: data.no_tpk,
@@ -1245,7 +1248,7 @@ export default {
         console.log(res.data.message);
         Swal.fire({
           icon: 'success',
-          html: `Data <b>${this.capitalizeName(nama)}</b> berhasil ditambahkan`,
+          html: `Data <b>${this.capitalizeName(nama)}</b> berhasil diperbarui`,
           buttonsStyling: false,
           customClass: {
             confirmButton: 'btn btn-primary mx-1',
