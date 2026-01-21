@@ -192,7 +192,7 @@
                         class="form-select shadow-sm"
                         v-model="form.kota"
                         @change="loadKecamatan"
-                        :readonly="isKKChecked"
+                        :disabled="isKKChecked || KotaReadonly"
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
@@ -219,6 +219,7 @@
                         class="form-select shadow-sm"
                         v-model="form.kecamatan"
                         @change="loadKelurahan"
+                        :disabled="isKKChecked || KecReadonly"
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
@@ -244,7 +245,7 @@
                       <select
                         class="form-select shadow-sm"
                         v-model="form.kelurahan"
-                        :readonly="isKKChecked"
+                        :disabled="isKKChecked || KelReadonly"
                       >
                         <option value="">Pilih</option>
                         <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
@@ -408,7 +409,7 @@
 
           <!-- Table -->
           <div class="container-fluid">
-            <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
+            <!-- <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
               <div class="card-body bg-additional rounded">
                 <div class="d-flex justify-content-between">
                   <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
@@ -430,7 +431,7 @@
                   </template>
                 </EasyDataTable>
               </div>
-            </div>
+            </div> -->
             <div class="card modern-card mt-4">
               <div class="card-body">
                 <div class="table-responsive">
@@ -439,10 +440,10 @@
                     :headers="headers"
                     :items="filteredFamily"
                   >
-                  <template #item-action="{ no_kk }">
+                  <template #item-action="{ id }">
                     <button
                       class="btn btn-primary m-2"
-                      @click="openFamilyModal(no_kk)"
+                      @click="openFamilyModal(id)"
                       style="font-size: small;"
                     >
                       <i class="fa fa-eye"></i>
@@ -475,7 +476,7 @@
               <li>Import data untuk data Keluarga</li>
               <li>Pastikan data yang diimport, berformat csv</li>
               <li>Pastikan data sudah lengkap sebelum di import</li>
-              <li>Silahkan unduh contoh dengan klik <a href="/keluarga.csv" download="keluarga.csv">Example.csv</a></li>
+              <li>Silahkan unduh contoh dengan klik <a href="/example_keluarga.xlsx" download="keluarga.csv">Example</a></li>
             </ul>
           </div>
           <input type="file" class="form-control" ref="csvFile" accept=".csv" />
@@ -664,6 +665,7 @@ import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
+import Swal from 'sweetalert2'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -681,6 +683,8 @@ export default {
     return {
       configCacheKey: 'site_config_cache',
       // required
+      ACCEPTED_EXT: ['csv'],
+      MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
       isLoading: true,
       isCollapsed: false,
       username: '',
@@ -691,6 +695,9 @@ export default {
       logoLoaded: true,
       windowWidth: window.innerWidth,
       // -------------------
+      KotaReadonly: true,
+      KecReadonly: true,
+      KelReadonly: true,
       modalMode: "add",
       selectedFamily: null,
       isKKChecked: false,
@@ -736,6 +743,7 @@ export default {
       family: [],
       familyPending: [],
       headers: [
+        { text: 'ID', value: 'id' },
         { text: 'No KK', value: 'no_kk' },
         { text: 'NIK', value: 'nik_kepala' },
         { text: 'Kepala Keluarga', value: 'nama_kepala' },
@@ -746,7 +754,7 @@ export default {
         { text: 'Jumlah Anggota', value: 'jml_anggota' },
         { text: 'Action', value: 'action' },
       ],
-      headers_pending: [
+      /*headers_pending: [
         { text: 'ID', value: 'id' },
         { text: 'No KK', value: 'no_kk' },
         { text: 'NIK', value: 'nik' },
@@ -757,7 +765,7 @@ export default {
         { text: 'Pendidikan', value: 'pendidikan' },
         { text: 'Tipe Pending', value: 'tipe' },
         { text: 'Action', value: 'action' },
-      ],
+      ],*/
       filter: {
         nik_kepala: '',
         no_kk: '',
@@ -772,6 +780,8 @@ export default {
   },
   computed: {
     filteredFamily() {
+      console.log('computed family:', this.family);
+
       return this.family.filter((item) => {
         return (
           (!this.filter.nik_kepala || item.nik_kepala.includes(this.filter.nik_kepala)) &&
@@ -882,9 +892,9 @@ export default {
     toggleExpandForm() {
       this.isFormOpen = !this.isFormOpen
     },
-    toggleExpandPending() {
+    /* toggleExpandPending() {
       this.isPendingOpen = !this.isPendingOpen
-    },
+    }, */
     async checkNoKK() {
       if (!this.form.no_kk) {
         this.isKKChecked = false;
@@ -953,6 +963,7 @@ export default {
       }
     },
     async loadKota() {
+      this.KotaReadonly = false
       if (this.form.provinsi && this.form.provinsi !== "__new__") {
         const res = await axios.get(`${baseURL}/api/region/kota`, {
           params: { provinsi: this.form.provinsi }
@@ -966,6 +977,7 @@ export default {
       }
     },
     async loadKecamatan() {
+      this.KecReadonly = false
       if (this.form.kota && this.form.kota !== "__new__") {
         const res = await axios.get(`${baseURL}/api/region/kecamatan`, {
           params: { provinsi: this.form.provinsi, kota: this.form.kota }
@@ -977,6 +989,7 @@ export default {
       }
     },
     async loadKelurahan() {
+      this.KelReadonly = false
       if (this.form.kecamatan && this.form.kecamatan !== "__new__") {
         const res = await axios.get(`${baseURL}/api/region/kelurahan`, {
           params: {
@@ -998,7 +1011,7 @@ export default {
           }
         })
         this.family = res.data
-        //console.log(this.family);
+        console.log('family:',this.family);
       } catch (e) {
         console.error('Gagal ambil data:', e)
       }
@@ -1124,7 +1137,7 @@ export default {
         //alert("Data berhasil diupdate")
         this.isFormOpen = false
         this.isPendingOpen = false
-        this.getPendingData()
+        //this.getPendingData()
         this.loadFamily()
         const modal = new Modal(document.getElementById("successModal"))
         modal.show()
@@ -1155,7 +1168,7 @@ export default {
         })
 
         // refresh table
-        await this.getPendingData()
+        //await this.getPendingData()
         await this.loadFamily()
 
         // reset form
@@ -1195,10 +1208,10 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    async openFamilyModal(no_kk) {
+    async openFamilyModal(id) {
       try {
         // panggil API detail by id
-        const res = await axios.get(`${baseURL}/api/family/detail/${no_kk}`,{
+        const res = await axios.get(`${baseURL}/api/family/detail/${id}`,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1215,11 +1228,244 @@ export default {
         console.error("Gagal ambil detail keluarga:", e)
       }
     },
+    validateFile(file) {
+      if (!file) {
+        return { valid: false, message: 'File tidak ditemukan.' }
+      }
+
+      const nameParts = (file.name || '').split('.')
+      const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
+
+      if (!this.ACCEPTED_EXT.includes(ext)) {
+        return { valid: false, message: 'Format file tidak didukung. Hanya .csv' }
+      }
+
+      if (file.size > this.MAX_FILE_SIZE) {
+        return {
+          valid: false,
+          message: `Ukuran file terlalu besar. Maks ${this.humanFileSize(this.MAX_FILE_SIZE)}.`
+        }
+      }
+
+      return { valid: true }
+    },
+    /* async uploadCSV() {
+      // 1️⃣ Cek file ada atau tidak
+      if (!this.file) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Tidak ada file untuk di-upload.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        return
+      }
+
+      // 2️⃣ Validasi file (OPSI 1)
+      const validation = this.validateFile(this.file)
+      if (!validation.valid) {
+        Swal.fire({
+          title: 'Error',
+          text: validation.message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        return
+      }
+
+      // 3️⃣ Tentukan endpoint sesuai menu aktif
+      let UPLOAD_URL
+      console.log('active: ',this.activeMenu,'activity: ',this.aktifitas);
+
+      switch (this.activeMenu) {
+        case 'anak':
+          switch (this.aktifitas) {
+            case 'Kunjungan Posyandu':
+              UPLOAD_URL = `${baseURL}/api/children/import_kunjungan`
+              break
+            case 'Pendampingan Anak':
+              UPLOAD_URL = `${baseURL}/api/children/import_pendampingan`
+              break
+            case 'Intervensi Anak':
+              UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
+              break
+          }
+          break
+
+        case 'bumil':
+          switch (this.aktifitas) {
+            case 'Pendampingan Bumil':
+              UPLOAD_URL = `${baseURL}/api/pregnancy/import`
+              break
+            case 'Intervensi Bumil':
+              UPLOAD_URL = `${baseURL}/api/pregnancy/import_intervensi`
+              break
+          }
+          break
+
+        case 'catin':
+          UPLOAD_URL = `${baseURL}/api/bride/import`
+          break
+      }
+
+      if (!UPLOAD_URL) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Endpoint upload tidak ditemukan.',UPLOAD_URL,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        return
+      }
+
+      const formData = new FormData()
+      formData.append('file', this.file)
+
+      this.transaksi = 'mengunggah'
+      this.isLoadingImport = true
+      this.importProgress = 0
+      this.animatedProgress = 0
+
+      await this.$nextTick()
+      this.importProgress = 10
+      this.animatedProgress = 10
+
+      try {
+        const res = await axios.post(UPLOAD_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.lengthComputable) {
+              this.uploadProgress = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              )
+            }
+          }
+        })
+        // 🔥 pastikan progress berhenti
+        this.uploadProgress = 100
+
+        this.importProgress = 50
+        this.animatedProgress = 50
+        this.formOpen = false
+        this.formOpen_bumil = false
+        this.formOpen_catin = false
+        this.isUploadOpen = !this.isUploadOpen
+        this.isUploadOpen_bumil = !this.isUploadOpen_bumil
+        this.isUploadOpen_catin = !this.isUploadOpen_catin
+        this.removeFile()
+
+        this.importProgress = 70
+        this.animatedProgress = 70
+        await this.loadData()
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        // ✅ sukses
+        console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          text: res.data.message || 'Data berhasil diimport!',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
+        //this.showSuccess(res.data.message || 'Data berhasil diimport!')
+
+      } catch (err) {
+        const detail = err.response?.data?.detail
+        console.log(err);
+
+        const message =
+          detail ||
+          err.response?.data?.message ||
+          'Format CSV tidak valid'
+
+        Swal.fire({
+          title: 'Error',
+          html: message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        console.error('Upload error:', err.response?.data)
+      } finally {
+        this.isLoadingImport = false
+
+        // 🛑 reset total state progress
+        this.uploadProgress = 0
+        this.importProgress = 0
+        this.animatedProgress = 0
+
+        // jika pakai interval / RAF
+        if (this.progressTimer) {
+          clearInterval(this.progressTimer)
+          this.progressTimer = null
+        }
+      }
+    }, */
     async handleImport() {
       const file = this.$refs.csvFile.files[0];
       if (!file) {
-        alert("Pilih file CSV dulu!");
+        Swal.fire({
+          title: 'Error',
+          text: 'Tidak ada file untuk di-upload.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         return;
+      }
+
+      // 2️⃣ Validasi file (OPSI 1)
+      const validation = this.validateFile(file)
+      if (!validation.valid) {
+        Swal.fire({
+          title: 'Error',
+          text: validation.message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        return
       }
 
       const formData = new FormData();
@@ -1230,7 +1476,7 @@ export default {
       this.animatedProgress = 0;
 
       try {
-        await axios.post(`${baseURL}/api/family/import`, formData, {
+        const res = await axios.post(`${baseURL}/api/family/import`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             Accept: 'application/json',
@@ -1246,21 +1492,75 @@ export default {
           },
         });
 
-        // refresh data keluarga
-        await this.loadFamily();
-        await this.getPendingData();
-
         this.closeModal("modalImport");
-        this.showAlert = true;
-        setTimeout(() => (this.showAlert = false), 3000);
+        //this.importProgress = 50
+        this.animatedProgress = 50
+        this.animatedProgress = 70
+        await this.loadFamily();
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        // ✅ sukses
+        console.log(res.data.message);
+        Swal.fire({
+          icon: 'success',
+          text: res.data.message || 'Data berhasil diimport!',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
+
+        // refresh data keluarga
+
+        //await this.getPendingData();
+
+        //this.closeModal("modalImport");
+        //this.showAlert = true;
+        //setTimeout(() => (this.showAlert = false), 3000);
       } catch (err) {
+        this.closeModal("modalImport");
+        this.isLoadingImport = false
+
+        const detail = err.response?.data?.detail
+        console.log(err);
+
+        const message =
+          detail ||
+          err.response?.data?.message ||
+          'Gagal mengunggah data keluarga'
+
+        Swal.fire({
+          title: 'Error',
+          html: message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         console.error("Gagal import:", err.response?.data || err);
         //alert("Gagal import data!");
       } finally {
         this.isLoadingImport = false;
       }
     },
-    async getPendingData() {
+    /* async getPendingData() {
       try {
         const res = await axios.get(`${baseURL}/api/family/pending`,{
           headers: {
@@ -1273,7 +1573,7 @@ export default {
       } catch (err) {
         console.error("Gagal fetch pending data:", err)
       }
-    },
+    }, */
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1297,7 +1597,7 @@ export default {
         this.loadConfigWithCache(),
         this.loadFamily(),
         this.loadProvinsi(),
-        this.getPendingData(),
+        //this.getPendingData(),
         //this.getWilayahUser(),
         this.handleResize(),
         window.addEventListener('resize', this.handleResize)

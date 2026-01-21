@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Family Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('family', FamilyController::class)->only(['index','store']);
-    Route::get('/family/detail/{no_kk}', [FamilyController::class, 'detail']);
+    Route::get('/family/detail/{id}', [FamilyController::class, 'detail']);
     Route::get('/family/check', [FamilyController::class, 'checkNoKK']);
     Route::post('/family/import', [FamilyController::class, 'import']);
     Route::get('/family/pending', [FamilyController::class, 'pendingData']);

@@ -2088,7 +2088,7 @@ export default {
       const nameParts = (file.name || '').split('.')
       const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : ''
       if (!this.ACCEPTED_EXT.includes(ext)) {
-        return { valid: false, message: 'Format file tidak didukung. Hanya .csv, .xlxs atau .xls yang diperbolehkan.' }
+        return { valid: false, message: 'Format file tidak didukung Hanya .csv' }
       }
 
       // mime (beberapa browser pakai text/plain)

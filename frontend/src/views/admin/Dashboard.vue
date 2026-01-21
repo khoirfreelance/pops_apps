@@ -95,7 +95,7 @@
               <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-2">
                 <label class="form-label" style="font-weight: 600;">Posyandu</label>
                 <select v-model="filters.posyandu" class="form-select text-muted uniform-input"
-                  @change="handlePosyanduChange">
+                  @change="handlePosyanduChange" :disabled="isPosyanduDisable">
                   <option value="">All</option>
                   <option v-for="item in posyanduList" :key="item.id" :value="item.nama_posyandu">
                     {{ item.nama_posyandu }}
@@ -2175,6 +2175,7 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      isPosyanduDisable: true,
       listKelurahan: [],
       isExporting: false,
       exportCharts: ['bb', 'tb', 'bbtb'],
@@ -2339,6 +2340,7 @@ export default {
       })
     },
     handleRegionChange() {
+      this.isPosyanduDisable = false
       const idWilayah = this.filters.kelurahan_id
 
       // 🔁 DEFAULT / ALL
@@ -2394,6 +2396,7 @@ export default {
           },
         }
       )
+      //this.isPosyanduDisable = false
       console.log('loadRegion');
 
       this.listKelurahan = res.data.data || []
@@ -2884,7 +2887,7 @@ export default {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
-
+      this.isPosyanduDisable = false
       const wilayah = res.data
 
       this.filters.kelurahan_id    = wilayah.id_wilayah

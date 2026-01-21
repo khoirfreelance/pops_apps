@@ -16,7 +16,7 @@ class FamilyController extends Controller
     public function index()
     {
         $keluargas = Keluarga::with('kepala')
-                    ->where('is_pending', 0)
+                    //->where('is_pending', 0)
                     ->get();
 
         $data = $keluargas->map(function ($k) {
@@ -141,11 +141,10 @@ class FamilyController extends Controller
         return response()->json(['exists' => false]);
     }
 
-    public function detail($no_kk)
+    public function detail($id)
     {
         $keluarga = Keluarga::with(['wilayah', 'anggota'])
-                    ->where('no_kk', $no_kk)
-                    ->where('is_pending', '0')
+                    ->where('id', $id)
                     ->firstOrFail();
 
         return response()->json([
@@ -183,79 +182,350 @@ class FamilyController extends Controller
         ]);
     }
 
+    private function detectDelimiter($filePath)
+    {
+        $delimiters = [',', ';'];
+        $handle = fopen($filePath, 'r');
+        $firstLine = fgets($handle);
+        fclose($handle);
+
+        $maxCount = 0;
+        $selectedDelimiter = ',';
+
+        foreach ($delimiters as $delimiter) {
+            $count = count(str_getcsv($firstLine, $delimiter));
+            if ($count > $maxCount) {
+                $maxCount = $count;
+                $selectedDelimiter = $delimiter;
+            }
+        }
+
+        return $selectedDelimiter;
+    }
+
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick, spasi, dan karakter aneh
+        $nik = trim($nik);
+        $nik = str_replace('`', '', $nik);
+
+        // ambil HANYA angka
+        //$nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+
+    private function convertDate($date)
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            'm/d/Y',
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
+    }
+
+    private function normalizeText($value)
+    {
+        return $value ? strtoupper(trim($value)) : null;
+    }
+
+    private function headerMap()
+    {
+        return [
+            'No. KK' => 'no_kk',
+            'Alamat' => 'alamat',
+            'RT' => 'rt',
+            'RW' => 'rw',
+            'Provinsi' => 'provinsi',
+            'Kota/Kabupaten' => 'kota',
+            'Kecamatan' => 'kecamatan',
+            'Kelurahan/Desa' => 'kelurahan',
+            'NIK' => 'nik',
+            'NAMA' => 'nama',
+            'TGL LAHIR' => 'tanggal_lahir',
+            'JENIS KELAMIN (L/P)' => 'jenis_kelamin',
+            'STATUS HUBUNGAN (KEPALA KELUARGA/IBU/ANAK/SAUDARA/DLL)' => 'status_hubungan',
+            'PEKERJAAN' => 'pekerjaan',
+            'AGAMA' => 'agama',
+            'STATUS PERKAWINAN (KAWIN/BELUM KAWIN)' => 'status_perkawinan',
+            'KEWARGANEGARAAN (WNI/WNA)' => 'kewarganegaraan',
+        ];
+    }
+
+    private function validateEnum($value, array $allowed, $field, $rowNumber)
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $value = strtoupper(trim($value));
+
+        if (!in_array($value, $allowed)) {
+            throw new \Exception(
+                "Baris {$rowNumber}: nilai <strong>{$value}</strong> tidak valid untuk kolom <strong>{$field}</strong>.<br>"
+                . "Nilai yang diperbolehkan: <strong>" . implode(', ', $allowed) . "</strong>"
+            );
+        }
+
+        return $value;
+    }
+
+    private function allowedEnums()
+    {
+        return [
+            'jenis_kelamin' => ['L', 'P'],
+            'status_hubungan' => [
+                'KEPALA KELUARGA',
+                'IBU',
+                'AYAH',
+                'ANAK',
+                'SAUDARA',
+                'LAINNYA',
+            ],
+            'status_perkawinan' => [
+                'KAWIN',
+                'BELUM KAWIN',
+                'CERAI HIDUP',
+                'CERAI MATI',
+            ],
+            'kewarganegaraan' => ['WNI', 'WNA'],
+            'agama' => [
+                'ISLAM',
+                'KRISTEN',
+                'KATOLIK',
+                'HINDU',
+                'BUDDHA',
+                'KONGHUCU',
+                'LAINNYA'
+            ],
+        ];
+    }
+
     public function import(Request $request)
     {
+        // =========================
+        // VALIDASI FILE
+        // =========================
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048'
+            'file' => [
+                'required',
+                'file',
+                'max:5120',
+                function ($attr, $file, $fail) {
+                    $allowed = [
+                        'text/csv',
+                        'text/plain',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    ];
+
+                    if (!in_array($file->getMimeType(), $allowed)) {
+                        $fail('Tipe file tidak valid.');
+                    }
+                },
+            ],
         ]);
 
         $file = $request->file('file');
         $path = $file->getRealPath();
-        $data = array_map('str_getcsv', file($path));
 
-        // anggap baris pertama header CSV
-        $header = array_map('trim', $data[0]);
-        unset($data[0]);
+        // =========================
+        // BACA CSV
+        // =========================
+        $delimiter = $this->detectDelimiter($path);
+        $rows = array_map(
+            fn ($row) => str_getcsv($row, $delimiter),
+            file($path)
+        );
+
+        if (count($rows) < 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File CSV kosong atau hanya berisi header.'
+            ], 422);
+        }
+
+        // =========================
+        // HEADER MAPPING
+        // =========================
+        $rawHeader = array_map('trim', $rows[0]);
+        $map = $this->headerMap();
+
+        $header = [];
+        foreach ($rawHeader as $h) {
+            if (!isset($map[$h])) {
+                throw new \Exception("Header CSV <strong>{$h}</strong> tidak dikenali.");
+            }
+            $header[] = $map[$h];
+        }
+
+        unset($rows[0]);
+
+        // =========================
+        // ENUM CONFIG
+        // =========================
+        $enums = $this->allowedEnums();
+        $rowNumber = 1;
+        $saved = 0;
+        $pending = 0;
 
         DB::beginTransaction();
         try {
-            foreach ($data as $row) {
+            foreach ($rows as $row) {
+                $rowNumber++;
+
+                if (count($row) !== count($header)) {
+                    throw new \Exception(
+                        "Baris {$rowNumber}: jumlah kolom tidak sesuai header."
+                    );
+                }
+
                 $row = array_combine($header, $row);
 
-                // cek pending keluarga
+                // =====================
+                // NORMALISASI DATA
+                // =====================
+                $row['no_kk'] = $this->normalizeNik($row['no_kk'] ?? null);
+                $row['nik'] = $this->normalizeNik($row['nik'] ?? null);
+                $row['nama'] = $this->normalizeText($row['nama'] ?? null);
+                $row['alamat'] = $row['alamat'] ?? null;
+
+                $row['tanggal_lahir'] = !empty($row['tanggal_lahir'])
+                    ? $this->convertDate($row['tanggal_lahir'])
+                    : null;
+
+                // =====================
+                // ENUM VALIDATION
+                // =====================
+                foreach ($enums as $field => $allowed) {
+                    if (array_key_exists($field, $row)) {
+                        $row[$field] = $this->validateEnum(
+                            $row[$field],
+                            $allowed,
+                            strtoupper(str_replace('_', ' ', $field)),
+                            $rowNumber
+                        );
+                    }
+                }
+
+                // =====================
+                // KELUARGA
+                // =====================
                 $isPendingKeluarga = empty($row['no_kk']) ? 1 : 0;
 
-                // simpan ke tabel keluarga
                 $keluarga = Keluarga::firstOrCreate(
                     ['no_kk' => $row['no_kk']],
                     [
-                        'alamat' => $row['alamat'] ?? null,
-                        'rt'     => $row['rt'] ?? null,
-                        'rw'     => $row['rw'] ?? null,
-                        'id_wilayah' => $row['id_wilayah'] ?? null,
+                        'alamat' => $row['alamat'],
+                        'rt' => $row['rt'] ?? null,
+                        'rw' => $row['rw'] ?? null,
                         'is_pending' => $isPendingKeluarga,
                     ]
                 );
 
-                // cek pending anggota
+                // =====================
+                // ANGGOTA KELUARGA
+                // =====================
                 $isPendingAnggota = empty($row['nik']) ? 1 : 0;
 
-                // simpan ke tabel anggota_keluarga
                 AnggotaKeluarga::updateOrCreate(
                     ['nik' => $row['nik']],
                     [
                         'id_keluarga' => $keluarga->id,
-                        'nama'        => $row['nama'] ?? null,
-                        'tanggal_lahir' => $row['tanggal_lahir'] ?? null,
-                        'pendidikan'  => $row['pendidikan'] ?? null,
-                        'status_hubungan' => $row['status_hubungan'] ?? null,
-                        'agama' => $row['agama'] ?? null,
-                        'pekerjaan' => $row['pekerjaan'] ?? null,
-                        'status_perkawinan' => $row['status_perkawinan'] ?? null,
-                        'kewarganegaraan' => $row['kewarganegaraan'] ?? null,
-                        'jenis_kelamin' => $row['jenis_kelamin'] ?? null,
+                        'nama' => $row['nama'],
+                        'tanggal_lahir' => $row['tanggal_lahir'],
+                        'jenis_kelamin' => $row['jenis_kelamin'],
+                        'status_hubungan' => $row['status_hubungan'],
+                        'agama' => $row['agama'],
+                        'pekerjaan' => $row['pekerjaan'],
+                        'status_perkawinan' => $row['status_perkawinan'],
+                        'kewarganegaraan' => $row['kewarganegaraan'],
                         'is_pending' => $isPendingAnggota,
                     ]
                 );
 
-                $status = $isPendingKeluarga || $isPendingAnggota == 0 ? 'Pending':'Saved';
+                ($isPendingKeluarga || $isPendingAnggota) ? $pending++ : $saved++;
             }
 
             DB::commit();
 
-            Log::create([
-                'id_user'  => Auth::id(),
-                'context'  => 'keluarga',
-                'activity' => 'import',
-                'timestamp'=> now(),
+            return response()->json([
+                'success' => true,
+                'message' => 'Import CSV berhasil.',
+                'summary' => [
+                    'saved' => $saved,
+                    'pending' => $pending,
+                    'total' => $saved + $pending,
+                ],
             ]);
-
-            return response()->json(['success' => true, 'message' => 'Data berhasil diimport', 'status'=> $status]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'row' => $rowNumber,
+            ], 422);
         }
     }
+
 
     public function pendingData()
     {
