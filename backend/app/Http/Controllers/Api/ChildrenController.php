@@ -507,11 +507,28 @@ class ChildrenController extends Controller
                     $akhir = $tgl->endOfMonth()->format('Y-m-d');
 
                     // Ambil kunjungan bulan tersebut
-                    $kunjunganBulan = Kunjungan::query()
+                    /* $kunjunganBulan = Kunjungan::query()
                         ->where('kelurahan', $filterKelurahan)
                         ->whereDate('tgl_pengukuran', '>=', $awal)
                         ->whereDate('tgl_pengukuran', '<=', $akhir)
-                        ->get();
+                        ->get(); */
+                    $kunjunganBulan = $this->getData(
+                        $filterProvinsi,
+                        $filterKota,
+                        $filterKecamatan,
+                        $filterKelurahan,
+                        $awal,
+                        $akhir,
+                        $filters["posyandu"] ?? null,
+                        $filters["rt"] ?? null,
+                        $filters["rw"] ?? null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                    );
+
 
                     $totalBulan = $kunjunganBulan->count();
                     $jumlahStatusBulan = 0;
@@ -537,7 +554,10 @@ class ChildrenController extends Controller
                             && (str_contains($bbtb, 'overweight') || str_contains($bbtb, 'obes'))
                         )
                             $jumlahStatusBulan++;
-                        if ($status === 'BB Stagnan' && is_null($row->naik_berat_badan))
+                        if (
+                            $status === 'BB Stagnan'
+                            && (is_null($row->naik_berat_badan) || $row->naik_berat_badan == 0)
+                        )
                             $jumlahStatusBulan++;
                     }
 
