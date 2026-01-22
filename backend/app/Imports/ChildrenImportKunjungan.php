@@ -366,7 +366,7 @@ class ChildrenImportKunjungan implements
         $ukur = new \DateTime($tglUkur);
         $diff = $lahir->diff($ukur);
 
-        return $diff->y * 12 + $diff->m + ($diff->d / 30);
+        return (int) floor($diff->y * 12 + $diff->m + ($diff->d / 30));
     }
     private function normalizeDecimal($value)
     {

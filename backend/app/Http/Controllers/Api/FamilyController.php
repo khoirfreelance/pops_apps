@@ -286,26 +286,26 @@ class FamilyController extends Controller
         return $value ? strtoupper(trim($value)) : null;
     }
 
-    private function headerMap()
+    private function headerMap(): array
     {
         return [
-            'No. KK' => 'no_kk',
-            'Alamat' => 'alamat',
-            'RT' => 'rt',
-            'RW' => 'rw',
-            'Provinsi' => 'provinsi',
-            'Kota/Kabupaten' => 'kota',
-            'Kecamatan' => 'kecamatan',
-            'Kelurahan/Desa' => 'kelurahan',
-            'NIK' => 'nik',
-            'NAMA' => 'nama',
-            'TGL LAHIR' => 'tanggal_lahir',
-            'JENIS KELAMIN (L/P)' => 'jenis_kelamin',
-            'STATUS HUBUNGAN (KEPALA KELUARGA/IBU/ANAK/SAUDARA/DLL)' => 'status_hubungan',
-            'PEKERJAAN' => 'pekerjaan',
-            'AGAMA' => 'agama',
-            'STATUS PERKAWINAN (KAWIN/BELUM KAWIN)' => 'status_perkawinan',
-            'KEWARGANEGARAAN (WNI/WNA)' => 'kewarganegaraan',
+            'no. kk' => 'no_kk',
+            'alamat' => 'alamat',
+            'rt' => 'rt',
+            'rw' => 'rw',
+            'provinsi' => 'provinsi',
+            'kota/kabupaten' => 'kota',
+            'kecamatan' => 'kecamatan',
+            'kelurahan/desa' => 'kelurahan',
+            'nik' => 'nik',
+            'nama' => 'nama',
+            'tgl lahir' => 'tanggal_lahir',
+            'jenis kelamin (l/p)' => 'jenis_kelamin',
+            'status hubungan (kepala keluarga/ibu/anak/saudara/dll)' => 'status_hubungan',
+            'pekerjaan' => 'pekerjaan',
+            'agama' => 'agama',
+            'status perkawinan (kawin/belum kawin)' => 'status_perkawinan',
+            'kewarganegaraan (wni/wna)' => 'kewarganegaraan',
         ];
     }
 
@@ -403,18 +403,30 @@ class FamilyController extends Controller
         }
 
         // =========================
-        // HEADER MAPPING
+        // HEADER MAPPING (FINAL)
         // =========================
-        $rawHeader = array_map('trim', $rows[0]);
+        $rawHeader = $rows[0];
         $map = $this->headerMap();
-
         $header = [];
+
         foreach ($rawHeader as $h) {
-            if (!isset($map[$h])) {
-                throw new \Exception("Header CSV <strong>{$h}</strong> tidak dikenali.");
+            // NORMALISASI HEADER CSV
+            $clean = trim($h);
+            $clean = preg_replace('/^\xEF\xBB\xBF/', '', $clean); // hapus BOM
+            $clean = strtolower($clean);
+
+            if (!isset($map[$clean])) {
+                throw new \Exception(
+                    "Header CSV <strong>{$h}</strong> tidak dikenali."
+                );
             }
-            $header[] = $map[$h];
+
+            // ⬇️ PAKAI HASIL NORMALISASI
+            $header[] = $map[$clean];
         }
+
+        unset($rows[0]);
+
 
         unset($rows[0]);
 
@@ -525,7 +537,6 @@ class FamilyController extends Controller
             ], 422);
         }
     }
-
 
     public function pendingData()
     {

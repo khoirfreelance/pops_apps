@@ -1277,7 +1277,8 @@ class ChildrenController extends Controller
         $ukur = new \DateTime($tglUkur);
         $diff = $lahir->diff($ukur);
 
-        return $diff->y * 12 + $diff->m + ($diff->d / 30);
+        return (int) floor($diff->y * 12 + $diff->m + ($diff->d / 30));
+        //return $diff->y * 12 + $diff->m + ($diff->d / 30);
     }
 
     /** Hitung Z-Score sesuai jenis pengukuran */

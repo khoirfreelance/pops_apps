@@ -37,9 +37,8 @@
           <Welcome />
 
           <!-- Filter -->
-          <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
+          <!-- <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
             <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-              <!-- NIK (selalu tampil, realtime filter) -->
               <div class="col-md-6">
                 <label for="nik" class="form-label">NIK</label>
                 <input
@@ -61,9 +60,7 @@
                 />
               </div>
 
-              <!-- Expandable section -->
               <div v-if="isFilterOpen" class="row g-3 align-items-end mt-2">
-                <!-- Nama -->
                 <div class="col-md-6">
                   <label for="kepala" class="form-label">Nama Kepala Keluarga</label>
                   <input
@@ -74,19 +71,16 @@
                   />
                 </div>
 
-                <!-- RT -->
                 <div class="col-md-3">
                   <label for="rt" class="form-label">RT</label>
                   <input type="number" v-model="advancedFilter.rt" id="rt" class="form-control" />
                 </div>
 
-                <!-- RW -->
                 <div class="col-md-3">
                   <label for="rw" class="form-label">RW</label>
                   <input type="number" v-model="advancedFilter.rw" id="rw" class="form-control" />
                 </div>
 
-                <!-- Tombol -->
                 <div class="col-md-12 d-flex justify-content-end mt-3">
                   <button type="button" class="btn btn-secondary" @click="resetFilter">
                     <i class="bi bi-arrow-clockwise"></i> Reset
@@ -95,320 +89,462 @@
               </div>
             </form>
 
-            <!-- Expand/Collapse Button -->
             <div class="text-end mt-2">
               <button type="button" class="btn btn-outline-secondary btn-sm" @click="toggleExpand">
                 <i :class="isFilterOpen ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
                 {{ isFilterOpen ? 'Tutup Filter Lain' : 'Filter Lain' }}
               </button>
             </div>
-          </div>
+          </div> -->
 
-          <!-- Form -->
-          <div class="container-fluid mt-4">
-            <!-- Expand/Collapse Button -->
-            <div class="text-end mb-3">
-              <button
-                type="button"
-                class="btn btn-primary mx-3"
-                @click="toggleExpandForm"
-              >
-                <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
-                {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
-              </button>
-              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalImport">
-                <i class="bi bi-filetype-csv"></i> Import Data Keluarga
+          <div v-if="isUploadOpen" class="card p-3 my-3">
+            <div class="d-flex justify-content-between align-item-center">
+              <h5>Import File Data Keluarga</h5>
+              <button @click="isUploadOpen = !isUploadOpen" class="btn btn-sm btn-outline-danger mb-2">
+                X
               </button>
             </div>
 
-            <!-- Collapsible Form -->
-            <div v-if="isFormOpen" id="formData" class="card shadow-sm">
-              <div class="card-body">
-                <form class="row g-4">
-                  <!-- No KK -->
-                  <div class="col-md-12">
-                    <label class="form-label small fw-semibold text-secondary">No KK</label>
-                    <input
-                      type="text"
-                      class="form-control shadow-sm"
-                      v-model="form.no_kk"
-                      @input="form.no_kk = form.no_kk.replace(/\D/g, '')"
-                      maxlength="16"
-                      @blur="checkNoKK"
-                    />
-                  </div>
-
-                  <!-- Alamat -->
-                  <div class="col-md-12">
-                    <label class="form-label small fw-semibold text-secondary">Alamat</label>
-                    <textarea
-                      class="form-control shadow-sm"
-                      rows="2"
-                      v-model="form.alamat"
-                      :readonly="isKKChecked"
-                    ></textarea>
-                  </div>
-
-                  <!-- Provinsi -->
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-secondary">Provinsi</label>
-                    <template v-if="form.provinsi === '__new__'">
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.provinsi_new"
-                        placeholder="Tambah provinsi baru"
-                      />
-                    </template>
-                    <template v-else>
-                      <select
-                        class="form-select shadow-sm"
-                        v-model="form.provinsi"
-                        @change="loadKota"
-                        :readonly="isKKChecked"
-                      >
-                        <option value="">Pilih</option>
-                        <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
-                          {{ item.nama }}
-                        </option>
-                        <option value="__new__">+ Tambah baru</option>
-                      </select>
-                    </template>
-                  </div>
-
-                  <!-- Kota -->
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-secondary">Kota</label>
-                    <template v-if="form.kota === '__new__'">
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.kota_new"
-                        placeholder="Tambah kota baru"
-                      />
-                    </template>
-                    <template v-else>
-                      <select
-                        class="form-select shadow-sm"
-                        v-model="form.kota"
-                        @change="loadKecamatan"
-                        :disabled="isKKChecked || KotaReadonly"
-                      >
-                        <option value="">Pilih</option>
-                        <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
-                          {{ item.nama }}
-                        </option>
-                        <option value="__new__">+ Tambah baru</option>
-                      </select>
-                    </template>
-                  </div>
-
-                  <!-- Kecamatan -->
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
-                    <template v-if="form.kecamatan === '__new__'">
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.kecamatan_new"
-                        placeholder="Tambah kecamatan baru"
-                      />
-                    </template>
-                    <template v-else>
-                      <select
-                        class="form-select shadow-sm"
-                        v-model="form.kecamatan"
-                        @change="loadKelurahan"
-                        :disabled="isKKChecked || KecReadonly"
-                      >
-                        <option value="">Pilih</option>
-                        <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
-                          {{ item.nama }}
-                        </option>
-                        <option value="__new__">+ Tambah baru</option>
-                      </select>
-                    </template>
-                  </div>
-
-                  <!-- Kelurahan -->
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
-                    <template v-if="form.kelurahan === '__new__'">
-                      <input
-                        type="text"
-                        class="form-control shadow-sm"
-                        v-model="form.kelurahan_new"
-                        placeholder="Tambah kelurahan baru"
-                      />
-                    </template>
-                    <template v-else>
-                      <select
-                        class="form-select shadow-sm"
-                        v-model="form.kelurahan"
-                        :disabled="isKKChecked || KelReadonly"
-                      >
-                        <option value="">Pilih</option>
-                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
-                          {{ item.nama }}
-                        </option>
-                        <option value="__new__">+ Tambah baru</option>
-                      </select>
-                    </template>
-                  </div>
-
-                  <!-- RT & RW -->
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-secondary">RT</label>
-                    <input
-                      type="number"
-                      min="0"
-                      class="form-control shadow-sm"
-                      v-model="form.rt"
-                      :readonly="isKKChecked"
-                    />
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold text-secondary">RW</label>
-                    <input
-                      type="number"
-                      min="0"
-                      class="form-control shadow-sm"
-                      v-model="form.rw"
-                      :readonly="isKKChecked"
-                    />
-                  </div>
-
-                  <!-- Nama -->
-                  <div class="col-md-12">
-                    <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
-                    <input type="text" class="form-control shadow-sm" v-model="form.nama" />
-                  </div>
-
-                  <!-- NIK -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">NIK</label>
-                    <input
-                      type="text"
-                      class="form-control shadow-sm"
-                      v-model="form.nik"
-                      maxlength="16"
-                      @input="form.nik = form.nik.replace(/\D/g, '')"
-                    />
-                  </div>
-
-                  <!-- Gender -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Jenis Kelamin</label>
-                    <select class="form-select shadow-sm" v-model="form.gender">
-                      <option value="">L/P</option>
-                      <option value="L">Laki-laki</option>
-                      <option value="P">Perempuan</option>
-                    </select>
-                  </div>
-
-                  <!-- Tempat & Tanggal Lahir -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Tempat Lahir</label>
-                    <input type="text" class="form-control shadow-sm" v-model="form.tempat_lahir" />
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
-                    <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahir" />
-                  </div>
-
-                  <!-- Pendidikan -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
-                    <select class="form-select shadow-sm" v-model="form.pendidikan">
-                      <option value="">Pendidikan</option>
-                      <option value="TK">TK</option>
-                      <option value="SD">SD</option>
-                      <option value="SMP">SMP</option>
-                      <option value="SMA/SMK">SMA/sederajat</option>
-                      <option value="SARJANA">Sarjana</option>
-                      <option value="MAGISTER">Magister</option>
-                      <option value="DOKTORAL">Doktoral</option>
-                      <option value="PROFESSOR">Professor</option>
-                    </select>
-                  </div>
-
-                  <!-- Pekerjaan -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
-                    <input type="text" class="form-control shadow-sm" v-model="form.pekerjaan" />
-                  </div>
-
-                  <!-- Status Hubungan -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Status Hubungan</label>
-                    <select class="form-select shadow-sm" v-model="form.status_hubungan">
-                      <option value="">Pilih</option>
-                      <option value="Kepala Keluarga">Kepala Keluarga</option>
-                      <option value="Istri">Istri</option>
-                      <option value="Anak">Anak</option>
-                      <option value="Famili Lain">Famili Lain</option>
-                    </select>
-                  </div>
-
-                  <!-- Agama -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Agama</label>
-                    <select class="form-select shadow-sm" v-model="form.agama">
-                      <option value="">Pilih</option>
-                      <option value="Islam">Islam</option>
-                      <option value="Kristen">Kristen</option>
-                      <option value="Katolik">Katolik</option>
-                      <option value="Hindu">Hindu</option>
-                      <option value="Budha">Budha</option>
-                      <option value="Konghucu">Konghucu</option>
-                    </select>
-                  </div>
-
-                  <!-- Status Perkawinan -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Status Perkawinan</label>
-                    <select class="form-select shadow-sm" v-model="form.status_perkawinan">
-                      <option value="">Pilih</option>
-                      <option value="Belum Kawin">Belum Kawin</option>
-                      <option value="Kawin">Kawin</option>
-                      <option value="Cerai Hidup">Cerai Hidup</option>
-                      <option value="Cerai Mati">Cerai Mati</option>
-                    </select>
-                  </div>
-
-                  <!-- Kewarganegaraan -->
-                  <div class="col-md-6">
-                    <label class="form-label small fw-semibold text-secondary">Kewarganegaraan</label>
-                    <input
-                      type="text"
-                      class="form-control shadow-sm"
-                      v-model="form.kewarganegaraan"
-                      placeholder="Contoh: WNI"
-                    />
-                  </div>
-                </form>
+            <div class="row g-2">
+              <div class="alert alert-success">
+                 <ul>
+                  <li>Import data untuk data Keluarga</li>
+                  <li>Pastikan data yang diimport, berformat csv</li>
+                  <li>Pastikan data sudah lengkap sebelum di import</li>
+                  <li>Silahkan unduh contoh dengan klik <a href="/example_keluarga.xlsx" download="keluarga.csv">Example</a></li>
+                </ul>
               </div>
 
-              <!-- Actions -->
-              <div class="card-footer bg-white d-flex justify-content-between">
-                <button
-                  class="btn btn-light border rounded-pill px-4"
-                  @click="resetForm"
-                >
-                  <i class="bi bi-x-circle me-2"></i> Batal
+              <input
+                ref="csvFile"
+                type="file"
+                accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                class="form-control"
+                @change="handleFileChange($event)"
+              />
+
+              <!-- Preview / status -->
+              <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div v-if="filePreviewTable.length" class="mt-3">
+                  <p class="fw-bold mb-1 text-danger">
+                    *Preview:
+                  </p>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm small border-danger">
+                      <thead>
+                        <tr>
+                          <th v-for="(col, index) in filePreviewTable[0]" :key="'h' + index" width="120"
+                            class="text-danger">
+                            {{ col }}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(row, rIndex) in filePreviewTable.slice(1)" :key="'r' + rIndex">
+                          <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                            {{ col }}
+                          </td>
+                        </tr>
+                        <tr v-for="(row, rIndex) in filePreviewTable.slice(2)" :key="'r' + rIndex">
+                          <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                            ...
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                </div>
+
+                <div v-else class="text-muted small">Belum ada file dipilih</div>
+              </div>
+
+              <div v-if="fileError" class="mt-2 text-danger small">
+                {{ fileError }}
+              </div>
+
+              <div class="d-flex gap-2">
+                <button v-if="file && !uploading" class="btn btn-outline-danger btn-sm" @click="removeFile"
+                  type="button">
+                  <i class="bi bi-trash me-1"></i> Hapus
                 </button>
+
+                <button v-if="file && !uploading" class="btn btn-success btn-sm" @click="handleImport" type="button">
+                  <i class="bi bi-upload me-1"></i> Upload
+                </button>
+
+                <div v-if="uploading" class="d-flex align-items-center gap-2">
+                  <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                  <small class="text-muted">Mengunggah... {{ uploadProgress }}%</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Form -->
+          <div v-if="isFormOpen" id="formData" class="card shadow-sm my-3">
+            <div class="card-body">
+              <form class="row g-4">
+                <!-- No KK -->
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold text-secondary">No KK</label>
+                  <input
+                    type="text"
+                    class="form-control shadow-sm"
+                    v-model="form.no_kk"
+                    @input="form.no_kk = form.no_kk.replace(/\D/g, '')"
+                    maxlength="16"
+                    @blur="checkNoKK"
+                  />
+                </div>
+
+                <!-- Alamat -->
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold text-secondary">Alamat</label>
+                  <textarea
+                    class="form-control shadow-sm"
+                    rows="2"
+                    v-model="form.alamat"
+                    :readonly="isKKChecked"
+                  ></textarea>
+                </div>
+
+                <!-- Provinsi -->
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">Provinsi</label>
+                  <template v-if="form.provinsi === '__new__'">
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.provinsi_new"
+                      placeholder="Tambah provinsi baru"
+                    />
+                  </template>
+                  <template v-else>
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.provinsi"
+                      @change="loadKota"
+                      :readonly="isKKChecked"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                      <option value="__new__">+ Tambah baru</option>
+                    </select>
+                  </template>
+                </div>
+
+                <!-- Kota -->
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">Kota</label>
+                  <template v-if="form.kota === '__new__'">
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.kota_new"
+                      placeholder="Tambah kota baru"
+                    />
+                  </template>
+                  <template v-else>
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.kota"
+                      @change="loadKecamatan"
+                      :disabled="isKKChecked || KotaReadonly"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                      <option value="__new__">+ Tambah baru</option>
+                    </select>
+                  </template>
+                </div>
+
+                <!-- Kecamatan -->
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
+                  <template v-if="form.kecamatan === '__new__'">
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.kecamatan_new"
+                      placeholder="Tambah kecamatan baru"
+                    />
+                  </template>
+                  <template v-else>
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.kecamatan"
+                      @change="loadKelurahan"
+                      :disabled="isKKChecked || KecReadonly"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                      <option value="__new__">+ Tambah baru</option>
+                    </select>
+                  </template>
+                </div>
+
+                <!-- Kelurahan -->
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
+                  <template v-if="form.kelurahan === '__new__'">
+                    <input
+                      type="text"
+                      class="form-control shadow-sm"
+                      v-model="form.kelurahan_new"
+                      placeholder="Tambah kelurahan baru"
+                    />
+                  </template>
+                  <template v-else>
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.kelurahan"
+                      :disabled="isKKChecked || KelReadonly"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                      <option value="__new__">+ Tambah baru</option>
+                    </select>
+                  </template>
+                </div>
+
+                <!-- RT & RW -->
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">RT</label>
+                  <input
+                    type="number"
+                    min="0"
+                    class="form-control shadow-sm"
+                    v-model="form.rt"
+                    :readonly="isKKChecked"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">RW</label>
+                  <input
+                    type="number"
+                    min="0"
+                    class="form-control shadow-sm"
+                    v-model="form.rw"
+                    :readonly="isKKChecked"
+                  />
+                </div>
+
+                <!-- Nama -->
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold text-secondary">Nama Lengkap</label>
+                  <input type="text" class="form-control shadow-sm" v-model="form.nama" />
+                </div>
+
+                <!-- NIK -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">NIK</label>
+                  <input
+                    type="text"
+                    class="form-control shadow-sm"
+                    v-model="form.nik"
+                    maxlength="16"
+                    @input="form.nik = form.nik.replace(/\D/g, '')"
+                  />
+                </div>
+
+                <!-- Gender -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Jenis Kelamin</label>
+                  <select class="form-select shadow-sm" v-model="form.gender">
+                    <option value="">L/P</option>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                  </select>
+                </div>
+
+                <!-- Tempat & Tanggal Lahir -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Tempat Lahir</label>
+                  <input type="text" class="form-control shadow-sm" v-model="form.tempat_lahir" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
+                  <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahir" />
+                </div>
+
+                <!-- Pendidikan -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Pendidikan</label>
+                  <select class="form-select shadow-sm" v-model="form.pendidikan">
+                    <option value="">Pendidikan</option>
+                    <option value="TK">TK</option>
+                    <option value="SD">SD</option>
+                    <option value="SMP">SMP</option>
+                    <option value="SMA/SMK">SMA/sederajat</option>
+                    <option value="SARJANA">Sarjana</option>
+                    <option value="MAGISTER">Magister</option>
+                    <option value="DOKTORAL">Doktoral</option>
+                    <option value="PROFESSOR">Professor</option>
+                  </select>
+                </div>
+
+                <!-- Pekerjaan -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Pekerjaan</label>
+                  <input type="text" class="form-control shadow-sm" v-model="form.pekerjaan" />
+                </div>
+
+                <!-- Status Hubungan -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Status Hubungan</label>
+                  <select class="form-select shadow-sm" v-model="form.status_hubungan">
+                    <option value="">Pilih</option>
+                    <option value="Kepala Keluarga">Kepala Keluarga</option>
+                    <option value="Istri">Istri</option>
+                    <option value="Anak">Anak</option>
+                    <option value="Famili Lain">Famili Lain</option>
+                  </select>
+                </div>
+
+                <!-- Agama -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Agama</label>
+                  <select class="form-select shadow-sm" v-model="form.agama">
+                    <option value="">Pilih</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Katolik">Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Budha">Budha</option>
+                    <option value="Konghucu">Konghucu</option>
+                  </select>
+                </div>
+
+                <!-- Status Perkawinan -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Status Perkawinan</label>
+                  <select class="form-select shadow-sm" v-model="form.status_perkawinan">
+                    <option value="">Pilih</option>
+                    <option value="Belum Kawin">Belum Kawin</option>
+                    <option value="Kawin">Kawin</option>
+                    <option value="Cerai Hidup">Cerai Hidup</option>
+                    <option value="Cerai Mati">Cerai Mati</option>
+                  </select>
+                </div>
+
+                <!-- Kewarganegaraan -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Kewarganegaraan</label>
+                  <input
+                    type="text"
+                    class="form-control shadow-sm"
+                    v-model="form.kewarganegaraan"
+                    placeholder="Contoh: WNI"
+                  />
+                </div>
+              </form>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-footer bg-white d-flex justify-content-between">
+              <button
+                class="btn btn-light border rounded-pill px-4"
+                @click="resetForm"
+              >
+                <i class="bi bi-x-circle me-2"></i> Batal
+              </button>
+              <button
+                class="btn btn-success rounded-pill px-4"
+                @click="modalMode === 'add' ? saveData() : updateData()"
+              >
+                <i class="bi bi-save me-2"></i> {{ modalMode === 'add' ? 'Simpan' : 'Ubah' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <!-- Search + Button -->
+              <div class="d-flex align-items-center justify-content-end gap-2">
+
+                <input
+                  type="text"
+                  v-model="filter.nik_kepala"
+                  id="nik_kepala"
+                  class="form-control w-25"
+                  placeholder="Cari NIK atau No. KK"
+                />
+                <!-- <input type="text" class="form-control form-control-sm" style="width: 220px;"
+                  placeholder="Ketik NIK atau Nama" v-model="searchQuery_kunAn"> -->
+
                 <button
-                  class="btn btn-success rounded-pill px-4"
-                  @click="modalMode === 'add' ? saveData() : updateData()"
+                  type="button"
+                  class="btn btn-primary mx-2"
+                  @click="toggleExpandForm"
                 >
-                  <i class="bi bi-save me-2"></i> {{ modalMode === 'add' ? 'Simpan' : 'Ubah' }}
+                  <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                  {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+                </button>
+                <button class="btn btn-outline-success" @click="isUploadOpen = !isUploadOpen">
+                  <i class="bi bi-filetype-csv"></i> Import Data Keluarga
                 </button>
               </div>
+              <!-- Table -->
+              <div class="mt-3">
+
+                <!-- Search + Row Per Page -->
+                <easy-data-table
+                  :headers="headers"
+                  :items="filteredFamily"
+                  :sortable="true"
+                  :search-value="searchQuery"
+                  :rows-per-page="perPage"
+                  :rows-items="perPageOptions"
+                  :rows-per-page-text="'Rows per page'"
+                  header-text-direction="center"
+                  table-class-name="my-custom-table"
+                  header-class-name="my-custom-header"
+                  show-index
+                  alternating
+                  border-cell
+                >
+
+                  <!-- ACTION BUTTONS -->
+                  <template #item-action="items">
+                    <div class="action-wrapper d-flex gap-1 m-1 text-center">
+                      <button
+                        class="btn btn-primary m-2"
+                        @click="openFamilyModal(id)"
+                        style="font-size: small;"
+                      >
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
+                        title="Tambah">
+                        <i class="bi bi-plus-square"></i>
+                      </button>
+                      <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
+                        title="Ubah">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </template>
+
+                </easy-data-table>
+              </div>
+
             </div>
           </div>
 
           <!-- Table -->
-          <div class="container-fluid">
+          <!-- <div class="container-fluid"> -->
             <!-- <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
               <div class="card-body bg-additional rounded">
                 <div class="d-flex justify-content-between">
@@ -432,7 +568,7 @@
                 </EasyDataTable>
               </div>
             </div> -->
-            <div class="card modern-card mt-4">
+            <!-- <div class="card modern-card mt-4">
               <div class="card-body">
                 <div class="table-responsive">
                   <h5 class="fw-bold mb-2">Data Keluarga</h5>
@@ -452,8 +588,8 @@
                   </EasyDataTable>
                 </div>
               </div>
-            </div>
-          </div>
+            </div> -->
+          <!-- </div> -->
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -479,7 +615,7 @@
               <li>Silahkan unduh contoh dengan klik <a href="/example_keluarga.xlsx" download="keluarga.csv">Example</a></li>
             </ul>
           </div>
-          <input type="file" class="form-control" ref="csvFile" accept=".csv" />
+
         </div>
         <div class="modal-footer border-0 d-flex justify-content-between">
           <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
@@ -681,6 +817,20 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      isUploadOpen: false,
+      file: null,
+      fileName: '',
+      fileSize: 0,
+      filePreviewLines: '',
+      fileError: '',
+      uploading: false,
+      uploadProgress: 0,
+      filePreviewTable: [],
+      currentPage: 1,
+      perPage: 10,
+      perPageOptions: [5, 10, 25, 50],
+      searchQuery:"",
+      progressLevel:0,
       configCacheKey: 'site_config_cache',
       // required
       ACCEPTED_EXT: ['csv'],
@@ -780,24 +930,71 @@ export default {
   },
   computed: {
     filteredFamily() {
-      console.log('computed family:', this.family);
+      if (!this.family) return [];
 
-      return this.family.filter((item) => {
-        return (
-          (!this.filter.nik_kepala || item.nik_kepala.includes(this.filter.nik_kepala)) &&
-          (!this.filter.no_kk || item.no_kk.includes(this.filter.no_kk)) &&
-          (!this.appliedFilter.nama_kepala ||
-            item.nama_kepala.toLowerCase().includes(this.appliedFilter.nama_kepala.toLowerCase())) &&
-          (!this.appliedFilter.rt || Number(item.rt) === Number(this.appliedFilter.rt)) &&
-          (!this.appliedFilter.rw || Number(item.rw) === Number(this.appliedFilter.rw))
-        )
-      })
+      const arr = Array.isArray(this.family)
+        ? this.family
+        : Object.values(this.family);
+
+      const q = (this.searchQuery ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const nik = (item.nik_kepala ?? "").toString().toLowerCase();
+        const no_kk = (item.no_kk ?? "").toString().toLowerCase();
+
+        return nik.includes(q) || no_kk.includes(q);
+      });
     },
     pendingCount() {
       return this.familyPending.length
     },
   },
   methods: {
+    handleFileChange(e) {
+      const file = e.target.files[0]
+      this.loadFilePreview(file)
+    },
+    async loadFilePreview(file) {
+      if (!file) return
+
+      const ext = file.name.split('.').pop().toLowerCase()
+
+      if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+        this.fileError = 'Hanya file CSV atau Excel (XLS/XLSX) yang diperbolehkan.'
+        return
+      }
+
+      this.file = file
+      this.fileName = file.name
+      this.fileSize = file.size
+      this.fileError = ''
+
+      // === CSV ===
+      if (ext === 'csv') {
+        const text = await file.text()
+
+        const rawLines = text
+          .split(/\r?\n/)
+          .filter(Boolean)
+          .slice(0, 4)
+
+        if (!rawLines.length) {
+          this.filePreviewTable = []
+          return
+        }
+
+        const delimiter = rawLines[0].includes(';') ? ';' : ','
+
+        let table = rawLines.map(line => line.split(delimiter))
+
+        table = table.map(row =>
+          row.length > 10 ? [...row.slice(0, 10), '...'] : row
+        )
+
+        this.filePreviewTable = table
+        return
+      }
+    },
     async loadConfigWithCache() {
       try {
         // cek di localStorage
@@ -1615,6 +1812,19 @@ export default {
 </script>
 
 <style scoped>
+  .my-custom-table {
+  --easy-table-header-background-color: #b4dbc6;
+}
+
+.my-custom-table .col-action {
+  text-align: center !important;
+}
+
+.my-custom-table td.col-action {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
 .spinner-overlay {
   position: fixed;
   inset: 0;
