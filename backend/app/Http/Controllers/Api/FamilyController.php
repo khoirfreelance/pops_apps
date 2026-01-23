@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Models\Keluarga;
+use App\Models\Wilayah;
 use App\Models\AnggotaKeluarga;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Log;
@@ -31,7 +32,7 @@ class FamilyController extends Controller
                 'nama_kepala'     => $k->kepala ? $k->kepala->nama : null,
                 'nik_kepala'      => $k->kepala ? $k->kepala->nik : null,
                 'tgl_lahir'       => $k->kepala && $k->kepala->tanggal_lahir
-                                    ? $k->kepala->tempat_lahir.', '. Carbon::parse($k->kepala->tanggal_lahir)->format('d-m-Y')
+                                    ? Carbon::parse($k->kepala->tanggal_lahir)->format('d-m-Y')
                                     : null,
                 'pendidikan'      => $k->kepala ? $k->kepala->pendidikan : null,
                 'status_hubungan' => $k->kepala ? $k->kepala->status_hubungan : null,
@@ -39,17 +40,11 @@ class FamilyController extends Controller
 
                 // jumlah anggota keluarga
                 'jml_anggota'     => $k->anggota ? $k->anggota
-                                                    ->where('is_pending', 0)
-                                                    ->count() : 0,
+                                        ->where('is_pending', 0)
+                                        ->count() : 0,
             ];
         });
 
-        Log::create([
-            'id_user'  => Auth::id(),
-            'context'  => 'keluarga',
-            'activity' => 'view',
-            'timestamp'=> now(),
-        ]);
         return response()->json($data->values());
     }
 
@@ -427,9 +422,6 @@ class FamilyController extends Controller
 
         unset($rows[0]);
 
-
-        unset($rows[0]);
-
         // =========================
         // ENUM CONFIG
         // =========================
@@ -441,6 +433,7 @@ class FamilyController extends Controller
         DB::beginTransaction();
         try {
             foreach ($rows as $row) {
+
                 $rowNumber++;
 
                 if (count($row) !== count($header)) {
@@ -450,6 +443,7 @@ class FamilyController extends Controller
                 }
 
                 $row = array_combine($header, $row);
+                //dd($row);
 
                 // =====================
                 // NORMALISASI DATA
@@ -477,6 +471,16 @@ class FamilyController extends Controller
                     }
                 }
 
+                // =========================
+                // 5. Wilayah & Posyandu
+                // =========================
+                $wilayah = Wilayah::firstOrCreate([
+                    'provinsi'  => $this->normalizeText($row['provinsi']),
+                    'kota'      => $this->normalizeText($row['kota']),
+                    'kecamatan' => $this->normalizeText($row['kecamatan']),
+                    'kelurahan' => $this->normalizeText($row['kelurahan']),
+                ]);
+
                 // =====================
                 // KELUARGA
                 // =====================
@@ -488,6 +492,7 @@ class FamilyController extends Controller
                         'alamat' => $row['alamat'],
                         'rt' => $row['rt'] ?? null,
                         'rw' => $row['rw'] ?? null,
+                        'id_wilayah' => $wilayah->id ?? null,
                         'is_pending' => $isPendingKeluarga,
                     ]
                 );
@@ -501,14 +506,15 @@ class FamilyController extends Controller
                     ['nik' => $row['nik']],
                     [
                         'id_keluarga' => $keluarga->id,
-                        'nama' => $row['nama'],
+                        'nama' => $this->normalizeText($row['nama']),
+                        'tempat_lahir' => $row['kota'],
                         'tanggal_lahir' => $row['tanggal_lahir'],
                         'jenis_kelamin' => $row['jenis_kelamin'],
-                        'status_hubungan' => $row['status_hubungan'],
-                        'agama' => $row['agama'],
-                        'pekerjaan' => $row['pekerjaan'],
-                        'status_perkawinan' => $row['status_perkawinan'],
-                        'kewarganegaraan' => $row['kewarganegaraan'],
+                        'status_hubungan' => $this->normalizeText($row['status_hubungan']),
+                        'agama' => $this->normalizeText($row['agama']),
+                        'pekerjaan' => $this->normalizeText($row['pekerjaan']),
+                        'status_perkawinan' => $this->normalizeText($row['status_perkawinan']),
+                        'kewarganegaraan' => $this->normalizeText($row['kewarganegaraan']),
                         'is_pending' => $isPendingAnggota,
                     ]
                 );
@@ -520,6 +526,7 @@ class FamilyController extends Controller
 
             return response()->json([
                 'success' => true,
+                //'data'    => $rows,
                 'message' => 'Import CSV berhasil.',
                 'summary' => [
                     'saved' => $saved,
@@ -764,5 +771,50 @@ class FamilyController extends Controller
         ]);
     }
 
+    public function delete($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $deleted = false;
+
+
+            // Keluarga
+            if (Keluarga::where('id', $id)->exists()) {
+                Keluarga::where('id', $id)->delete();
+                $deleted = true;
+            }
+
+            // Anggota Keluarga
+            if (AnggotaKeluarga::where('id_keluarga', $id)->exists()) {
+                AnggotaKeluarga::where('id_keluarga', $id)->delete();
+                $deleted = true;
+            }
+
+            if (!$deleted) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data keluarga tidak ditemukan.'
+                ], 404);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data keluarga berhasil dihapus.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

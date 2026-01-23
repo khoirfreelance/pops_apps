@@ -18,8 +18,7 @@
     <HeaderAdmin />
 
     <div
-      class="content flex-grow-1 d-flex flex-column flex-md-row"
-      :class="{
+      class="content flex-grow-1 d-flex flex-column flex-md-row" :class="{
         'sidebar-collapsed': isCollapsed,
         'sidebar-expanded': !isCollapsed
       }"
@@ -28,74 +27,13 @@
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
 
       <!-- Main Content -->
-      <div class="flex-grow-1 d-flex flex-column">
+      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
 
         <!-- Content -->
         <div class="py-4 container-fluid" >
 
           <!-- Welcome Card -->
           <Welcome />
-
-          <!-- Filter -->
-          <!-- <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
-            <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-              <div class="col-md-6">
-                <label for="nik" class="form-label">NIK</label>
-                <input
-                  type="text"
-                  v-model="filter.nik_kepala"
-                  id="nik_kepala"
-                  class="form-control"
-                  placeholder="Cari berdasarkan NIK Kepala Keluarga"
-                />
-              </div>
-              <div class="col-md-6">
-                <label for="no_kk" class="form-label">No. Kartu Keluarga</label>
-                <input
-                  type="text"
-                  v-model="filter.no_kk"
-                  id="no_kk"
-                  class="form-control"
-                  placeholder="Cari berdasarkan No. Kartu Keluarga"
-                />
-              </div>
-
-              <div v-if="isFilterOpen" class="row g-3 align-items-end mt-2">
-                <div class="col-md-6">
-                  <label for="kepala" class="form-label">Nama Kepala Keluarga</label>
-                  <input
-                    type="text"
-                    v-model="advancedFilter.nama_kepala"
-                    id="kepala"
-                    class="form-control"
-                  />
-                </div>
-
-                <div class="col-md-3">
-                  <label for="rt" class="form-label">RT</label>
-                  <input type="number" v-model="advancedFilter.rt" id="rt" class="form-control" />
-                </div>
-
-                <div class="col-md-3">
-                  <label for="rw" class="form-label">RW</label>
-                  <input type="number" v-model="advancedFilter.rw" id="rw" class="form-control" />
-                </div>
-
-                <div class="col-md-12 d-flex justify-content-end mt-3">
-                  <button type="button" class="btn btn-secondary" @click="resetFilter">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            <div class="text-end mt-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm" @click="toggleExpand">
-                <i :class="isFilterOpen ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"></i>
-                {{ isFilterOpen ? 'Tutup Filter Lain' : 'Filter Lain' }}
-              </button>
-            </div>
-          </div> -->
 
           <div v-if="isUploadOpen" class="card p-3 my-3">
             <div class="d-flex justify-content-between align-item-center">
@@ -111,7 +49,7 @@
                   <li>Import data untuk data Keluarga</li>
                   <li>Pastikan data yang diimport, berformat csv</li>
                   <li>Pastikan data sudah lengkap sebelum di import</li>
-                  <li>Silahkan unduh contoh dengan klik <a href="/example_keluarga.xlsx" download="keluarga.csv">Example</a></li>
+                  <li>Silahkan unduh contoh dengan klik <a href="/example_keluarga.xlsx">Example</a></li>
                 </ul>
               </div>
 
@@ -466,130 +404,169 @@
             </div>
           </div>
 
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <!-- Search + Button -->
-              <div class="d-flex align-items-center justify-content-end gap-2">
+          <!-- Table and detail Section -->
+          <div class="container-fluid mt-4">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card shadow-sm">
+                  <div class="card-body">
+                    <!-- Search + Button -->
+                    <div class="d-flex align-items-center justify-content-end gap-2">
 
-                <input
-                  type="text"
-                  v-model="filter.nik_kepala"
-                  id="nik_kepala"
-                  class="form-control w-25"
-                  placeholder="Cari NIK atau No. KK"
-                />
-                <!-- <input type="text" class="form-control form-control-sm" style="width: 220px;"
-                  placeholder="Ketik NIK atau Nama" v-model="searchQuery_kunAn"> -->
-
-                <button
-                  type="button"
-                  class="btn btn-primary mx-2"
-                  @click="toggleExpandForm"
-                >
-                  <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
-                  {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
-                </button>
-                <button class="btn btn-outline-success" @click="isUploadOpen = !isUploadOpen">
-                  <i class="bi bi-filetype-csv"></i> Import Data Keluarga
-                </button>
-              </div>
-              <!-- Table -->
-              <div class="mt-3">
-
-                <!-- Search + Row Per Page -->
-                <easy-data-table
-                  :headers="headers"
-                  :items="filteredFamily"
-                  :sortable="true"
-                  :search-value="searchQuery"
-                  :rows-per-page="perPage"
-                  :rows-items="perPageOptions"
-                  :rows-per-page-text="'Rows per page'"
-                  header-text-direction="center"
-                  table-class-name="my-custom-table"
-                  header-class-name="my-custom-header"
-                  show-index
-                  alternating
-                  border-cell
-                >
-
-                  <!-- ACTION BUTTONS -->
-                  <template #item-action="items">
-                    <div class="action-wrapper d-flex gap-1 m-1 text-center">
-                      <button
-                        class="btn btn-primary m-2"
-                        @click="openFamilyModal(id)"
-                        style="font-size: small;"
+                      <input
+                        type="text"
+                        class="form-control form-control"
+                        style="width: 220px;"
+                        placeholder="Ketik NIK atau No. KK"
+                        v-model="searchQuery"
                       >
-                        <i class="fa fa-eye"></i>
+
+                      <button
+                        type="button"
+                        class="btn btn-primary mx-2"
+                        @click="toggleExpandForm"
+                      >
+                        <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                        {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
                       </button>
-                      <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
-                        title="Tambah">
-                        <i class="bi bi-plus-square"></i>
-                      </button>
-                      <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
-                        title="Ubah">
-                        <i class="bi bi-pencil-square"></i>
-                      </button>
-                      <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus">
-                        <i class="bi bi-trash"></i>
+                      <button class="btn btn-outline-success" @click="isUploadOpen = !isUploadOpen">
+                        <i class="bi bi-filetype-csv"></i> Import Data Keluarga
                       </button>
                     </div>
-                  </template>
+                    <!-- Table -->
+                    <div class="mt-3">
 
-                </easy-data-table>
+                      <!-- Search + Row Per Page -->
+                      <easy-data-table
+                        :headers="headers"
+                        :items="items"
+                        :sortable="true"
+                        :search-value="searchQuery"
+                        :rows-per-page="perPage"
+                        :rows-items="perPageOptions"
+                        :rows-per-page-text="'Rows per page'"
+                        header-text-direction="center"
+                        table-class-name="my-custom-table"
+                        header-class-name="my-custom-header"
+                        show-index
+                        alternating
+                        border-cell
+                      >
+
+                        <!-- ACTION BUTTONS -->
+                        <template #item-action="items">
+                          <div class="action-wrapper d-flex gap-1 m-1 text-center">
+                            <button
+                              data-bs-toggle="tooltip"
+                              title="Lihat Data Keluarga"
+                              class="btn btn-outline-success"
+                              @click="openFamilyModal(items)"
+                            >
+                              <i class="fa fa-eye"></i>
+                            </button>
+                            <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
+                              title="Tambah Anggota Keluarga">
+                              <i class="bi bi-plus-square"></i>
+                            </button>
+                            <button @click="editItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
+                              title="Ubah Data Keluarga">
+                              <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button @click="delItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus Data Keluarga">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </template>
+
+                      </easy-data-table>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div v-if="anggotaKeluarga" class="card shadow-sm mt-3 alert alert-info">
+                  <div class="card-body">
+                    <h2 class="mb-0 fw-bold text-center">
+                      DETAIL KELUARGA
+                    </h2>
+                    <p class="mt-0 mb-3 text-muted text-center">
+                      No. {{ selectedFamily?.no_kk }}
+                    </p>
+                    <div class="row mt-4">
+                      <div class="col-6">
+                        <div class="d-flex">
+                          <span class="fw-bold me-2" style="min-width: 90px;">Alamat</span>
+                          <span>: {{ selectedFamily?.alamat }}</span>
+                        </div>
+                        <div class="d-flex">
+                          <span class="fw-bold me-2" style="min-width: 90px;">RT/RW</span>
+                          <span>: {{ selectedFamily?.rt }}/{{ selectedFamily?.rw }}</span>
+                        </div>
+                        <div class="d-flex">
+                          <span class="fw-bold me-2" style="min-width: 90px;">Kelurahan</span>
+                          <span>: {{ selectedFamily?.wilayah?.kelurahan }}</span>
+                        </div>
+                      </div>
+
+                      <div class="col-6">
+                        <div class="d-flex">
+                          <span class="fw-bold me-2" style="min-width: 90px;">Kecamatan</span>
+                          <span>: {{ selectedFamily?.wilayah?.kecamatan }}</span>
+                        </div>
+                        <div class="d-flex">
+                          <span class="fw-bold me-2" style="min-width: 90px;">Kot/Kab</span>
+                          <span>: {{ selectedFamily?.wilayah?.kota }}</span>
+                        </div>
+                        <div class="d-flex">
+                          <span class="fw-bold me-2" style="min-width: 90px;">Provinsi</span>
+                          <span>: {{ selectedFamily?.wilayah?.provinsi }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mt-2">
+                      <div class="table-responsive mt-3">
+                        <!-- <table class="table table-sm align-middle border">
+                          <thead class="table-light text-center">
+                            <tr>
+                              <th>NIK</th>
+                              <th>Nama</th>
+                              <th>TTL</th>
+                              <th>Jenis Kelamin</th>
+                              <th>Pendidikan</th>
+                              <th>Pekerjaan</th>
+                              <th>Status Hubungan</th>
+                            </tr>
+                          </thead>
+                          <tbody style="font-size: smaller !important;">
+                            <tr v-for="a in selectedFamily?.anggota" :key="a.id">
+                              <td>{{ a.nik }}</td>
+                              <td>{{ a.nama }}</td>
+                              <td>{{ a.tempat_lahir }}, {{ new Date(a.tanggal_lahir).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</td>
+                              <td class="text-center">{{ a.jenis_kelamin }}</td>
+                              <td>{{ a.pendidikan }}</td>
+                              <td>{{ a.pekerjaan }}</td>
+                              <td>{{ a.status_hubungan }}</td>
+                            </tr>
+                          </tbody>
+                        </table> -->
+                        <EasyDataTable
+                          :headers="anggotaHeaders"
+                          :items="anggotaItems"
+                          table-class-name="table table-bordered"
+                          header-text-direction="center"
+                          body-text-direction="left"
+                          hide-footer
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
               </div>
-
             </div>
           </div>
 
-          <!-- Table -->
-          <!-- <div class="container-fluid"> -->
-            <!-- <div v-if="isPendingOpen" id="dataPending" class="card modern-card mt-4">
-              <div class="card-body bg-additional rounded">
-                <div class="d-flex justify-content-between">
-                  <h5 class="fw-bold mb-2 text-white">Data Pending</h5>
-                  <button @click="toggleExpandPending" class="btn-close"></button>
-                </div>
-
-                <EasyDataTable
-                  :headers="headers_pending"
-                  :items="familyPending"
-                >
-                  <template #item-action="{ id,tipe }">
-                    <button
-                      class="btn btn-secondary m-2"
-                      @click="updateFamily(id,tipe)"
-                      style="font-size: small;"
-                    >
-                      <i class="fa fa-pen"></i>
-                    </button>
-                  </template>
-                </EasyDataTable>
-              </div>
-            </div> -->
-            <!-- <div class="card modern-card mt-4">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <h5 class="fw-bold mb-2">Data Keluarga</h5>
-                  <EasyDataTable
-                    :headers="headers"
-                    :items="filteredFamily"
-                  >
-                  <template #item-action="{ id }">
-                    <button
-                      class="btn btn-primary m-2"
-                      @click="openFamilyModal(id)"
-                      style="font-size: small;"
-                    >
-                      <i class="fa fa-eye"></i>
-                    </button>
-                  </template>
-                  </EasyDataTable>
-                </div>
-              </div>
-            </div> -->
-          <!-- </div> -->
         </div>
         <CopyRight class="mt-auto" />
       </div>
@@ -831,6 +808,7 @@ export default {
       perPageOptions: [5, 10, 25, 50],
       searchQuery:"",
       progressLevel:0,
+      anggotaKeluarga: false,
       configCacheKey: 'site_config_cache',
       // required
       ACCEPTED_EXT: ['csv'],
@@ -893,39 +871,27 @@ export default {
       family: [],
       familyPending: [],
       headers: [
-        { text: 'ID', value: 'id' },
         { text: 'No KK', value: 'no_kk' },
         { text: 'NIK', value: 'nik_kepala' },
-        { text: 'Kepala Keluarga', value: 'nama_kepala' },
+        { text: 'Kepala Keluarga', value: 'nama_kepala', width: 200 },
         { text: 'RT', value: 'rt' },
         { text: 'RW', value: 'rw' },
-        { text: 'Tempat, Tanggal Lahir', value: 'tgl_lahir' },
+        { text: 'Tgl Lahir', value: 'tgl_lahir' },
         { text: 'Pendidikan', value: 'pendidikan' },
-        { text: 'Jumlah Anggota', value: 'jml_anggota' },
+        { text: 'Jml Anggota', value: 'jml_anggota', width: 120 },
         { text: 'Action', value: 'action' },
       ],
-      /*headers_pending: [
-        { text: 'ID', value: 'id' },
-        { text: 'No KK', value: 'no_kk' },
-        { text: 'NIK', value: 'nik' },
-        { text: 'Nama', value: 'nama' },
-        { text: 'RT', value: 'rt' },
-        { text: 'RW', value: 'rw' },
-        { text: 'Tempat, Tanggal Lahir', value: 'tgl_lahir' },
-        { text: 'Pendidikan', value: 'pendidikan' },
-        { text: 'Tipe Pending', value: 'tipe' },
-        { text: 'Action', value: 'action' },
-      ],*/
-      filter: {
-        nik_kepala: '',
-        no_kk: '',
-      },
-      advancedFilter: {
-        nama_kepala: '',
-        rt: '',
-        rw: '',
-      },
-      appliedFilter: {},
+      anggotaHeaders: [
+        { text: "NIK", value: "nik" },
+        { text: "Nama", value: "nama", width:150 },
+        { text: "Tgl Lahir", value: "ttl" },
+        { text: "JK", value: "jenis_kelamin", align: "center" },
+        { text: "Pendidikan", value: "pendidikan" },
+        { text: "Pekerjaan", value: "pekerjaan" },
+        { text: "Status", value: "status_hubungan",width:150 },
+        { text: "Kewarganegaraan", value: "kewarganegaraan" },
+      ],
+
     }
   },
   computed: {
@@ -945,11 +911,163 @@ export default {
         return nik.includes(q) || no_kk.includes(q);
       });
     },
+    items() {
+      return Object.values(this.filteredFamily)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          id: item.id,
+
+          no_kk: item.no_kk ?? "-",
+          nik_kepala: item.nik_kepala ?? "-",
+          nama_kepala: item.nama_kepala ?? "-",
+          rt: item.rt ?? "-",
+          rw: item.rw ?? "-",
+          tgl_lahir: item.tgl_lahir
+            ? this.formatDate(item.tgl_lahir)
+            : "-",
+          pendidikan: item.pendidikan ?? "-",
+          jml_anggota: item.jml_anggota ?? 0,
+
+          action: { ...item }
+        }))
+    },
+    anggotaItems() {
+      return (this.selectedFamily?.anggota ?? []).map(a => ({
+        nik: a.nik ?? "-",
+        nama: a.nama ?? "-",
+        ttl: `${ a.tanggal_lahir
+            ? new Date(a.tanggal_lahir).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "-"
+        }`,
+        jenis_kelamin: a.jenis_kelamin ?? "-",
+        pendidikan: a.pendidikan ?? "-",
+        pekerjaan: a.pekerjaan ?? "-",
+        status_hubungan: a.status_hubungan ?? "-",
+        kewarganegaraan: a.kewarganegaraan ?? "-",
+      }))
+    },
     pendingCount() {
       return this.familyPending.length
     },
   },
   methods: {
+    async delItem(item) {
+      console.log(item);
+
+      const msg = 'No. KK: '+item.no_kk || 'Keluarga '+item.nama_kepala
+      let id = null
+
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus data <br><strong>${msg}</strong> ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
+
+      this.isLoadingImport = true
+      this.importProgress = 10
+      this.animatedProgress = 10
+      try {
+        id = item.id
+        await axios.delete(`${baseURL}/api/family/${id}`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          }
+        })
+
+        this.importProgress = 70
+        this.animatedProgress = 70
+        await this.loadFamily()
+        this.importProgress = 100
+
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+
+        Swal.fire({
+          icon: 'success',
+          html: `Data <b>${msg}</b> berhasil dihapus!`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
+      } catch (e) {
+        this.importProgress = 0
+        this.animatedProgress = 0
+        this.isLoadingImport = false
+        //console.error(e)
+        Swal.fire({
+          title: 'Error',
+          text: e.data?.message || 'Terjadi kesalahan input data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+      }
+      //console.log('isi item:',item);
+      /*
+
+
+      this.isLoadingImport = true
+      this.importProgress = 10
+      this.animatedProgress = 10
+      try {
+
+      } catch (e) {
+        this.importProgress = 0
+        this.animatedProgress = 0
+        this.isLoadingImport = false
+        //console.error(e)
+        Swal.fire({
+          title: 'Error',
+          text: e.data?.message || 'Terjadi kesalahan input data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+      } */
+    },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    },
     handleFileChange(e) {
       const file = e.target.files[0]
       this.loadFilePreview(file)
@@ -1023,26 +1141,7 @@ export default {
         this.logoLoaded = false
       }
     },
-    /* async getWilayahUser() {
-      try {
-        const res = await axios.get(`${baseURL}/api/user/region`, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
 
-        const wilayah = res.data
-        this.kelurahan = wilayah.kelurahan || 'Tidak diketahui'
-        this.id_wilayah = wilayah.id_wilayah // pastikan backend kirim ini
-
-        // Setelah dapet id_wilayah, langsung fetch posyandu
-        //await this.fetchPosyanduByWilayah(this.id_wilayah)
-      } catch (error) {
-        console.error('Gagal ambil data wilayah user:', error)
-        this.kelurahan = '-'
-      }
-    }, */
     getTodayDate() {
       const hari = [
         'Minggu', 'Senin', 'Selasa', 'Rabu',
@@ -1089,9 +1188,6 @@ export default {
     toggleExpandForm() {
       this.isFormOpen = !this.isFormOpen
     },
-    /* toggleExpandPending() {
-      this.isPendingOpen = !this.isPendingOpen
-    }, */
     async checkNoKK() {
       if (!this.form.no_kk) {
         this.isKKChecked = false;
@@ -1405,9 +1501,13 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    async openFamilyModal(id) {
+    async openFamilyModal(item) {
       try {
         // panggil API detail by id
+        this.anggotaKeluarga = true
+        //console.log(item);
+        const id = item.id
+        //const res = await axios.get(`${baseURL}/api/family/detail/${id}`,{
         const res = await axios.get(`${baseURL}/api/family/detail/${id}`,{
           headers: {
             Accept: 'application/json',
@@ -1415,14 +1515,21 @@ export default {
           }
         })
         this.selectedFamily = res.data
-        //console.log(res.data);
-
-        // buka modal
-        const modalEl = document.getElementById('kkModal')
-        const instance = Modal.getOrCreateInstance(modalEl)
-        instance.show()
+        console.log(this.selectedFamily);
       } catch (e) {
         console.error("Gagal ambil detail keluarga:", e)
+        const msg = 'No. KK: '+item.no_kk || 'NIK Kepala Keluarga: '+item.nik_kepala
+        Swal.fire({
+          title: 'Error',
+          html: 'Keluarga dengan <strong>'+msg+'</strong> tidak ditemukan',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        return;
       }
     },
     validateFile(file) {
@@ -1446,193 +1553,7 @@ export default {
 
       return { valid: true }
     },
-    /* async uploadCSV() {
-      // 1️⃣ Cek file ada atau tidak
-      if (!this.file) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Tidak ada file untuk di-upload.',
-          icon: 'error',
-          confirmButtonText: 'OK',
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: 'btn btn-danger mx-1',
-          }
-        })
-        return
-      }
 
-      // 2️⃣ Validasi file (OPSI 1)
-      const validation = this.validateFile(this.file)
-      if (!validation.valid) {
-        Swal.fire({
-          title: 'Error',
-          text: validation.message,
-          icon: 'error',
-          confirmButtonText: 'OK',
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: 'btn btn-danger mx-1',
-          }
-        })
-        return
-      }
-
-      // 3️⃣ Tentukan endpoint sesuai menu aktif
-      let UPLOAD_URL
-      console.log('active: ',this.activeMenu,'activity: ',this.aktifitas);
-
-      switch (this.activeMenu) {
-        case 'anak':
-          switch (this.aktifitas) {
-            case 'Kunjungan Posyandu':
-              UPLOAD_URL = `${baseURL}/api/children/import_kunjungan`
-              break
-            case 'Pendampingan Anak':
-              UPLOAD_URL = `${baseURL}/api/children/import_pendampingan`
-              break
-            case 'Intervensi Anak':
-              UPLOAD_URL = `${baseURL}/api/children/import_intervensi`
-              break
-          }
-          break
-
-        case 'bumil':
-          switch (this.aktifitas) {
-            case 'Pendampingan Bumil':
-              UPLOAD_URL = `${baseURL}/api/pregnancy/import`
-              break
-            case 'Intervensi Bumil':
-              UPLOAD_URL = `${baseURL}/api/pregnancy/import_intervensi`
-              break
-          }
-          break
-
-        case 'catin':
-          UPLOAD_URL = `${baseURL}/api/bride/import`
-          break
-      }
-
-      if (!UPLOAD_URL) {
-        Swal.fire({
-          title: 'Error',
-          text: 'Endpoint upload tidak ditemukan.',UPLOAD_URL,
-          icon: 'error',
-          confirmButtonText: 'OK',
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: 'btn btn-danger mx-1',
-          }
-        })
-        return
-      }
-
-      const formData = new FormData()
-      formData.append('file', this.file)
-
-      this.transaksi = 'mengunggah'
-      this.isLoadingImport = true
-      this.importProgress = 0
-      this.animatedProgress = 0
-
-      await this.$nextTick()
-      this.importProgress = 10
-      this.animatedProgress = 10
-
-      try {
-        const res = await axios.post(UPLOAD_URL, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.lengthComputable) {
-              this.uploadProgress = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              )
-            }
-          }
-        })
-        // 🔥 pastikan progress berhenti
-        this.uploadProgress = 100
-
-        this.importProgress = 50
-        this.animatedProgress = 50
-        this.formOpen = false
-        this.formOpen_bumil = false
-        this.formOpen_catin = false
-        this.isUploadOpen = !this.isUploadOpen
-        this.isUploadOpen_bumil = !this.isUploadOpen_bumil
-        this.isUploadOpen_catin = !this.isUploadOpen_catin
-        this.removeFile()
-
-        this.importProgress = 70
-        this.animatedProgress = 70
-        await this.loadData()
-
-        this.importProgress = 100
-        // animasi ke 100
-        await new Promise(resolve => {
-          const interval = setInterval(() => {
-            if (this.animatedProgress >= 100) {
-              clearInterval(interval)
-              resolve()
-            } else {
-              this.animatedProgress += 5
-            }
-          }, 30)
-        })
-
-        // matikan loading
-        this.isLoadingImport = false
-        // ✅ sukses
-        console.log(res.data.message);
-        Swal.fire({
-          icon: 'success',
-          text: res.data.message || 'Data berhasil diimport!',
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: 'btn btn-primary mx-1',
-            cancelButton: 'btn btn-outline-secondary mx-1'
-          }
-        })
-        //this.showSuccess(res.data.message || 'Data berhasil diimport!')
-
-      } catch (err) {
-        const detail = err.response?.data?.detail
-        console.log(err);
-
-        const message =
-          detail ||
-          err.response?.data?.message ||
-          'Format CSV tidak valid'
-
-        Swal.fire({
-          title: 'Error',
-          html: message,
-          icon: 'error',
-          confirmButtonText: 'OK',
-          buttonsStyling: false,
-          customClass: {
-            confirmButton: 'btn btn-danger mx-1',
-          }
-        })
-        console.error('Upload error:', err.response?.data)
-      } finally {
-        this.isLoadingImport = false
-
-        // 🛑 reset total state progress
-        this.uploadProgress = 0
-        this.importProgress = 0
-        this.animatedProgress = 0
-
-        // jika pakai interval / RAF
-        if (this.progressTimer) {
-          clearInterval(this.progressTimer)
-          this.progressTimer = null
-        }
-      }
-    }, */
     async handleImport() {
       const file = this.$refs.csvFile.files[0];
       if (!file) {
@@ -1689,8 +1610,7 @@ export default {
           },
         });
 
-        this.closeModal("modalImport");
-        //this.importProgress = 50
+        await this.removeFile()
         this.animatedProgress = 50
         this.animatedProgress = 70
         await this.loadFamily();
@@ -1757,20 +1677,13 @@ export default {
         this.isLoadingImport = false;
       }
     },
-    /* async getPendingData() {
-      try {
-        const res = await axios.get(`${baseURL}/api/family/pending`,{
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        this.familyPending = res.data
-        //console.log("Pending data:", this.familyPending)
-      } catch (err) {
-        console.error("Gagal fetch pending data:", err)
-      }
-    }, */
+    removeFile() {
+      this.file = null
+      this.fileName = ''
+      this.fileSize = 0
+      this.filePreviewTable = ''
+      this.$refs.csvFile.value = ''
+    },
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1814,6 +1727,16 @@ export default {
 <style scoped>
   .my-custom-table {
   --easy-table-header-background-color: #b4dbc6;
+}
+/* .edt-borderless {
+  --easy-table-border: transparent;
+  --easy-table-row-border: transparent;
+  font-size: 0.8rem;
+} */
+
+.edt-borderless thead th {
+  font-weight: 700;
+  background-color: transparent !important;
 }
 
 .my-custom-table .col-action {

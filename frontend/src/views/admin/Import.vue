@@ -699,65 +699,6 @@
     <p class="text-white mt-3">Sedang {{transaksi}} data...</p>
   </div>
 
-  <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg rounded-4">
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">Berhasil</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center">
-          <h5 class="mb-0">{{ successMessage || 'Konfigurasi berhasil disimpan.' }}</h5>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Error -->
-  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg rounded-4">
-        <div class="modal-header bg-danger text-white rounded-top-4">
-          <h5 class="modal-title">Error</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center">
-          <h5 class="mb-0">{{ errorMessage || 'Terjadi kesalahan yang tidak diketahui.' }}</h5>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Warning -->
-  <div class="modal fade" id="warningModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg rounded-4">
-        <div class="modal-header bg-secondary rounded-top-4">
-          <h5 class="modal-title">Konfirmasi</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center">
-          <h5 class="mb-0">{{ confirmMessage || 'Apakah anda yakin?' }}</h5>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
   <!-- Loader Overlay with Animated Progress -->
   <div
     v-if="isLoadingImport"
@@ -787,7 +728,6 @@ import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
 import EasyDataTable from 'vue3-easy-data-table'
-import { Modal } from 'bootstrap'
 import 'vue3-easy-data-table/dist/style.css'
 import * as XLSX from 'xlsx'
 import Swal from 'sweetalert2'
@@ -1309,58 +1249,6 @@ export default {
         ...this.form_catin
       };
     },
-    confirmModal(message) {
-      this.confirmMessage = message || 'Apakah anda yakin?'
-
-      return new Promise((resolve) => {
-        const modalEl = document.getElementById('warningModal')
-        // eslint-disable-next-line no-undef
-        const modal = new bootstrap.Modal(modalEl)
-
-        // ketika tombol OK ditekan → resolve(true)
-        const okBtn = modalEl.querySelector('.btn-success')
-        const handler = () => {
-          resolve(true)
-          okBtn.removeEventListener('click', handler)
-        }
-        okBtn.addEventListener('click', handler)
-
-        modal.show()
-      })
-    },
-    showConfirm(message) {
-      this.confirmMessage = message || 'Apakah anda yakin?'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('warningModal'))
-      modal.show()
-    },
-    showSuccess(message) {
-      this.successMessage = message || 'Berhasil tersimpan.'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('successModal'))
-      modal.show()
-    },
-    showError(message) {
-      this.errorMessage = message || 'Terjadi kesalahan.'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('errorModal'))
-      modal.show()
-    },
-    closeModal(id) {
-      const el = document.getElementById(id)
-      if (el) {
-        const instance = Modal.getOrCreateInstance(el)
-        instance.hide()
-      }
-
-      // jaga-jaga kalau backdrop masih nyangkut
-      setTimeout(() => {
-        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-        document.body.classList.remove('modal-open')
-        document.body.style.removeProperty('overflow')
-        document.body.style.removeProperty('padding-right')
-      }, 300) // delay biar nunggu animasi fade
-    },
     capitalizeName(name) {
       return (name || '')
         .toLowerCase()
@@ -1595,8 +1483,6 @@ export default {
                 }
               })
 
-              //this.showSuccess(`Data <strong>${this.capitalizeName(nama)}</strong> berhasil diperbarui`)
-              //setTimeout(() => (this.isLoading = false, this.showSuccess(res.data.message)), 3000)
             }
             // MODE INPUT → POST
             else {
@@ -1698,7 +1584,7 @@ export default {
                   cancelButton: 'btn btn-outline-secondary mx-1'
                 }
               })
-              //this.showSuccess(res.data.message)
+
             }
             // MODE INPUT → POST
             else {
@@ -1746,7 +1632,7 @@ export default {
                   cancelButton: 'btn btn-outline-secondary mx-1'
                 }
               })
-              //this.showSuccess(res.data.message)
+
             }
             break;
           case 'catin':
@@ -1796,7 +1682,7 @@ export default {
                   cancelButton: 'btn btn-outline-secondary mx-1'
                 }
               })
-              //this.showSuccess(res.data.message)
+
             }
             // MODE INPUT → POST
             else {
@@ -1844,7 +1730,7 @@ export default {
                   cancelButton: 'btn btn-outline-secondary mx-1'
                 }
               })
-              //this.showSuccess(res.data.message)
+
             }
             break;
           default:
@@ -1866,8 +1752,7 @@ export default {
             confirmButton: 'btn btn-danger mx-1',
           }
         })
-        //this.showError(e)
-        //alert("Gagal menyimpan data")
+
       }
     },
     // Delete via backend
@@ -2276,7 +2161,7 @@ export default {
             cancelButton: 'btn btn-outline-secondary mx-1'
           }
         })
-        //this.showSuccess(res.data.message || 'Data berhasil diimport!')
+
 
       } catch (err) {
         const detail = err.response?.data?.detail
