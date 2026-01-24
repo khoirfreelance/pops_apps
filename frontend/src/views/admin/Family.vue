@@ -136,18 +136,20 @@
                   />
                 </div>
 
-                <!-- Alamat -->
-                <div class="col-md-12">
-                  <label class="form-label small fw-semibold text-secondary">Alamat</label>
-                  <textarea
-                    class="form-control shadow-sm"
-                    rows="2"
-                    v-model="form.alamat"
-                    :readonly="isKKChecked"
-                  ></textarea>
-                </div>
+                <template v-if="!anggotaKeluarga">
+                  <!-- Alamat -->
+                  <div class="col-md-12">
+                    <label class="form-label small fw-semibold text-secondary">Alamat</label>
+                    <textarea
+                      class="form-control shadow-sm"
+                      rows="2"
+                      v-model="form.alamat"
+                      :readonly="isKKChecked"
+                    ></textarea>
+                  </div>
+                </template>
 
-                <template v-if="modalMode==='edit' || modalMode==='record'">
+                <template v-if="(modalMode === 'edit' || modalMode === 'record') && showAnggotaForm === false">
                   <!-- Provinsi -->
                   <div class="col-md-4">
                     <label class="form-label small fw-semibold text-secondary">Provinsi</label>
@@ -314,7 +316,12 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
-                    <input type="date" class="form-control shadow-sm" v-model="form.tgl_lahir" />
+                    <input
+                      :type="anggotaKeluarga ? 'text' : 'date'"
+                      class="form-control shadow-sm"
+                      v-model="form.tgl_lahir"
+                    />
+
                   </div>
 
                   <!-- Pendidikan -->
@@ -344,10 +351,10 @@
                     <label class="form-label small fw-semibold text-secondary">Status Hubungan</label>
                     <select class="form-select shadow-sm" v-model="form.status_hubungan">
                       <option value="">Pilih</option>
-                      <option value="Kepala Keluarga">Kepala Keluarga</option>
-                      <option value="Istri">Istri</option>
-                      <option value="Anak">Anak</option>
-                      <option value="Famili Lain">Famili Lain</option>
+                      <option value="KEPALA KELUARGA">Kepala Keluarga</option>
+                      <option value="ISTRI">Istri</option>
+                      <option value="ANAK">Anak</option>
+                      <option value="FAMILI LAIN">Famili Lain</option>
                     </select>
                   </div>
 
@@ -356,12 +363,12 @@
                     <label class="form-label small fw-semibold text-secondary">Agama</label>
                     <select class="form-select shadow-sm" v-model="form.agama">
                       <option value="">Pilih</option>
-                      <option value="Islam">Islam</option>
-                      <option value="Kristen">Kristen</option>
-                      <option value="Katolik">Katolik</option>
-                      <option value="Hindu">Hindu</option>
-                      <option value="Budha">Budha</option>
-                      <option value="Konghucu">Konghucu</option>
+                      <option value="ISLAM">Islam</option>
+                      <option value="KRISTEN">Kristen</option>
+                      <option value="KATOLIK">Katolik</option>
+                      <option value="HINDU">Hindu</option>
+                      <option value="BUDHA">Budha</option>
+                      <option value="KONGHUCU">Konghucu</option>
                     </select>
                   </div>
 
@@ -370,10 +377,10 @@
                     <label class="form-label small fw-semibold text-secondary">Status Perkawinan</label>
                     <select class="form-select shadow-sm" v-model="form.status_perkawinan">
                       <option value="">Pilih</option>
-                      <option value="Belum Kawin">Belum Kawin</option>
-                      <option value="Kawin">Kawin</option>
-                      <option value="Cerai Hidup">Cerai Hidup</option>
-                      <option value="Cerai Mati">Cerai Mati</option>
+                      <option value="BELUM KAWIN">Belum Kawin</option>
+                      <option value="KAWIN">Kawin</option>
+                      <option value="CERAI HIDUP">Cerai Hidup</option>
+                      <option value="CERAI MATI">Cerai Mati</option>
                     </select>
                   </div>
 
@@ -409,8 +416,8 @@
           </div>
 
           <!-- Table and detail Section -->
-          <div class="container-fluid mt-4">
-            <div class="row">
+          <!-- <div class="container-fluid mt-4"> -->
+            <div class="row mt-4">
               <div class="col-md-12">
                 <div class="card shadow-sm">
                   <div class="card-body">
@@ -437,6 +444,7 @@
                         <i class="bi bi-filetype-csv"></i> Import Data Keluarga
                       </button>
                     </div>
+
                     <!-- Table -->
                     <div class="mt-3">
 
@@ -456,6 +464,25 @@
                         alternating
                         border-cell
                       >
+
+                        <template #header-select>
+                          <input
+                            type="checkbox"
+                            v-model="selectAll"
+                            @change="toggleSelectAll"
+                          />
+                        </template>
+
+                        <template #item-select="{ id }">
+                          <div class="text-center">
+                            <input
+                              type="checkbox"
+                              :value="id"
+                              v-model="selectedIds"
+                              @change="syncSelectAll"
+                            />
+                          </div>
+                        </template>
 
                         <!-- ACTION BUTTONS -->
                         <template #item-action="items">
@@ -483,6 +510,16 @@
                         </template>
 
                       </easy-data-table>
+
+                      <button
+                        class="btn btn-danger btn-sm mt-2"
+                        :disabled="!selectedIds.length"
+                        @click="bulkDelete"
+                      >
+                        <i class="bi bi-trash"></i>
+                        Hapus ({{ selectedIds.length }})
+                      </button>
+
                     </div>
 
                   </div>
@@ -500,7 +537,7 @@
                     </button>
 
                     <h2 class="mb-0 fw-bold text-center">
-                      DETAIL KELUARGA
+                      DETAIL ANGGOTA KELUARGA
                     </h2>
                     <p class="mt-0 mb-3 text-muted text-center">
                       No. {{ selectedFamily?.no_kk }}
@@ -512,10 +549,14 @@
                           <span class="fw-bold me-2" style="min-width: 90px;">Alamat</span>
                           <span>: {{ selectedFamily?.alamat }}</span>
                         </div>
+                      </div>
+                      <div class="col-6">
                         <div class="d-flex">
                           <span class="fw-bold me-2" style="min-width: 90px;">RT/RW</span>
                           <span>: {{ selectedFamily?.rt }}/{{ selectedFamily?.rw }}</span>
                         </div>
+                      </div>
+                      <div class="col-6">
                         <div class="d-flex">
                           <span class="fw-bold me-2" style="min-width: 90px;">Kelurahan</span>
                           <span>: {{ selectedFamily?.wilayah?.kelurahan }}</span>
@@ -527,10 +568,14 @@
                           <span class="fw-bold me-2" style="min-width: 90px;">Kecamatan</span>
                           <span>: {{ selectedFamily?.wilayah?.kecamatan }}</span>
                         </div>
+                      </div>
+                      <div class="col-6">
                         <div class="d-flex">
                           <span class="fw-bold me-2" style="min-width: 90px;">Kot/Kab</span>
                           <span>: {{ selectedFamily?.wilayah?.kota }}</span>
                         </div>
+                      </div>
+                      <div class="col-6">
                         <div class="d-flex">
                           <span class="fw-bold me-2" style="min-width: 90px;">Provinsi</span>
                           <span>: {{ selectedFamily?.wilayah?.provinsi }}</span>
@@ -540,38 +585,58 @@
 
                     <div class="row mt-2">
                       <div class="table-responsive mt-3">
-                        <!-- <table class="table table-sm align-middle border">
-                          <thead class="table-light text-center">
-                            <tr>
-                              <th>NIK</th>
-                              <th>Nama</th>
-                              <th>TTL</th>
-                              <th>Jenis Kelamin</th>
-                              <th>Pendidikan</th>
-                              <th>Pekerjaan</th>
-                              <th>Status Hubungan</th>
-                            </tr>
-                          </thead>
-                          <tbody style="font-size: smaller !important;">
-                            <tr v-for="a in selectedFamily?.anggota" :key="a.id">
-                              <td>{{ a.nik }}</td>
-                              <td>{{ a.nama }}</td>
-                              <td>{{ a.tempat_lahir }}, {{ new Date(a.tanggal_lahir).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</td>
-                              <td class="text-center">{{ a.jenis_kelamin }}</td>
-                              <td>{{ a.pendidikan }}</td>
-                              <td>{{ a.pekerjaan }}</td>
-                              <td>{{ a.status_hubungan }}</td>
-                            </tr>
-                          </tbody>
-                        </table> -->
-                        <EasyDataTable
+
+                        <easy-data-table
+                          :headers="anggotaHeaders"
+                          :items="anggotaItems"
+                          :sortable="true"
+                          table-class-name="table table-bordered"
+                          header-text-direction="center"
+                          body-text-direction="center"
+                          hide-footer
+                        >
+
+                          <template #header-select>
+                            <input
+                              type="checkbox"
+                              v-model="selectAll"
+                              @change="toggleSelectAll"
+                            />
+                          </template>
+
+                          <template #item-select="{ id }">
+                            <div class="text-center">
+                              <input
+                                type="checkbox"
+                                :value="id"
+                                v-model="selectedIds"
+                                @change="syncSelectAll"
+                              />
+                            </div>
+                          </template>
+
+                          <!-- ACTION BUTTONS -->
+                          <template #item-action="items">
+                            <div class="action-wrapper d-flex gap-1 m-1 text-center">
+                              <button @click="editAnggotaItem(items)" class="btn btn-secondary" data-bs-toggle="tooltip"
+                                title="Ubah Data Keluarga">
+                                <i class="bi bi-pencil-square"></i>
+                              </button>
+                              <button @click="delAnggotaItem(items)" class="btn btn-danger" data-bs-toggle="tooltip" title="Hapus Data Keluarga">
+                                <i class="bi bi-trash"></i>
+                              </button>
+                            </div>
+                          </template>
+
+                        </easy-data-table>
+                        <!-- <EasyDataTable
                           :headers="anggotaHeaders"
                           :items="anggotaItems"
                           table-class-name="table table-bordered"
                           header-text-direction="center"
                           body-text-direction="left"
                           hide-footer
-                        />
+                        /> -->
                       </div>
                     </div>
 
@@ -579,184 +644,10 @@
                 </div>
               </div>
             </div>
-          </div>
+          <!-- </div> -->
 
         </div>
         <CopyRight class="mt-auto" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Import -->
-  <div class="modal fade" id="modalImport" ref="modalImport" tabindex="-1">
-    <div class="modal-dialog">
-      <div
-        class="modal-content"
-      >
-        <div class="modal-header text-primary bg-light border-0 rounded-top-4">
-          <h5 class="modal-title">Import File Data Keluarga</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning p-2">
-            <ul>
-              <li>Import data untuk data Keluarga</li>
-              <li>Pastikan data yang diimport, berformat csv</li>
-              <li>Pastikan data sudah lengkap sebelum di import</li>
-              <li>Silahkan unduh contoh dengan klik <a href="/example_keluarga.xlsx" download="keluarga.csv">Example</a></li>
-            </ul>
-          </div>
-
-        </div>
-        <div class="modal-footer border-0 d-flex justify-content-between">
-          <button class="btn btn-light border rounded-pill px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i> Batal
-          </button>
-          <button class="btn btn-success rounded-pill px-4" @click="handleImport">
-            <i class="bi bi-upload me-2"></i> Unggah
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div
-        class="modal-content border-0 shadow-lg rounded-4"
-      >
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">Berhasil</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">Data keluarga berhasil disimpan.</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Error -->
-  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div
-        class="modal-content border-0 shadow-lg rounded-4"
-      >
-        <div class="modal-header bg-danger text-white rounded-top-4">
-          <h5 class="modal-title">Error</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">Data keluarga berhasil disimpan.</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal KK -->
-  <div class="modal fade ios-modal" id="kkModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-      <div class="modal-content rounded-3 shadow-lg border-0">
-        <!-- Header -->
-        <div class="modal-header fw-semibold border-0 bg-light sticky-top rounded-top-3 text-center">
-          <button
-            class="btn btn-secondary btn-close"
-            @click="closeModal('kkModal')"
-          >
-          </button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body px-4 py-3">
-          <h2 class="mb-0 fw-bold text-center">
-            DETAIL KELUARGA
-          </h2>
-          <p class="mt-0 mb-3 text-muted text-center">
-            No. {{ selectedFamily?.no_kk }}
-          </p>
-          <div class="row mt-4">
-            <div class="col-6">
-              <div class="d-flex">
-                <span class="fw-bold me-2" style="min-width: 90px;">Alamat</span>
-                <span>: {{ selectedFamily?.alamat }}</span>
-              </div>
-              <div class="d-flex">
-                <span class="fw-bold me-2" style="min-width: 90px;">RT/RW</span>
-                <span>: {{ selectedFamily?.rt }}/{{ selectedFamily?.rw }}</span>
-              </div>
-              <div class="d-flex">
-                <span class="fw-bold me-2" style="min-width: 90px;">Kelurahan</span>
-                <span>: {{ selectedFamily?.wilayah?.kelurahan }}</span>
-              </div>
-            </div>
-
-            <div class="col-6">
-              <div class="d-flex">
-                <span class="fw-bold me-2" style="min-width: 90px;">Kecamatan</span>
-                <span>: {{ selectedFamily?.wilayah?.kecamatan }}</span>
-              </div>
-              <div class="d-flex">
-                <span class="fw-bold me-2" style="min-width: 90px;">Kot/Kab</span>
-                <span>: {{ selectedFamily?.wilayah?.kota }}</span>
-              </div>
-              <div class="d-flex">
-                <span class="fw-bold me-2" style="min-width: 90px;">Provinsi</span>
-                <span>: {{ selectedFamily?.wilayah?.provinsi }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="row mt-2">
-            <div class="table-responsive mt-3">
-              <table class="table table-sm align-middle border">
-                <thead class="table-light text-center">
-                  <tr>
-                    <th>NIK</th>
-                    <th>Nama</th>
-                    <th>TTL</th>
-                    <th>Jenis Kelamin</th>
-                    <th>Pendidikan</th>
-                    <th>Pekerjaan</th>
-                    <th>Status Hubungan</th>
-                  </tr>
-                </thead>
-                <tbody class="small">
-                  <tr v-for="a in selectedFamily?.anggota" :key="a.id">
-                    <td>{{ a.nik }}</td>
-                    <td>{{ a.nama }}</td>
-                    <td>{{ a.tempat_lahir }}, {{ new Date(a.tanggal_lahir).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</td>
-                    <td class="text-center">{{ a.jenis_kelamin }}</td>
-                    <td>{{ a.pendidikan }}</td>
-                    <td>{{ a.pekerjaan }}</td>
-                    <td>{{ a.status_hubungan }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
@@ -808,6 +699,8 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      selectedIds: [],      // ← ID terpilih
+      selectAll: false,     // ← checkbox header
       showAnggotaForm: false,
       isUploadOpen: false,
       file: null,
@@ -886,6 +779,7 @@ export default {
       family: [],
       familyPending: [],
       headers: [
+        { text: '', value: 'select', width: 50 },
         { text: 'No KK', value: 'no_kk' },
         { text: 'NIK', value: 'nik_kepala' },
         { text: 'Kepala Keluarga', value: 'nama_kepala', width: 200 },
@@ -897,6 +791,7 @@ export default {
         { text: 'Action', value: 'action' },
       ],
       anggotaHeaders: [
+        { text: '', value: 'select', width: 50 },
         { text: "NIK", value: "nik" },
         { text: "Nama", value: "nama", width:150 },
         { text: "Tgl Lahir", value: "ttl" },
@@ -905,6 +800,7 @@ export default {
         { text: "Pekerjaan", value: "pekerjaan" },
         { text: "Status", value: "status_hubungan",width:150 },
         { text: "Kewarganegaraan", value: "kewarganegaraan" },
+        { text: 'Action', value: 'action' },
       ],
 
     }
@@ -931,7 +827,6 @@ export default {
         .sort((a, b) => a.id - b.id)
         .map(item => ({
           id: item.id,
-
           no_kk: item.no_kk ?? "-",
           nik_kepala: item.nik_kepala ?? "-",
           nama_kepala: item.nama_kepala ?? "-",
@@ -947,18 +842,22 @@ export default {
           action: { ...item }
         }))
     },
-    anggotaItems() {
-      return (this.selectedFamily?.anggota ?? []).map(a => ({
+   anggotaItems() {
+      const anggota = this.selectedFamily?.anggota ?? []
+      const no_kk = this.selectedFamily?.no_kk ?? "-"
+
+      return anggota.map(a => ({
+        id: a.id,
+        no_kk: no_kk,
         nik: a.nik ?? "-",
         nama: a.nama ?? "-",
-        ttl: `${ a.tanggal_lahir
-            ? new Date(a.tanggal_lahir).toLocaleDateString("id-ID", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-            : "-"
-        }`,
+        ttl: a.tanggal_lahir
+          ? `${a.tempat_lahir}, ${new Date(a.tanggal_lahir).toLocaleDateString("id-ID", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}`
+          : "-",
         jenis_kelamin: a.jenis_kelamin ?? "-",
         pendidikan: a.pendidikan ?? "-",
         pekerjaan: a.pekerjaan ?? "-",
@@ -971,6 +870,93 @@ export default {
     },
   },
   methods: {
+    async bulkDelete() {
+      if (!this.selectedIds.length) return
+      let length = this.selectedIds.length
+
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus <b>${this.selectedIds.length}</b> data keluarga?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
+
+      try {
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
+
+        await axios.post(`${baseURL}/api/family/bulk-delete`, {
+          ids: this.selectedIds
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
+        this.selectedIds = []
+        this.selectAll = false
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
+        await this.loadFamily()
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menghapus <b>${length}</b> data`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
+      // eslint-disable-next-line no-unused-vars
+      } catch (e) {
+        this.isLoadingImport = false
+        Swal.fire('Error', 'Gagal menghapus data', 'error')
+      } finally {
+        this.isLoadingImport = false
+      }
+    },
+    toggleSelectAll() {
+      if (this.selectAll) {
+        this.selectedIds = this.items.map(i => i.id)
+      } else {
+        this.selectedIds = []
+      }
+    },
+
+    syncSelectAll() {
+      this.selectAll =
+        this.selectedIds.length === this.items.length &&
+        this.items.length > 0
+    },
     capitalizeWords(text) {
       if (!text) return ''
       return text
@@ -978,7 +964,7 @@ export default {
         .replace(/\b\w/g, char => char.toUpperCase())
     },
     inputItem(items) {
-      console.log(items);
+      //console.log(items);
 
       this.isFormOpen = true
       this.modalMode = 'add'
@@ -1022,8 +1008,12 @@ export default {
       this.form.status_perkawinan = ''
       this.form.kewarganegaraan = ''
     },
-    editItem(items) {
+    async editItem(items) {
+
       this.isFormOpen = true
+      this.KotaReadonly = false
+      this.KecReadonly = false
+      this.KelReadonly = false
       this.modalMode = 'edit'
       this.showAnggotaForm = false // ⬅️ SEMBUNYIKAN ANGGOTA
 
@@ -1031,12 +1021,23 @@ export default {
       this.form.id = items.id
       this.form.no_kk = items.no_kk
       this.form.alamat = items.alamat
-      this.form.provinsi = items.wilayah?.provinsi || ''
-      this.form.kota = items.wilayah?.kota || ''
-      this.form.kecamatan = items.wilayah?.kecamatan || ''
-      this.form.kelurahan = items.wilayah?.kelurahan || ''
       this.form.rt = items.rt
       this.form.rw = items.rw
+
+      // 1️⃣ set provinsi dulu
+      this.form.provinsi = items.wilayah?.provinsi || ''
+      await this.loadKota()
+
+      // 2️⃣ set kota
+      this.form.kota = items.wilayah?.kota || ''
+      await this.loadKecamatan()
+
+      // 3️⃣ set kecamatan
+      this.form.kecamatan = items.wilayah?.kecamatan || ''
+      await this.loadKelurahan()
+
+      // 4️⃣ set kelurahan
+      this.form.kelurahan = items.wilayah?.kelurahan || ''
 
       // pastikan data anggota bersih
       this.clearAnggotaForm()
@@ -1046,7 +1047,7 @@ export default {
       })
     },
     async delItem(item) {
-      console.log(item);
+      //console.log(item);
 
       const msg = 'No. KK: '+item.no_kk || 'Keluarga '+item.nama_kepala
       let id = null
@@ -1124,15 +1125,97 @@ export default {
           }
         })
       }
-      //console.log('isi item:',item);
-      /*
 
+    },
+    async editAnggotaItem(items) {
+      this.isFormOpen = true
+      this.modalMode = 'edit'
+      this.showAnggotaForm = true
+
+      await this.$nextTick()
+      document.getElementById('formData')?.scrollIntoView({ behavior: 'smooth' })
+      Object.assign(this.form, {
+        id: items.id,
+        no_kk: items.no_kk,
+        nama: items.nama ?? '',
+        nik: items.nik ?? '',
+        gender: items.jenis_kelamin ?? '',
+        pendidikan: items.pendidikan ?? '',
+        pekerjaan: items.pekerjaan ?? '',
+        status_hubungan: items.status_hubungan ?? '',
+        kewarganegaraan: items.kewarganegaraan ?? '',
+        tgl_lahir: items.tanggal_lahir
+          ? new Date(items.tanggal_lahir).toISOString().substring(0, 10)
+          : '',
+        tempat_lahir: items.tempat_lahir ?? '',
+        agama:items.agama ?? '',
+        status_perkawinan: items.status_perkawinan ?? '',
+      })
+    },
+    async delAnggotaItem(item) {
+      //console.log(item);
+
+      const msg = item.nama
+      let id = null
+
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus data <br><strong>${msg}</strong> ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
 
       this.isLoadingImport = true
       this.importProgress = 10
       this.animatedProgress = 10
       try {
+        id = item.id
+        await axios.delete(`${baseURL}/api/family/anggota/${id}`, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          }
+        })
 
+        this.anggotaKeluarga = false
+        this.importProgress = 70
+        this.animatedProgress = 70
+        await this.loadFamily()
+        this.importProgress = 100
+
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+
+        Swal.fire({
+          icon: 'success',
+          html: `Data <b>${msg}</b> berhasil dihapus!`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
       } catch (e) {
         this.importProgress = 0
         this.animatedProgress = 0
@@ -1148,7 +1231,8 @@ export default {
             confirmButton: 'btn btn-danger mx-1',
           }
         })
-      } */
+      }
+
     },
     formatDate(dateString) {
       if (!dateString) return '-'
@@ -1635,17 +1719,7 @@ export default {
     },
     async openFamilyModal(item) {
       try {
-        this.anggotaKeluarga = true
-
-        // tunggu card muncul di DOM
-        await this.$nextTick()
-
-        // scroll ke detail
-        this.$refs.detailKeluarga?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-
+        this.isLoading = true
         const id = item.id
         const res = await axios.get(`${baseURL}/api/family/detail/${id}`, {
           headers: {
@@ -1656,6 +1730,17 @@ export default {
 
         this.selectedFamily = res.data
 
+        this.anggotaKeluarga = true
+
+        // tunggu card muncul di DOM
+        await this.$nextTick()
+
+        // scroll ke detail
+        this.$refs.detailKeluarga?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+        this.isLoading = false
       } catch (e) {
         console.error("Gagal ambil detail keluarga:", e)
 
@@ -1781,7 +1866,7 @@ export default {
         // matikan loading
         this.isLoadingImport = false
         // ✅ sukses
-        console.log(res.data.message);
+        //console.log(res.data.message);
         Swal.fire({
           icon: 'success',
           text: res.data.message || 'Data berhasil diimport!',
@@ -1804,7 +1889,7 @@ export default {
         this.isLoadingImport = false
 
         const detail = err.response?.data?.detail
-        console.log(err);
+        console.error(err);
 
         const message =
           detail ||
@@ -1821,8 +1906,6 @@ export default {
             confirmButton: 'btn btn-danger mx-1',
           }
         })
-        console.error("Gagal import:", err.response?.data || err);
-        //alert("Gagal import data!");
       } finally {
         this.isLoadingImport = false;
       }

@@ -66,8 +66,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/family/import', [FamilyController::class, 'import']);
     Route::get('/family/pending', [FamilyController::class, 'pendingData']);
     Route::get('/family/{id}/pending', [FamilyController::class, 'pending']);
+    Route::delete('/family/anggota/{id}', [FamilyController::class, 'delAnggota']);
     Route::put('/family/{id}', [FamilyController::class, 'update']);
     Route::delete('/family/{id}', [FamilyController::class, 'delete']);
+    Route::post('/family/bulk-delete', [FamilyController::class, 'bulkDelete']);
+
 });
 
 // Cadre Endpoint

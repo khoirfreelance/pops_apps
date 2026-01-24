@@ -681,9 +681,6 @@ class FamilyController extends Controller
 
     public function update(Request $request, $id)
     {
-        $tipe = $request->tipe;
-
-        // ambil data keluarga berdasarkan id
         $keluarga = Keluarga::findOrFail($id);
 
         // cek is_pending keluarga
@@ -697,16 +694,33 @@ class FamilyController extends Controller
             'kelurahan' => $request->kelurahan,
         ]);
 
+        // === 1. Update keluarga dulu ===
+        $keluarga->update([
+            'no_kk'      => $request->no_kk,
+            'alamat'     => $request->alamat,
+            'rt'         => $request->rt,
+            'rw'         => $request->rw,
+            'id_wilayah' => $wilayah->id,
+            'is_pending' => $isPendingKeluarga,
+        ]);
+
+        Log::create([
+            'id_user'  => Auth::id(),
+            'context'  => 'Keluarga',
+            'activity' => 'update',
+            'timestamp'=> now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Data '.$request->no_kk.' berhasil diubah'
+        ]);
+
+        //dd($isPendingKeluarga);
+        /*
+
+
         if ($tipe === 'keluarga') {
-            // === 1. Update keluarga dulu ===
-            $keluarga->update([
-                'no_kk'      => $request->no_kk,
-                'alamat'     => $request->alamat,
-                'rt'         => $request->rt,
-                'rw'         => $request->rw,
-                'id_wilayah' => $wilayah->id,
-                'is_pending' => $isPendingKeluarga,
-            ]);
+
 
             // === 2. Kalau ada anggota yg diupdate ===
             if ($request->anggota_id) {
@@ -766,16 +780,7 @@ class FamilyController extends Controller
             }
         }
 
-        Log::create([
-            'id_user'  => Auth::id(),
-            'context'  => 'keluarga',
-            'activity' => 'update',
-            'timestamp'=> now(),
-        ]);
-
-        return response()->json([
-            'message' => 'Data berhasil diubah'
-        ]);
+        */
     }
 
     public function delete($id)
@@ -823,5 +828,54 @@ class FamilyController extends Controller
             ], 500);
         }
     }
+
+    public function delAnggota($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $deleted = false;
+
+            // Anggota Keluarga
+            if (AnggotaKeluarga::where('id', $id)->exists()) {
+                AnggotaKeluarga::where('id', $id)->delete();
+                $deleted = true;
+            }
+
+            if (!$deleted) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data keluarga tidak ditemukan.'
+                ], 404);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data keluarga berhasil dihapus.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan server.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
+
+        Keluarga::whereIn('id', $ids)->delete();
+
+        return response()->json(['success' => true]);
+    }
+
 }
 

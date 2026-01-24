@@ -1192,7 +1192,7 @@ export default {
       const [day, month, year] = date.split('-')
       return `${year}-${month}-${day}`
     },
-    async finishImport(message) {
+    /* async finishImport(message) {
       // pastikan progress mentok
       this.importProgress = 100
 
@@ -1221,7 +1221,7 @@ export default {
           cancelButton: 'btn btn-outline-secondary mx-1'
         }
       })
-    },
+    }, */
     handleFileChange(e) {
       const file = e.target.files[0]
       this.loadFilePreview(file)
