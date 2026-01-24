@@ -16,11 +16,11 @@
           v-else
           class="text-white fw-bold fs-5"
         >
-          {{ kelurahan || 'Wilayah' }}
+          {{ kelurahan || 'Semua Desa' }}
         </span>
       </a>
       <h1 class="header-title">
-        Pusat Operasi Penurunan Stunting {{ kelurahan || '...' }}
+        Pusat Operasi Penurunan Stunting {{ kelurahan || 'Semua Desa' }}
       </h1>
     </div>
 

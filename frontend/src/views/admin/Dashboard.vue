@@ -3065,28 +3065,11 @@ export default {
       }
       return labels
     },
-    /* async applyFilter() {
-      this.isLoading = true
-      try {
-        await this.hitungStatistik()
-        await this.generateDataTable()
-        await this.masalahGanda()
-        await this.hitungIntervensi()
-        await this.generateInfoBoxes()
-
-        if (this.activeMenu === 'bumil') {
-          await this.generateIndikatorBumilBulanan()
-        }
-
-        // ⛔ JANGAN render chart di sini
-      } finally {
-        this.isLoading = false
-      }
-    }, */
     async applyFilter() {
       this.isLoading = true
 
       try {
+        this.periodeLabel = this.getPeriodeLabel()
         await this.hitungStatistik()
         await this.generateDataTable()
         await this.masalahGanda()

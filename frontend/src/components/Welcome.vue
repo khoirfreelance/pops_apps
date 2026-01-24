@@ -14,7 +14,7 @@
           @error="logoLoaded = false"
         />
         <span v-else class="text-muted fw-bold fs-5 mt-4">
-          {{ kelurahan || 'Wilayah' }}
+          {{ kelurahan || 'Semua Desa' }}
         </span>
 
         <p class="small mb-2 d-flex align-items-center mt-1"

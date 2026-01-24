@@ -16,8 +16,7 @@ class FamilyController extends Controller
 {
     public function index()
     {
-        $keluargas = Keluarga::with('kepala')
-                    //->where('is_pending', 0)
+        $keluargas = Keluarga::with('kepala', 'wilayah')
                     ->get();
 
         $data = $keluargas->map(function ($k) {
@@ -32,12 +31,20 @@ class FamilyController extends Controller
                 'nama_kepala'     => $k->kepala ? $k->kepala->nama : null,
                 'nik_kepala'      => $k->kepala ? $k->kepala->nik : null,
                 'tgl_lahir'       => $k->kepala && $k->kepala->tanggal_lahir
-                                    ? Carbon::parse($k->kepala->tanggal_lahir)->format('d-m-Y')
+                                    ? Carbon::parse($k->kepala->tanggal_lahir)->format('Y-m-d')
                                     : null,
+
                 'pendidikan'      => $k->kepala ? $k->kepala->pendidikan : null,
                 'status_hubungan' => $k->kepala ? $k->kepala->status_hubungan : null,
                 'is_pending' => $k->kepala ? $k->kepala->is_pending : null,
-
+                // ✅ WILAYAH
+                'wilayah' => $k->wilayah ? [
+                    'id'        => $k->wilayah->id,
+                    'provinsi'  => $k->wilayah->provinsi,
+                    'kota'      => $k->wilayah->kota,
+                    'kecamatan' => $k->wilayah->kecamatan,
+                    'kelurahan' => $k->wilayah->kelurahan,
+                ] : null,
                 // jumlah anggota keluarga
                 'jml_anggota'     => $k->anggota ? $k->anggota
                                         ->where('is_pending', 0)
@@ -63,10 +70,10 @@ class FamilyController extends Controller
         if (!$keluarga) {
             // simpan wilayah
             $wilayah = \App\Models\Wilayah::firstOrCreate([
-                'provinsi' => $request->provinsi,
-                'kota' => $request->kota,
-                'kecamatan' => $request->kecamatan,
-                'kelurahan' => $request->kelurahan,
+                'provinsi' => $this->normalizeText($request->provinsi),
+                'kota' =>  $this->normalizeText($request->kota),
+                'kecamatan' =>  $this->normalizeText($request->kecamatan),
+                'kelurahan' =>  $this->normalizeText($request->kelurahan),
             ]);
 
             // buat keluarga baru
@@ -84,16 +91,16 @@ class FamilyController extends Controller
         $keluarga->anggota()->create([
             'nik' => $request->nik,
             'no_kk' => $request->no_kk,
-            'nama' => $request->nama,
-            'tempat_lahir' => $request->tempat_lahir,
+            'nama' =>  $this->normalizeText($request->nama),
+            'tempat_lahir' =>  $this->normalizeText($request->tempat_lahir),
             'tanggal_lahir' => $request->tgl_lahir,
-            'jenis_kelamin' => $request->gender,
-            'pendidikan' => $request->pendidikan,
-            'pekerjaan' => $request->pekerjaan,
-            'status_hubungan' => $request->status_hubungan,
-            'agama' => $request->agama,
-            'status_perkawinan' => $request->status_perkawinan,
-            'kewarganegaraan' => $request->kewarganegaraan,
+            'jenis_kelamin' =>  $this->normalizeText($request->gender),
+            'pendidikan' =>  $this->normalizeText($request->pendidikan),
+            'pekerjaan' =>  $this->normalizeText($request->pekerjaan),
+            'status_hubungan' =>  $this->normalizeText($request->status_hubungan),
+            'agama' =>  $this->normalizeText($request->agama),
+            'status_perkawinan' =>  $this->normalizeText($request->status_perkawinan),
+            'kewarganegaraan' =>  $this->normalizeText($request->kewarganegaraan),
             'is_pending' => $isPendingAnggota,
         ]);
 
