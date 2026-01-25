@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/children/get-data', [ChildrenController::class, 'testGetData']);
     Route::get('/children/get-children-double-problem', [ChildrenController::class, 'getDataDoubleProblem']);
     Route::get('/children/{nik}', [ChildrenController::class, 'show']);
+    Route::post('/children/bulk-delete', [ChildrenController::class, 'bulkDelete']);
     // ENDPOINT DETAIL SELENGKAPNYA
     Route::get('/detail-tren', [ChildrenController::class, 'detail_tren']);
     Route::get('/detail-umur', [ChildrenController::class, 'detail_umur']);
@@ -70,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/family/{id}', [FamilyController::class, 'update']);
     Route::delete('/family/{id}', [FamilyController::class, 'delete']);
     Route::post('/family/bulk-delete', [FamilyController::class, 'bulkDelete']);
-
+    Route::post('/family/bulk-delete-anggota', [FamilyController::class, 'bulkDeleteAng']);
 });
 
 // Cadre Endpoint
@@ -83,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cadre/deactive/{id}', [CadreController::class, 'deactive']);
     Route::put('/cadre/active/{id}', [CadreController::class, 'active']);
     Route::put('/cadre/delete/{id}', [CadreController::class, 'delete']);
+    Route::post('/cadre/bulk-delete', [CadreController::class, 'bulkDelete']);
 });
 
 // Posyandu Endpoint
@@ -115,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('bride', CatinController::class)->only(['index','store']);
     Route::delete('/bride/{nik}', [CatinController::class, 'delete']);
     Route::put('/bride/{nik}', [CatinController::class, 'update']);
+    Route::post('/bride/bulk-delete', [CatinController::class, 'bulkDelete']);
 });
 
 // Pregnancy Endpoint
@@ -132,6 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pregnancy/intervensi-summary', [PregnancyController::class, 'intervensiSummary']);
     Route::get('/pregnancy/indikator-bulanan', [PregnancyController::class, 'indikatorBulanan']);
     Route::get('/pregnancy/{nik_ibu}', [PregnancyController::class, 'show']);
+    Route::post('/pregnancy/bulk-delete', [PregnancyController::class, 'bulkDelete']);
 });
 
 // Region Endpoint

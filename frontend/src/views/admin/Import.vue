@@ -243,6 +243,24 @@
                       table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
                       border-cell>
 
+                      <template #header-select>
+                        <input
+                          type="checkbox"
+                          v-model="selectAll_anak"
+                          @change="toggleSelectAll"
+                        />
+                      </template>
+
+                      <template #item-select="{ nik }">
+                        <div class="text-center">
+                          <input
+                            type="checkbox"
+                            :value="nik"
+                            v-model="selectedIds_anak"
+                            @change="syncSelectAll"
+                          />
+                        </div>
+                      </template>
                       <!-- ACTION BUTTONS -->
                       <template #item-action="items">
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
@@ -261,6 +279,15 @@
                       </template>
 
                     </easy-data-table>
+
+                    <button
+                        class="btn btn-danger btn-sm mt-2"
+                        :disabled="!selectedIds_anak.length"
+                        @click="bulkDelete"
+                      >
+                        <i class="bi bi-trash"></i>
+                        Hapus ({{ selectedIds_anak.length }})
+                      </button>
                   </div>
 
                 </div>
@@ -445,6 +472,25 @@
                       table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
                       border-cell>
 
+                      <template #header-select>
+                        <input
+                          type="checkbox"
+                          v-model="selectAll_bumil"
+                          @change="toggleSelectAll"
+                        />
+                      </template>
+
+                      <template #item-select="{ nik_ibu }">
+                        <div class="text-center">
+                          <input
+                            type="checkbox"
+                            :value="nik_ibu"
+                            v-model="selectedIds_bumil"
+                            @change="syncSelectAll"
+                          />
+                        </div>
+                      </template>
+
                       <template #item-action="items">
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
                           <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
@@ -463,6 +509,14 @@
 
                     </easy-data-table>
 
+                    <button
+                        class="btn btn-danger btn-sm mt-2"
+                        :disabled="!selectedIds_bumil.length"
+                        @click="bulkDelete"
+                      >
+                        <i class="bi bi-trash"></i>
+                        Hapus ({{ selectedIds_bumil.length }})
+                      </button>
                   </div>
 
                 </div>
@@ -654,6 +708,25 @@
                       table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
                       border-cell>
 
+                      <template #header-select>
+                        <input
+                          type="checkbox"
+                          v-model="selectAll_catin"
+                          @change="toggleSelectAll"
+                        />
+                      </template>
+
+                      <template #item-select="{ nik }">
+                        <div class="text-center">
+                          <input
+                            type="checkbox"
+                            :value="nik"
+                            v-model="selectedIds_catin"
+                            @change="syncSelectAll"
+                          />
+                        </div>
+                      </template>
+
                       <template #item-action="items">
                         <div class="action-wrapper d-flex gap-1 m-1 text-center">
                           <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
@@ -671,6 +744,15 @@
                       </template>
 
                     </easy-data-table>
+
+                    <button
+                        class="btn btn-danger btn-sm mt-2"
+                        :disabled="!selectedIds_catin.length"
+                        @click="bulkDelete"
+                      >
+                        <i class="bi bi-trash"></i>
+                        Hapus ({{ selectedIds_catin.length }})
+                      </button>
                   </div>
 
                 </div>
@@ -747,6 +829,12 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      selectedIds_anak: [],      // ← ID terpilih
+      selectAll_anak: false,     // ← checkbox header
+      selectedIds_bumil: [],      // ← ID terpilih
+      selectAll_bumil: false,     // ← checkbox header
+      selectedIds_catin: [],      // ← ID terpilih
+      selectAll_catin: false,     // ← checkbox header
       transaksi:'',
       progressLevel:null,
       formOpen_bumil: '',
@@ -805,6 +893,7 @@ export default {
       sortKey: '',
       sortOrder: 'asc',
       headers_catin: [
+        { text: '', value: 'select', width: 50 },
         {
           text: 'NIK Perempuan',
           value: 'nik',
@@ -862,6 +951,7 @@ export default {
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
       headers_bumil: [
+        { text: '', value: 'select', width: 50 },
         { text: "NIK", value: "nik_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Nama", value: "nama_ibu", width: 130, sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Suami", value: "nama_suami", width: 130, sortable: true, class: "align-middle text-center cursor-pointer" },
@@ -875,6 +965,7 @@ export default {
         { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
+        { text: '', value: 'select', width: 50 },
         { text: 'NIK', value: 'nik', sortable: true },
         { text: 'Nama', value: 'nama_anak', sortable: true },
         { text: 'Orang Tua', value: 'nama_ortu', sortable: true },
@@ -1180,6 +1271,163 @@ export default {
 
   },
   methods: {
+    toggleSelectAll() {
+      //console.log(this.items);
+      switch (this.activeMenu) {
+          case 'anak':
+            if (this.selectAll_anak) {
+              this.selectedIds_anak = this.items_kunAn.map(i => i.nik)
+            } else {
+              this.selectedIds_anak = []
+            }
+            break;
+          case 'bumil':
+            if (this.selectAll_bumil) {
+              this.selectedIds_bumil = this.items_bumil.map(i => i.nik_ibu)
+            } else {
+              this.selectedIds_bumil = []
+            }
+            break;
+          case 'catin':
+              if (this.selectAll_catin) {
+                this.selectedIds_catin = this.items_catin.map(i => i.nik)
+              } else {
+                this.selectedIds_catin = []
+              }
+              break;
+          default:
+            break;
+      }
+    },
+    syncSelectAll() {
+      switch (this.activeMenu) {
+          case 'anak':
+            this.selectAll_anak =
+            this.selectedIds_anak.length === this.items_kunAn.length &&
+            this.items_kunAn.length > 0
+            break;
+          case 'bumil':
+            this.selectAll_bumil =
+            this.selectedIds_bumil.length === this.items_bumil.length &&
+            this.items_bumil.length > 0
+            break;
+          case 'catin':
+            this.selectAll_catin =
+            this.selectedIds_catin.length === this.items_catin.length &&
+            this.items_catin.length > 0
+            break;
+          default:
+            break;
+      }
+    },
+    async bulkDelete() {
+      let url,ids
+      switch (this.activeMenu) {
+          case 'anak':
+            url = 'children'
+            ids = this.selectedIds_anak
+            if (!this.selectedIds_anak.length) return
+            break;
+          case 'bumil':
+            url = 'pregnancy'
+            ids = this.selectedIds_bumil
+            if (!this.selectedIds_bumil.length) return
+            break;
+          case 'catin':
+            url = 'bride'
+            ids = this.selectedIds_catin
+            if (!this.selectedIds_catin.length) return
+            break;
+          default:
+            break;
+      }
+
+      let length = this.selectedIds_anak.length || this.selectedIds_bumil.length || this.selectedIds_catin.length
+
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus <b>${length}</b> data ${this.activeMenu} ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
+
+      try {
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
+
+        await axios.post(`${baseURL}/api/${url}/bulk-delete`, {
+          ids: ids
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
+        this.selectedIds_anak = []
+        this.selectAll_anak = false
+        this.selectedIds_bumil = []
+        this.selectAll_bumil = false
+        this.selectedIds_catin = []
+        this.selectAll_catin = false
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
+        await this.loadData()
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menghapus <b>${length}</b> data ${this.activeMenu}`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
+
+      } catch (e) {
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: e.data?.error || 'Terjadi kesalahan saat menghapus data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+
+      } finally {
+        this.isLoadingImport = false
+      }
+    },
     formatDateToInput(date) {
       if (!date) return null
 

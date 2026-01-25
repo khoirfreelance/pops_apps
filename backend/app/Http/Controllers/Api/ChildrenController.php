@@ -3489,4 +3489,60 @@ class ChildrenController extends Controller
             ], 500);
         }
     }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $niks = $request->ids; // array NIK
+
+            if (!is_array($niks) || empty($niks)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak valid'
+                ], 422);
+            }
+
+            $deletedKunjungan = Kunjungan::whereIn('nik', $niks)->delete();
+            $deletedIntervensi = Intervensi::whereIn('nik_subjek', $niks)->delete();
+            $deletedPendampingan = Child::whereIn('nik_anak', $niks)->delete();
+
+            DB::commit();
+
+            \App\Models\Log::create([
+                'id_user'  => Auth::id(),
+                'context'  => 'Data Anak',
+                'activity' => 'Bulk Delete (' . (
+                    $deletedKunjungan +
+                    $deletedIntervensi +
+                    $deletedPendampingan
+                ) . ' data)',
+                'timestamp'=> now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'deleted' => [
+                    'kunjungan'     => $deletedKunjungan,
+                    'intervensi'    => $deletedIntervensi,
+                    'pendampingan'  => $deletedPendampingan,
+                ]
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Bulk delete anak gagal', [
+                'ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data keluarga'
+            ], 500);
+        }
+    }
+
 }

@@ -2100,6 +2100,58 @@ class PregnancyController extends Controller
         }
     }
 
+    public function bulkDelete(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $niks = $request->ids; // array NIK
+
+            if (!is_array($niks) || empty($niks)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak valid'
+                ], 422);
+            }
+
+            $deletedPregnancy = Pregnancy::whereIn('nik_ibu', $niks)->delete();
+            $deletedIntervensi = Intervensi::whereIn('nik_subjek', $niks)->delete();
+
+            DB::commit();
+
+            \App\Models\Log::create([
+                'id_user'  => Auth::id(),
+                'context'  => 'Data Bumil',
+                'activity' => 'Bulk Delete (' . (
+                    $deletedPregnancy +
+                    $deletedIntervensi
+                ) . ' data)',
+                'timestamp'=> now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'deleted' => [
+                    'pendampingan'     => $deletedPregnancy,
+                    'intervensi'    => $deletedIntervensi,
+                ]
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Bulk delete anak gagal', [
+                'ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data keluarga'
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {

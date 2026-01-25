@@ -1452,6 +1452,59 @@ class CatinController extends Controller
         }
     }
 
+    public function bulkDelete(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $niks = $request->ids; // array NIK
+
+            if (!is_array($niks) || empty($niks)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak valid'
+                ], 422);
+            }
+
+            $deletedCount = Catin::whereIn('nik_perempuan', $niks)->delete();
+
+            if ($deletedCount === 0) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data catin yang terhapus'
+                ], 404);
+            }
+
+            DB::commit();
+
+            \App\Models\Log::create([
+                'id_user'  => Auth::id(),
+                'context'  => 'Data Catin',
+                'activity' => 'Bulk Delete (' . $deletedCount . ' data)',
+                'timestamp'=> now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'deleted' => $deletedCount
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Bulk delete catin gagal', [
+                'ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data catin'
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -1636,8 +1689,8 @@ class CatinController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => 'Gagal import data',
-                'message' => $e->getMessage(),
+                'message' => 'Gagal import data',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1665,4 +1718,6 @@ class CatinController extends Controller
     {
         return $value ? strtoupper(trim($value)) : null;
     }
+
+
 }

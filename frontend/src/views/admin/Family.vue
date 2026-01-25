@@ -317,7 +317,7 @@
                   <div class="col-md-6">
                     <label class="form-label small fw-semibold text-secondary">Tanggal Lahir</label>
                     <input
-                      :type="anggotaKeluarga ? 'text' : 'date'"
+                      type="date"
                       class="form-control shadow-sm"
                       v-model="form.tgl_lahir"
                     />
@@ -599,8 +599,8 @@
                           <template #header-select>
                             <input
                               type="checkbox"
-                              v-model="selectAll"
-                              @change="toggleSelectAll"
+                              v-model="selectAllAng"
+                              @change="toggleSelectAllAng"
                             />
                           </template>
 
@@ -609,8 +609,8 @@
                               <input
                                 type="checkbox"
                                 :value="id"
-                                v-model="selectedIds"
-                                @change="syncSelectAll"
+                                v-model="selectedAngIds"
+                                @change="syncSelectAllAng"
                               />
                             </div>
                           </template>
@@ -629,14 +629,15 @@
                           </template>
 
                         </easy-data-table>
-                        <!-- <EasyDataTable
-                          :headers="anggotaHeaders"
-                          :items="anggotaItems"
-                          table-class-name="table table-bordered"
-                          header-text-direction="center"
-                          body-text-direction="left"
-                          hide-footer
-                        /> -->
+
+                        <button
+                          class="btn btn-danger btn-sm mt-2"
+                          :disabled="!selectedAngIds.length"
+                          @click="bulkDeleteAng"
+                        >
+                          <i class="bi bi-trash"></i>
+                          Hapus ({{ selectedAngIds.length }})
+                        </button>
                       </div>
                     </div>
 
@@ -680,7 +681,7 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
-import { Modal } from 'bootstrap'
+//import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
 import Swal from 'sweetalert2'
@@ -700,7 +701,9 @@ export default {
   data() {
     return {
       selectedIds: [],      // ← ID terpilih
+      selectedAngIds: [],
       selectAll: false,     // ← checkbox header
+      selectAllAng: false,     // ← checkbox header
       showAnggotaForm: false,
       isUploadOpen: false,
       file: null,
@@ -752,6 +755,7 @@ export default {
       kelurahanList: [],
       form: {
         id: null,
+        tipe:null,
         nik: '',
         no_kk: '',
         nama: '',
@@ -827,43 +831,51 @@ export default {
         .sort((a, b) => a.id - b.id)
         .map(item => ({
           id: item.id,
-          no_kk: item.no_kk ?? "-",
-          nik_kepala: item.nik_kepala ?? "-",
-          nama_kepala: item.nama_kepala ?? "-",
-          rt: item.rt ?? "-",
-          rw: item.rw ?? "-",
+          no_kk: item.no_kk ?? "",
+          nik_kepala: item.nik_kepala ?? "",
+          nama_kepala: item.nama_kepala ?? "",
+          rt: item.rt ?? "",
+          rw: item.rw ?? "",
           tgl_lahir: item.tgl_lahir
             ? this.formatDate(item.tgl_lahir)
-            : "-",
-          pendidikan: item.pendidikan ?? "-",
+            : "",
+          pendidikan: item.pendidikan ?? "",
           jml_anggota: item.jml_anggota ?? 0,
           alamat: item.alamat ?? 0,
           wilayah: item.wilayah ?? [],
           action: { ...item }
         }))
     },
-   anggotaItems() {
+    anggotaItems() {
       const anggota = this.selectedFamily?.anggota ?? []
-      const no_kk = this.selectedFamily?.no_kk ?? "-"
+      const no_kk = this.selectedFamily?.no_kk ?? ""
 
+      //console.log('anggota:',anggota);
       return anggota.map(a => ({
         id: a.id,
         no_kk: no_kk,
-        nik: a.nik ?? "-",
-        nama: a.nama ?? "-",
+        nik: a.nik ?? "",
+        nama: a.nama ?? "",
+        tanggal_lahir: a.tanggal_lahir ?? "",
+        tempat_lahir:a.tempat_lahir ?? "",
         ttl: a.tanggal_lahir
           ? `${a.tempat_lahir}, ${new Date(a.tanggal_lahir).toLocaleDateString("id-ID", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
             })}`
-          : "-",
-        jenis_kelamin: a.jenis_kelamin ?? "-",
-        pendidikan: a.pendidikan ?? "-",
-        pekerjaan: a.pekerjaan ?? "-",
-        status_hubungan: a.status_hubungan ?? "-",
-        kewarganegaraan: a.kewarganegaraan ?? "-",
+          : "",
+        agama: a.agama ?? "",
+        status_perkawinan: a.status_perkawinan ?? "",
+        jenis_kelamin: a.jenis_kelamin ?? "",
+        pendidikan: a.pendidikan ?? "",
+        pekerjaan: a.pekerjaan ?? "",
+        status_hubungan: a.status_hubungan ?? "",
+        kewarganegaraan: a.kewarganegaraan ?? "",
       }))
+
+
+
     },
     pendingCount() {
       return this.familyPending.length
@@ -936,10 +948,104 @@ export default {
             confirmButton: 'btn btn-primary'
           }
         })
-      // eslint-disable-next-line no-unused-vars
+
       } catch (e) {
+        console.error(e);
         this.isLoadingImport = false
-        Swal.fire('Error', 'Gagal menghapus data', 'error')
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal menghapus sebagian data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+      } finally {
+        this.isLoadingImport = false
+      }
+    },
+    async bulkDeleteAng() {
+      if (!this.selectedAngIds.length) return
+      let length = this.selectedAngIds.length
+
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus <b>${this.selectedAngIds.length}</b> data keluarga?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
+
+      try {
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
+
+        await axios.post(`${baseURL}/api/family/bulk-delete-anggota`, {
+          ids: this.selectedAngIds
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
+        this.selectedIds = []
+        this.selectAll = false
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
+        await this.loadFamily()
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menghapus <b>${length}</b> data`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
+
+      } catch (e) {
+        console.error(e);
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal menghapus sebagian data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       } finally {
         this.isLoadingImport = false
       }
@@ -951,11 +1057,24 @@ export default {
         this.selectedIds = []
       }
     },
+    toggleSelectAllAng() {
+      //console.log(this.items);
 
+      if (this.selectAllAng) {
+        this.selectedAngIds = this.anggotaItems.map(i => i.id)
+      } else {
+        this.selectedAngIds = []
+      }
+    },
     syncSelectAll() {
       this.selectAll =
         this.selectedIds.length === this.items.length &&
         this.items.length > 0
+    },
+    syncSelectAllAng() {
+      this.selectAllAng =
+        this.selectedAngIds.length === this.anggotaItems.length &&
+        this.anggotaItems.length > 0
     },
     capitalizeWords(text) {
       if (!text) return ''
@@ -1127,7 +1246,15 @@ export default {
       }
 
     },
+    toUpperCase(value) {
+      if (!value) return ''
+      if (value === '-') return ''
+
+      return String(value).toUpperCase()
+    },
     async editAnggotaItem(items) {
+      console.log('items-pre:',items);
+
       this.isFormOpen = true
       this.modalMode = 'edit'
       this.showAnggotaForm = true
@@ -1135,22 +1262,27 @@ export default {
       await this.$nextTick()
       document.getElementById('formData')?.scrollIntoView({ behavior: 'smooth' })
       Object.assign(this.form, {
+        tipe: 'anggota',
         id: items.id,
         no_kk: items.no_kk,
         nama: items.nama ?? '',
         nik: items.nik ?? '',
         gender: items.jenis_kelamin ?? '',
-        pendidikan: items.pendidikan ?? '',
+        pendidikan: this.toUpperCase(items.pendidikan) ?? '',
         pekerjaan: items.pekerjaan ?? '',
-        status_hubungan: items.status_hubungan ?? '',
+        status_hubungan: this.toUpperCase(items.status_hubungan) ?? '',
         kewarganegaraan: items.kewarganegaraan ?? '',
         tgl_lahir: items.tanggal_lahir
           ? new Date(items.tanggal_lahir).toISOString().substring(0, 10)
           : '',
         tempat_lahir: items.tempat_lahir ?? '',
-        agama:items.agama ?? '',
-        status_perkawinan: items.status_perkawinan ?? '',
+        agama:this.toUpperCase(items.agama) ?? '',
+        status_perkawinan: this.toUpperCase(items.status_perkawinan) ?? '',
       })
+
+      console.log('forms:',this.form);
+      console.log('items:',items);
+
     },
     async delAnggotaItem(item) {
       //console.log(item);
@@ -1485,19 +1617,6 @@ export default {
         console.error('Gagal ambil data:', e)
       }
     },
-    closeModal(id) {
-      const el = document.getElementById(id)
-      if (el) {
-        const instance = Modal.getOrCreateInstance(el)
-        instance.hide()
-      }
-      setTimeout(() => {
-        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-        document.body.classList.remove('modal-open')
-        document.body.style.removeProperty('overflow')
-        document.body.style.removeProperty('padding-right')
-      }, 300)
-    },
     resetForm() {
       this.form = {
         id: null,
@@ -1585,6 +1704,21 @@ export default {
 
         this.isFormOpen = true // 👈 bukan modal.show()
       } catch (err) {
+        console.error("Gagal update:", err)
+        this.importProgress = 0
+        this.animatedProgress = 0
+        this.isLoadingImport = false
+        //console.error(e)
+        Swal.fire({
+          title: 'Error',
+          text: err.data?.message || 'Data keluarg gagal diperbarui',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         console.error("Gagal load data keluarga:", err);
       }
     },
@@ -1699,9 +1833,51 @@ export default {
         }
 
         this.isFormOpen = false
-        setTimeout(() => (this.showAlert = false), 3000)
-      } catch (e) {
-        console.error('Gagal simpan data:', e)
+        this.importProgress = 70
+        this.animatedProgress = 70
+        await this.loadFamily()
+        this.importProgress = 100
+
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+
+        Swal.fire({
+          icon: 'success',
+          html: `Data keluarga berhasil ditambah!`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
+        //setTimeout(() => (this.showAlert = false), 3000)
+      } catch (err) {
+        console.error("Gagal update:", err)
+        this.importProgress = 0
+        this.animatedProgress = 0
+        this.isLoadingImport = false
+        //console.error(e)
+        Swal.fire({
+          title: 'Error',
+          text: err.data?.message || 'Data gagal disimpan',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       } finally {
         this.isLoadingImport = false
       }
@@ -1845,8 +2021,13 @@ export default {
           },
         });
 
-        await this.removeFile()
+        this.isUploadOpen = false
+        this.isFormOpen = false
+
+        this.importProgress = 50
         this.animatedProgress = 50
+        await this.removeFile()
+        this.importProgress = 70
         this.animatedProgress = 70
         await this.loadFamily();
 
@@ -1877,15 +2058,8 @@ export default {
           }
         })
 
-        // refresh data keluarga
 
-        //await this.getPendingData();
-
-        //this.closeModal("modalImport");
-        //this.showAlert = true;
-        //setTimeout(() => (this.showAlert = false), 3000);
       } catch (err) {
-        this.closeModal("modalImport");
         this.isLoadingImport = false
 
         const detail = err.response?.data?.detail

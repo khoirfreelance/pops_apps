@@ -681,38 +681,59 @@ class FamilyController extends Controller
 
     public function update(Request $request, $id)
     {
-        $keluarga = Keluarga::findOrFail($id);
+        if ($request->tipe === 'anggota') {
+            $isPendingAnggota = empty($request->nik) ? 1 : 0;
 
-        // cek is_pending keluarga
-        $isPendingKeluarga = empty($request->no_kk) ? 1 : 0;
+            $anggota = AnggotaKeluarga::findOrFail($id);
+            //dd($request);
+            $anggota->update([
+                'nik'               => $request->nik,
+                'nama'              => $this->normalizeText($request->nama),
+                'tempat_lahir'      => $this->normalizeText($request->tempat_lahir),
+                'tanggal_lahir'     => $this->convertDate($request->tgl_lahir),
+                'jenis_kelamin'     => $request->gender,
+                'status_hubungan'   => $this->normalizeText($request->status_hubungan),
+                'agama'             => $this->normalizeText($request->agama),
+                'pendidikan'        => $this->normalizeText($request->pendidikan),
+                'pekerjaan'         => $this->normalizeText($request->pekerjaan),
+                'status_perkawinan' => $this->normalizeText($request->status_perkawinan),
+                'kewarganegaraan'   => $this->normalizeText($request->kewarganegaraan),
+                'is_pending'        => $isPendingAnggota
+            ]);
+        }else {
+            $keluarga = Keluarga::findOrFail($id);
 
-        // simpan wilayah (hanya kalau ada input wilayah)
-        $wilayah = \App\Models\Wilayah::firstOrCreate([
-            'provinsi'  => $request->provinsi,
-            'kota'      => $request->kota,
-            'kecamatan' => $request->kecamatan,
-            'kelurahan' => $request->kelurahan,
-        ]);
+            // cek is_pending keluarga
+            $isPendingKeluarga = empty($request->no_kk) ? 1 : 0;
 
-        // === 1. Update keluarga dulu ===
-        $keluarga->update([
-            'no_kk'      => $request->no_kk,
-            'alamat'     => $request->alamat,
-            'rt'         => $request->rt,
-            'rw'         => $request->rw,
-            'id_wilayah' => $wilayah->id,
-            'is_pending' => $isPendingKeluarga,
-        ]);
+            // simpan wilayah (hanya kalau ada input wilayah)
+            $wilayah = \App\Models\Wilayah::firstOrCreate([
+                'provinsi'  => $request->provinsi,
+                'kota'      => $request->kota,
+                'kecamatan' => $request->kecamatan,
+                'kelurahan' => $request->kelurahan,
+            ]);
+
+            // === 1. Update keluarga dulu ===
+            $keluarga->update([
+                'no_kk'      => $request->no_kk,
+                'alamat'     => $request->alamat,
+                'rt'         => $request->rt,
+                'rw'         => $request->rw,
+                'id_wilayah' => $wilayah->id,
+                'is_pending' => $isPendingKeluarga,
+            ]);
+        }
 
         Log::create([
             'id_user'  => Auth::id(),
-            'context'  => 'Keluarga',
+            'context'  => $request->tipe === 'anggota' ? 'Anggota Keluarga' :'Keluarga',
             'activity' => 'update',
             'timestamp'=> now(),
         ]);
 
         return response()->json([
-            'message' => 'Data '.$request->no_kk.' berhasil diubah'
+            'message' => 'Data '.$request->no_kk || $request->nama.' berhasil diubah'
         ]);
 
         //dd($isPendingKeluarga);
@@ -868,13 +889,81 @@ class FamilyController extends Controller
         }
     }
 
+
     public function bulkDelete(Request $request)
     {
-        $ids = $request->ids;
+        try {
+            DB::beginTransaction();
 
-        Keluarga::whereIn('id', $ids)->delete();
+            $ids = $request->ids;
 
-        return response()->json(['success' => true]);
+            Keluarga::whereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Bulk delete keluarga gagal', [
+                'ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data keluarga'
+            ], 500);
+        }
+    }
+
+    public function bulkDeleteAng(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $ids = $request->ids; // array anggota IDs
+
+            $anggota = AnggotaKeluarga::whereIn('id', $ids)->get();
+
+            $keluargaIds = $anggota
+                ->pluck('id_keluarga')
+                ->filter()       // jaga-jaga null
+                ->unique()
+                ->values();
+
+            // delete anggota
+            AnggotaKeluarga::whereIn('id', $ids)->delete();
+
+            // delete keluarga terkait
+            if ($keluargaIds->isNotEmpty()) {
+                Keluarga::whereIn('id', $keluargaIds)->delete();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'deleted_anggota' => $ids,
+                'deleted_keluarga' => $keluargaIds
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Bulk delete anggota gagal', [
+                'ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data anggota keluarga'
+            ], 500);
+        }
     }
 
 }
