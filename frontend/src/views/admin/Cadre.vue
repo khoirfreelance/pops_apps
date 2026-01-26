@@ -742,7 +742,7 @@ export default {
     },
     handleRegionChange() {
       const idWilayah = this.form.kelurahan
-      console.log(idWilayah);
+      //console.log(idWilayah);
       this.posyanduDisabled = false
       // 🔁 DEFAULT / ALL
       this.fetchPosyanduByWilayah(idWilayah)
@@ -760,7 +760,7 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
-        console.log(res.data);
+        //console.log(res.data);
 
         this.posyanduList = res.data?.data || res.data || []
         //console.log("Posyandu list:", this.posyanduList);
@@ -1195,7 +1195,17 @@ export default {
         this.form.kecamatan = data.kecamatan
 
         await this.loadKelurahan()
-        this.form.kelurahan = data.kelurahan
+
+        const selectedKel = this.kelurahanList.find(
+          k => k.nama === data.kelurahan
+        )
+
+        this.form.kelurahan = selectedKel ? selectedKel.idWilayah : ''
+
+        //this.form.kelurahan = data.kelurahan
+        console.log('data: ',data);
+
+        this.fetchPosyanduByWilayah(selectedKel.idWilayah)
 
         this.isFormOpen = true
       } catch (err) {
@@ -1343,20 +1353,7 @@ export default {
         console.error("Gagal deactive data kader:", err.response?.data || err);
       }
     },
-    /* async getPendingData() {
-      try {
-        const res = await axios.get(`${baseURL}/api/cadre/pending`,{
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        this.cadrePending = res.data
 
-      } catch (err) {
-        console.error("Gagal fetch pending data:", err)
-      }
-    }, */
   },
   async mounted() {
     this.isLoading = true
