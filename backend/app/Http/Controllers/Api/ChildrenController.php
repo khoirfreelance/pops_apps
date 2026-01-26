@@ -2801,8 +2801,10 @@ class ChildrenController extends Controller
                 ->map(function ($row) {
                     return [
                         'tanggal' => $row->tgl_pendampingan,
-                        'kader' => $row->kader,
+                        'kader' => $row->petugas,
                         'usia' => $row->usia,
+                        'bb_lahir' => $row->bb_lahir,
+                        'tb_lahir' => $row->tb_lahir,
                         'uk_bb' => $row->bb,
                         'uk_tb' => $row->tb,
                         'bb' => $row->bb_u,

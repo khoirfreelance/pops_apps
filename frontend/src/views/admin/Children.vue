@@ -1024,10 +1024,13 @@
                     <table id="riwayat-card" class="table table-bordered table-sm align-middle text-center" style="font-size: 12px">
                       <thead class="table-light">
                         <tr>
-                          <th width="100">Tanggal</th>
-                          <th>Status BB/U</th>
-                          <th>Status TB/U</th>
-                          <th>Status BB/TB</th>
+                          <th width="100" rowspan="2">Tanggal</th>
+                          <th colspan="3">Status</th>
+                        </tr>
+                        <tr>
+                          <th width="100">BB/U</th>
+                          <th width="100">TB/U</th>
+                          <th width="100">BB/TB</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2440,6 +2443,7 @@ export default {
           : [raw.kelahiran] // <-- jadikan array
         : []
       const keluargaList = Array.isArray(raw.keluarga) ? raw.keluarga : []
+      //console.log('keluarga: ',keluargaList[0]);
 
       const lastPosyandu = posyanduList.length
         ? posyanduList.sort((a, b) => new Date(a.tgl_ukur) - new Date(b.tgl_ukur)).slice(-1)[0]
@@ -2461,11 +2465,11 @@ export default {
         nama_posyandu: prop.nama_posyandu || '-',
 
         // --- Orang Tua (keluarga[0]) ---
-        nama_ayah: keluargaList?.nama_ayah || '-',
-        nik_ayah: keluargaList?.nik_ayah || '-',
-        nama_ibu: keluargaList?.nama_ibu || '-',
-        nik_ibu: keluargaList?.nik_ibu || '-',
-        no_telp: keluargaList?.no_telp || '-',
+        nama_ayah: keluargaList[0]?.nama_ayah || '-',
+        nik_ayah: keluargaList[0]?.nik_ayah || '-',
+        nama_ibu: keluargaList[0]?.nama_ibu || '-',
+        nik_ibu: keluargaList[0]?.nik_ibu || '-',
+        no_telp: keluargaList[0]?.no_telp || '-',
 
         kelahiran: kelahiranList.length
           ? kelahiranList.map(k => ({
@@ -2514,8 +2518,8 @@ export default {
           usia: p.usia || '-',
           rt: props.rt || '-',
           rw: props.rw || '-',
-          bb_lahir: kelahiranList?.bb_lahir || '-',
-          pb_lahir: kelahiranList?.pb_lahir || '-',
+          bb_lahir: p.bb_lahir || '-',
+          pb_lahir: p.tb_lahir || '-',
           bb: p.bb || '-',
         })),
       }
