@@ -889,7 +889,7 @@ export default {
           }
         })
         this.member = res.data
-        //console.log('anggota: '+ this.member);
+        console.log('anggota: '+ this.member);
 
       } catch (e) {
         console.error('Gagal ambil data:', e)

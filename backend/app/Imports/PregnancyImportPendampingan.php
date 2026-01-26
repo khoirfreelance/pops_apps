@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\{Pregnancy, Wilayah, Log, User, Cadre};
+use App\Models\{Pregnancy, Wilayah, Log, User, Cadre, DampinganKeluarga, Keluarga, AnggotaKeluarga};
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +20,9 @@ class PregnancyImportPendampingan implements
 {
     protected array $wilayahUser = [];
     protected string $posyanduUser = '';
+    protected string $posyanduUserID = '';
+    protected string $rtPosyandu = '';
+    protected string $rwPosyandu = '';
 
     public function __construct(private int $userId)
     {
@@ -177,13 +180,97 @@ class PregnancyImportPendampingan implements
                 'posyandu' => $this->posyanduUser ?? null,
             ]);
 
-            Wilayah::firstOrCreate([
+            $wilayah = Wilayah::firstOrCreate([
                 'provinsi' => $this->normalizeText($pregnancy->provinsi),
                 'kota' => $this->normalizeText($pregnancy->kota),
                 'kecamatan' => $this->normalizeText($pregnancy->kecamatan),
                 'kelurahan' => $this->normalizeText($pregnancy->kelurahan),
             ]);
 
+            $noKK = $pregnancy['nik_suami'] ?? null;
+
+            if ($noKK) {
+                $keluarga = Keluarga::firstOrCreate(
+                    [
+                        'no_kk' => $noKK,
+                    ],
+                    [
+                        'alamat' => 'desa ' . $wilayah->kelurahan . ', kec. ' . $wilayah->kecamatan . ', kota/kab. ' . $wilayah->kota,
+                        'rt' => $pregnancy['rt'] ?? null,
+                        'rw' => $pregnancy['rw'] ?? null,
+                        'id_wilayah' => $wilayah->id,
+                        'is_pending' => true,
+                    ]
+                );
+                $anggota_ayah = [
+                    'id_keluarga' => $keluarga->id,
+                    'nama' => $pregnancy['nama_suami'],
+                    'nik' => $pregnancy['nik_suami'],
+                    'jenis_kelamin' => 'L',
+                    'status_hubungan' => 'Kepala Keluarga',
+                    'is_pending' => true,
+                ];
+
+                $anggota_ibu = [
+                    'id_keluarga' => $keluarga->id,
+                    'nama' => $pregnancy['nama_ibu'],
+                    'nik' => $pregnancy['nik_ibu'],
+                    'jenis_kelamin' => 'P',
+                    'status_hubungan' => 'Istri',
+                    'is_pending' => true,
+                ];
+
+                if ($pregnancy['nik_suami']) {
+                    AnggotaKeluarga::firstOrCreate(["nik" => $anggota_ayah['nik']], $anggota_ayah);
+                }else{
+                    AnggotaKeluarga::create($anggota_ayah);
+                }
+
+                if ($pregnancy['nik_ibu']) {
+                    AnggotaKeluarga::firstOrCreate(["nik" => $anggota_ibu['nik']], $anggota_ibu);
+                }else{
+                    AnggotaKeluarga::create($anggota_ibu);
+                }
+            }
+
+            $user = User::where('name', strtoupper($row[1]))
+                ->whereHas('cadre', function ($q) {
+                    $q->where('id_posyandu', $this->posyanduUser)
+                    ->whereHas('posyandu', function ($p) {
+                        $p->where('rt', $this->rtPosyandu)
+                            ->where('rw', $this->rwPosyandu);
+                    });
+                })
+            ->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'nik' => null,
+                    'name' => strtoupper($row[1]),
+                    'email' => $this->generateRandomEmail($row[1]),
+                    'email_verified_at' => now(),
+                    'phone' => null,
+                    'role' => null,
+                    'id_wilayah' => $wilayah->id,
+                    'status' => 1,
+                    'is_pending' => 1,
+                    'password' => '-',
+                ]);
+            }
+
+            $cadre = Cadre::firstOrCreate([
+                'id_tpk' => null,
+                'id_user' => $user->id,
+                'id_posyandu' => $this->posyanduUserID,
+                'status' => 'non-kader',
+            ]);
+
+            $dampinganKeluarga = DampinganKeluarga::firstOrCreate([
+                'id_pendampingan' => $pregnancy->id,
+                'id_keluarga' => $keluarga->id,
+                'id_tpk' => $cadre->id,
+                'jenis' => 'BUMIL',
+            ]);
             // Takeout cause posyandu get from cadre of user doing the import
             // Posyandu::firstOrCreate([
             //     'nama_posyandu' => $pregnancy->posyandu ?? '-',
@@ -201,6 +288,19 @@ class PregnancyImportPendampingan implements
     }
 
     /* ================= HELPERS ================= */
+
+    private function generateRandomEmail(string $nama): string
+    {
+        // bersihin nama
+        $username = strtolower($nama);
+        $username = preg_replace('/[^a-z0-9]+/', '.', $username);
+        $username = trim($username, '.');
+
+        // biar unik
+        $unique = now()->format('YmdHis') . rand(100, 999);
+
+        return "{$username}.{$unique}@pops.com";
+    }
 
     private function meterToCm(?float $value): ?float
     {
@@ -339,7 +439,10 @@ class PregnancyImportPendampingan implements
         $cadre = Cadre::where('id_user', $this->userId)->first();
 
         if ($cadre && $cadre->posyandu) {
-        $this->posyanduUser = $cadre->posyandu->nama_posyandu;
+            $this->posyanduUserID = $cadre->posyandu->id;
+            $this->posyanduUser = $cadre->posyandu->nama_posyandu;
+            $this->rtPosyandu = $cadre->posyandu->rt;
+            $this->rwPosyandu = $cadre->posyandu->rw;
         }
 
         $this->wilayahUser = [

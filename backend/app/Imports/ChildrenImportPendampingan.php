@@ -9,6 +9,7 @@ use App\Models\Log;
 use App\Models\Keluarga;
 use App\Models\Cadre;
 use App\Models\AnggotaKeluarga;
+use App\Models\DampinganKeluarga;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -18,6 +19,10 @@ use Maatwebsite\Excel\Concerns\WithStartRow;
 class ChildrenImportPendampingan implements ToCollection, WithStartRow
 {
     protected array $wilayahUser = [];
+    protected string $posyanduUser = '';
+    protected string $rtPosyandu = '';
+    protected string $rwPosyandu = '';
+
     public function __construct(private int $userId)
     {
         $this->loadWilayahUser();
@@ -137,7 +142,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'bb_tb' => $this->statusBBTB($z_bbtb),
                 ]);
 
-                Child::create($data);
+                $child = Child::create($data);
 
                 $wilayah = Wilayah::firstOrCreate([
                     'provinsi' => $data['provinsi'],
@@ -208,26 +213,44 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 }
 
-                /* $user = User::firstOrCreate([
-                    'nik' => null,
-                    'name' => strtoupper($row[1]),
-                    'email' => null,
-                    'email_verified_at' => null,
-                    'phone' => null,
-                    'role' => null,
-                    'id_wilayah'=> $wilayah->id,
-                    'status' => 1,
-                    'is_pending' => 1,
-                    'password' => null,
-                ]);
+                $user = User::where('name', strtoupper($row[1]))
+                ->whereHas('cadre', function ($q) {
+                    $q->where('id_posyandu', $this->posyanduUser)
+                    ->whereHas('posyandu', function ($p) {
+                        $p->where('rt', $this->rtPosyandu)
+                            ->where('rw', $this->rwPosyandu);
+                    });
+                })
+                ->first();
 
-                // simpan cadre
-                $cadre = Cadre::create([
+                if (!$user) {
+                    $user = User::create([
+                        'nik' => null,
+                        'name' => strtoupper($row[1]),
+                        'email' => $this->generateRandomEmail($row[1]),
+                        'email_verified_at' => now(),
+                        'phone' => null,
+                        'role' => null,
+                        'id_wilayah' => $wilayah->id,
+                        'status' => 1,
+                        'is_pending' => 1,
+                        'password' => '-',
+                    ]);
+                }
+
+                $cadre = Cadre::firstOrCreate([
                     'id_tpk' => null,
                     'id_user' => $user->id,
-                    'id_posyandu' => null,
-                    'status' => $request->no_tpk ? 'kader':'non-kader',
-                ]); */
+                    'id_posyandu' => $this->posyanduUser,
+                    'status' => 'non-kader',
+                ]);
+
+                $dampinganKeluarga = DampinganKeluarga::firstOrCreate([
+                    'id_pendampingan' => $child->id,
+                    'id_keluarga' => $keluarga->id,
+                    'id_tpk' => $cadre->id,
+                    'jenis' => 'ANAK',
+                ]);
 
                 // ✅ Log aktivitas
                 Log::create([
@@ -241,6 +264,19 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         } catch (Exception $e) {
             throw $e; // ⬅️ penting supaya Excel::import gagal
         }
+    }
+
+    private function generateRandomEmail(string $nama): string
+    {
+        // bersihin nama
+        $username = strtolower($nama);
+        $username = preg_replace('/[^a-z0-9]+/', '.', $username);
+        $username = trim($username, '.');
+
+        // biar unik
+        $unique = now()->format('YmdHis') . rand(100, 999);
+
+        return "{$username}.{$unique}@pops.com";
     }
 
     private function normalizeNik($nik)
@@ -433,7 +469,39 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
         return $result;
     }
+
     protected function loadWilayahUser(): void
+    {
+        $user = User::find($this->userId);
+        $this->posyanduUser = 'UNKNOWN';
+
+        if (!$user || !$user->id_wilayah) {
+            $this->wilayahUser = [
+                'provinsi' => null,
+                'kota' => null,
+                'kecamatan' => null,
+                'kelurahan' => null,
+            ];
+            return;
+        }
+
+        $zona = Wilayah::find($user->id_wilayah);
+        $cadre = Cadre::where('id_user', $this->userId)->first();
+
+        if ($cadre && $cadre->posyandu) {
+            $this->posyanduUser = $cadre->posyandu->id;
+            $this->rtPosyandu = $cadre->posyandu->rt;
+            $this->rwPosyandu = $cadre->posyandu->rw;
+        }
+
+        $this->wilayahUser = [
+            'provinsi' => $zona->provinsi ?? null,
+            'kota' => $zona->kota ?? null,
+            'kecamatan' => $zona->kecamatan ?? null,
+            'kelurahan' => $zona->kelurahan ?? null,
+        ];
+    }
+    /* protected function loadWilayahUser(): void
     {
         $user = User::find($this->userId);
 
@@ -455,7 +523,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
             'kecamatan' => $zona->kecamatan ?? null,
             'kelurahan' => $zona->kelurahan ?? null,
         ];
-    }
+    } */
 
     protected function normalizeBeratGramToKg($berat)
     {

@@ -8,6 +8,7 @@ use App\Models\Wilayah;
 use App\Models\User;
 use App\Models\Posyandu;
 use App\Models\Log;
+use App\Models\DampinganKeluarga;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,9 @@ class CatinImportPendampingan implements
 {
     protected array $wilayahUser = [];
     protected string $posyanduUser = '';
+    protected string $posyanduUserID = '';
+    protected string $rtPosyandu = '';
+    protected string $rwPosyandu = '';
 
     public function __construct(private int $userId)
     {
@@ -163,6 +167,44 @@ class CatinImportPendampingan implements
                 'kelurahan' => $row['15'] ?? null, */
             ]);
 
+            $user = User::where('name', strtoupper($row[1]))
+                ->whereHas('cadre', function ($q) {
+                    $q->where('id_posyandu', $this->posyanduUser)
+                    ->whereHas('posyandu', function ($p) {
+                        $p->where('rt', $this->rtPosyandu)
+                            ->where('rw', $this->rwPosyandu);
+                    });
+                })
+            ->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'nik' => null,
+                    'name' => strtoupper($row[1]),
+                    'email' => $this->generateRandomEmail($row[1]),
+                    'email_verified_at' => now(),
+                    'phone' => null,
+                    'role' => null,
+                    'id_wilayah' => $wilayah->id,
+                    'status' => 1,
+                    'is_pending' => 1,
+                    'password' => '-',
+                ]);
+            }
+
+            $cadre = Cadre::firstOrCreate([
+                'id_tpk' => null,
+                'id_user' => $user->id,
+                'id_posyandu' => $this->posyanduUserID,
+                'status' => 'non-kader',
+            ]);
+
+            $dampinganKeluarga = DampinganKeluarga::firstOrCreate([
+                'id_pendampingan' => $catin->id,
+                'id_keluarga' => 0,
+                'id_tpk' => $cadre->id,
+                'jenis' => 'CATIN',
+            ]);
             // Takeout cause posyandu get from cadre of user doing the import
             // Posyandu::firstOrCreate([
             //     'nama_posyandu' => $row['posyandu'] ?? '-',
@@ -183,6 +225,19 @@ class CatinImportPendampingan implements
     /* =========================
      * Helper functions
      * ========================= */
+
+    private function generateRandomEmail(string $nama): string
+    {
+        // bersihin nama
+        $username = strtolower($nama);
+        $username = preg_replace('/[^a-z0-9]+/', '.', $username);
+        $username = trim($username, '.');
+
+        // biar unik
+        $unique = now()->format('YmdHis') . rand(100, 999);
+
+        return "{$username}.{$unique}@pops.com";
+    }
 
     private function normalizeNik($nik)
     {
@@ -313,7 +368,10 @@ class CatinImportPendampingan implements
         $cadre = Cadre::where('id_user', $this->userId)->first();
 
         if ($cadre && $cadre->posyandu) {
+            $this->posyanduUserID = $cadre->posyandu->id;
             $this->posyanduUser = $cadre->posyandu->nama_posyandu;
+            $this->rtPosyandu = $cadre->posyandu->rt;
+            $this->rwPosyandu = $cadre->posyandu->rw;
         }
 
         $this->wilayahUser = [

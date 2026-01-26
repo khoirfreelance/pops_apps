@@ -15,9 +15,9 @@ class MemberController extends Controller
     public function index()
     {
         $cadres = Cadre::with(['tpk', 'user'])
-        ->wherehas('user', function ($q) {
+        /* ->wherehas('user', function ($q) {
                 $q->where('is_pending', 0);
-            })
+            }) */
         ->get();
 
         $data = $cadres->map(function ($cadre) {

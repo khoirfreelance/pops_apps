@@ -19,18 +19,19 @@ class CadreController extends Controller
     public function index()
     {
         $cadres = Cadre::with(['tpk', 'user'])
-        ->wherehas('user', function ($q) {
+        /* ->wherehas('user', function ($q) {
                 $q->where('is_pending', 0);
-            })
+            }) */
         ->get();
 
         $data = $cadres->map(function ($cadre) {
+            //dd($cadre->user->status);
             return [
                 'id'            => $cadre->id,
                 'no_tpk'        => $cadre->tpk->no_tpk ?? null,
                 'nama'          => $cadre->user->name ?? null,
                 'nik'           => $cadre->user->nik ?? null,
-                'status'        => $cadre->user->status === 1 ? 'Aktif':'Non aktif',
+                'status'        => $cadre->user ? ($cadre->user->status == 1 ? 'Aktif' : 'Non aktif') : 'Tidak ada user',
                 'phone'         => $cadre->user->phone ?? null,
                 'email'         => $cadre->user->email ?? null,
                 'role'          => $cadre->user->role ?? null,
