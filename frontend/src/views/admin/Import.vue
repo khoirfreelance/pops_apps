@@ -780,27 +780,6 @@
     </div>
     <p class="text-white mt-3">Sedang {{transaksi}} data...</p>
   </div>
-
-  <!-- Loader Overlay with Animated Progress -->
-  <div
-    v-if="isLoadingImport"
-    class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-50"
-    style="z-index: 2000"
-  >
-    <div class="w-50">
-      <div class="progress" style="height: 1.8rem; border-radius: 1rem; overflow: hidden">
-        <div
-          class="progress-bar progress-bar-striped progress-bar-animated"
-          role="progressbar"
-          :style="{ width: importProgress + '%' }"
-          :data-progress="progressLevel"
-        >
-          <span class="fw-bold">{{ animatedProgress }}%</span>
-        </div>
-      </div>
-    </div>
-    <p class="text-white mt-3">Sedang {{transaksi}} data...</p>
-  </div>
 </template>
 
 <script>

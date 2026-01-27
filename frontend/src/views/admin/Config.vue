@@ -175,54 +175,19 @@
     </div>
   </div>
 
-  <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg rounded-4">
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">Berhasil</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">{{ successMessage || 'Konfigurasi berhasil disimpan.' }}</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
+<!-- Loader Overlay with Animated Progress -->
+  <div v-if="isLoadingImport"
+    class="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-50"
+    style="z-index: 2000">
+    <div class="w-50">
+      <div class="progress" style="height: 1.8rem; border-radius: 1rem; overflow: hidden">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+          :style="{ width: importProgress + '%' }" :data-progress="progressLevel">
+          <span class="fw-bold">{{ animatedProgress }}%</span>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Modal Error -->
-  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg rounded-4">
-        <div class="modal-header bg-danger text-white rounded-top-4">
-          <h5 class="modal-title">Error</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">{{ errorMessage || 'Terjadi kesalahan yang tidak diketahui.' }}</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
+    <p class="text-white mt-3">Sedang {{transaksi}} data...</p>
   </div>
 </template>
 
@@ -232,6 +197,7 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const API_PORT = 8000
 const { protocol, hostname } = window.location
@@ -243,6 +209,13 @@ export default {
   components: { NavbarAdmin, CopyRight, HeaderAdmin, Welcome },
   data() {
     return {
+      transaksi:'',
+      progressLevel:0,
+      importProgress: 0,
+      animatedProgress: 0,
+      currentRow: 0,
+      totalRows: 1,
+      isLoadingImport: false,
       configCacheKey: 'site_config_cache',
       isLoading: true,
       isCollapsed: false,
@@ -337,21 +310,6 @@ export default {
       if (type === 'logo') this.form.logo = file
       else if (type === 'background') this.form.background = file
     },
-
-    // --- Modal helper ---
-    showError(message) {
-      this.errorMessage = message || 'Terjadi kesalahan.'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('errorModal'))
-      modal.show()
-    },
-    showSuccess(message) {
-      this.successMessage = message || 'Berhasil tersimpan.'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('successModal'))
-      modal.show()
-    },
-
     normalizeLogoPath(path) {
       if (!path) return null
       // Kalau sudah mengandung http (sudah absolute URL), langsung return
@@ -360,8 +318,6 @@ export default {
       // Kalau masih relative, pastikan tanpa "storage/" dobel
       return path.replace(/^storage\//, '')
     },
-
-
     async loadConfigWithCache() {
       try {
         const cached = localStorage.getItem(this.configCacheKey)
@@ -417,27 +373,40 @@ export default {
     async handleSubmit() {
       try {
 
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
+
         const formData = new FormData()
         formData.append('logo', this.form.logo)
         formData.append('background', this.form.background)
         formData.append('maintenance', this.form.maintenance ? 1 : 0)
         formData.append('app', this.form.app ? 1 : 0)
 
-        const res = await axios.post(`${baseURL}/api/config`, formData, {
+        await axios.post(`${baseURL}/api/config`, formData, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
-        console.log('✅ Config saved:', res.data)
-
+        this.animatedProgress = 30
+        this.progressLevel = 30
+        this.importProgress = 30
         localStorage.removeItem('site_config_cache')
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
         const refresh = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
+
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
         const data = refresh.data?.data
         if (data) {
           const cleanLogo = this.normalizeLogoPath(data.logo)
@@ -445,10 +414,43 @@ export default {
           this.form.logoName = cleanLogo.split('/').pop()
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-        this.showSuccess('Konfigurasi berhasil disimpan & disinkronkan')
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menyimpan Logo`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
       } catch (err) {
         console.error('❌ Gagal simpan konfigurasi:', err)
-        this.showError('Gagal menyimpan konfigurasi. Periksa koneksi atau token Anda.')
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: err.data?.error || 'Terjadi kesalahan saat menyimpan data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+      }finally {
+        this.isLoadingImport = false
       }
     },
   },
