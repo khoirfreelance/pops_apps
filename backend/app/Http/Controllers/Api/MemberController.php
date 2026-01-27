@@ -91,13 +91,25 @@ class MemberController extends Controller
     public function assign(Request $request)
     {
         $id = $request->id;
+        $no_tpk = $request->no_tpk === '__new__' ? $request->no_tpk_new : $request->no_tpk;
 
-        // ambil data keluarga berdasarkan id
         $cadre = Cadre::findOrFail($id);
         $user = $cadre->user()->where('nik', $request->nik)->first();
+        //$tpk = TPK::firstOrCreate('no_tpk',$no_tpk)->first();
+        $wilayah = \App\Models\Wilayah::firstOrCreate([
+            'provinsi' => $request->provinsi,
+            'kota' => $request->kota,
+            'kecamatan' => $request->kecamatan,
+            'kelurahan' => $request->kelurahan,
+        ]);
+
+        $tpk = TPK::firstOrCreate([
+            'no_tpk' => $no_tpk,
+            'id_wilayah' => $wilayah->id,
+        ]);
 
         $cadre->update([
-            'id_tpk' => $request->id,
+            'id_tpk' => $tpk->id,
             'id_user' => $user->id,
             'status' => 'Kader',
         ]);

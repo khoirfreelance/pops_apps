@@ -156,6 +156,7 @@
                           class="form-select shadow-sm"
                           v-model="form.kota"
                           @change="loadKecamatan"
+                          :disabled="kotaReadonly"
                           :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
                         >
                           <option value="">Pilih</option>
@@ -183,6 +184,7 @@
                           class="form-select shadow-sm"
                           v-model="form.kecamatan"
                           @change="loadKelurahan"
+                          :disabled="kecamatanReadonly"
                           :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
                         >
                           <option value="">Pilih</option>
@@ -209,6 +211,7 @@
                         <select
                           class="form-select shadow-sm"
                           v-model="form.kelurahan"
+                          :disabled="kelurahanReadonly"
                           :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
                         >
                           <option value="">Pilih</option>
@@ -574,6 +577,7 @@ import 'vue3-easy-data-table/dist/style.css'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
+import Swal from 'sweetalert2'
 
 // PORT backend kamu
 const API_PORT = 8000;
@@ -589,6 +593,9 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      kotaReadonly:true,
+      kecamatanReadonly:true,
+      kelurahanReadonly:true,
       progressLevel: null,
       configCacheKey: 'site_config_cache',
       // required
@@ -619,6 +626,7 @@ export default {
       //familyList:[],
       family:[],
       form: {
+        nama:'',
         nik:'',
         no_tpk: '',
         kelurahan: '',
@@ -839,10 +847,16 @@ export default {
           }
         });
         const data = res.data;
+        //console.log('tpkList:',data.listTPK);
+
+        this.tpkList = Array.isArray(data.listTPK)
+          ? data.listTPK
+          : []
 
         // mapping ke form sesuai struktur
         this.form = {
-          id: data.id,
+          nama: data.nama,
+          id: data.idTPK,
           nik: data.nik,
           no_tpk: data.no_tpk,
           kelurahan: data.kelurahan,
@@ -917,7 +931,7 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         })
-        console.log('data: '+res.data);
+        //console.log('data: '+res.data);
 
         this.tpkList = res.data
       } catch (e) {
@@ -993,6 +1007,7 @@ export default {
         this.form.kota = "";
         this.form.kecamatan = "";
         this.form.kelurahan = "";
+        this.kotaReadonly = false
       }
     },
     async loadKecamatan() {
@@ -1004,6 +1019,7 @@ export default {
         this.kelurahanList = [];
         this.form.kecamatan = "";
         this.form.kelurahan = "";
+        this.kecamatanReadonly = false
       }
     },
     async loadKelurahan() {
@@ -1017,13 +1033,22 @@ export default {
         });
         this.kelurahanList = res.data;
         this.form.kelurahan = "";
+        this.kelurahanReadonly = false
       }
     },
-    resetForm() {
+    async resetForm() {
       this.form = {
         id: null,
         no_tpk: '',
       },
+      await this.$nextTick(),
+      await this.loadProvinsi(),
+      await this.loadKota(),
+      await this.loadKecamatan(),
+      await this.loadKelurahan(),
+      this.kotaReadonly = true,
+      this.kecamatanReadonly = true,
+      this.kelurahanReadonly = true,
       this.isFormOpen = false
     },
     normalizeFormPayload(form) {
@@ -1060,14 +1085,51 @@ export default {
           }
         })
 
+        this.isFormOpen = false
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
         // refresh table
         await this.resetForm()
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
         await this.loadMember()
 
-        setTimeout(() => (this.showAlert = false), 3000)
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `<strong>No. TPK ${this.form.no_tpk}</strong> berhasil ditambahkan`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
 
       } catch (e) {
-        console.error('Gagal simpan data:', e)
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: e.data?.error || 'Terjadi kesalahan saat menghapus data',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }finally{
         this.isLoadingImport = false
       }
@@ -1079,6 +1141,8 @@ export default {
 
       try {
         console.log("Payload sebelum dikirim:", this.form)
+        const nama = this.form.nama
+        const no_tpk = this.form.no_tpk === '__new__' ? this.form.no_tpk_new : this.form.no_tpk
 
         // simpan ke backend
         await axios.post(`${baseURL}/api/member/assign`, this.form,{
@@ -1088,15 +1152,52 @@ export default {
           }
         })
 
+        this.isFormOpen = false
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
         // refresh table
         await this.resetForm()
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
         await this.loadMember()
 
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
 
-        setTimeout(() => (this.showAlert = false), 3000)
+        Swal.fire({
+          icon: 'success',
+          html: `<strong>${nama}</strong> berhasil ditambahkan menjadi anggota TPK dengan No. TPK <strong>${no_tpk}</strong>`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
 
       } catch (e) {
-        console.error('Gagal assign data:', e)
+        this.isLoadingImport = false
+        const nama = this.form.nama
+        Swal.fire({
+          title: 'Error',
+          html: e.data?.error || `Gagal menambahkan <strong>${nama}</strong> sebagai Anggota TPK`,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }finally{
         this.isLoadingImport = false
       }

@@ -241,6 +241,9 @@ class CadreController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
+        $tpk = TPK::where('id_wilayah',$cadre->posyandu->id_wilayah)->get();
+        //dd($tpk);
+
         $data = [
             'isActive'      => $cadre->user->status ?? null,
             'idTPK'         => $cadre->id,
@@ -259,6 +262,7 @@ class CadreController extends Controller
             'kota'          => $cadre->posyandu->wilayah->kota ?? null,
             'kecamatan'     => $cadre->posyandu->wilayah->kecamatan ?? null,
             'kelurahan'     => $cadre->posyandu->wilayah->kelurahan ?? null,
+            'listTPK'       => $tpk ?? [],
         ];
 
         return response()->json($data);
