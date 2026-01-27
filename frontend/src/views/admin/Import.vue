@@ -237,11 +237,20 @@
                   <div class="mt-3">
 
                     <!-- Search + Row Per Page -->
-                    <easy-data-table :headers="headers_kunAn" :items="items_kunAn" :sortable="true"
-                      :search-value="searchQuery_kunAn" :rows-per-page="perPage" :rows-items="perPageOptions"
-                      :rows-per-page-text="'Rows per page'" header-text-direction="center"
-                      table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
-                      border-cell>
+                    <easy-data-table
+                      :headers="headers_kunAn"
+                      :items="items_kunAn"
+                      :sortable="true"
+                      :search-value="searchQuery_kunAn"
+                      :rows-per-page="perPage"
+                      :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index alternating
+                      border-cell
+                    >
 
                       <template #header-select>
                         <input

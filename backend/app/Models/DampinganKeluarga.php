@@ -31,4 +31,19 @@ class DampinganKeluarga extends Model
         return $this->belongsTo(Pendampingan::class, 'id_pendampingan', 'id');
     }
 
+    public function pregnancy()
+    {
+        return $this->belongsTo(Pregnancy::class, 'id_pendampingan', 'id');
+    }
+
+    public function catin()
+    {
+        return $this->belongsTo(Catin::class, 'id_pendampingan', 'id');
+    }
+
+    public function anak()
+    {
+        return $this->belongsTo(Child::class, 'id_pendampingan', 'id');
+    }
+
 }

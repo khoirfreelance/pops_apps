@@ -35,37 +35,8 @@
             <!-- Welcome Card -->
             <Welcome />
 
-            <!-- Filter -->
-            <div class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
-              <form class="row g-3 align-items-end" @submit.prevent="applyFilter">
-                <!-- No TPK -->
-                <div class="col-md-12">
-                  <label for="no_tpk" class="form-label">No TPK</label>
-                  <input
-                    type="text"
-                    v-model="filter.no_tpk"
-                    id="no_tpk"
-                    class="form-control"
-                    placeholder="Cari berdasarkan No TPK"
-                  />
-                </div>
-              </form>
-            </div>
-
             <!-- Form -->
             <div class="container-fluid mt-4">
-              <!-- Expand/Collapse Button -->
-              <div class="text-end mb-3">
-                <button
-                  type="button"
-                  class="btn btn-primary mx-3"
-                  @click="toggleExpandForm"
-                >
-                  <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
-                  {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
-                </button>
-              </div>
-
               <!-- Collapsible Form -->
               <div v-if="isFormOpen" id="formData" class="card shadow-sm">
                 <div class="card-body">
@@ -247,29 +218,69 @@
             <div class="container-fluid">
               <div class="card modern-card mt-4">
                 <div class="card-body">
+                  <div class="d-flex align-items-center justify-content-between gap-2 my-2">
+                    <h3 class="text-primary"> Data Petugas</h3>
+                    <div class="d-flex align-items-center justify-content-end gap-2">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm "
+                        style="width: 220px;"
+                        placeholder="Ketik Nama"
+                        v-model="searchQuery_all"
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        @click="toggleExpandForm"
+                      >
+                        <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                        {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+                      </button>
+                    </div>
+                  </div>
                   <div class="table-responsive">
-
-                    <EasyDataTable
+                  <easy-data-table
                       :headers="headers"
-                      :items="filteredMember"
+                      :items="items_all"
+                      :sortable="true"
+                      :rows-per-page="perPage"
+                      :rows-items="perPageOptions"
+                      :rows-per-page-text="'Rows per page'"
+                      header-text-direction="center"
+                      table-class-name="my-custom-table"
+                      header-class-name="my-custom-header"
+                      show-index alternating
+                      border-cell
                     >
-                    <template #item-action="{ id,no_tpk }">
-                      <button
-                        class="btn btn-primary m-2"
-                        @click="detail(no_tpk)"
-                        style="font-size: small;"
-                      >
-                        <i class="fa fa-eye"></i>
-                      </button>
-                      <button
-                        class="btn btn-secondary m-2"
-                        @click="assign(id)"
-                        style="font-size: small;"
-                      >
-                        <i class="fa fa-user-plus"></i>
-                      </button>
+                    <template #item-index="{ index }">
+                      <div class="text-center fw-semibold">
+                        {{ index }}
+                      </div>
                     </template>
-                  </EasyDataTable>
+                    <template #item-no_tpk="{ no_tpk }">
+                      <div class="text-center">
+                        {{ no_tpk }}
+                      </div>
+                    </template>
+                    <template #item-action="items">
+                      <div class="action-wrapper d-flex gap-1 m-1 text-center">
+                        <button
+                          class="btn btn-primary m-2"
+                          @click="detail(items)"
+                          style="font-size: small;"
+                        >
+                          <i class="fa fa-eye"></i>
+                        </button>
+                        <button
+                          class="btn btn-secondary m-2"
+                          @click="assign(items)"
+                          style="font-size: small;"
+                        >
+                          <i class="fa fa-user-plus"></i>
+                        </button>
+                      </div>
+                    </template>
+                  </easy-data-table>
                   </div>
                 </div>
               </div>
@@ -277,71 +288,104 @@
           </div>
 
           <div :class="isDetail?'':'collapse'">
-            <!-- Welcome Card -->
-            <div class="card welcome-card shadow-sm mb-4 border-0">
-              <div
-                class="card-body d-flex flex-column flex-md-row align-items-start py-0 justify-content-between"
-              >
-                <!-- Kiri: Teks Welcome -->
-                <div class="text-start">
-                  <div class="my-3">
-                    <h2 class="fw-bold mt-3 mb-0 text-white">Detail Data TPK</h2>
-                    <small class="text-white">
-                      Detail data keluarga yang terdaftar di dalam posyandu
-                    </small>
-                  </div>
-                  <nav aria-label="breadcrumb" class="mt-auto mb-2">
-                    <ol class="breadcrumb mb-0">
-                      <li class="breadcrumb-item">
-                        <router-link to="/admin" class="text-decoration-none text-white-50">
-                          Beranda
-                        </router-link>
-                      </li>
-                      <li class="breadcrumb-item">
-                        <span class="text-decoration-none text-white-50" @click="backTo" style="cursor: pointer;">TPK</span>
-                      </li>
-                      <li class="breadcrumb-item active text-white" aria-current="page">Detail</li>
-                    </ol>
-                  </nav>
-                </div>
+            <Welcome />
+            <!-- Navigation Tab -->
+            <div class="container-fluid">
+              <div class="d-flex justify-content-center">
+                <div class="nav nav-pills gap-2 flex-wrap justify-content-center" id="nav-tab" role="tablist">
+                  <button
+                    class="nav-link active"
+                    id="nav-anggota-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-anggota"
+                    type="button"
+                    role="tab"
+                  >
+                    Anggota TPK
+                  </button>
 
-                <!-- Kanan: Gambar -->
-                <div class="mt-3 mt-md-0">
-                  <img src="/src/assets/admin.png" alt="Welcome" class="img-fluid welcome-img" />
+                  <button
+                    class="nav-link"
+                    id="nav-keluarga-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-keluarga"
+                    type="button"
+                    role="tab"
+                  >
+                    Keluarga Dampingan
+                  </button>
+
+                  <button
+                    class="nav-link"
+                    id="nav-anak-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-anak"
+                    type="button"
+                    role="tab"
+                  >
+                    Pendampingan Anak
+                  </button>
+
+                  <button
+                    class="nav-link"
+                    id="nav-bumil-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-bumil"
+                    type="button"
+                    role="tab"
+                  >
+                    Pendampingan Bumil
+                  </button>
+
+                  <button
+                    class="nav-link"
+                    id="nav-catin-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nav-catin"
+                    type="button"
+                    role="tab"
+                  >
+                    Pendampingan Catin
+                  </button>
                 </div>
               </div>
             </div>
 
-            <!-- Navigation Tab -->
-            <nav class="filter-wrapper bg-light rounded shadow-sm p-3 mt-3 container-fluid">
-              <div class="nav nav-pills " id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-anggota-tab" data-bs-toggle="tab" data-bs-target="#nav-anggota" type="button" role="tab" aria-controls="nav-anggota" aria-selected="true">Anggota TPK</button>
-                <button class="nav-link" id="nav-keluarga-tab" data-bs-toggle="tab" data-bs-target="#nav-keluarga" type="button" role="tab" aria-controls="nav-keluarga" aria-selected="false">Keluarga Dampingan</button>
-                <button class="nav-link" id="nav-anak-tab" data-bs-toggle="tab" data-bs-target="#nav-anak" type="button" role="tab" aria-controls="nav-anak" aria-selected="false">Pendampingan Anak</button>
-                <button class="nav-link" id="nav-bumil-tab" data-bs-toggle="tab" data-bs-target="#nav-bumil" type="button" role="tab" aria-controls="nav-bumil" aria-selected="false">Pendampingan Bumil</button>
-                <button class="nav-link" id="nav-catin-tab" data-bs-toggle="tab" data-bs-target="#nav-catin" type="button" role="tab" aria-controls="nav-catin" aria-selected="false">Pendampingan Catin</button>
-              </div>
-            </nav>
-
-            <div class="container-fluid mt-4">
-              <!-- <div class="text-end">
-                <button class="btn btn-secondary" @click="backTo()">
-                  <i class="bi bi-arrow-counterclockwise"></i> Back
-                </button>
-              </div> -->
+            <div class="container-fluid">
               <div class="tab-content" id="nav-tabContent">
                 <!-- Anggota -->
                 <div class="tab-pane fade show active" id="nav-anggota" role="tabpanel" aria-labelledby="nav-anggota-tab">
-                  <div class="card modern-card mt-4">
-                    <div class="card-header bg-primary">
-                      <p class="h4 fw-bold text-white">Data Anggota TPK</p>
-                    </div>
+                  <div class="card modern-card">
                     <div class="card-body">
-                      <div class="table-responsive">
-                        <EasyDataTable
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="text-primary"> Data {{ kader }}</h3>
+                        <div class="d-flex align-items-center justify-content-end gap-2">
+                          <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            style="width: 220px;"
+                            placeholder="Ketik Nama"
+                            v-model="searchQuery_anggota"
+                          >
+                          <button class="btn btn-danger btn-sm" @click="backTo()">
+                            X
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="table-responsive mt-2">
+                        <easy-data-table
                           :headers="headers_tpk"
-                          :items="tpkMember"
-                          table-class="text-center"
+                          :items="items"
+                          :sortable="true"
+                          :rows-per-page="perPage"
+                          :rows-items="perPageOptions"
+                          :rows-per-page-text="'Rows per page'"
+                          header-text-direction="center"
+                          table-class-name="my-custom-table"
+                          header-class-name="my-custom-header"
+                          show-index alternating
+                          border-cell
                         />
                       </div>
                     </div>
@@ -350,22 +394,9 @@
 
                 <!-- Keluarga -->
                 <div class="tab-pane fade" id="nav-keluarga" role="tabpanel" aria-labelledby="nav-keluarga-tab">
-                  <div class="card bg-light border-0 shadow-sm p-2">
-
+                  <div class="card">
                     <!-- Form -->
                     <div class="container-fluid">
-                      <!-- Expand/Collapse Button -->
-                      <div class="text-end mb-3">
-                        <button
-                          type="button"
-                          class="btn btn-primary mx-3"
-                          @click="toggleExpandForm"
-                        >
-                          <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
-                          {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
-                        </button>
-                      </div>
-
                       <!-- Collapsible Form -->
                       <div v-if="isFormOpen" id="formData" class="card shadow-sm">
                         <div class="card-body">
@@ -424,21 +455,46 @@
                         </div>
                       </div>
                     </div>
+                    <div class="card-body">
+                      <!-- Table -->
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="text-primary"> Data Keluarga Dampingan</h3>
+                          <div class="d-flex align-items-center justify-content-end gap-2">
+                            <!-- <button
+                              type="button"
+                              class="btn btn-primary btn-sm"
+                              @click="toggleExpandForm"
+                            >
+                              <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                              {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+                            </button> -->
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              style="width: 220px;"
+                              placeholder="Ketik Nama Kepala Keluarga"
+                              v-model="searchQuery_keluarga"
+                            >
+                            <button class="btn btn-danger btn-sm" @click="backTo()">
+                              X
+                            </button>
+                        </div>
+                      </div>
 
-                    <!-- Table -->
-                    <div class="container-fluid">
-                      <div class="card modern-card mt-4">
-                        <div class="card-header bg-primary">
-                          <p class="h4 fw-bold text-white">Data Pendampingan Keluarga</p>
-                        </div>
-                        <div class="card-body">
-                          <div class="table-responsive">
-                            <EasyDataTable
-                              :headers="headers_family"
-                              :items="family"
-                            />
-                          </div>
-                        </div>
+                      <div class="table-responsive mt-2">
+                        <easy-data-table
+                          :headers="headers_family"
+                          :items="items_family"
+                          :sortable="true"
+                          :rows-per-page="perPage"
+                          :rows-items="perPageOptions"
+                          :rows-per-page-text="'Rows per page'"
+                          header-text-direction="center"
+                          table-class-name="my-custom-table"
+                          header-class-name="my-custom-header"
+                          show-index alternating
+                          border-cell
+                        />
                       </div>
                     </div>
                   </div>
@@ -446,68 +502,141 @@
 
                 <!-- Anak -->
                 <div class="tab-pane fade" id="nav-anak" role="tabpanel" aria-labelledby="nav-anak-tab">
-                  <div class="card bg-light border-0 shadow-sm p-2">
+                  <div class="card border-0 shadow-sm p-2">
                     <!-- Table -->
-                    <div class="container-fluid">
-                      <div class="card modern-card mt-4">
-                        <div class="card-header bg-primary">
-                          <p class="h4 fw-bold text-white">Data  Pendampingan Anak</p>
-                        </div>
-                        <div class="card-body">
-                          <div class="table-responsive">
-                            <EasyDataTable
-                              :headers="headers_children"
-                              :items="chilList"
-                            />
-                          </div>
+                    <div class="card-body">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="text-primary"> Riwayat Pendampingan Anak</h3>
+                          <div class="d-flex align-items-center justify-content-end gap-2">
+                            <!-- <button
+                              type="button"
+                              class="btn btn-primary btn-sm"
+                              @click="toggleExpandForm"
+                            >
+                              <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                              {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+                            </button> -->
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              style="width: 220px;"
+                              placeholder="Ketik Nama Anak"
+                              v-model="searchQuery_anak"
+                            >
+                            <button class="btn btn-danger btn-sm" @click="backTo()">
+                              X
+                            </button>
                         </div>
                       </div>
+                      <div class="table-responsive mt-2">
+                        <easy-data-table
+                          :headers="headers_children"
+                          :items="items_anak"
+                          :sortable="true"
+                          :rows-per-page="perPage"
+                          :rows-items="perPageOptions"
+                          :rows-per-page-text="'Rows per page'"
+                          header-text-direction="center"
+                          table-class-name="my-custom-table"
+                          header-class-name="my-custom-header"
+                          show-index alternating
+                          border-cell
+                        />
+                      </div>
                     </div>
+
                   </div>
                 </div>
 
                 <!-- Bumil -->
                 <div class="tab-pane fade" id="nav-bumil" role="tabpanel" aria-labelledby="nav-bumil-tab">
-                  <div class="card bg-light border-0 shadow-sm p-2">
+                  <div class="card border-0 shadow-sm p-2">
                     <!-- Table -->
-                    <div class="container-fluid">
-                      <div class="card modern-card mt-4">
-                        <div class="card-header bg-primary">
-                          <p class="h4 fw-bold text-white">Data Pendampingan Ibu Hamil</p>
-                        </div>
-                        <div class="card-body">
-                          <div class="table-responsive">
-                            <EasyDataTable
-                              :headers="headers_pregnancy"
-                              :items="pregnancy"
-                            />
-                          </div>
+                    <div class="card-body">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="text-primary"> Riwayat Pendampingan Ibu Hamil</h3>
+                          <div class="d-flex align-items-center justify-content-end gap-2">
+                            <input
+                              type="text"
+                              class="form-control form-control-sm"
+                              style="width: 220px;"
+                              placeholder="Ketik Nama Anak"
+                              v-model="searchQuery_bumil"
+                            >
+                            <button class="btn btn-danger btn-sm" @click="backTo()">
+                              X
+                            </button>
                         </div>
                       </div>
+                      <div class="table-responsive mt-2">
+                        <easy-data-table
+                          :headers="headers_pregnancy"
+                          :items="items_bumil"
+                          :sortable="true"
+                          :rows-per-page="perPage"
+                          :rows-items="perPageOptions"
+                          :rows-per-page-text="'Rows per page'"
+                          header-text-direction="center"
+                          table-class-name="my-custom-table"
+                          header-class-name="my-custom-header"
+                          show-index alternating
+                          border-cell
+                        />
+                      </div>
                     </div>
+
                   </div>
                 </div>
 
                 <!-- Catin -->
                 <div class="tab-pane fade" id="nav-catin" role="tabpanel" aria-labelledby="nav-catin-tab">
-                  <div class="card bg-light border-0 shadow-sm p-2">
-                    <!-- Table -->
-                    <div class="container-fluid">
-                      <div class="card modern-card mt-4">
-                        <div class="card-header bg-primary">
-                          <p class="h4 fw-bold text-white">Data Pendampingan Calon Pengantin</p>
+                  <div class="card border-0 shadow-sm p-2">
+                    <div class="card-body">
+
+                      <!-- HEADER -->
+                      <div class="row align-items-center g-2">
+                        <div class="col-12 col-md-6">
+                          <h5 class="text-primary mb-0">
+                            Riwayat Pendampingan Calon Pengantin
+                          </h5>
                         </div>
-                        <div class="card-body">
-                          <div class="table-responsive">
-                            <EasyDataTable
-                              :headers="headers_bride"
-                              :items="brides"
-                            />
+
+                        <div class="col-12 col-md-6">
+                          <div class="d-flex gap-2 justify-content-md-end">
+                            <input
+                              type="text"
+                              class="form-control form-control-sm w-100 w-md-auto"
+                              placeholder="Ketik Calon Perempuan"
+                              v-model="searchQuery_catin"
+                            >
+                            <button class="btn btn-danger btn-sm px-3" @click="backTo">
+                              ✕
+                            </button>
                           </div>
                         </div>
                       </div>
+
+                      <!-- TABLE -->
+                      <div class="table-responsive mt-3">
+                        <easy-data-table
+                          :headers="headers_bride"
+                          :items="items_catin"
+                          :sortable="true"
+                          :rows-per-page="perPage"
+                          :rows-items="perPageOptions"
+                          rows-per-page-text="Rows per page"
+                          header-text-direction="center"
+                          table-class-name="my-custom-table"
+                          header-class-name="my-custom-header"
+                          show-index
+                          alternating
+                          border-cell
+                        />
+                      </div>
+
                     </div>
-                  </div>
+</div>
+
                 </div>
               </div>
             </div>
@@ -515,33 +644,6 @@
 
         </div>
         <CopyRight class="mt-auto" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div
-        class="modal-content border-0 shadow-lg rounded-4"
-      >
-        <div class="modal-header bg-success text-white rounded-top-4">
-          <h5 class="modal-title">✅ Berhasil</h5>
-          <button
-            type="button"
-            class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body text-center">
-          <p class="mb-0">Data Anak berhasil disimpan ke <strong>localStorage</strong>.</p>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
-            OK
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -574,7 +676,6 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
-import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
 import Swal from 'sweetalert2'
@@ -655,11 +756,11 @@ export default {
       tpkMember:[],
       headers_tpk: [
         { text: 'Nama', value: 'nama', align: "center"},
-        { text: 'Jabatan', value: 'role', align: "center"},
+        { text: 'Role', value: 'role', align: "center"},
         { text: 'No. Telepon', value: 'phone', align: "center"},
       ],
       headers_family: [
-        { text: 'No. KK', value: 'no_kk' },
+        { text: 'No. KK/NIK', value: 'no_kk' },
         { text: 'Kepala Keluarga', value: 'nama_kepala' },
         { text: 'RT', value: 'rt' },
         { text: 'RW', value: 'rw' },
@@ -684,22 +785,20 @@ export default {
       pregnancy: [],
       headers_pregnancy: [
         { text: 'Kunjungan Terakhir', value: 'kunjungan' },
-        { text: 'No. KK', value: 'no_kk' },
-        { text: 'PIC', value: 'pic' },
-        { text: 'No. Telepon PIC', value: 'phone_pic' },
+        { text: 'NIK', value: 'nik' },
         { text: 'Nama', value: 'nama' },
-        { text: 'Kehamilan Ke', value: 'kehamilan_ke' },
-        { text: 'Kunjungan ke', value: 'kunjungan_ke' },
+        { text: 'Usia', value: 'usia' },
         { text: 'Usia Kehamilan', value: 'usia_kehamilan' },
         { text: 'BB', value: 'bb' },
         { text: 'TB', value: 'tb' },
         { text: 'Lila', value: 'lila' },
         { text: 'Hb', value: 'hb' },
         { text: 'Riwayat Penyakit', value: 'riwayat' },
-        { text: 'Anemia', value: 'anemia' },
-        { text: 'Kek', value: 'kek' },
-
       ],
+      keluarga:[],
+      anak:[],
+      bumil:[],
+      catin:[],
       // dummy brides data
       brides: [],
       headers_bride: [
@@ -708,7 +807,6 @@ export default {
         { text: 'Nama Catin (P)', value: 'namaP' },
         { text: 'NIK Catin (P)', value: 'nikP' },
         { text: 'Usia Catin (P)', value: 'usiaP' },
-        { text: 'Pekerjaan Catin (P)', value: 'pekerjaanP' },
         { text: 'BB (kg)', value: 'bbP' },
         { text: 'TB (cm)', value: 'tbP' },
         { text: 'LiLa (cm)', value: 'lilaP' },
@@ -716,11 +814,6 @@ export default {
         { text: 'Nama Pasangan', value: 'namaL' },
         { text: 'NIK Pasangan', value: 'nikL' },
         { text: 'Usia Pasangan', value: 'usiaL' },
-        { text: 'Pekerjaan Pasangan', value: 'pekerjaanL' },
-        { text: 'Riwayat Penyakit', value: 'riwayat' },
-        { text: 'Jamban Sehat', value: 'jamban' },
-        { text: 'Sumber Air Bersih', value: 'air' },
-        { text: 'Intervensi', value: 'intervensi' },
         //{ text: 'Catatan Beresiko', value: 'catatan' },
       ],
       // filter
@@ -731,15 +824,237 @@ export default {
   },
   computed: {
     filteredMember() {
-      return this.member.filter((item) => {
-        return (
-          // NIK realtime
-          !this.filter.no_tpk || item.no_tpk.includes(this.filter.no_tpk)
-        )
-      })
+      //console.log('arr', this.tpkMember);
+      if (!this.member) return [];
+
+
+      const arr = Array.isArray(this.member)
+        ? this.member
+        : Object.values(this.member);
+      //console.log('arr', arr);
+
+      const q = (this.searchQuery_all ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const nama = (item.nama ?? "").toString().toLowerCase();
+
+        return nama.includes(q);
+      });
     },
+    items_all() {
+      return Object.values(this.filteredMember)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          id: item.id,
+          no_tpk: item.no_tpk ?? "",
+          nama: item.nama ?? "",
+          action: { ...item }
+        }))
+    },
+    filteredAnggota() {
+      //console.log('arr', this.tpkMember);
+      if (!this.tpkMember) return [];
+
+
+      const arr = Array.isArray(this.tpkMember)
+        ? this.tpkMember
+        : Object.values(this.tpkMember);
+      //console.log('arr', arr);
+
+      const q = (this.searchQuery_anggota ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const nama = (item.nama ?? "").toString().toLowerCase();
+
+        return nama.includes(q);
+      });
+    },
+    items() {
+      return Object.values(this.filteredAnggota)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          id: item.id,
+          nama: item.nama ?? "",
+          role: item.role ?? "",
+          phone: item.phone ?? ""
+        }))
+    },
+    filteredFamily() {
+
+      if (!this.keluarga) return [];
+
+      const arr = Array.isArray(this.keluarga)
+        ? this.keluarga
+        : Object.values(this.keluarga);
+      //console.log('arr', arr);
+
+      const q = (this.searchQuery_keluarga ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const kepala_keluarga = (item.kepala_keluarga ?? "").toString().toLowerCase();
+
+        return kepala_keluarga.includes(q);
+      });
+    },
+    items_family() {
+      return Object.values(this.filteredFamily)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          id: item.id,
+          no_kk: item.no_kk ?? "",
+          nama_kepala: item.kepala_keluarga ?? "",
+          rt: item.rt ?? "",
+          rw: item.rw ?? "",
+          pendampingan: item.tgl_pendampingan ?? "",
+          sasaran: item.sasaran ?? "",
+        }))
+    },
+    filteredAnak() {
+      if (!this.anak) return [];
+      const arr = Array.isArray(this.anak)
+        ? this.anak
+        : Object.values(this.anak);
+
+      const q = (this.searchQuery_anak ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const nama_anak = (item.nama_anak ?? "").toString().toLowerCase();
+        const nik_anak = (item.nik_anak ?? "").toString().toLowerCase();
+
+        return nama_anak.includes(q) || nik_anak.includes(q);
+      });
+    },
+    items_anak() {
+      return Object.values(this.filteredAnak)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          id: item.id,
+          tgl_pendampingan: item.tgl_pendampingan,
+          nama: item.nama_anak,
+          kepala: item.nama_ayah,
+          bb: item.bb,
+          tb: item.tb,
+          lila: item.lila,
+          asi: item.asi,
+          imunisasi: item.imunisasi,
+          posyandu: item.rutin_posyandu
+        }))
+    },
+    filteredBumil() {
+      if (!this.bumil) return [];
+      const arr = Array.isArray(this.bumil)
+        ? this.bumil
+        : Object.values(this.bumil);
+
+      const q = (this.searchQuery_bumil ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const nama = (item.nama_ibu ?? "").toString().toLowerCase();
+        const nik = (item.nik_ibu ?? "").toString().toLowerCase();
+
+        return nama.includes(q) || nik.includes(q);
+      });
+    },
+    items_bumil() {
+      return Object.values(this.filteredBumil)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          id: item.id,
+
+          // header: Kunjungan Terakhir
+          kunjungan: item.tanggal_pemeriksaan_terakhir
+            ? this.formatDate(item.tanggal_pemeriksaan_terakhir)
+            : '-',
+
+          // header: No. KK
+          nik: item.nik_ibu ?? '-',
+
+          // header: Nama
+          nama: item.nama_ibu ?? item.sasaran ?? '-',
+
+          // header: Usia
+          usia: item.usia_ibu
+            ? `${item.usia_ibu} th (${item.status_risiko_usia})`
+            : '-',
+
+          // header: Usia Kehamilan
+          usia_kehamilan: item.usia_kehamilan_minggu
+            ? `${item.usia_kehamilan_minggu} mg`
+            : '-',
+
+          // header: BB
+          bb: item.berat_badan
+            ? `${item.berat_badan} kg`
+            : '-',
+
+          // header: TB
+          tb: item.tinggi_badan
+            ? `${item.tinggi_badan} cm`
+            : '-',
+
+          // header: Lila
+          lila: item.lila
+            ? `${item.lila} (${item.status_gizi_lila})`
+            : '-',
+
+          // header: Hb
+          hb: item.kadar_hb
+            ? `${item.kadar_hb} (${item.status_gizi_hb})`
+            : '-',
+
+          // header: Riwayat Penyakit
+          riwayat: item.riwayat_penyakit ?? '-',
+        }))
+    },
+    filteredCatin() {
+      if (!this.catin) return [];
+      const arr = Array.isArray(this.catin)
+        ? this.catin
+        : Object.values(this.catin);
+
+      const q = (this.searchQuery_catin ?? "").toString().toLowerCase().trim();
+
+      return arr.filter(item => {
+        const nama_perempuan = (item.nama_perempuan ?? "").toString().toLowerCase();
+
+        return nama_perempuan.includes(q);
+      });
+    },
+    items_catin() {
+      return Object.values(this.filteredCatin)
+        .sort((a, b) => a.id - b.id)
+        .map(item => ({
+          kunjungan: item.tanggal_pendampingan
+            ? this.formatDate(item.tanggal_pendampingan)
+            : '-',
+
+          menikah: item.tanggal_rencana_menikah
+            ? this.formatDate(item.tanggal_rencana_menikah)
+            : '-',
+
+          namaP: item.nama_perempuan ?? '-',
+          nikP: item.nik_perempuan ?? '-',
+          usiaP: item.usia_perempuan ?? '-',
+          bbP: item.berat_perempuan ?? '-',
+          tbP: item.tinggi_perempuan ?? '-',
+          lilaP: item.lila_perempuan? `${item.lila_perempuan} (${item.status_kek})`: '-',
+          hbP: item.hb_perempuan? `${item.hb_perempuan} (${item.status_hb})`:'-',
+
+          namaL: item.nama_laki ?? '-',
+          nikL: item.nik_laki ?? '-',
+          usiaL: item.usia_laki ?? '-',
+        }))
+    }
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    },
     async loadConfigWithCache() {
       try {
         // cek di localStorage
@@ -903,7 +1218,7 @@ export default {
           }
         })
         this.member = res.data
-        console.log('anggota: '+ this.member);
+        //console.log('anggota: '+ this.member);
 
       } catch (e) {
         console.error('Gagal ambil data:', e)
@@ -944,21 +1259,6 @@ export default {
       if (!this.isFormOpen) this.resetForm()
       console.log('modal mode: '+this.modalMode);
 
-    },
-    closeModal(id) {
-      const el = document.getElementById(id)
-      if (el) {
-        const instance = Modal.getOrCreateInstance(el)
-        instance.hide()
-      }
-
-      // jaga-jaga kalau backdrop masih nyangkut
-      setTimeout(() => {
-        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove())
-        document.body.classList.remove('modal-open')
-        document.body.style.removeProperty('overflow')
-        document.body.style.removeProperty('padding-right')
-      }, 300) // delay biar nunggu animasi fade
     },
     updateProgressBar(percent, row, total) {
       this.importProgress = percent
@@ -1202,11 +1502,15 @@ export default {
         this.isLoadingImport = false
       }
     },
-    async detail(no_tpk) {
+    async detail(items) {
+      this.kader = !items.no_tpk ? 'Non Kader TPK' : 'Kader TPK'
       this.isDetail = true;
       this.isLoading = true;
+
+      const noTPK = items.no_tpk ? items.no_tpk : 'null'
+
       try {
-        const res = await axios.get(`${baseURL}/api/member/tpk/${no_tpk}`,{
+        const res = await axios.get(`${baseURL}/api/member/tpk/${noTPK}`,{
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -1214,12 +1518,42 @@ export default {
         })
         this.tpkMember = res.data
 
+        this.dampinganKeluarga(items)
       } catch (e) {
         console.error('Gagal ambil data:', e)
       }finally {
         this.isLoading = false
       }
     },
+    async dampinganKeluarga(items) {
+      const id = items.id
+      try {
+        const res = await axios.get(`${baseURL}/api/member/family/${id}`,{
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        this.keluarga = res.data
+
+        this.anak = res.data
+          .filter(i => i.jenis === 'ANAK')
+          .map(i => i.anak)
+
+        this.bumil = res.data
+          .filter(i => i.jenis === 'BUMIL')
+          .map(i => i.bumil)
+
+        this.catin = res.data
+          .filter(i => i.jenis === 'CATIN')
+          .map(i => i.catin)
+
+      } catch (e) {
+        console.error('Gagal ambil data:', e)
+      }finally {
+        this.isLoading = false
+      }
+    }
   },
   created() {
     const storedEmail = localStorage.getItem('userEmail')
@@ -1263,6 +1597,7 @@ export default {
 </script>
 
 <style scoped>
+
 .spinner-overlay {
   position: fixed;
   inset: 0;
@@ -1313,58 +1648,25 @@ export default {
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
 }
 
-/* Animasi modal lebih halus */
-.modal.fade .modal-dialog {
-  transform: translateY(20px);
-  transition:
-    transform 0.3s ease-out,
-    opacity 0.3s ease-out;
+.my-custom-table {
+  --easy-table-header-background-color: #b4dbc6;
 }
 
-.modal.fade.show .modal-dialog {
-  transform: translateY(0);
-  opacity: 1;
-}
-.modern-card {
-  border-radius: 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  border: none;
-}
-/* Header */
-.table-modern th {
-  background-color: var(--bs-primary) !important; /* primary */
-  color: #fff !important;
-  font-weight: 600;
-  padding: 0.75rem;
-  text-align: left;
+.my-custom-table .col-action {
+  text-align: center !important;
 }
 
-/* Cell */
-.table-modern td {
-  vertical-align: middle;
-  padding: 0.65rem 0.75rem;
-  border-bottom: 1px solid #f1f1f1;
+.my-custom-table td.col-action {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
-
-/* Row hover */
-.table-modern tr:hover {
-  background-color: rgba(13, 110, 253, 0.08) !important;
-  transition: background 0.2s ease-in-out;
+.my-custom-table .col-action {
+  text-align: center !important;
 }
-
-/* Pagination & footer */
-.table-modern .pagination {
-  margin-top: 1rem;
-}
-
-.table-modern .pagination .page-link {
-  border-radius: 0.5rem;
-  color: var(--bs-primary);
-}
-
-.table-modern .pagination .active .page-link {
-  background-color: #6c757d; /* secondary */
-  border-color: #6c757d;
-  color: #fff;
+.action-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

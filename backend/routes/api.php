@@ -101,8 +101,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/member/tpk', [MemberController::class, 'getTPK']);
     Route::get('/member/user', [MemberController::class, 'getUser']);
     Route::post('/member/assign', [MemberController::class, 'assign']);
-    Route::get('/member/tpk/{no_tpk}', [MemberController::class, 'memberTPK']);
-    Route::get('/member/{id}/family', [MemberController::class, 'family']);
+    Route::get('/member/tpk/{no_tpk?}', [MemberController::class, 'memberTPK']);
+    Route::get('/member/family/{id}', [MemberController::class, 'family']);
 });
 
 // Bride Endpoint

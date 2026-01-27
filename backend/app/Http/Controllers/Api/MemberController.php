@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Cadre;
 use App\Models\TPK;
+use App\Models\DampinganKeluarga;
 use App\Models\User;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
@@ -15,9 +16,6 @@ class MemberController extends Controller
     public function index()
     {
         $cadres = Cadre::with(['tpk', 'user'])
-        /* ->wherehas('user', function ($q) {
-                $q->where('is_pending', 0);
-            }) */
         ->get();
 
         $data = $cadres->map(function ($cadre) {
@@ -126,15 +124,28 @@ class MemberController extends Controller
         ]);
     }
 
-    public function memberTPK($no_tpk)
+    public function memberTPK($no_tpk = null)
     {
-        $cadre = Cadre::with(['tpk', 'user'])
-            ->whereHas('tpk', function ($q) use ($no_tpk) {
-                $q->where('no_tpk', $no_tpk);
-            })
-            ->get();
 
-        // karena $cadre hasilnya collection, bukan single object
+        // 🔥 normalize string "null"/"undefined"
+        if ($no_tpk === 'null' || $no_tpk === 'undefined' || $no_tpk === '') {
+            $no_tpk = null;
+        }
+
+        $query = Cadre::with(['tpk', 'user', 'posyandu.wilayah']);
+
+        if ($no_tpk !== null) {
+            // hanya kader dengan no_tpk tsb
+            $query->whereHas('tpk', function ($q) use ($no_tpk) {
+                $q->where('no_tpk', $no_tpk);
+            });
+        } else {
+            // hanya non-kader
+            $query->whereNull('id_tpk');
+        }
+
+        $cadre = $query->get();
+
         $data = $cadre->map(function ($c) {
             return [
                 'id'            => $c->id,
@@ -146,8 +157,6 @@ class MemberController extends Controller
                 'email'         => $c->user->email ?? null,
                 'role'          => $c->user->role ?? null,
                 'unit_posyandu' => $c->posyandu->nama_posyandu ?? null,
-
-                // relasi wilayah
                 'provinsi'      => $c->posyandu->wilayah->provinsi ?? null,
                 'kota'          => $c->posyandu->wilayah->kota ?? null,
                 'kecamatan'     => $c->posyandu->wilayah->kecamatan ?? null,
@@ -155,12 +164,48 @@ class MemberController extends Controller
             ];
         });
 
+        //dd($data);
+
         return response()->json($data);
     }
 
-    /* public function family(id)
-    {
 
-        return response()->json($user);
-    } */
+    public function family($id)
+    {
+        $dampingan = DampinganKeluarga::with([
+                'keluarga.kepala',
+                'pregnancy',
+                'catin',
+                'anak'
+            ])
+            ->where('id_tpk', $id)
+            ->get();
+        //dd($dampingan);
+        $data = $dampingan->map(fn ($d) => [
+            'id' => $d->id,
+            'jenis' => $d->jenis,
+            'no_kk' => $d->keluarga?->no_kk ?? $d->catin?->nik_perempuan,
+            'rt' => $d->keluarga?->rt ?? $d->catin?->rt,
+            'rw' => $d->keluarga?->rw ?? $d->catin?->rw,
+            'kepala_keluarga' => $d->keluarga?->kepala->nama ?? $d->catin?->nama_perempuan,
+            'id_pendampingan' => $d->id_pendampingan,
+
+            'sasaran' =>
+                $d->anak?->nama_anak
+                ?? $d->pregnancy?->nama_ibu
+                ?? $d->catin?->nama_perempuan,
+
+            'tgl_pendampingan' =>
+                $d->anak?->tgl_pendampingan
+                ?? \Carbon\Carbon::parse($d->pregnancy?->tanggal_pendampingan)?->format('Y-m-d')
+                ?? \Carbon\Carbon::parse($d->catin?->tanggal_pendampingan)?->format('Y-m-d'),
+            'anak' => $d->anak,
+            'bumil' => $d->pregnancy,
+            'catin' => $d->catin,
+
+        ]);
+
+        return response()->json($data);
+    }
+
 }
