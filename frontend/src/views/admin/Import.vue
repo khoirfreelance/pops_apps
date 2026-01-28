@@ -61,7 +61,7 @@
             <div class="tab-pane fade show active" id="anak-tab-pane" role="tabpanel" tabindex="0">
               <div v-if="formOpen" class="card p-3 my-3" id="form_anak">
                 <div class="d-flex justify-content-between">
-                  <h3>Form Gizi Anak</h3>
+                  <h3 class="text-primary">Form Gizi Anak</h3>
                   <button class="btn btn-outline-danger" @click="formOpen = !formOpen">
                     X
                   </button>
@@ -69,7 +69,7 @@
                 <div class="row g-2">
                   <div class="col-md-4">
                     <label>NIK</label>
-                    <input type="text" class="form-control" v-model="form.nik" readonly>
+                    <input type="text" class="form-control" v-model="form.nik" :readonly="form.mode === 'input'">
                   </div>
 
                   <div class="col-md-4">
@@ -833,6 +833,8 @@ export default {
       currentRow: 0,
       totalRows: 1,
       form: {
+        isEmptyNIK:"",
+        id:"",
         mode: "",
         tgl_pengukuran: "",
         nik: "",
@@ -849,6 +851,8 @@ export default {
         nik_ortu: "",
       },
       form_bumil: {
+        isEmptyNIK:"",
+        id:"",
         mode: "",
         tanggal_pendampingan: "",
         nik_ibu: "",
@@ -864,6 +868,8 @@ export default {
         usia_kehamilan: "",
       },
       form_catin: {
+        isEmptyNIK:"",
+        id:"",
         mode: "",
         tanggal_pendampingan: "",
         nik: "",
@@ -949,7 +955,7 @@ export default {
         { text: "Usia (Thn)", value: "usia_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "HPL", value: "hpl", sortable: true, width:100 ,class: "align-middle text-center cursor-pointer" },
         { text: "Tgl Pendampingan", value: "tgl_pendampingan", sortable: true, width: 130, class: "align-middle text-center cursor-pointer" },
-        { text: "Intervensi", value: "intervensi", sortable: true, class: "align-middle text-center cursor-pointer" },
+        //{ text: "Intervensi", value: "intervensi", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
@@ -963,7 +969,7 @@ export default {
         { text: 'TB', value: 'tb', sortable: true },
         { text: 'Tgl Pengukuran Terakhir', value: 'tgl_pengukuran', sortable: true },
         { text: 'Posyandu', value: 'unit_posyandu', sortable: true },
-        { text: 'Intervensi', value: 'intervensi', sortable: true },
+        //{ text: 'Intervensi', value: 'intervensi', sortable: true },
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
       formOpen: false,
@@ -1101,7 +1107,7 @@ export default {
           latestByNik[nik] = { ...item, latestPosyandu }
         }
       })
-
+      console.log('filteredAnak',this.filteredAnak);
       return Object.values(latestByNik)
         .sort((a, b) => a.id - b.id)
         .map(item => ({
@@ -1118,7 +1124,7 @@ export default {
           tgl_pengukuran: item.latestPosyandu?.tgl_ukur ?? "-",
           unit_posyandu: item.latestPosyandu?.posyandu ?? "-",
 
-          intervensi: item.intervensi?.[0]?.jenis ?? "-",
+          //intervensi: item.intervensi?.[0]?.jenis ?? "-",
           action: { ...item }
         }))
     },
@@ -1180,7 +1186,7 @@ export default {
         tb: item.riwayat_pemeriksaan?.[0]?.tinggi_badan ?? "-",
         tgl_pendampingan: this.formatDate(item.tanggal_pendampingan) ?? "-",
         jml_anak: item.jumlah_anak ?? 0,
-        intervensi: item.intervensi?.[0]?.intervensi ?? "-",
+        //intervensi: item.intervensi?.[0]?.intervensi ?? "-",
         action: { ...item }
       }))
     },
@@ -1525,6 +1531,8 @@ export default {
           this.form = {
             ...this.form,
             mode: 'update',
+            id: item.id,
+            isEmptyNIK: item.no_kk ? false : true,
             no_kk:item.no_kk,
             peran: item.peran,
             nik_ortu: item.nik_ortu,
@@ -1539,11 +1547,11 @@ export default {
           };
           break;
         case 'bumil':
-          console.log('edit item:',item);
           this.formOpen_bumil = true;
           this.form_bumil = {
             ...this.form_bumil,
             mode: 'update',
+            id: item.id,
             nik_ibu: item.nik_ibu ?? "",
             nama_ibu: item.nama_ibu ?? "",
             nik_suami: item.nik_suami ?? "",
@@ -1555,12 +1563,11 @@ export default {
           };
           break;
         case 'catin':
-          console.log(item);
-
           this.formOpen_catin = true;
           this.form_catin = {
             ...this.form_catin,
             mode: 'update',
+            id: item.id,
             nik: item.nik ?? null,
             nik_laki:item.nik_laki ?? null,
             tanggal_menikah: this.formatDateToInput(item.tanggal_menikah) ?? null,

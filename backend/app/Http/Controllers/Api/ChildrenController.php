@@ -948,7 +948,7 @@ class ChildrenController extends Controller
             ]);
         } catch (\Throwable $th) {
             return response()->json([
-            'message' => 'Gagal import CSV',
+            'message' => 'Gagal import CSV <br> Silahkan periksa kembali format CSV anda ',
             'detail' => $th->getMessage(),
         ], 422);
         }
@@ -3464,13 +3464,24 @@ class ChildrenController extends Controller
                 'gender' => 'nullable|string',
             ]);
 
-            // 2. Cari data berdasarkan NIK
-            $data = Kunjungan::where('nik', $nik)->update([
-                'nik' => $request->nik ?? $data->nik,
-                'nama_ortu' => $validated['nama_ortu'] ?? $data->nama_ortu,
-                'bb' => $validated['bb'],
-                'tb' => $validated['tb'],
-            ]);
+            if ($request->isEmptyNIK) {
+                // 2. Cari data berdasarkan ID
+                $data = Kunjungan::where('id', $request->id)->update([
+                    'nik' => $request->nik,
+                    'nama_ortu' => $validated['nama_ortu'],
+                    'bb' => $validated['bb'],
+                    'tb' => $validated['tb'],
+                ]);
+            }else {
+                // 2. Cari data berdasarkan NIK
+                $data = Kunjungan::where('nik', $nik)->update([
+                    'nik' => $request->nik,
+                    'nama_ortu' => $validated['nama_ortu'],
+                    'bb' => $validated['bb'],
+                    'tb' => $validated['tb'],
+                ]);
+            }
+
 
             \App\Models\Log::create([
                 'id_user' => \Auth::id(),

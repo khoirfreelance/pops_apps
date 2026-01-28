@@ -132,22 +132,20 @@ class ChildrenImportKunjungan implements
                 'bb_lahir' =>  $this->normalizeDecimal($row['bb_lahir']??null),
                 'tb_lahir' => $this->normalizeDecimal($row['tb_lahir']??null),
                 'nama_ortu' => $this->normalizeText($row['nama_ortu'] ?? null),
-                'alamat' => $this->normalizeText($row['alamat']),
-                'rt' => $row['rt'],
-                'rw' => $row['rw'],
-                'puskesmas' => $this->normalizeText($row['pukesmas']),
-                'posyandu' => $this->normalizeText($row['posyandu']),
+                'alamat' => $this->normalizeText($row['alamat'])?? null,
+                'rt' => $row['rt']?? null,
+                'rw' => $row['rw']?? null,
+                'puskesmas' => $this->normalizeText($row['pukesmas']?? null),
+                'posyandu' => $this->normalizeText($row['posyandu']?? null),
                 'tgl_pengukuran' => $tglUkur,
                 'usia_saat_ukur' => $usia,
                 'bb' =>  $this->normalizeDecimal($row['berat']??null),
                 'tb' =>  $this->normalizeDecimal($row['tinggi']??null),
                 'lila' => $this->normalizeDecimal($row['lila'] ?? null),
-                'provinsi' => $this->normalizeText($row['prov']),
-                'kota' => $this->normalizeText($row['kabkota']),
-                //'provinsi' => $this->wilayahUser['provinsi'],
-                //'kota' => $this->wilayahUser['kota'],
-                'kecamatan' => $this->normalizeText($row['kec']),
-                'kelurahan' => $this->normalizeText($row['desakel']),
+                'provinsi' => $this->normalizeText($row['prov']) ?? $this->wilayahUser['provinsi'],
+                'kota' => $this->normalizeText($row['kabkota']) ?? $this->wilayahUser['kota'],
+                'kecamatan' => $this->normalizeText($row['kec']) ?? $this->wilayahUser['kecamatan'],
+                'kelurahan' => $this->normalizeText($row['desakel']) ?? $this->wilayahUser['kelurahan'],
 
                 'bb_u' => $this->normalizeStatus($status_bbu),
                 'zs_bb_u' => $z_bbu,
@@ -164,19 +162,17 @@ class ChildrenImportKunjungan implements
             // 5. Wilayah & Posyandu
             // =========================
             $wilayah = Wilayah::firstOrCreate([
-                /* 'provinsi' => $this->wilayahUser['provinsi'],
-                'kota' => $this->wilayahUser['kota'], */
-                'provinsi' => $this->normalizeText($row['prov']),
-                'kota' => $this->normalizeText($row['kabkota']),
-                'kecamatan' => $this->normalizeText($row['kec']),
-                'kelurahan' => $this->normalizeText($row['desakel']),
+                'provinsi' => $this->normalizeText($row['prov']) ?? $this->wilayahUser['provinsi'],
+                'kota' => $this->normalizeText($row['kabkota']) ?? $this->wilayahUser['kota'],
+                'kecamatan' => $this->normalizeText($row['kec']) ?? $this->wilayahUser['kecamatan'],
+                'kelurahan' => $this->normalizeText($row['desakel']) ?? $this->wilayahUser['kelurahan'],
             ]);
 
             Posyandu::firstOrCreate([
                 'nama_posyandu' => $this->normalizeText($row['posyandu']),
                 'id_wilayah' => $wilayah->id,
-                'rt' => $row['rt'],
-                'rw' => $row['rw'],
+                'rt' => $row['rt'] ?? null,
+                'rw' => $row['rw'] ?? null,
             ]);
 
             // =========================
@@ -300,61 +296,6 @@ class ChildrenImportKunjungan implements
             . "</ul>"
         );
     }
-
-    /* private function convertDate($date)
-    {
-        if (!$date) {
-            return null;
-        }
-
-        $date = trim($date);
-
-        // 1️⃣ Coba format yang jelas dulu
-        $formats = [
-            'd/m/Y',
-            'd-m-Y',
-            'Y/m/d',
-            'Y-m-d',
-        ];
-
-        foreach ($formats as $format) {
-            $dt = \DateTime::createFromFormat($format, $date);
-            if ($dt && $dt->format($format) === $date) {
-                return $dt->format('Y-m-d');
-            }
-        }
-
-        // 2️⃣ Fallback: split manual (untuk CSV jelek)
-        $parts = preg_split('/[\/\-]/', $date);
-
-        if (count($parts) === 3) {
-            // asumsi kalau bagian pertama 4 digit = tahun
-            if (strlen($parts[0]) === 4) {
-                [$y, $m, $d] = $parts;
-            } else {
-                [$d, $m, $y] = $parts;
-            }
-
-            if (checkdate((int)$m, (int)$d, (int)$y)) {
-                return sprintf('%04d-%02d-%02d', $y, $m, $d);
-            }
-        }
-
-        return null;
-    } */
-
-    /* private function convertDate($date)
-    {
-        if (!$date)
-            return null;
-        $parts = preg_split('/[\/\-]/', $date);
-        if (count($parts) === 3) {
-            return strlen($parts[2]) === 4
-                ? "{$parts[2]}-{$parts[1]}-{$parts[0]}"
-                : "{$parts[0]}-{$parts[1]}-{$parts[2]}";
-        }
-        return null;
-    } */
 
     /** Hitung umur (bulan) */
     private function hitungUmurBulan($tglLahir, $tglUkur)
