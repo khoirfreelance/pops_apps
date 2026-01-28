@@ -47,13 +47,6 @@ class ChildrenImportKunjungan implements
             'input_encoding' => 'UTF-8',
         ];
     }
-    /* public function getCsvSettings(): array
-    {
-        return [
-            'delimiter' => ',',
-            'input_encoding' => 'UTF-8',
-        ];
-    } */
 
     public function model(array $row)
     {
@@ -70,7 +63,8 @@ class ChildrenImportKunjungan implements
 
             if (!$nik || !$tglUkur) {
                 throw new \Exception(
-                    "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}"
+                    "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}",
+                    1001
                 );
             }
 
@@ -81,7 +75,8 @@ class ChildrenImportKunjungan implements
             if ($duplikat) {
                 throw new \Exception(
                     "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
-                    . $duplikat->created_at->format('d-m-Y')
+                    . $duplikat->created_at->format('d-m-Y'),
+                    1001
                 );
             }
 
@@ -117,7 +112,8 @@ class ChildrenImportKunjungan implements
 
             if (!$validateJK) {
                 throw new \Exception(
-                    "Format salah pada kolom JK. Nilai: '{$jkRaw}'. Gunakan L atau P."
+                    "Format salah pada kolom JK. Nilai: '{$jkRaw}'. Gunakan L atau P.",
+                    1001
                 );
             }
 
@@ -293,7 +289,8 @@ class ChildrenImportKunjungan implements
             . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
             . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
             . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
-            . "</ul>"
+            . "</ul>",
+            1001
         );
     }
 

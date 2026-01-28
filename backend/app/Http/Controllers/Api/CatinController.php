@@ -1683,14 +1683,10 @@ class CatinController extends Controller
             ], 200);
 
         } catch (\Throwable $e) {
-            \Log::error('Import catin gagal', [
-                'error' => $e->getMessage()
-            ]);
-
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal import data',
-                'error' => $e->getMessage(),
+                'message' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 500);
         }
     }

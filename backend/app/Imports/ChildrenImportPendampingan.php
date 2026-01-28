@@ -53,7 +53,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 if (!$nik || !$tglUkur) {
                     throw new \Exception(
-                        "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}"
+                        "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}",
+                        1001
                     );
                 }
 
@@ -64,7 +65,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 if ($duplikat) {
                     throw new \Exception(
                         "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
-                        . $duplikat->created_at->format('d-m-Y')
+                        . $duplikat->created_at->format('d-m-Y'),
+                        1001
                     );
                 }
                 // dd($this->wilayahUser['provinsi']);
@@ -262,7 +264,20 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
             }
 
         } catch (Exception $e) {
-            throw $e; // ⬅️ penting supaya Excel::import gagal
+            // ✅ expected error
+            if ($e->getCode() === 1001) {
+                throw new \Exception($e->getMessage());
+            }
+
+            // ❌ error teknis
+            Log::error('Import CSV error teknis', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ]);
+
+            throw new \Exception(
+                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
+            );
         }
     }
 
@@ -353,7 +368,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
             . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
             . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
             . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
-            . "</ul>"
+            . "</ul>",
+            1001
         );
     }
 

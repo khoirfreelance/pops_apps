@@ -52,8 +52,26 @@ class PregnancyImportPendampingan implements
 
     public function collection(Collection $rows): void
     {
-        foreach ($rows as $row) {
-            $this->processRow($row->toArray());
+        try {
+            foreach ($rows as $row) {
+                $this->processRow($row->toArray());
+            }
+
+        } catch (Exception $e) {
+            // ✅ expected error
+            if ($e->getCode() === 1001) {
+                throw new \Exception($e->getMessage());
+            }
+
+            // ❌ error teknis
+            Log::error('Import CSV error teknis', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ]);
+
+            throw new \Exception(
+                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
+            );
         }
     }
 
@@ -339,7 +357,6 @@ class PregnancyImportPendampingan implements
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
-            'm/d/Y',
             'd/m/Y',
             'd-m-Y',
             'Y/m/d',

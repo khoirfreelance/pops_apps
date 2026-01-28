@@ -66,7 +66,20 @@ class CatinImportPendampingan implements
                 $this->processRow($row->toArray());
             }
         } catch (\Exception $e) {
-            throw $e;
+            // ✅ expected error
+            if ($e->getCode() === 1001) {
+                throw new \Exception($e->getMessage());
+            }
+
+            // ❌ error teknis
+            \Log::error('Import CSV error teknis', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ]);
+
+            throw new \Exception(
+                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
+            );
         }
     }
 
@@ -88,7 +101,8 @@ class CatinImportPendampingan implements
 
             if (!$nik || !$tglUkur) {
                 throw new \Exception(
-                    "NIK atau tanggal pendampingan kosong / tidak valid pada data {$nama}"
+                    "NIK atau tanggal pendampingan kosong / tidak valid pada data {$nama}",
+                    1001
                 );
             }
 
@@ -99,7 +113,8 @@ class CatinImportPendampingan implements
             if ($duplikat) {
                 throw new \Exception(
                     "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
-                    . $duplikat->created_at->format('d-m-Y')
+                    . $duplikat->created_at->format('d-m-Y'),
+                    1001
                 );
             }
 
@@ -278,7 +293,6 @@ class CatinImportPendampingan implements
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
-            'm/d/Y',
             'd/m/Y',
             'd-m-Y',
             'Y/m/d',
@@ -323,31 +337,10 @@ class CatinImportPendampingan implements
             . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
             . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
             . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
-            . "</ul>"
+            . "</ul>",
+            1001
         );
     }
-    /* private function convertDate($date)
-    {
-        if (!$date)
-            return null;
-
-        $date = str_replace('/', '-', trim($date));
-
-        try {
-            return Carbon::parse($date)->format('Y-m-d');
-        } catch (\Exception $e) {
-            throw new \Exception(
-                "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
-                . "Format yang diperbolehkan adalah:<br>"
-                . "<ul class='text-start'>"
-                . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
-                . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
-                . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
-                . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
-                . "</ul>"
-            );
-        }
-    } */
 
     protected function loadWilayahUser(): void
     {
