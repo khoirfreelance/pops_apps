@@ -27,7 +27,7 @@
 
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
         <!-- Content -->
-        <div class="py-4 container-fluid">
+        <div class="py-4 container-fluid" style="background: white !important;">
           <!-- Welcome Card -->
           <Welcome />
 

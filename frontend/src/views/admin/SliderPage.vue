@@ -25,24 +25,33 @@
       <!-- Sidebar -->
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar" />
 
-      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+      <div
+        class="flex-grow-1 d-flex flex-column overflow-hidden"
+        style="background: white !important;"
+      >
         <div class="py-4 container-fluid">
 
           <!-- Welcome Card -->
           <Welcome />
           <!-- <Welcome :kelurahan="userStore.kelurahan"/> -->
+          <!-- Nav Tab-->
+          <div class="container-fluid mt-2 d-flex justify-content-center">
+            <ul class="nav nav-pills d-flex flex-wrap justify-content-center gap-2 w-100" id="myTab" role="tablist"
+              style="max-width: 800px;">
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button class="nav-link w-100 text-truncate active" id="logoDesa-tab" data-bs-toggle="tab" data-bs-target="#logoDesa" type="button" role="tab" aria-controls="logoDesa" aria-selected="true">Logo Desa</button>
+              </li>
 
-          <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link rounded-bottom-0 active" id="logoDesa-tab" data-bs-toggle="tab" data-bs-target="#logoDesa" type="button" role="tab" aria-controls="logoDesa" aria-selected="true">Logo Desa</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link rounded-bottom-0" id="slider-tab" data-bs-toggle="tab" data-bs-target="#slider" type="button" role="tab" aria-controls="slider" aria-selected="false">Slider</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link rounded-bottom-0" id="footer-tab" data-bs-toggle="tab" data-bs-target="#footer" type="button" role="tab" aria-controls="footer" aria-selected="false">Footer</button>
-            </li>
-          </ul>
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button class="nav-link w-100 text-truncate" id="slider-tab" data-bs-toggle="tab" data-bs-target="#slider" type="button" role="tab" aria-controls="slider" aria-selected="false">Slider</button>
+              </li>
+
+              <li class="nav-item flex-fill text-center" role="presentation">
+                <button class="nav-link w-100 text-truncate" id="footer-tab" data-bs-toggle="tab" data-bs-target="#footer" type="button" role="tab" aria-controls="footer" aria-selected="false">Footer</button>
+              </li>
+            </ul>
+          </div>
+
           <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="logoDesa" role="tabpanel" aria-labelledby="logoDesa-tab">
               <!-- =======================
@@ -64,34 +73,15 @@
                         style="max-height: 100px"
                       />
                     </div>
-                    <!-- <img
-                        v-if="logoLoaded"
-                        :src="logoSrc"
-                        alt="Logo"
-                        height="50"
-                        @error="logoLoaded = false"
-                      />
+
+                    <div class="col-12 text-center mb-3" v-else>
                       <img
-                        v-else
-                        :src="logoSrc"
-                        alt="Logo Preview"
-                        class="img-fluid rounded shadow-sm"
-                        style="max-height: 100px"
-                      /> -->
-                    <!-- <div class="col-12 text-center mb-3" v-if="logoSrc">
-                      <img
-                        :src="logoSrc"
+                        src="/default.png"
                         alt="Logo Preview"
                         class="img-fluid rounded shadow-sm"
                         style="max-height: 100px"
                       />
                     </div>
-
-                    <div class="col-12 text-center mb-3" v-else>
-                      <div class="card shadow-0 p-4 mx-auto" style="width: 200px;height: 200px;">
-                        <p class="text-muted mb-0">Preview</p>
-                      </div>
-                    </div> -->
 
                     <!-- Input + Button (STACKED) -->
                     <div class="col-12 text-center">
@@ -330,13 +320,13 @@
           </div>
         </div>
 
-        <CopyRight/>
+        <CopyRight class="mt-auto"/>
       </div>
     </div>
   </div>
 
   <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <!-- <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-success text-white rounded-top-4">
@@ -358,10 +348,10 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Modal Error -->
-  <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+  <!-- <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg rounded-4">
         <div class="modal-header bg-danger text-white rounded-top-4">
@@ -383,7 +373,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script>
@@ -392,6 +382,7 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import Welcome from '@/components/Welcome.vue'
 import axios from 'axios'
+import Swal from 'sweetalert2'
 
 // PORT backend kamu
 const API_PORT = 8000
@@ -408,8 +399,14 @@ export default {
 
   data() {
     return {
+      progressLevel:0,
+      importProgress: 0,
+      animatedProgress: 0,
+      currentRow: 0,
+      totalRows: 1,
+      isLoadingImport: false,
       logoLoaded: true,
-      logoSrc:null,
+      logoSrc:'null',
       isLoading: false,
       isCollapsed: false,
       selectedImage: null,
@@ -489,8 +486,17 @@ export default {
        SAVE LOGO
     ========================== */
     async saveLogo() {
-      if (!this.logoFile) return alert('Pilih logo dulu')
-
+      if (!this.logoFile) return
+      Swal.fire({
+        title: 'Error',
+        html: 'Pilih logo dulu',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+        }
+      })
       const fd = new FormData()
       fd.append('logo', this.logoFile)
 
@@ -506,6 +512,16 @@ export default {
         this.loadFooter()
       } catch (e) {
         console.error('Gagal simpan logo:', e)
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal simpan logo',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
 
@@ -547,6 +563,16 @@ export default {
         this.loadLinks()
       } catch (e) {
         console.error('Gagal tambah link:', e)
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal tambah link',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
 
@@ -554,7 +580,23 @@ export default {
        DELETE SOCIAL LINK
     ========================== */
     async deleteLink(id) {
-      if (!confirm('Hapus link ini?')) return
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus link ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
+      //if (!confirm('Hapus link ini?')) return
 
       try {
         await axios.delete(`${baseURL}/api/footer-social/${id}`, {
@@ -567,11 +609,26 @@ export default {
         this.loadLinks()
       } catch (e) {
         console.error('Gagal hapus link:', e)
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal tambah link',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
 
     async updateLink(link) {
       try {
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
+
         await axios.put(
           `${baseURL}/api/footer-social/${link.id}`,
           {
@@ -586,10 +643,47 @@ export default {
           }
         )
 
-        this.$toast?.success?.('Link disimpan') || alert('Link disimpan')
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menyimpan Link`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
+        //this.$toast?.success?.('Link disimpan') || alert('Link disimpan')
       } catch (e) {
         console.error('Gagal update link:', e)
-        alert('Gagal menyimpan perubahan')
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal menyimpan perubahan',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
     // --- Upload handler ---
@@ -623,6 +717,10 @@ export default {
     },
     async handleSubmit() {
       try {
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
 
         const formData = new FormData()
         formData.append('logo', this.form.logo)
@@ -633,15 +731,26 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
+        this.animatedProgress = 30
+        this.progressLevel = 30
+        this.importProgress = 30
         console.log('✅ Config saved:', res.data)
 
         localStorage.removeItem('site_config_cache')
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
+
         const refresh = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
+
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
         const data = refresh.data?.data
         if (data) {
           const cleanLogo = this.normalizeLogoPath(data.logo)
@@ -649,10 +758,44 @@ export default {
           this.form.logoName = cleanLogo.split('/').pop()
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-        this.showSuccess('Konfigurasi berhasil disimpan & disinkronkan')
+
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menyimpan Logo`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
+        //this.showSuccess('Konfigurasi berhasil disimpan & disinkronkan')
       } catch (err) {
         console.error('❌ Gagal simpan konfigurasi:', err)
-        this.showError('Gagal menyimpan konfigurasi. Periksa koneksi atau token Anda.')
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: 'Gagal menyimpan konfigurasi, periksa koneksi Anda.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+      }finally{
+        this.isLoadingImport = false
       }
     },
 
@@ -662,20 +805,6 @@ export default {
 
     handleImage(e) {
       this.selectedImage = e.target.files[0]
-    },
-
-    // --- Modal helper ---
-    showError(message) {
-      this.errorMessage = message || 'Terjadi kesalahan.'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('errorModal'))
-      modal.show()
-    },
-    showSuccess(message) {
-      this.successMessage = message || 'Berhasil tersimpan.'
-      // eslint-disable-next-line no-undef
-      const modal = new bootstrap.Modal(document.getElementById('successModal'))
-      modal.show()
     },
 
     async loadSetting() {
@@ -720,11 +849,26 @@ export default {
 
     async uploadImage() {
       if (!this.selectedImage) {
-        this.showError('Pilih image terlebih dahulu')
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: 'Pilih gambar atau logo terlebih dahulu',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
         return
       }
 
       try {
+        this.isLoadingImport = true
+        this.animatedProgress = 10
+        this.progressLevel = 10
+        this.importProgress = 10
+
         const fd = new FormData()
         fd.append('image', this.selectedImage)
 
@@ -735,23 +879,113 @@ export default {
           },
         })
 
+        this.animatedProgress = 30
+        this.progressLevel = 30
+        this.importProgress = 30
         this.selectedImage = null
-        this.$refs.fileInput.value = null
+
+        this.animatedProgress = 50
+        this.progressLevel = 50
+        this.importProgress = 50
+
+        this.animatedProgress = 70
+        this.progressLevel = 70
+        this.importProgress = 70
         await this.loadImages()
 
-        this.showSuccess('Upload berhasil')
+        this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil mengunggah gambar`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
       } catch (error) {
         console.error('Upload gagal:', error)
-        this.showError('Upload gagal')
+        this.isLoadingImport = false
+        Swal.fire({
+          title: 'Error',
+          html: 'Terjadi kesalahan saat unggah gambar',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+      }finally{
+        this.isLoadingImport = false
       }
     },
 
     async deleteImage(id) {
-      if (!confirm('Hapus gambar ini?')) return
+      const confirm = await Swal.fire({
+        title: 'Konfirmasi',
+        html: `Yakin ingin menghapus link ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: 'btn btn-danger mx-1',
+          cancelButton: 'btn btn-secondary mx-1'
+        }
+      })
+
+      if (!confirm.isConfirmed) return
+      //if (!confirm('Hapus gambar ini?')) return
       await axios.delete(`${baseURL}/api/slider-images/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       })
+
+      this.isLoadingImport = true
+      this.animatedProgress = 10
+      this.progressLevel = 10
+      this.importProgress = 10
+
+      this.animatedProgress = 70
+      this.progressLevel = 70
+      this.importProgress = 70
       this.loadImages()
+
+      this.importProgress = 100
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        this.isLoadingImport = false
+        Swal.fire({
+          icon: 'success',
+          html: `Berhasil menghapus Logo`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        })
     },
   },
 
@@ -766,7 +1000,7 @@ export default {
         this.loadLinks()
       ])
     } catch (error) {
-      this.showError('Error load slider page:', error)
+      console.error('Error load slider page:', error);
     } finally {
       this.isLoading = false
     }

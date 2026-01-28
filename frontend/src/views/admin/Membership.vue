@@ -36,7 +36,7 @@
             <Welcome />
 
             <!-- Form -->
-            <div class="container-fluid mt-4">
+            <div class="container-fluid">
               <!-- Collapsible Form -->
               <div v-if="isFormOpen" id="formData" class="card shadow-sm">
                 <div class="card-body">
@@ -216,7 +216,7 @@
 
             <!-- Table -->
             <div class="container-fluid">
-              <div class="card modern-card mt-4">
+              <div class="card modern-card">
                 <div class="card-body">
                   <div class="d-flex align-items-center justify-content-between gap-2 my-2">
                     <h3 class="text-primary"> Data Petugas</h3>
@@ -694,6 +694,16 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, EasyDataTable, Welcome },
   data() {
     return {
+      kader:"",
+      searchQuery_all:'',
+      searchQuery_anggota:'',
+      searchQuery_keluarga:'',
+      searchQuery_anak:'',
+      searchQuery_bumil:'',
+      searchQuery_catin:'',
+      currentPage: 1,
+      perPage: 10,
+      perPageOptions: [5, 10, 25, 50],
       kotaReadonly:true,
       kecamatanReadonly:true,
       kelurahanReadonly:true,
@@ -1151,9 +1161,10 @@ export default {
       this.form = {} // reset form
       this.isFormOpen = true
     },
-    async assign(id) {
+    async assign(items) {
       this.modalMode = "assign";
       this.isFormOpen = true
+      const id = items.id
       try {
         const res = await axios.get(`${baseURL}/api/cadre/${id}`, {
           headers: {
@@ -1391,6 +1402,7 @@ export default {
         this.importProgress = 50
         // refresh table
         await this.resetForm()
+        await this.loadTPK()
         this.animatedProgress = 70
         this.progressLevel = 70
         this.importProgress = 70

@@ -27,7 +27,7 @@
 
       <!-- Main Content -->
       <div class="flex-grow-1 d-flex flex-column overflow-hidden">
-        <div class="py-4 container-fluid">
+        <div class="py-4 container-fluid" style="background: white !important;">
           <!-- Welcome Card -->
           <Welcome />
 
@@ -782,7 +782,7 @@
 
                           <!-- Data Kelahiran -->
                           <div class="tab-pane fade" id="tab-pane-kehamilan" role="tabpanel">
-                            <div class="card bg-light border-0 shadow-sm p-3">
+                            <div class="card border-0 shadow-sm p-3">
                               <h6 class="fw-bold mb-3 text-danger">Data Kehamilan</h6>
                               <div class="table-responsive">
                                 <table class="table table-sm table-striped align-middle">

@@ -248,7 +248,7 @@
                       header-text-direction="center"
                       table-class-name="my-custom-table"
                       header-class-name="my-custom-header"
-                      show-index alternating
+                       alternating
                       border-cell
                     >
 
@@ -478,7 +478,7 @@
                     <easy-data-table :headers="headers_bumil" :items="items_bumil" :sortable="true"
                       :search-value="searchQuery_bumil" :rows-per-page="perPage" :rows-items="perPageOptions"
                       :rows-per-page-text="'Rows per page'" header-text-direction="center"
-                      table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
+                      table-class-name="my-custom-table" header-class-name="my-custom-header"  alternating
                       border-cell>
 
                       <template #header-select>
@@ -714,7 +714,7 @@
                     <easy-data-table :headers="headers_catin" :items="items_catin" :sortable="true"
                       :search-value="searchQuery_catin" :rows-per-page="perPage" :rows-items="perPageOptions"
                       :rows-per-page-text="'Rows per page'" header-text-direction="center"
-                      table-class-name="my-custom-table" header-class-name="my-custom-header" show-index alternating
+                      table-class-name="my-custom-table" header-class-name="my-custom-header"  alternating
                       border-cell>
 
                       <template #header-select>

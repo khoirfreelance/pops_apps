@@ -27,7 +27,7 @@
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
 
       <!-- Main Content -->
-      <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+      <div class="flex-grow-1 d-flex flex-column overflow-hidden"  style="background: white !important;">
 
         <!-- Content -->
         <div class="py-4 container-fluid" >
@@ -422,27 +422,30 @@
                 <div class="card shadow-sm">
                   <div class="card-body">
                     <!-- Search + Button -->
-                    <div class="d-flex align-items-center justify-content-end gap-2">
+                     <div class="d-flex align-items-center justify-content-between gap-2">
+                        <h3 class="text-primary"> Data Keluarga</h3>
+                        <div class="d-flex align-items-center justify-content-end gap-2">
 
-                      <input
-                        type="text"
-                        class="form-control form-control"
-                        style="width: 220px;"
-                        placeholder="Ketik NIK atau No. KK"
-                        v-model="searchQuery"
-                      >
+                          <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            style="width: 220px;"
+                            placeholder="Ketik NIK atau No. KK"
+                            v-model="searchQuery"
+                          >
 
-                      <button
-                        type="button"
-                        class="btn btn-primary mx-2"
-                        @click="toggleExpandForm"
-                      >
-                        <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
-                        {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
-                      </button>
-                      <button class="btn btn-outline-success" @click="isUploadOpen = !isUploadOpen">
-                        <i class="bi bi-filetype-csv"></i> Import Data Keluarga
-                      </button>
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            @click="toggleExpandForm"
+                          >
+                            <i :class="isFormOpen ? 'bi bi-dash-square' : 'bi bi-plus-square'"></i>
+                            {{ isFormOpen ? 'Tutup Form' : 'Tambah Data' }}
+                          </button>
+                          <button class="btn btn-outline-success btn-sm" @click="isUploadOpen = !isUploadOpen">
+                            <i class="bi bi-filetype-csv"></i> Import Data Keluarga
+                          </button>
+                        </div>
                     </div>
 
                     <!-- Table -->
@@ -460,7 +463,6 @@
                         header-text-direction="center"
                         table-class-name="my-custom-table"
                         header-class-name="my-custom-header"
-                        show-index
                         alternating
                         border-cell
                       >
@@ -484,17 +486,22 @@
                           </div>
                         </template>
 
-                        <!-- ACTION BUTTONS -->
-                        <template #item-action="items">
-                          <div class="action-wrapper d-flex gap-1 m-1 text-center">
-                            <button
+                        <template #item-no_kk="{ no_kk, id }">
+                          <div class="text-center">
+                            <a
                               data-bs-toggle="tooltip"
                               title="Lihat Data Keluarga"
-                              class="btn btn-outline-success"
-                              @click="openFamilyModal(items)"
+                              class="text-success text-decoration-none fw-bold"
+                              style="cursor: pointer !important;"
+                              @click="openFamilyModal(id)"
                             >
-                              <i class="fa fa-eye"></i>
-                            </button>
+                              {{no_kk}}
+                          </a>
+                        </div>
+                        </template>
+                        <!-- ACTION BUTTONS -->
+                        <template #item-action="items">
+                          <div class="d-flex gap-1 m-1 justify-content-center">
                             <button @click="inputItem(items)" class="btn btn-primary" data-bs-toggle="tooltip"
                               title="Tambah Anggota Keluarga">
                               <i class="bi bi-plus-square"></i>
@@ -784,8 +791,8 @@ export default {
       familyPending: [],
       headers: [
         { text: '', value: 'select', width: 50 },
-        { text: 'No KK', value: 'no_kk' },
-        { text: 'NIK', value: 'nik_kepala' },
+        { text: 'No KK/NIK', value: 'no_kk' },
+        /* { text: 'NIK', value: 'nik_kepala' }, */
         { text: 'Kepala Keluarga', value: 'nama_kepala', width: 200 },
         { text: 'RT', value: 'rt' },
         { text: 'RW', value: 'rw' },
@@ -1893,10 +1900,10 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
-    async openFamilyModal(item) {
+    async openFamilyModal(id) {
       try {
         this.isLoading = true
-        const id = item.id
+        //const id = item.id
         const res = await axios.get(`${baseURL}/api/family/detail/${id}`, {
           headers: {
             Accept: 'application/json',
@@ -1922,14 +1929,9 @@ export default {
 
         this.anggotaKeluarga = false // penting, reset state
 
-        const msg =
-          item.no_kk
-            ? `No. KK: ${item.no_kk}`
-            : `NIK Kepala Keluarga: ${item.nik_kepala}`
-
         Swal.fire({
           title: 'Error',
-          html: `Keluarga dengan <strong>${msg}</strong> tidak ditemukan`,
+          html: ` <strong>No. KK</strong> atau <strong>NIK Kepala Keluarga</strong> dengan tidak ditemukan`,
           icon: 'error',
           confirmButtonText: 'OK',
           buttonsStyling: false,
