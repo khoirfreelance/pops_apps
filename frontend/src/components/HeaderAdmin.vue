@@ -5,19 +5,11 @@
       <a class="navbar-brand p-2" href="#">
         <!-- tampilkan logo jika berhasil load -->
         <img
-          v-if="logoLoaded"
           :src="logoSrc"
           alt="Logo"
           height="35"
-          @error="logoLoaded = false"
+          @error="onLogoError"
         />
-        <!-- jika gagal load logo, tampilkan kelurahan -->
-        <span
-          v-else
-          class="text-white fw-bold fs-5"
-        >
-          {{ kelurahan || 'Semua Desa' }}
-        </span>
       </a>
       <h1 class="header-title">
         Pusat Operasi Penurunan Stunting {{ kelurahan || 'Semua Desa' }}
@@ -98,8 +90,7 @@ export default {
   name: 'HeaderAdmin',
   data() {
     return {
-      logoSrc: null,
-      logoLoaded: true,
+      logoSrc: '/default.png', // 👈 default sejak awal
       events: [],
       toggleNotification: false,
       storageKey: 'moodle_calendar_events',
@@ -124,6 +115,12 @@ export default {
     eventBus.off('kelurahanChanged', this.updateKelurahan)
   },
   methods: {
+    onLogoError(e) {
+      // cegah infinite loop
+      if (!e.target.src.includes('default.png')) {
+        e.target.src = '/default.png'
+      }
+    },
     updateKelurahan(label) {
       this.kelurahan = label
     },
@@ -156,14 +153,13 @@ export default {
     },
     async loadConfigWithCache() {
       try {
-        // cek di localStorage
         const cached = localStorage.getItem(this.configCacheKey)
         if (cached) {
           const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
+          this.logoSrc = parsed.logo || '/default.png'
           return
         }
-         // kalau belum ada cache, fetch dari API
+
         const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
@@ -173,15 +169,15 @@ export default {
 
         const data = res.data?.data
         if (data) {
-          this.logoSrc = data.logo || null
-          // simpan di localStorage untuk load cepat di page berikutnya
+          this.logoSrc = data.logo || '/default.png'
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-      }catch (error) {
+      } catch (error) {
         console.warn('Gagal load config:', error)
-        this.logoLoaded = false
+        this.logoSrc = '/default.png'
       }
-    },
+    }
+
   },
 }
 </script>

@@ -41,7 +41,17 @@
                 <!-- No TPK -->
                 <div class="col-md-6">
                   <label class="form-label small fw-semibold text-secondary">No. TPK <small class="text-additional2 fw-normal">(kosongkan jika pengguna bukan anggota TPK)</small></label>
-                  <template  v-if="form.no_tpk === '__new__'">
+                  <select
+                    class="form-select shadow-sm"
+                    v-model="form.no_tpk"
+                    @change="loadTPK"
+                  >
+                    <option value="">Pilih</option>
+                    <option v-for="item in tpkList" :key="item.no_tpk" :value="item.no_tpk">
+                      {{ item.no_tpk }}
+                    </option>
+                  </select>
+                  <!-- <template  v-if="form.no_tpk === '__new__'">
                     <input
                       type="number"
                       min="0"
@@ -62,7 +72,7 @@
                       </option>
                       <option value="__new__">+ Tambah baru</option>
                     </select>
-                  </template>
+                  </template> -->
                   <!-- <input type="number" min="0" class="form-control shadow-sm" v-model="form.no_tpk" /> -->
                 </div>
                 <div class="col-md-6"></div>
@@ -150,7 +160,17 @@
                 <!-- Provinsi -->
                 <div class="col-md-3">
                   <label class="form-label small fw-semibold text-secondary">Provinsi</label>
-                  <template v-if="form.provinsi === '__new__'">
+                  <select
+                    class="form-select shadow-sm"
+                    v-model="form.provinsi"
+                    @change="loadKota"
+                  >
+                    <option value="">Pilih</option>
+                    <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
+                      {{ item.nama }}
+                    </option>
+                  </select>
+                  <!-- <template v-if="form.provinsi === '__new__'">
                     <input
                       type="text"
                       class="form-control shadow-sm"
@@ -171,13 +191,24 @@
                       </option>
                       <option value="__new__">+ Tambah baru</option>
                     </select>
-                  </template>
+                  </template> -->
                 </div>
 
                 <!-- Kota -->
                 <div class="col-md-3">
                   <label class="form-label small fw-semibold text-secondary">Kota</label>
-                  <template v-if="form.kota === '__new__'">
+                  <select
+                      class="form-select shadow-sm"
+                      v-model="form.kota"
+                      @change="loadKecamatan"
+                      :disabled="kotaDisabled"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                    </select>
+                  <!-- <template v-if="form.kota === '__new__'">
                     <input
                       type="text"
                       class="form-control shadow-sm"
@@ -199,13 +230,24 @@
                       </option>
                       <option value="__new__">+ Tambah baru</option>
                     </select>
-                  </template>
+                  </template> -->
                 </div>
 
                 <!-- Kecamatan -->
                 <div class="col-md-3">
                   <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
-                  <template v-if="form.kecamatan === '__new__'">
+                  <select
+                    class="form-select shadow-sm"
+                    v-model="form.kecamatan"
+                    @change="loadKelurahan"
+                    :disabled="kecamatanDisabled"
+                  >
+                    <option value="">Pilih</option>
+                    <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
+                      {{ item.nama }}
+                    </option>
+                  </select>
+                  <!-- <template v-if="form.kecamatan === '__new__'">
                     <input
                       type="text"
                       class="form-control shadow-sm"
@@ -226,13 +268,24 @@
                       </option>
                       <option value="__new__">+ Tambah baru</option>
                     </select>
-                  </template>
+                  </template> -->
                 </div>
 
                 <!-- Kelurahan -->
                 <div class="col-md-3">
                   <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
-                  <template v-if="form.kelurahan === '__new__'">
+                  <select
+                    class="form-select shadow-sm"
+                    v-model="form.kelurahan"
+                    @change="handleRegionChange"
+                    :disabled="kelurahanDisabled"
+                  >
+                    <option value="">Pilih</option>
+                    <option v-for="item in kelurahanList" :key="item.idWilayah" :value="item.idWilayah">
+                      {{ item.nama }}
+                    </option>
+                  </select>
+                  <!-- <template v-if="form.kelurahan === '__new__'">
                     <input
                       type="text"
                       class="form-control shadow-sm"
@@ -253,7 +306,7 @@
                       </option>
                       <option value="__new__">+ Tambah baru</option>
                     </select>
-                  </template>
+                  </template> -->
                 </div>
 
                 <!-- Role & Unit Posyandu -->
@@ -364,7 +417,7 @@
                     </div>
                   </template>
 
-                  <template #item-action="{ id, email, status }">
+                  <template #item-action="{ id, email,nama, status }">
                     <!-- Kalau user aktif -->
                     <template v-if="status === 'Aktif'">
                       <div class="text-center">
@@ -379,7 +432,7 @@
                         </button>
                         <button
                           class="btn btn-secondary m-2"
-                          @click="deactive(email)"
+                          @click="deactive(email,nama)"
                           style="font-size: small;"
                           data-bs-toggle="tooltip"
                           title="Nonaktif Kader"
@@ -394,7 +447,7 @@
                       <div class="text-center">
                         <button
                           class="btn btn-primary m-2"
-                          @click="active(email)"
+                          @click="active(email,nama)"
                           style="font-size: small;"
                           data-bs-toggle="tooltip"
                           title="Aktifkan Kader"
@@ -403,7 +456,7 @@
                         </button>
                         <button
                           class="btn btn-danger m-2"
-                          @click="deleteUser(email)"
+                          @click="deleteUser(email,nama)"
                           style="font-size: small;"
                           data-bs-toggle="tooltip"
                           title="Hapus Kader"
@@ -425,7 +478,7 @@
   </div>
 
   <!-- Modal Success -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <!-- <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div
         class="modal-content border-0 shadow-lg rounded-4"
@@ -449,7 +502,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Loader Overlay with Animated Progress -->
   <div
@@ -479,7 +532,6 @@ import HeaderAdmin from '@/components/HeaderAdmin.vue'
 import NavbarAdmin from '@/components/NavbarAdmin.vue'
 import EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
-import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Welcome from '@/components/Welcome.vue'
 import Swal from 'sweetalert2'
@@ -527,7 +579,7 @@ export default {
       posyanduList: [],
       modalMode: "add",
       isFormOpen: false,
-      isPendingOpen: false,
+      //isPendingOpen: false,
       isFilterOpen: false,
       showAlert: false,
       isLoadingImport: false,
@@ -908,7 +960,7 @@ export default {
         this.form.kelurahan = "";
       }
     },
-    closeModal(id) {
+    /* closeModal(id) {
       const el = document.getElementById(id)
       if (el) {
         const instance = Modal.getOrCreateInstance(el)
@@ -922,7 +974,7 @@ export default {
         document.body.style.removeProperty('overflow')
         document.body.style.removeProperty('padding-right')
       }, 300) // delay biar nunggu animasi fade
-    },
+    }, */
     updateProgressBar(percent, row, total) {
       this.importProgress = percent
       this.currentRow = row
@@ -945,9 +997,9 @@ export default {
       this.isFormOpen = !this.isFormOpen
       if (!this.isFormOpen) this.resetForm()
     },
-    toggleExpandPending() {
+    /* toggleExpandPending() {
       this.isPendingOpen = !this.isPendingOpen
-    },
+    }, */
     openTambah() {
       this.modalMode = "add"
       this.form = {} // reset form
@@ -1153,11 +1205,12 @@ export default {
         this.isLoadingImport = true
         this.importProgress = 10
         this.animatedProgress = 10
-        console.log("Payload sebelum dikirim:", this.form) // 👈 cek dulu isi form
+
+        const payload = this.normalizeFormPayload(this.form)
         const nama = this.form.nama
         const res = await axios.put(
           `${baseURL}/api/cadre/${this.form.id}`,
-          this.form, // data body
+          payload, // data body
           {
             headers: {
               Accept: 'application/json',
@@ -1169,11 +1222,6 @@ export default {
         this.importProgress = 70
         this.animatedProgress = 70
         this.isFormOpen = false
-        this.isPendingOpen = false
-        //this.getPendingData()
-
-        this.importProgress = 90
-        this.animatedProgress = 90
         this.loadCadre()
         this.importProgress = 100
 
@@ -1202,9 +1250,6 @@ export default {
           }
         })
 
-        //alert("Data berhasil diupdate")
-        /* const modal = new Modal(document.getElementById("successModal"))
-        modal.show() */
       } catch (err) {
         console.error("Gagal update:", err)
 
@@ -1223,8 +1268,12 @@ export default {
         })
       }
     },
-    async deactive(email) {
+    async deactive(email,nama) {
       try {
+        this.isLoadingImport = true
+        this.importProgress = 10
+        this.animatedProgress = 10
+
         await axios.put(
           `${baseURL}/api/cadre/deactive/${email}`,
           {}, // body kosong
@@ -1236,17 +1285,60 @@ export default {
           }
         );
 
+        this.importProgress = 70
+        this.animatedProgress = 70
+        this.isFormOpen = false
         this.loadCadre()
+        this.importProgress = 100
+
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        Swal.fire({
+          icon: 'success',
+          html: `Akun <strong>${nama}</strong> berhasil dinon-aktifkan`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
         //this.getPendingData()
 
-        const modal = new Modal(document.getElementById("successModal"));
-        modal.show();
       } catch (err) {
         console.error("Gagal deactive data kader:", err.response?.data || err);
+        this.isLoadingImport = false
+        this.importProgress = 0
+        this.animatedProgress = 0
+        Swal.fire({
+          title: 'Error',
+          html: `Gagal menon-akifkan <strong>${nama}</strong>`,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
-    async active(email) {
+    async active(email,nama) {
       try {
+        this.isLoadingImport = true
+        this.importProgress = 10
+        this.animatedProgress = 10
+
         await axios.put(
           `${baseURL}/api/cadre/active/${email}`,
           {}, // body kosong
@@ -1258,18 +1350,57 @@ export default {
           }
         );
 
-
+        this.importProgress = 70
+        this.animatedProgress = 70
+        this.isFormOpen = false
         this.loadCadre()
-        //this.getPendingData()
+        this.importProgress = 100
 
-        const modal = new Modal(document.getElementById("successModal"));
-        modal.show();
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        Swal.fire({
+          icon: 'success',
+          html: `Akun <strong>${nama}</strong> berhasil diaktifkan`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
       } catch (err) {
         console.error("Gagal deactive data kader:", err.response?.data || err);
+        this.isLoadingImport = false
+        this.importProgress = 0
+        this.animatedProgress = 0
+        Swal.fire({
+          title: 'Error',
+          html: `Gagal mengakifkan <strong>${nama}</strong>`,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
-    async deleteUser(email) {
+    async deleteUser(email,nama) {
       try {
+        this.isLoadingImport = true
+        this.importProgress = 10
+        this.animatedProgress = 10
         await axios.put(
           `${baseURL}/api/cadre/delete/${email}`,
           {}, // body kosong
@@ -1281,12 +1412,50 @@ export default {
           }
         );
 
+        this.importProgress = 70
+        this.animatedProgress = 70
+        this.isFormOpen = false
         this.loadCadre()
-        //this.getPendingData()
-        const modal = new Modal(document.getElementById("successModal"));
-        modal.show();
+        this.importProgress = 100
+
+        // animasi ke 100
+        await new Promise(resolve => {
+          const interval = setInterval(() => {
+            if (this.animatedProgress >= 100) {
+              clearInterval(interval)
+              resolve()
+            } else {
+              this.animatedProgress += 5
+            }
+          }, 30)
+        })
+
+        // matikan loading
+        this.isLoadingImport = false
+        Swal.fire({
+          icon: 'success',
+          html: `Akun <strong>${nama}</strong> berhasil dihapus`,
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary mx-1',
+            cancelButton: 'btn btn-outline-secondary mx-1'
+          }
+        })
       } catch (err) {
-        console.error("Gagal deactive data kader:", err.response?.data || err);
+        console.error("Gagal menghapus data kader:", err.response?.data || err);
+        this.isLoadingImport = false
+        this.importProgress = 0
+        this.animatedProgress = 0
+        Swal.fire({
+          title: 'Error',
+          html: `Gagal menghapus <strong>${nama}</strong>`,
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
       }
     },
 

@@ -26,7 +26,7 @@
       <NavbarAdmin :is-collapsed="isCollapsed" @toggle-sidebar="toggleSidebar"/>
 
       <!-- Main Content -->
-      <div class="flex-grow-1 d-flex flex-column">
+      <div class="flex-grow-1 d-flex flex-column overflow-hidden"  style="background: white !important;">
 
         <!-- Content -->
         <div class="py-4 container-fluid" >
@@ -87,7 +87,18 @@
                     <!-- Provinsi -->
                     <div class="col-md-3">
                       <label class="form-label small fw-semibold text-secondary">Provinsi</label>
-                      <template v-if="form.provinsi === '__new__'">
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.provinsi"
+                        @change="loadKota"
+                        :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                      </select>
+                      <!-- <template v-if="form.provinsi === '__new__'">
                         <input
                           type="text"
                           class="form-control shadow-sm"
@@ -108,13 +119,25 @@
                           </option>
                           <option value="__new__">+ Tambah baru</option>
                         </select>
-                      </template>
+                      </template> -->
                     </div>
 
                     <!-- Kota -->
                     <div class="col-md-3">
                       <label class="form-label small fw-semibold text-secondary">Kota</label>
-                      <template v-if="form.kota === '__new__'">
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kota"
+                        @change="loadKecamatan"
+                        :disabled="kotaReadonly"
+                        :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                      </select>
+                      <!-- <template v-if="form.kota === '__new__'">
                         <input
                           type="text"
                           class="form-control shadow-sm"
@@ -136,13 +159,25 @@
                           </option>
                           <option value="__new__">+ Tambah baru</option>
                         </select>
-                      </template>
+                      </template> -->
                     </div>
 
                     <!-- Kecamatan -->
                     <div class="col-md-3">
                       <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
-                      <template v-if="form.kecamatan === '__new__'">
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kecamatan"
+                        @change="loadKelurahan"
+                        :disabled="kecamatanReadonly"
+                        :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                      </select>
+                      <!-- <template v-if="form.kecamatan === '__new__'">
                         <input
                           type="text"
                           class="form-control shadow-sm"
@@ -164,13 +199,25 @@
                           </option>
                           <option value="__new__">+ Tambah baru</option>
                         </select>
-                      </template>
+                      </template> -->
                     </div>
 
                     <!-- Kelurahan -->
                     <div class="col-md-3">
                       <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
-                      <template v-if="form.kelurahan === '__new__'">
+
+                      <select
+                        class="form-select shadow-sm"
+                        v-model="form.kelurahan"
+                        :disabled="kelurahanReadonly"
+                        :style="modalMode === 'assign' ? 'pointer-events: none; background-color:#e9ecef;' : ''"
+                      >
+                        <option value="">Pilih</option>
+                        <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
+                          {{ item.nama }}
+                        </option>
+                      </select>
+                      <!-- <template v-if="form.kelurahan === '__new__'">
                         <input
                           type="text"
                           class="form-control shadow-sm"
@@ -191,7 +238,7 @@
                           </option>
                           <option value="__new__">+ Tambah baru</option>
                         </select>
-                      </template>
+                      </template> -->
                     </div>
                   </form>
                 </div>
@@ -262,16 +309,20 @@
                         {{ no_tpk }}
                       </div>
                     </template>
+                    <template #item-nama="items">
+                      <a
+                        class="text-primary fw-semibold"
+                        @click="detail(items)"
+                        style="font-size: small;cursor: pointer;"
+                      >
+                        {{items.nama}}
+                      </a>
+                    </template>
                     <template #item-action="items">
                       <div class="action-wrapper d-flex gap-1 m-1 text-center">
+
                         <button
-                          class="btn btn-primary m-2"
-                          @click="detail(items)"
-                          style="font-size: small;"
-                        >
-                          <i class="fa fa-eye"></i>
-                        </button>
-                        <button
+                          :disabled="items.no_tpk"
                           class="btn btn-secondary m-2"
                           @click="assign(items)"
                           style="font-size: small;"

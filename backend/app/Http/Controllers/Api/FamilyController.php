@@ -24,8 +24,17 @@ class FamilyController extends Controller
 
     public function index()
     {
-        $keluargas = Keluarga::with('kepala', 'wilayah')
-                    ->get();
+
+        $user = Auth::user();
+
+        $keluargas = Keluarga::with('kepala', 'wilayah');
+        if ($user->role != 'SUPER ADMIN') {
+
+            $keluargas->wherehas('wilayah', function ($q) use ($user) {
+                $q->where('id', $user->id_wilayah);
+            });
+        }
+        $keluargas = $keluargas->get();
 
         $data = $keluargas->map(function ($k) {
             return [
@@ -343,11 +352,9 @@ class FamilyController extends Controller
             'jenis_kelamin' => ['L', 'P'],
             'status_hubungan' => [
                 'KEPALA KELUARGA',
-                'IBU',
-                'AYAH',
+                'ISTRI',
                 'ANAK',
-                'SAUDARA',
-                'LAINNYA',
+                'FAMILI LAIN',
             ],
             'status_perkawinan' => [
                 'KAWIN',
@@ -795,6 +802,7 @@ class FamilyController extends Controller
 
     public function update(Request $request, $id)
     {
+        //dd($request);
         if ($request->tipe === 'anggota') {
             $isPendingAnggota = empty($request->nik) ? 1 : 0;
 

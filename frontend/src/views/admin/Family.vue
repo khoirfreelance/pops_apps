@@ -148,12 +148,22 @@
                     ></textarea>
                   </div>
                 </template>
-
-                <template v-if="(modalMode === 'edit' || modalMode === 'record') && showAnggotaForm === false">
+                <template v-if="showAnggotaForm === false">
                   <!-- Provinsi -->
                   <div class="col-md-4">
                     <label class="form-label small fw-semibold text-secondary">Provinsi</label>
-                    <template v-if="form.provinsi === '__new__'">
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.provinsi"
+                      @change="loadKota"
+                      :readonly="isKKChecked"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in provinsiList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                    </select>
+                    <!-- <template v-if="form.provinsi === '__new__'">
                       <input
                         type="text"
                         class="form-control shadow-sm"
@@ -174,13 +184,24 @@
                         </option>
                         <option value="__new__">+ Tambah baru</option>
                       </select>
-                    </template>
+                    </template> -->
                   </div>
 
                   <!-- Kota -->
                   <div class="col-md-4">
                     <label class="form-label small fw-semibold text-secondary">Kota</label>
-                    <template v-if="form.kota === '__new__'">
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.kota"
+                      @change="loadKecamatan"
+                      :disabled="isKKChecked || KotaReadonly"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kotaList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                    </select>
+                    <!-- <template v-if="form.kota === '__new__'">
                       <input
                         type="text"
                         class="form-control shadow-sm"
@@ -201,13 +222,24 @@
                         </option>
                         <option value="__new__">+ Tambah baru</option>
                       </select>
-                    </template>
+                    </template> -->
                   </div>
 
                   <!-- Kecamatan -->
                   <div class="col-md-4">
                     <label class="form-label small fw-semibold text-secondary">Kecamatan</label>
-                    <template v-if="form.kecamatan === '__new__'">
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.kecamatan"
+                      @change="loadKelurahan"
+                      :disabled="isKKChecked || KecReadonly"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kecamatanList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                    </select>
+                    <!-- <template v-if="form.kecamatan === '__new__'">
                       <input
                         type="text"
                         class="form-control shadow-sm"
@@ -228,13 +260,23 @@
                         </option>
                         <option value="__new__">+ Tambah baru</option>
                       </select>
-                    </template>
+                    </template> -->
                   </div>
 
                   <!-- Kelurahan -->
                   <div class="col-md-4">
                     <label class="form-label small fw-semibold text-secondary">Kelurahan</label>
-                    <template v-if="form.kelurahan === '__new__'">
+                    <select
+                      class="form-select shadow-sm"
+                      v-model="form.kelurahan"
+                      :disabled="isKKChecked || KelReadonly"
+                    >
+                      <option value="">Pilih</option>
+                      <option v-for="item in kelurahanList" :key="item.nama" :value="item.nama">
+                        {{ item.nama }}
+                      </option>
+                    </select>
+                    <!-- <template v-if="form.kelurahan === '__new__'">
                       <input
                         type="text"
                         class="form-control shadow-sm"
@@ -254,7 +296,7 @@
                         </option>
                         <option value="__new__">+ Tambah baru</option>
                       </select>
-                    </template>
+                    </template> -->
                   </div>
 
                   <!-- RT & RW -->
@@ -369,6 +411,7 @@
                       <option value="HINDU">Hindu</option>
                       <option value="BUDHA">Budha</option>
                       <option value="KONGHUCU">Konghucu</option>
+                      <option value="LAINNYA">Lainnya</option>
                     </select>
                   </div>
 
@@ -491,7 +534,7 @@
                             <a
                               data-bs-toggle="tooltip"
                               title="Lihat Data Keluarga"
-                              class="text-success text-decoration-none fw-bold"
+                              class="text-success fw-bold"
                               style="cursor: pointer !important;"
                               @click="openFamilyModal(id)"
                             >
@@ -1149,6 +1192,7 @@ export default {
       this.form.alamat = items.alamat
       this.form.rt = items.rt
       this.form.rw = items.rw
+      this.form.tipe = 'keluarga'
 
       // 1️⃣ set provinsi dulu
       this.form.provinsi = items.wilayah?.provinsi || ''
@@ -1654,7 +1698,7 @@ export default {
       this.form = {} // reset form
       this.isFormOpen = true
     },
-    async updateFamily(id,tipe) {
+    /* async updateFamily(id,tipe) {
       this.modalMode = "update";
       this.isFormOpen = true
       try {
@@ -1668,7 +1712,7 @@ export default {
 
         // mapping ke form sesuai struktur
         this.form = {
-          tipe: data.tipe,
+          tipe: tipe,
           id: data.id,
           no_kk: data.no_kk,
           alamat: data.alamat,
@@ -1728,7 +1772,7 @@ export default {
         })
         console.error("Gagal load data keluarga:", err);
       }
-    },
+    }, */
     async updateData() {
        this.isLoadingImport = true
         this.importProgress = 10

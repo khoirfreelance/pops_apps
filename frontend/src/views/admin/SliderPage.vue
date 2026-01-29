@@ -71,6 +71,7 @@
                         alt="Logo Preview"
                         class="img-fluid rounded shadow-sm"
                         style="max-height: 100px"
+                        @error="onLogoError"
                       />
                     </div>
 
@@ -406,7 +407,7 @@ export default {
       totalRows: 1,
       isLoadingImport: false,
       logoLoaded: true,
-      logoSrc:'null',
+      logoSrc:'/default.png',
       isLoading: false,
       isCollapsed: false,
       selectedImage: null,
@@ -437,28 +438,36 @@ export default {
   },
 
   methods: {
+    onLogoError(e) {
+      // cegah infinite loop
+      if (!e.target.src.includes('default.png')) {
+        e.target.src = '/default.png'
+      }
+    },
     async loadConfigWithCache() {
       try {
         const cached = localStorage.getItem(this.configCacheKey)
         if (cached) {
           const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
+          this.logoSrc = parsed.logo || '/default.png'
           return
         }
+
         const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
+
         const data = res.data?.data
         if (data) {
-          this.logoSrc = data.logo || null
+          this.logoSrc = data.logo || '/default.png'
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-      } catch (err) {
-        console.warn('Gagal load config:', err)
-        this.logoLoaded = false
+      } catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoSrc = '/default.png'
       }
     },
     handleLogo(e) {
@@ -759,6 +768,7 @@ export default {
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
 
+        await this.loadConfigWithCache()
         this.importProgress = 100
         // animasi ke 100
         await new Promise(resolve => {

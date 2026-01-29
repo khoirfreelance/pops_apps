@@ -6,7 +6,13 @@
         <div class="mb-0" style="font-size: 12;">Selamat datang,</div>
         <h2 class="mt-0">{{ username }}</h2>
         <!-- Logo / fallback -->
-        <img
+         <img
+          :src="logoSrc"
+          alt="Logo"
+          height="50"
+          @error="onLogoError"
+        />
+        <!-- <img
           v-if="logoLoaded"
           :src="logoSrc"
           alt="Logo"
@@ -15,7 +21,7 @@
         />
         <span v-else class="text-muted fw-bold fs-5 mt-4">
           {{ kelurahan || 'Semua Desa' }}
-        </span>
+        </span> -->
 
         <p class="small mb-2 d-flex align-items-center mt-1"
           style="font-size:8px; white-space:normal; word-break:break-word; flex-wrap:wrap;max-width:375px;">
@@ -45,8 +51,8 @@ export default {
     return {
       username: '',
       kelurahan: '',
-      logoSrc: null,
-      logoLoaded: true,
+      logoSrc: '/default.png', // 👈 default sejak awal
+      //logoLoaded: true,
       today: '',
       configCacheKey: 'site_config_cache',
     }
@@ -60,6 +66,12 @@ export default {
     eventBus.on('kelurahanChanged', this.updateKelurahan)
   },
   methods: {
+    onLogoError(e) {
+      // cegah infinite loop
+      if (!e.target.src.includes('default.png')) {
+        e.target.src = '/default.png'
+      }
+    },
     getTodayDate() {
       const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu']
       const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
@@ -74,25 +86,27 @@ export default {
         const cached = localStorage.getItem(this.configCacheKey)
         if (cached) {
           const parsed = JSON.parse(cached)
-          this.logoSrc = parsed.logo || null
+          this.logoSrc = parsed.logo || '/default.png'
           return
         }
+
         const res = await axios.get(`${baseURL}/api/config`, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
+
         const data = res.data?.data
         if (data) {
-          this.logoSrc = data.logo || null
+          this.logoSrc = data.logo || '/default.png'
           localStorage.setItem(this.configCacheKey, JSON.stringify(data))
         }
-      } catch (err) {
-        console.warn('Gagal load config:', err)
-        this.logoLoaded = false
+      } catch (error) {
+        console.warn('Gagal load config:', error)
+        this.logoSrc = '/default.png'
       }
-    },
+    }
   },
   created() {
     const userName = localStorage.getItem('userName')

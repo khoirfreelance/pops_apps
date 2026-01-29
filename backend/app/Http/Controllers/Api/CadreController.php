@@ -18,11 +18,16 @@ class CadreController extends Controller
 {
     public function index()
     {
-        $cadres = Cadre::with(['tpk', 'user'])
-        /* ->wherehas('user', function ($q) {
-                $q->where('is_pending', 0);
-            }) */
-        ->get();
+        $user = Auth::user();
+        //dd($user);
+        $cadres = Cadre::with(['tpk', 'user']);
+        if ($user->role != 'SUPER ADMIN') {
+
+            $cadres->wherehas('user', function ($q) use ($user) {
+                $q->where('id_wilayah', $user->id_wilayah);
+            });
+        }
+        $cadres = $cadres->get();
 
         $data = $cadres->map(function ($cadre) {
             //dd($cadre->user->status);
@@ -58,10 +63,10 @@ class CadreController extends Controller
 
         // simpan wilayah
         $wilayah = \App\Models\Wilayah::firstOrCreate([
-            'provinsi' => $request->provinsi,
-            'kota' => $request->kota,
-            'kecamatan' => $request->kecamatan,
-            'kelurahan' => $request->kelurahan,
+            'provinsi' => strtoupper($request->provinsi),
+            'kota' => strtoupper($request->kota),
+            'kecamatan' => strtoupper($request->kecamatan),
+            'kelurahan' => strtoupper($request->kelurahan),
         ]);
 
         if (!$isTPK) {
@@ -74,18 +79,18 @@ class CadreController extends Controller
 
         // simpan Posyandu
         $posyandu = \App\Models\Posyandu::firstOrCreate([
-            'nama_posyandu' => $request->unit_posyandu,
+            'nama_posyandu' => strtoupper($request->unit_posyandu),
             'id_wilayah'  => $wilayah->id,
         ]);
 
         // simpan user
         $user = User::create([
             'nik' => $request->nik?: null,
-            'name' => $request->nama,
+            'name' => strtoupper($request->nama),
             'email' => $request->email,
             'email_verified_at' => NOW(),
             'phone' => $request->phone,
-            'role' => $request->role,
+            'role' => strtoupper($request->role),
             'id_wilayah'=> $wilayah->id,
             'status' => $request->status,
             'is_pending' => $isPendingUser,
@@ -129,10 +134,10 @@ class CadreController extends Controller
 
             // simpan / ambil wilayah
             $wilayah = \App\Models\Wilayah::firstOrCreate([
-                'provinsi'  => $request->provinsi,
-                'kota'      => $request->kota,
-                'kecamatan' => $request->kecamatan,
-                'kelurahan' => $request->kelurahan,
+                'provinsi'  => strtoupper($request->provinsi),
+                'kota'      => strtoupper($request->kota),
+                'kecamatan' => strtoupper($request->kecamatan),
+                'kelurahan' => strtoupper($request->kelurahan),
             ]);
 
             // simpan / ambil TPK (jika ada)
@@ -147,17 +152,17 @@ class CadreController extends Controller
 
             // simpan / ambil posyandu
             $posyandu = \App\Models\Posyandu::firstOrCreate([
-                'nama_posyandu' => $request->unit_posyandu,
+                'nama_posyandu' => strtoupper($request->unit_posyandu),
                 'id_wilayah'    => $wilayah->id,
             ]);
 
             // 🔹 update user
             $userData = [
                 'nik'        => $request->nik ?: null,
-                'name'       => $request->nama,
+                'name'       => strtoupper($request->nama),
                 'email'      => $request->email,
                 'phone'      => $request->phone,
-                'role'       => $request->role,
+                'role'       => strtoupper($request->role),
                 'status'     => $request->statusUser,
                 'is_pending' => $isPendingUser,
             ];
@@ -173,7 +178,7 @@ class CadreController extends Controller
             $cadre->update([
                 'id_tpk'      => $tpkId,
                 'id_posyandu' => $posyandu->id,
-                'status'      => $request->no_tpk ? 'kader' : 'non-kader',
+                'status'      => $request->no_tpk ? 'Kader' : 'Non Kader',
             ]);
 
             // log aktivitas
@@ -361,10 +366,10 @@ class CadreController extends Controller
         return response()->json([
             'status'     => true,
             'id_wilayah' => $wilayah->id,
-            'provinsi'   => $wilayah->provinsi,
-            'kota'       => $wilayah->kota,
-            'kecamatan' => $wilayah->kecamatan,
-            'kelurahan' => $wilayah->kelurahan,
+            'provinsi'   => strtoupper($wilayah->provinsi),
+            'kota'       => strtoupper($wilayah->kota),
+            'kecamatan' => strtoupper($wilayah->kecamatan),
+            'kelurahan' => strtoupper($wilayah->kelurahan),
         ]);
     }
 
@@ -376,12 +381,12 @@ class CadreController extends Controller
             'success' => true,
             'data' => [
                 'nik'               => $user->nik,
-                'name'              => $user->name,
+                'name'              => strtoupper($user->name),
                 'email'             => $user->email,
                 'email_verified_at' => $user->email_verified_at,
                 'phone'             => $user->phone,
-                'role'              => $user->role,
-                'status'            => $user->status,
+                'role'              => strtoupper($user->role),
+                'status'            => strtoupper($user->status),
                 'is_pending'        => $user->is_pending,
                 'deleted_at'        => $user->deleted_at,
             ]

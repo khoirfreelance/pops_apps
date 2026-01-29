@@ -15,8 +15,16 @@ class MemberController extends Controller
 {
     public function index()
     {
-        $cadres = Cadre::with(['tpk', 'user'])
-        ->get();
+        $user = Auth::user();
+        //dd($user);
+        $cadres = Cadre::with(['tpk', 'user']);
+        if ($user->role != 'SUPER ADMIN') {
+
+            $cadres->wherehas('user', function ($q) use ($user) {
+                $q->where('id_wilayah', $user->id_wilayah);
+            });
+        }
+        $cadres = $cadres->get();
 
         $data = $cadres->map(function ($cadre) {
             return [

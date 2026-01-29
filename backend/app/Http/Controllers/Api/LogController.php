@@ -9,7 +9,16 @@ class LogController extends Controller
 {
     public function index()
     {
-        $logs = Log::with('user')->get();
+        $user = Auth::user();
+
+        $logs = Log::with('user');
+        if ($user->role != 'SUPER ADMIN') {
+
+            $logs->wherehas('user', function ($q) use ($user) {
+                $q->where('id_wilayah', $user->id_wilayah);
+            });
+        }
+        $logs = $logs->get();
 
         $data = $logs->map(function ($log) {
             return [
