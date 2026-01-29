@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Child;
+use App\Models\Posyandu;
 use App\Models\User;
 use App\Models\Wilayah;
 use App\Models\Log;
@@ -243,11 +244,20 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     ]);
                 }
 
+                $posyandu = Posyandu::firstOrCreate([
+                    'nama_posyandu' => strtoupper($wilayahData['kelurahan']),
+                    'id_wilayah' => $wilayahData['id'],
+                    'rt' => $row['rt'] ?? null,
+                    'rw' => $row['rw'] ?? null,
+                ]);
+
+                $posyanduID = $user->role === 'Super Admin'? $posyandu->id : $this->posyanduUser;
+
                 $cadre = Cadre::firstOrCreate([
                     'id_tpk' => null,
                     'id_user' => $user->id,
-                    'id_posyandu' => $this->posyanduUser,
-                    'status' => 'non-kader',
+                    'id_posyandu' => $posyanduID,
+                    'status' => 'Non Kader',
                 ]);
 
                 $dampinganKeluarga = DampinganKeluarga::firstOrCreate([

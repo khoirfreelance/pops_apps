@@ -576,13 +576,13 @@ export default {
         { text: 'Unit Posyandu', value: 'unit_posyandu' },
         { text: 'Action', value: 'action' },
       ],
-      headers_pending: [
+      /* headers_pending: [
         { text: 'NIK', value: 'nik' },
         { text: 'Nama', value: 'nama' },
         { text: 'Email', value: 'email' },
         { text: 'Role', value: 'role' },
         { text: 'Action', value: 'action' },
-      ],
+      ], */
       // filter
       filter: {
         nik: '',
@@ -643,6 +643,8 @@ export default {
           status: item.status,
           phone: item.phone,
           role: item.role,
+          email: item.email,
+          no_tpk: item.no_tpk,
           unit_posyandu: item.unit_posyandu,
           action: { ...item }
         }))

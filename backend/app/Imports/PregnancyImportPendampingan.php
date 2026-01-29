@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\{Pregnancy, Wilayah, Log, User, Cadre, DampinganKeluarga, Keluarga, AnggotaKeluarga};
 use Carbon\Carbon;
+use App\Models\Posyandu;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -279,10 +280,19 @@ class PregnancyImportPendampingan implements
                 ]);
             }
 
+            $posyandu = Posyandu::firstOrCreate([
+                    'nama_posyandu' => strtoupper($wilayahData['kelurahan']),
+                    'id_wilayah' => $wilayahData['id'],
+                    'rt' => $row['rt'] ?? null,
+                    'rw' => $row['rw'] ?? null,
+                ]);
+
+            $posyanduID = $user->role === 'Super Admin'? $posyandu->id : $this->posyanduUserID;
+
             $cadre = Cadre::firstOrCreate([
                 'id_tpk' => null,
                 'id_user' => $user->id,
-                'id_posyandu' => $this->posyanduUserID,
+                'id_posyandu' => $posyanduID,
                 'status' => 'non-kader',
             ]);
 
