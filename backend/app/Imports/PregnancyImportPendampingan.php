@@ -217,7 +217,7 @@ class PregnancyImportPendampingan implements
                         'no_kk' => $noKK,
                     ],
                     [
-                        'alamat' => 'desa ' . $wilayahData['kelurahan'] . ', kec. ' . $wilayahData['kecamatan'] . ', kota/kab. ' . $wilayahData['kota'],
+                        'alamat' => 'Desa: ' . $wilayahData['kelurahan'],
                         'rt' => $pregnancy['rt'] ?? null,
                         'rw' => $pregnancy['rw'] ?? null,
                         'id_wilayah' => $wilayahData['id'],

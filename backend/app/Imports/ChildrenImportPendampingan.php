@@ -165,7 +165,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                             'no_kk' => $noKK,
                         ],
                         [
-                            'alamat' => 'desa ' . $data['kelurahan'] . ', kec. ' . $data['kecamatan'] . ', kota/kab. ' . $data['kota'],
+                            'alamat' => 'Desa: ' . $data['kelurahan'],
                             'rt' => $data['rt'] ?? null,
                             'rw' => $data['rw'] ?? null,
                             'id_wilayah' => $wilayahData['id'],
