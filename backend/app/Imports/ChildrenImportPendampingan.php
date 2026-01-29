@@ -12,6 +12,7 @@ use App\Models\AnggotaKeluarga;
 use App\Models\DampinganKeluarga;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithStartRow;
@@ -39,7 +40,9 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         try {
             foreach ($rows as $index => $row) {
 
-                // ❌ STOP kalau struktur tidak sesuai
+                $user = Auth::user();
+                $wilayahData = $this->resolveWilayahFromRow($row);
+
                 if (count($row) < 45) {
                     throw new Exception("Format CSV tidak valid di baris " . ($index + 2));
                 }
@@ -95,10 +98,10 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'riwayat_kb' => $row[17],
                     'alat_kontrasepsi' => $row[18],
 
-                    'provinsi' => strtoupper($this->wilayahUser['provinsi']),
-                    'kota' => strtoupper($this->wilayahUser['kota']),
-                    'kecamatan' => strtoupper($row[19]),
-                    'kelurahan' => strtoupper($row[20]),
+                    'provinsi'   => $wilayahData['provinsi'],
+                    'kota'       => $wilayahData['kota'],
+                    'kecamatan'  => $wilayahData['kecamatan'],
+                    'kelurahan'  => $wilayahData['kelurahan'],
                     'rt' => ltrim($row[21], "0"),
                     'rw' => ltrim($row[22], "0"),
 
@@ -146,12 +149,12 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 $child = Child::create($data);
 
-                $wilayah = Wilayah::firstOrCreate([
+                /* $wilayah = Wilayah::firstOrCreate([
                     'provinsi' => $data['provinsi'],
                     'kota' => $data['kota'],
                     'kecamatan' => $data['kecamatan'],
                     'kelurahan' => $data['kelurahan'],
-                ]);
+                ]); */
 
                 $noKK = $data['nik_ayah'] ?? $data['nik_ibu'] ?? $data['nik_anak'] ?? null;
 
@@ -164,7 +167,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                             'alamat' => 'desa ' . $data['kelurahan'] . ', kec. ' . $data['kecamatan'] . ', kota/kab. ' . $data['kota'],
                             'rt' => $data['rt'] ?? null,
                             'rw' => $data['rw'] ?? null,
-                            'id_wilayah' => $wilayah->id,
+                            'id_wilayah' => $wilayahData['id'],
                             'is_pending' => true,
                         ]
                     );
@@ -233,7 +236,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                         'email_verified_at' => now(),
                         'phone' => null,
                         'role' => null,
-                        'id_wilayah' => $wilayah->id,
+                        'id_wilayah' => $wilayahData['id'],
                         'status' => 1,
                         'is_pending' => 1,
                         'password' => '-',
@@ -256,7 +259,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 // ✅ Log aktivitas
                 Log::create([
-                    'id_user' => \Auth::id(),
+                    'id_user' => Auth::id(),
                     'context' => 'Pendampingan Anak',
                     'activity' => 'Import pendampingan anak ' . ($row['nama_anak'] ?? '-'),
                     'timestamp' => now(),
@@ -381,7 +384,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         switch ($tipe) {
             case 'BB/U':
                 $usia = round($usiaOrTb);
-                $row = \DB::table('who_weight_for_age')
+                $row = DB::table('who_weight_for_age')
                     ->where('sex', $sex)
                     ->where('age_month', $usia)
                     ->first();
@@ -389,7 +392,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
             case 'TB/U':
                 $usia = round($usiaOrTb);
-                $row = \DB::table('who_height_for_age')
+                $row = DB::table('who_height_for_age')
                     ->where('sex', $sex)
                     ->where('age_month', $usia)
                     ->first();
@@ -397,7 +400,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
             case 'BB/TB':
                 $tb = round($usiaOrTb);
-                $row = \DB::table('who_weight_for_height')
+                $row = DB::table('who_weight_for_height')
                     ->where('sex', $sex)
                     ->where('height_cm', $tb)
                     ->first();
@@ -493,6 +496,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
         if (!$user || !$user->id_wilayah) {
             $this->wilayahUser = [
+                'id'    => null,
                 'provinsi' => null,
                 'kota' => null,
                 'kecamatan' => null,
@@ -511,35 +515,88 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         }
 
         $this->wilayahUser = [
+            'id' => $zona->id ?? null,
             'provinsi' => $zona->provinsi ?? null,
             'kota' => $zona->kota ?? null,
             'kecamatan' => $zona->kecamatan ?? null,
             'kelurahan' => $zona->kelurahan ?? null,
         ];
     }
-    /* protected function loadWilayahUser(): void
-    {
-        $user = User::find($this->userId);
 
-        if (!$user || !$user->id_wilayah) {
-            $this->wilayahUser = [
-                'provinsi' => null,
-                'kota' => null,
-                'kecamatan' => null,
-                'kelurahan' => null,
+    protected function resolveWilayahFromRow(Collection $row): array
+    {
+        $user = Auth::user();
+
+        // =========================
+        // BUKAN SUPER ADMIN
+        // =========================
+        if (!$user || $user->role !== 'Super Admin') {
+            return [
+                'id'        => $this->wilayahUser['id'],
+                'provinsi'  => $this->wilayahUser['provinsi'],
+                'kota'      => $this->wilayahUser['kota'],
+                'kecamatan' => $this->wilayahUser['kecamatan'],
+                'kelurahan' => $this->wilayahUser['kelurahan'],
             ];
-            return;
         }
 
-        $zona = Wilayah::find($user->id_wilayah);
+        // =========================
+        // SUPER ADMIN
+        // =========================
+        //$prov = $this->normalizeWilayahKey($row['prov'] ?? null);
+        //$kota = $this->normalizeWilayahKey($row['kabkota'] ?? null);
+        $kec  = $this->normalizeWilayahKey($row[19] ?? null);
+        $kel  = $this->normalizeWilayahKey($row[20] ?? null);
 
-        $this->wilayahUser = [
-            'provinsi' => $zona->provinsi ?? null,
-            'kota' => $zona->kota ?? null,
-            'kecamatan' => $zona->kecamatan ?? null,
-            'kelurahan' => $zona->kelurahan ?? null,
+        $wilayah = Wilayah::where('kecamatan', $kec)
+            ->where('kelurahan', $kel)
+            ->first();;
+
+        if ($wilayah) {
+            return [
+                'id'        => $wilayah->id,
+                'provinsi'  => $wilayah->provinsi,
+                'kota'      => $wilayah->kota,
+                'kecamatan' => $wilayah->kecamatan,
+                'kelurahan' => $wilayah->kelurahan,
+            ];
+        }
+
+
+        // =========================
+        // SUPER ADMIN → CREATE BARU
+        // =========================
+        $wilayah = Wilayah::create([
+            'provinsi'  => $this->wilayahUser['provinsi'],
+            'kota'      => $this->wilayahUser['kota'],
+            'kecamatan' => strtoupper($row[19]),
+            'kelurahan' => strtoupper($row[20]),
+        ]);
+
+        return [
+            'id'        => $wilayah->id,
+            'provinsi'  => $wilayah->provinsi,
+            'kota'      => $wilayah->kota,
+            'kecamatan' => $wilayah->kecamatan,
+            'kelurahan' => $wilayah->kelurahan,
         ];
-    } */
+    }
+
+    protected function normalizeWilayahKey(?string $value): ?string
+    {
+        if (!$value) return null;
+
+        $value = strtoupper(trim($value));
+
+        $replace = [
+            'KABUPATEN ' => 'KAB ',
+            'KAB. ' => 'KAB ',
+            'KOTA ' => 'KOTA ',
+            '  ' => ' ',
+        ];
+
+        return str_replace(array_keys($replace), array_values($replace), $value);
+    }
 
     protected function normalizeBeratGramToKg($berat)
     {

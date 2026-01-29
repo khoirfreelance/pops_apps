@@ -10,6 +10,7 @@ use App\Models\Posyandu;
 use App\Models\Log;
 use App\Models\DampinganKeluarga;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
@@ -72,7 +73,7 @@ class CatinImportPendampingan implements
             }
 
             // ❌ error teknis
-            \Log::error('Import CSV error teknis', [
+            Log::error('Import CSV error teknis', [
                 'error' => $e->getMessage(),
                 'code' => $e->getCode(),
             ]);
@@ -90,7 +91,14 @@ class CatinImportPendampingan implements
         $lila = $row[26] != null ? $this->normalizeDecimal($row[26]) : null;
         $hb = $row[24] != null ? $this->normalizeDecimal($row[24]) : null;
         $usia_perempuan = $row[6] != null ? (int) $row[6] : null;
+
         DB::transaction(function () use ($row, $berat, $tinggi, $lila, $hb, $usia_perempuan) {
+            // =========================
+            // INTRO
+            // =========================
+            $user = Auth::user();
+            $wilayahData = $this->resolveWilayahFromRow($row);
+
             // =========================
             // 0. Validasi data import
             // =========================
@@ -138,10 +146,11 @@ class CatinImportPendampingan implements
 
                 //'provinsi' => $this->wilayahUser['provinsi'] ?? null,
                 //'kota' => $this->wilayahUser['kota'] ?? null,
-                'provinsi' => $this->normalizeText($row[14] ?? null),
-                'kota' => $this->normalizeText($row[15] ?? null),
-                'kecamatan' => $this->normalizeText($row[16] ?? null),
-                'kelurahan' => $this->normalizeText($row[17] ?? null),
+                'provinsi' => $wilayahData['provinsi'] ?? null ,
+                'kota' => $wilayahData['kota'] ?? null ,
+                'kecamatan' => $wilayahData['kecamatan'] ?? null ,
+                'kelurahan' => $wilayahData['kelurahan'] ?? null ,
+
                 'rw' => $row[18] ?? null,
                 'rt' => $row[19] ?? null,
                 'posyandu' => $this->normalizeText($this->posyanduUser ?? null),
@@ -171,16 +180,13 @@ class CatinImportPendampingan implements
 
             ]);
 
-            $wilayah = Wilayah::firstOrCreate([
+            /* $wilayah = Wilayah::firstOrCreate([
                 'provinsi' => $this->normalizeText($row[14] ?? null),
                 'kota' => $this->normalizeText($row[15] ?? null),
                 'kecamatan' => $this->normalizeText($row[16] ?? null),
                 'kelurahan' => $this->normalizeText($row[17] ?? null),
-                /* 'provinsi' => $this->wilayahUser['provinsi'],
-                'kota' => $this->wilayahUser['kota'],
-                'kecamatan' => $row['14'] ?? null,
-                'kelurahan' => $row['15'] ?? null, */
-            ]);
+
+            ]); */
 
             $user = User::where('name', strtoupper($row[1]))
                 ->whereHas('cadre', function ($q) {
@@ -200,7 +206,7 @@ class CatinImportPendampingan implements
                     'email_verified_at' => now(),
                     'phone' => null,
                     'role' => null,
-                    'id_wilayah' => $wilayah->id,
+                    'id_wilayah' => $wilayahData['id'],
                     'status' => 1,
                     'is_pending' => 1,
                     'password' => '-',
@@ -349,6 +355,7 @@ class CatinImportPendampingan implements
 
         if (!$user || !$user->id_wilayah) {
             $this->wilayahUser = [
+                'id' => null,
                 'provinsi' => null,
                 'kota' => null,
                 'kecamatan' => null,
@@ -368,12 +375,90 @@ class CatinImportPendampingan implements
         }
 
         $this->wilayahUser = [
+            'id' => $zona->id ?? null,
             'provinsi' => $zona->provinsi ?? null,
             'kota' => $zona->kota ?? null,
             'kecamatan' => $zona->kecamatan ?? null,
             'kelurahan' => $zona->kelurahan ?? null,
         ];
     }
+    protected function resolveWilayahFromRow(array $row): array
+    {
+        $user = Auth::user();
+
+        // =========================
+        // BUKAN SUPER ADMIN
+        // =========================
+        if (!$user || $user->role !== 'Super Admin') {
+            return [
+                'id'        => $this->wilayahUser['id'],
+                'provinsi'  => $this->wilayahUser['provinsi'],
+                'kota'      => $this->wilayahUser['kota'],
+                'kecamatan' => $this->wilayahUser['kecamatan'],
+                'kelurahan' => $this->wilayahUser['kelurahan'],
+            ];
+        }
+
+        // =========================
+        // SUPER ADMIN
+        // =========================
+
+        $prov = $this->normalizeWilayahKey($row[14] ?? null);
+        $kota = $this->normalizeWilayahKey($row[15] ?? null);
+        $kec  = $this->normalizeWilayahKey($row[16] ?? null);
+        $kel  = $this->normalizeWilayahKey($row[17] ?? null);
+
+        $wilayah = Wilayah::where('provinsi', $prov)
+            ->where('kota', $kota)
+            ->where('kecamatan', $kec)
+            ->where('kelurahan', $kel)
+            ->first();
+
+        if ($wilayah) {
+            return [
+                'id'        => $wilayah->id,
+                'provinsi'  => $wilayah->provinsi,
+                'kota'      => $wilayah->kota,
+                'kecamatan' => $wilayah->kecamatan,
+                'kelurahan' => $wilayah->kelurahan,
+            ];
+        }
+
+        // =========================
+        // SUPER ADMIN → CREATE BARU
+        // =========================
+        $wilayah = Wilayah::create([
+            'provinsi' => $this->normalizeText($row[14] ?? null),
+            'kota' => $this->normalizeText($row[15] ?? null),
+            'kecamatan' => $this->normalizeText($row[16] ?? null),
+            'kelurahan' => $this->normalizeText($row[17] ?? null),
+        ]);
+
+        return [
+            'id'        => $wilayah->id,
+            'provinsi'  => $wilayah->provinsi,
+            'kota'      => $wilayah->kota,
+            'kecamatan' => $wilayah->kecamatan,
+            'kelurahan' => $wilayah->kelurahan,
+        ];
+    }
+
+    protected function normalizeWilayahKey(?string $value): ?string
+    {
+        if (!$value) return null;
+
+        $value = strtoupper(trim($value));
+
+        $replace = [
+            'KABUPATEN ' => 'KAB ',
+            'KAB. ' => 'KAB ',
+            'KOTA ' => 'KOTA ',
+            '  ' => ' ',
+        ];
+
+        return str_replace(array_keys($replace), array_values($replace), $value);
+    }
+
     private function hitungIMT($berat, $tinggi)
     {
         if (empty($berat) || empty($tinggi))

@@ -9,11 +9,19 @@ use App\Models\Wilayah;
 use App\Models\AnggotaKeluarga;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Log;
+use App\Models\User;
+use App\Models\Cadre;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class FamilyController extends Controller
 {
+    protected array $wilayahUser = [];
+    protected string $posyanduUser = '';
+    protected string $posyanduUserID = '';
+    protected string $rtPosyandu = '';
+    protected string $rwPosyandu = '';
+
     public function index()
     {
         $keluargas = Keluarga::with('kepala', 'wilayah')
@@ -441,6 +449,11 @@ class FamilyController extends Controller
         try {
             foreach ($rows as $row) {
 
+                // =========================
+                // INTRO
+                // =========================
+                $wilayahData = $this->resolveWilayahFromRow($row);
+
                 $rowNumber++;
 
                 if (count($row) !== count($header)) {
@@ -481,12 +494,12 @@ class FamilyController extends Controller
                 // =========================
                 // 5. Wilayah & Posyandu
                 // =========================
-                $wilayah = Wilayah::firstOrCreate([
+                /* $wilayah = Wilayah::firstOrCreate([
                     'provinsi'  => $this->normalizeText($row['provinsi']),
                     'kota'      => $this->normalizeText($row['kota']),
                     'kecamatan' => $this->normalizeText($row['kecamatan']),
                     'kelurahan' => $this->normalizeText($row['kelurahan']),
-                ]);
+                ]); */
 
                 // =====================
                 // KELUARGA
@@ -499,7 +512,7 @@ class FamilyController extends Controller
                         'alamat' => $row['alamat'],
                         'rt' => $row['rt'] ?? null,
                         'rw' => $row['rw'] ?? null,
-                        'id_wilayah' => $wilayah->id ?? null,
+                        'id_wilayah' => $wilayahData['id'] ?? null,
                         'is_pending' => $isPendingKeluarga,
                     ]
                 );
@@ -546,13 +559,114 @@ class FamilyController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => 'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.',
                 'row' => $rowNumber,
+                'error' => $e->getMessage()
             ], 422);
         }
     }
 
-    public function pendingData()
+    protected function loadWilayahUser(): void
+    {
+        $user = Auth::user();
+
+        if (!$user || !$user->id_wilayah) {
+            $this->wilayahUser = [
+                'id' => null,
+                'provinsi' => null,
+                'kota' => null,
+                'kecamatan' => null,
+                'kelurahan' => null,
+            ];
+            return;
+        }
+
+        $zona = Wilayah::find($user->id_wilayah);
+
+        $this->wilayahUser = [
+            'id' => $zona->id ?? null,
+            'provinsi' => $zona->provinsi ?? null,
+            'kota' => $zona->kota ?? null,
+            'kecamatan' => $zona->kecamatan ?? null,
+            'kelurahan' => $zona->kelurahan ?? null,
+        ];
+    }
+    protected function resolveWilayahFromRow(array $row): array
+    {
+        $user = Auth::user();
+
+        // =========================
+        // BUKAN SUPER ADMIN
+        // =========================
+        if (!$user || $user->role !== 'Super Admin') {
+            return [
+                'id'        => $this->wilayahUser['id'],
+                'provinsi'  => $this->wilayahUser['provinsi'],
+                'kota'      => $this->wilayahUser['kota'],
+                'kecamatan' => $this->wilayahUser['kecamatan'],
+                'kelurahan' => $this->wilayahUser['kelurahan'],
+            ];
+        }
+
+        // =========================
+        // SUPER ADMIN
+        // =========================
+        $prov = $this->normalizeWilayahKey($row[4]);
+        $kota = $this->normalizeWilayahKey($row[5]);
+        $kec  = $this->normalizeWilayahKey($row[6]);
+        $kel  = $this->normalizeWilayahKey($row[7]);
+
+        $wilayah = Wilayah::where('provinsi', $prov)
+            ->where('kota', $kota)
+            ->where('kecamatan', $kec)
+            ->where('kelurahan', $kel)
+            ->first();
+
+        if ($wilayah) {
+            return [
+                'id'        => $wilayah->id,
+                'provinsi'  => $wilayah->provinsi,
+                'kota'      => $wilayah->kota,
+                'kecamatan' => $wilayah->kecamatan,
+                'kelurahan' => $wilayah->kelurahan,
+            ];
+        }
+
+        // =========================
+        // SUPER ADMIN → CREATE BARU
+        // =========================
+        $wilayah = Wilayah::create([
+            'provinsi'  => $this->normalizeText($row['provinsi']),
+            'kota'      => $this->normalizeText($row['kota']),
+            'kecamatan' => $this->normalizeText($row['kecamatan']),
+            'kelurahan' => $this->normalizeText($row['kelurahan']),
+        ]);
+
+        return [
+            'id'        => $wilayah->id,
+            'provinsi'  => $wilayah->provinsi,
+            'kota'      => $wilayah->kota,
+            'kecamatan' => $wilayah->kecamatan,
+            'kelurahan' => $wilayah->kelurahan,
+        ];
+    }
+
+    protected function normalizeWilayahKey(?string $value): ?string
+    {
+        if (!$value) return null;
+
+        $value = strtoupper(trim($value));
+
+        $replace = [
+            'KABUPATEN ' => 'KAB ',
+            'KAB. ' => 'KAB ',
+            'KOTA ' => 'KOTA ',
+            '  ' => ' ',
+        ];
+
+        return str_replace(array_keys($replace), array_values($replace), $value);
+    }
+    /* public function pendingData()
     {
         $keluargas = Keluarga::with(['kepala', 'anggota'])
             ->where('is_pending', 1)
@@ -677,7 +791,7 @@ class FamilyController extends Controller
                 ];
             }),
         ]);
-    }
+    } */
 
     public function update(Request $request, $id)
     {

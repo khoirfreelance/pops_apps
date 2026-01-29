@@ -57,7 +57,7 @@ class PregnancyImportPendampingan implements
                 $this->processRow($row->toArray());
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // ✅ expected error
             if ($e->getCode() === 1001) {
                 throw new \Exception($e->getMessage());
@@ -78,6 +78,12 @@ class PregnancyImportPendampingan implements
     protected function processRow(array $row): void
     {
         DB::transaction(function () use ($row) {
+
+            // =========================
+            // INTRO
+            // =========================
+            $user = Auth::user();
+            $wilayahData = $this->resolveWilayahFromRow($row);
 
             // =========================
             // 0. Validasi data import
@@ -154,13 +160,10 @@ class PregnancyImportPendampingan implements
 
                 'riwayat_penggunaan_kb' => $row[14] ?? null,
                 'riwayat_ber_kontrasepsi' => $row[15] ?? null,
-
-                //'provinsi' => $this->wilayahUser['provinsi'],
-                //'kota' => $this->wilayahUser['kota'],
-                'provinsi' => $this->normalizeText($row[16] ?? null),
-                'kota' => $this->normalizeText($row[17] ?? null),
-                'kecamatan' => $this->normalizeText($row[18] ?? null),
-                'kelurahan' => $this->normalizeText($row[19] ?? null),
+                'provinsi'   => $wilayahData['provinsi'],
+                'kota'       => $wilayahData['kota'],
+                'kecamatan'  => $wilayahData['kecamatan'],
+                'kelurahan'  => $wilayahData['kelurahan'],
                 'rt' => $row[20] ?? null,
                 'rw' => $row[21] ?? null,
 
@@ -198,12 +201,12 @@ class PregnancyImportPendampingan implements
                 'posyandu' => $this->posyanduUser ?? null,
             ]);
 
-            $wilayah = Wilayah::firstOrCreate([
+            /* $wilayah = Wilayah::firstOrCreate([
                 'provinsi' => $this->normalizeText($pregnancy->provinsi),
                 'kota' => $this->normalizeText($pregnancy->kota),
                 'kecamatan' => $this->normalizeText($pregnancy->kecamatan),
                 'kelurahan' => $this->normalizeText($pregnancy->kelurahan),
-            ]);
+            ]); */
 
             $noKK = $pregnancy['nik_suami'] ?? null;
 
@@ -213,10 +216,10 @@ class PregnancyImportPendampingan implements
                         'no_kk' => $noKK,
                     ],
                     [
-                        'alamat' => 'desa ' . $wilayah->kelurahan . ', kec. ' . $wilayah->kecamatan . ', kota/kab. ' . $wilayah->kota,
+                        'alamat' => 'desa ' . $wilayahData['kelurahan'] . ', kec. ' . $wilayahData['kecamatan'] . ', kota/kab. ' . $wilayahData['kota'],
                         'rt' => $pregnancy['rt'] ?? null,
                         'rw' => $pregnancy['rw'] ?? null,
-                        'id_wilayah' => $wilayah->id,
+                        'id_wilayah' => $wilayahData['id'],
                         'is_pending' => true,
                     ]
                 );
@@ -269,7 +272,7 @@ class PregnancyImportPendampingan implements
                     'email_verified_at' => now(),
                     'phone' => null,
                     'role' => null,
-                    'id_wilayah' => $wilayah->id,
+                    'id_wilayah' => $wilayahData['id'],
                     'status' => 1,
                     'is_pending' => 1,
                     'password' => '-',
@@ -423,14 +426,6 @@ class PregnancyImportPendampingan implements
 
         return $nik ?: null;
     }
-    /* private function convertDate($date): ?string
-    {
-        try {
-        return $date ? Carbon::parse(str_replace('/', '-', $date))->format('Y-m-d') : null;
-        } catch (\Exception) {
-        return null;
-        }
-    } */
 
     private function toBool($val): bool
     {
@@ -444,6 +439,7 @@ class PregnancyImportPendampingan implements
 
         if (!$user || !$user->id_wilayah) {
         $this->wilayahUser = [
+            'id' => null,
             'provinsi' => null,
             'kota' => null,
             'kecamatan' => null,
@@ -463,10 +459,88 @@ class PregnancyImportPendampingan implements
         }
 
         $this->wilayahUser = [
-        'provinsi' => $zona->provinsi ?? null,
-        'kota' => $zona->kota ?? null,
-        'kecamatan' => $zona->kecamatan ?? null,
-        'kelurahan' => $zona->kelurahan ?? null,
+            'id' => $zona->id ?? null,
+            'provinsi' => $zona->provinsi ?? null,
+            'kota' => $zona->kota ?? null,
+            'kecamatan' => $zona->kecamatan ?? null,
+            'kelurahan' => $zona->kelurahan ?? null,
         ];
+    }
+
+    protected function resolveWilayahFromRow(array $row): array
+    {
+        $user = Auth::user();
+
+        // =========================
+        // BUKAN SUPER ADMIN
+        // =========================
+        if (!$user || $user->role !== 'Super Admin') {
+            return [
+                'id'        => $this->wilayahUser['id'],
+                'provinsi'  => $this->wilayahUser['provinsi'],
+                'kota'      => $this->wilayahUser['kota'],
+                'kecamatan' => $this->wilayahUser['kecamatan'],
+                'kelurahan' => $this->wilayahUser['kelurahan'],
+            ];
+        }
+
+        // =========================
+        // SUPER ADMIN
+        // =========================
+
+        $prov = $this->normalizeWilayahKey($row[16] ?? null);
+        $kota = $this->normalizeWilayahKey($row[17] ?? null);
+        $kec  = $this->normalizeWilayahKey($row[18] ?? null);
+        $kel  = $this->normalizeWilayahKey($row[19] ?? null);
+
+        $wilayah = Wilayah::where('provinsi', $prov)
+            ->where('kota', $kota)
+            ->where('kecamatan', $kec)
+            ->where('kelurahan', $kel)
+            ->first();
+
+        if ($wilayah) {
+            return [
+                'id'        => $wilayah->id,
+                'provinsi'  => $wilayah->provinsi,
+                'kota'      => $wilayah->kota,
+                'kecamatan' => $wilayah->kecamatan,
+                'kelurahan' => $wilayah->kelurahan,
+            ];
+        }
+
+        // =========================
+        // SUPER ADMIN → CREATE BARU
+        // =========================
+        $wilayah = Wilayah::create([
+            'provinsi'  => $this->normalizeText($row[16] ?? null),
+            'kota'      => $this->normalizeText($row[17] ?? null),
+            'kecamatan' => $this->normalizeText($row[18] ?? null),
+            'kelurahan' => $this->normalizeText($row[19] ?? null),
+        ]);
+
+        return [
+            'id'        => $wilayah->id,
+            'provinsi'  => $wilayah->provinsi,
+            'kota'      => $wilayah->kota,
+            'kecamatan' => $wilayah->kecamatan,
+            'kelurahan' => $wilayah->kelurahan,
+        ];
+    }
+
+    protected function normalizeWilayahKey(?string $value): ?string
+    {
+        if (!$value) return null;
+
+        $value = strtoupper(trim($value));
+
+        $replace = [
+            'KABUPATEN ' => 'KAB ',
+            'KAB. ' => 'KAB ',
+            'KOTA ' => 'KOTA ',
+            '  ' => ' ',
+        ];
+
+        return str_replace(array_keys($replace), array_values($replace), $value);
     }
 }
