@@ -970,7 +970,7 @@ class ChildrenController extends Controller
 
             return response()->json([
                 'message' => 'Gagal Menggunggah data - semua data batal diunggah',
-                'error' => $e->getMessage(),
+                'detail' => $e->getMessage(),
             ], 422);
         }
     }

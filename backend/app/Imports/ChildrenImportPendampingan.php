@@ -20,10 +20,10 @@ use Maatwebsite\Excel\Concerns\WithStartRow;
 
 class ChildrenImportPendampingan implements ToCollection, WithStartRow
 {
-    protected array $wilayahUser = [];
+    /* protected array $wilayahUser = [];
     protected string $posyanduUser = '';
     protected string $rtPosyandu = '';
-    protected string $rwPosyandu = '';
+    protected string $rwPosyandu = ''; */
 
     public function __construct(private int $userId)
     {
@@ -282,14 +282,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 throw new \Exception($e->getMessage());
             }
 
-            // ❌ error teknis
-            Log::error('Import CSV error teknis', [
-                'error' => $e->getMessage(),
-                'code' => $e->getCode(),
-            ]);
-
             throw new \Exception(
-                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
+                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
             );
         }
     }

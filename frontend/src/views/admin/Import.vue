@@ -157,27 +157,27 @@
                   <!-- Preview / status -->
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div v-if="filePreviewTable.length" class="mt-3">
-                      <p class="fw-bold mb-1 text-danger">
+                      <p class="fw-bold mb-1 text-success">
                         *Preview:
                       </p>
                       <div class="table-responsive">
-                        <table class="table table-bordered table-sm small border-danger">
+                        <table class="table table-bordered table-sm small border-success">
                           <thead>
                             <tr>
                               <th v-for="(col, index) in filePreviewTable[0]" :key="'h' + index" width="120"
-                                class="text-danger">
+                                class="text-success">
                                 {{ col }}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr v-for="(row, rIndex) in filePreviewTable.slice(1)" :key="'r' + rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-success">
                                 {{ col }}
                               </td>
                             </tr>
                             <tr v-for="(row, rIndex) in filePreviewTable.slice(2)" :key="'r' + rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-success">
                                 ...
                               </td>
                             </tr>
@@ -190,7 +190,7 @@
                     <div v-else class="text-muted small">Belum ada file dipilih</div>
                   </div>
 
-                  <div v-if="fileError" class="mt-2 text-danger small">
+                  <div v-if="fileError" class="mt-2 text-success small">
                     {{ fileError }}
                   </div>
 
@@ -399,27 +399,27 @@
                   <!-- Preview / status -->
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div v-if="filePreviewTable_bumil.length" class="mt-3">
-                      <p class="fw-bold mb-1 text-danger">
+                      <p class="fw-bold mb-1 text-success">
                         *Preview:
                       </p>
                       <div class="table-responsive">
-                        <table class="table table-bordered table-sm small border-danger">
+                        <table class="table table-bordered table-sm small border-success">
                           <thead>
                             <tr>
                               <th v-for="(col, index) in filePreviewTable_bumil[0]" :key="'h' + index" width="120"
-                                class="text-danger">
+                                class="text-success">
                                 {{ col }}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr v-for="(row, rIndex) in filePreviewTable_bumil.slice(1)" :key="'r' + rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-success">
                                 {{ col }}
                               </td>
                             </tr>
                             <tr v-for="(row, rIndex) in filePreviewTable_bumil.slice(2)" :key="'r' + rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-success">
                                 ...
                               </td>
                             </tr>
@@ -432,7 +432,7 @@
                     <div v-else class="text-muted small">Belum ada file dipilih</div>
                   </div>
 
-                  <div v-if="fileError" class="mt-2 text-danger small">
+                  <div v-if="fileError" class="mt-2 text-success small">
                     {{ fileError }}
                   </div>
 
@@ -640,27 +640,27 @@
                   <!-- Preview / status -->
                   <div class="mt-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div v-if="filePreviewTable_catin.length" class="mt-3">
-                      <p class="fw-bold mb-1 text-danger">
+                      <p class="fw-bold mb-1 text-success">
                         *Preview:
                       </p>
                       <div class="table-responsive">
-                        <table class="table table-bordered table-sm border-danger" style="font-size: 80%;">
+                        <table class="table table-bordered table-sm border-success" style="font-size: 80%;">
                           <thead>
                             <tr>
                               <th v-for="(col, index) in PreviewTable_catin" :key="'h' + index" width="120"
-                                class="text-danger">
+                                class="text-success">
                                 {{ col }}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(0)" :key="'r' + rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-success">
                                 {{ col }}
                               </td>
                             </tr>
                             <tr v-for="(row, rIndex) in filePreviewTable_catin.slice(1)" :key="'r' + rIndex">
-                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-danger">
+                              <td v-for="(col, cIndex) in row" :key="'c' + cIndex" class="text-success">
                                 ...
                               </td>
                             </tr>
@@ -673,7 +673,7 @@
                     <div v-else class="text-muted small">Belum ada file dipilih</div>
                   </div>
 
-                  <div v-if="fileError" class="mt-2 text-danger small">
+                  <div v-if="fileError" class="mt-2 text-success small">
                     {{ fileError }}
                   </div>
 
