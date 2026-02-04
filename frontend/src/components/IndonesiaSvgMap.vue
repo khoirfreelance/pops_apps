@@ -214,7 +214,7 @@
         </div>
 
         <!-- HIGHLIGHT METRIC -->
-        <div class="tooltip-highlight">
+        <!-- <div class="tooltip-highlight">
           <div
             v-for="(val, key) in tooltip.data"
             :key="key"
@@ -224,7 +224,7 @@
             <span class="metric-label">{{ key }}</span>
             <span class="metric-value">{{ val }}</span>
           </div>
-        </div>
+        </div> -->
 
         <!-- CONTROLS -->
         <div
