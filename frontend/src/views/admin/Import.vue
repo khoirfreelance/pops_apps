@@ -952,6 +952,12 @@ export default {
           align: 'center',
         },
         {
+          text: 'Tanggal Pendampingan',
+          value: 'tanggal_pendampingan',
+          sortable: true,
+          align: 'center',
+        },
+        {
           text: 'Nama Perempuan',
           value: 'nama_perempuan',
           sortable: true,
@@ -999,6 +1005,12 @@ export default {
           sortable: true,
           align: 'center',
         },
+        {
+          text: 'Desa',
+          value: 'desa',
+          sortable: true,
+          align: 'center',
+        },
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
       headers_bumil: [
@@ -1012,7 +1024,8 @@ export default {
         { text: "Usia (Thn)", value: "usia_ibu", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "HPL", value: "hpl", sortable: true, width:100 ,class: "align-middle text-center cursor-pointer" },
         { text: "Tgl Pendampingan", value: "tgl_pendampingan", sortable: true, width: 130, class: "align-middle text-center cursor-pointer" },
-        //{ text: "Intervensi", value: "intervensi", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Tgl Intervensi", value: "intervensi", sortable: true, class: "align-middle text-center cursor-pointer" },
+        { text: "Desa", value: "desa", sortable: true, class: "align-middle text-center cursor-pointer" },
         { text: "Action", value: "action", width: 120, align: "center", class: "col-action" },
       ],
       headers_kunAn: [
@@ -1136,38 +1149,28 @@ export default {
         : Object.values(this.dataLoad);
 
       const q = this.searchQuery_kunAn?.toLowerCase()?.trim() ?? "";
-
-      const selectedDesa = this.selectDesa_kunAn
-        ?.toLowerCase()
-        ?.trim() ?? "";
-
-      const selectedMonth = this.searchDate_kunAn ?? "";
-      const selectedYear  = this.searchYear_kunAn ?? "";
+      const a = this.selectDesa_kunAn?.toLowerCase()?.trim() ?? "";
+      const m = this.searchDate_kunAn ?? "";
+      const y  = this.searchYear_kunAn ?? "";
 
       return arr.filter(item => {
-
-        const nama = item.nama_anak?.toLowerCase() ?? "";
+        /** 🔎 SEARCH (nama / nik) */
+        const nama = item.nama?.toLowerCase() ?? "";
         const nik  = item.nik?.toString() ?? "";
 
-        const matchSearch =
-          !q || nama.includes(q) || nik.includes(q);
+        const matchSearch = !q || nama.includes(q) || nik.includes(q);
 
+        /** 🏘️ DESA */
+        const desa = item.kelurahan?.toLowerCase().trim() ?? "";
+        const matchDesa = !a || desa === a;
 
-        const desaItem = item.desa
-          ?.toLowerCase()
-          ?.trim() ?? "";
-
-        const matchDesa =
-          !selectedDesa || desaItem === selectedDesa;
-
+        /** 🏘️ Tanggal */
         let matchDate = true;
-
-        if (selectedMonth || selectedYear) {
+        if (m || y) {
           if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
             return false;
           }
 
-          // ambil tgl ukur TERBARU
           const latestPosyandu = [...item.posyandu].sort(
             (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
           )[0];
@@ -1177,15 +1180,11 @@ export default {
 
           const [year, month] = tgl.split("-");
 
-          if (selectedMonth && month !== selectedMonth) {
-            matchDate = false;
-          }
 
-          if (selectedYear && year !== selectedYear) {
-            matchDate = false;
-          }
+          if (month != m) matchDate = false;
+          if (year != y) matchDate = false;
+
         }
-
 
         return matchSearch && matchDesa && matchDate;
       });
@@ -1224,7 +1223,7 @@ export default {
           latestByNik[nik] = { ...item, latestPosyandu }
         }
       })
-      console.log('filteredAnak',this.filteredAnak);
+
       return Object.values(latestByNik)
         .sort((a, b) => a.id - b.id)
         .map(item => ({
@@ -1258,10 +1257,46 @@ export default {
         : Object.values(this.dataLoad);
 
       const q = this.searchQuery_bumil?.toLowerCase()?.trim() ?? "";
+      const a = this.selectDesa_bumil?.toLowerCase()?.trim() ?? "";
+      const m = this.searchDate_bumil ?? "";
+      const y  = this.searchYear_bumil ?? "";
+
       return arr.filter(item => {
+        /** 🔎 SEARCH (nama / nik) */
         const nama = item.nama_ibu?.toLowerCase() ?? "";
-        return nama.includes(q) || item.nik_ibu?.toString().includes(q);
+        const nik  = item.nik_ibu?.toString() ?? "";
+
+        const matchSearch = !q || nama.includes(q) || nik.includes(q);
+
+        /** 🏘️ DESA */
+        const desa = item.kelurahan?.toLowerCase().trim() ?? "";
+        const matchDesa = !a || desa === a;
+
+        /** 🏘️ Tanggal */
+        let matchDate = true;
+        if (m || y) {
+          if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
+            return false;
+          }
+
+          const latestPosyandu = [...item.posyandu].sort(
+            (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
+          )[0];
+
+          const tgl = latestPosyandu?.tgl_ukur;
+          if (!tgl) return false;
+
+          const [year, month] = tgl.split("-");
+
+
+          if (month != m) matchDate = false;
+          if (year != y) matchDate = false;
+
+        }
+
+        return matchSearch && matchDesa && matchDate;
       });
+
     },
 
     items_bumil() {
@@ -1323,6 +1358,9 @@ export default {
 
       if (this.searchQuery_catin) {
         const q = this.searchQuery_catin.toLowerCase().trim();
+        const a = this.selectDesa_catin?.toLowerCase()?.trim() ?? "";
+        const m = this.searchDate_catin ?? "";
+        const y  = this.searchYear_catin ?? "";
 
         return arr.filter(item => {
           const namaP = item.nama_perempuan?.toLowerCase() ?? "";
@@ -1330,12 +1368,35 @@ export default {
           const nikP = item.nik_perempuan ?? "";
           const nikL = item.nik_laki ?? "";
 
-          return (
-            namaP.includes(q) ||
-            namaL.includes(q) ||
-            nikP.includes(q) ||
-            nikL.includes(q)
-          );
+          const matchSearch = !q || namaP.includes(q) || namaL.includes(q) || nikP.includes(q) ||nikL.includes(q);
+
+          /** 🏘️ DESA */
+          const desa = item.kelurahan?.toLowerCase().trim() ?? "";
+          const matchDesa = !a || desa === a;
+
+          /** 🏘️ Tanggal */
+          let matchDate = true;
+          if (m || y) {
+            if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
+              return false;
+            }
+
+            const latestPosyandu = [...item.posyandu].sort(
+              (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
+            )[0];
+
+            const tgl = latestPosyandu?.tgl_ukur;
+            if (!tgl) return false;
+
+            const [year, month] = tgl.split("-");
+
+
+            if (month != m) matchDate = false;
+            if (year != y) matchDate = false;
+
+          }
+
+          return matchSearch && matchDesa && matchDate;
         });
       }
 
