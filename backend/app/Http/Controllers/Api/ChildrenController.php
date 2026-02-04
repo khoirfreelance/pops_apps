@@ -118,6 +118,13 @@ class ChildrenController extends Controller
             ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_intervensi', '<=', $filters["periodeAkhir"]))
             ->orderBy('tgl_intervensi', 'desc')
             ->get()->groupBy("nik_subjek");
+        $pendampingan = Child::query()
+            ->whereIn('nik_anak', $nikKunjungan)
+            ->when($periodeAwal, fn($q) => $q->whereDate('tgl_pendampingan', '>=', $filters["periodeAwal"]))
+            ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_pendampingan', '<=', $filters["periodeAkhir"]))
+            ->orderBy('tgl_pendampingan', 'desc')
+            ->get()->groupBy("nik_anak");
+        //dd($pendampingan.$nikKunjungan->tgl_pendampingan);
         $grouped = [];
 
 
@@ -174,6 +181,12 @@ class ChildrenController extends Controller
                 'anak_ke' => '-',
             ];
 
+            $grouped[$nik]['pendampingan'][] = [
+                'tanggal_pendampingan' => optional(
+                    $pendampingan->get($nik)?->first()
+                )->tgl_pendampingan ?? '-',
+            ];
+
             $problem = 0;
             if ($item->bb_u != null && $item->bb_u !== 'Normal')
                 $problem++;
@@ -214,71 +227,8 @@ class ChildrenController extends Controller
                     'bantuan' => '-',
                 ];
             }
+
         }
-
-
-        // 2️⃣ PENDAMPINGAN
-        /* foreach ($pendampingan as $item) {
-            $nik = $item->nik_anak ?? $item->nik_ibu ?? '';
-            if (!$nik)
-                continue;
-
-            $grouped[$nik] ??= [
-                'id' => $item->id,
-                'nama' => $item->nama_anak ?? '-',
-                'nik' => $item->nik_anak ?? '',
-                'jk' => $item->jk ?? '-',
-                'provinsi' => $item->provinsi ?? '-',
-                'kota' => $item->kota ?? '-',
-                'kecamatan' => $item->kecamatan ?? '-',
-                'kelurahan' => $item->kelurahan ?? '-',
-                'rw' => $item->rw ?? '-',
-                'rt' => $item->rt ?? '-',
-                'kelahiran' => [],
-                'keluarga' => [],
-                'pendampingan' => [],
-                'posyandu' => [],
-                'intervensi' => []
-            ];
-
-            $grouped[$nik]['pendampingan'][] = [
-                'kader' => $item->petugas ?? '-',
-                'tanggal' => $item->tgl_pendampingan ?? '-',
-            ];
-
-            if (empty($grouped[$nik]['keluarga'])) {
-                $grouped[$nik]['keluarga'][] = [
-                    'nama_ayah' => $item->nama_ortu ?? '-',
-                    'nama_ibu' => $item->nama_ibu ?? '-',
-                    'pekerjaan_ayah' => $item->pekerjaan_ayah ?? '-',
-                    'pekerjaan_ibu' => $item->pekerjaan_ibu ?? '-',
-                    'usia_ayah' => $item->usia_ayah ?? '-',
-                    'usia_ibu' => $item->usia_ibu ?? '-',
-                    'anak_ke' => $item->anak_ke ?? '-',
-                ];
-            }
-
-            if (empty($grouped[$nik]['kelahiran'])) {
-                $grouped[$nik]['kelahiran'][] = [
-                    'tgl_lahir' => $item->tgl_lahir ?? '-',
-                    'bb_lahir' => $item->bb_lahir ?? '-',
-                    'pb_lahir' => $item->tb_lahir ?? '-',
-                ];
-            }
-        } */
-
-        // 3️⃣ INTERVENSI
-        // foreach ($intervensi as $nik => $data) {
-        //     if(!isset($grouped[$nik])) continue;
-        //     $item = $data->first() ?? collect();
-        //     $grouped[$nik]['intervensi'][] = [
-        //         'kader' => $item->petugas ?? '-',
-        //         'jenis' => $item->kategori ?? '-',
-        //         'tgl_intervensi' => $item->tgl_intervensi ?? '-',
-        //         'bantuan' => $item->bantuan ?? '-',
-        //     ];
-        // }
-
 
         $filteredData = collect($grouped)->map(function ($anak) {
             return $anak;
@@ -1214,6 +1164,12 @@ class ChildrenController extends Controller
             // =========================
             // 0. Validasi data import
             // =========================
+            if (!preg_match('/^[0-9`]+$/', $row[4])) {
+                throw new \Exception(
+                    "NIK hanya boleh berisi angka dan karakter `",
+                    1001
+                );
+            }
 
             $nik = $this->normalizeNik($row[4] ?? null);
             $nama = $this->normalizeText($row[3] ?? null);
@@ -1231,8 +1187,8 @@ class ChildrenController extends Controller
 
             if ($duplikat) {
                 throw new \Exception(
-                    "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
-                    . $duplikat->created_at->format('d-m-Y')
+                    "Data atas <strong>{$nik}</strong>, <strong>{$nama}</strong> sudah diunggah pada <strong>"
+                    . $duplikat->created_at->format('d-m-Y')."</strong>"
                 );
             }
 

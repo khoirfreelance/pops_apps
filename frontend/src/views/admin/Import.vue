@@ -214,25 +214,100 @@
 
               <div class="card shadow-sm">
                 <div class="card-body">
-                  <!-- Search + Button -->
-                  <div class="d-flex align-items-center justify-content-end gap-2">
+                  <!-- Search + Action -->
+                  <div class="row g-2 align-items-end">
 
-                    <input type="text" class="form-control form-control-sm" style="width: 220px;"
-                      placeholder="Ketik NIK atau Nama" v-model="searchQuery_kunAn">
+                    <!-- Filter -->
+                    <div class="col-lg-6 col-12">
+                      <div class="d-flex flex-wrap gap-2">
 
-                    <button :class="aktifitas === 'Kunjungan Posyandu'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'Kunjungan Posyandu'">
-                      <i class="bi bi-filetype-csv me-1"></i> Import Kunjungan
-                    </button>
-                    <button :class="aktifitas === 'Pendampingan Anak'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'Pendampingan Anak'">
-                      <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
-                    </button>
-                    <button :class="aktifitas === 'Intervensi Anak'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
-                      @click="isUploadOpen = !isUploadOpen; aktifitas = 'Intervensi Anak'">
-                      <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
-                    </button>
+                        <select v-if="role === 'Super Admin' " v-model="selectDesa_kunAn"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Desa</option>
+                          <option v-for="desa in listKelurahan"
+                                  :key="desa.id"
+                                  :value="desa.kelurahan">
+                            {{ desa.label }}
+                          </option>
+                        </select>
+
+                        <select v-model="searchDate_kunAn"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Periode</option>
+                          <option value="01">Januari</option>
+                          <option value="02">Februari</option>
+                          <option value="03">Maret</option>
+                          <option value="04">April</option>
+                          <option value="05">Mei</option>
+                          <option value="06">Juni</option>
+                          <option value="07">Juli</option>
+                          <option value="08">Agustus</option>
+                          <option value="09">September</option>
+                          <option value="10">Oktober</option>
+                          <option value="11">November</option>
+                          <option value="12">Desember</option>
+                        </select>
+
+                        <select v-model="searchYear_kunAn"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Tahun</option>
+                          <option v-for="year in yearOptions"
+                                  :key="year"
+                                  :value="year">
+                            {{ year }}
+                          </option>
+                        </select>
+
+                      </div>
+                    </div>
+
+                    <!-- Search + Button -->
+                    <div class="col-lg-6 col-12">
+                      <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+
+                        <input type="text"
+                              class="form-control form-control-sm w-auto"
+                              placeholder="Ketik NIK atau Nama"
+                              v-model="searchQuery_kunAn">
+
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          :class="aktifitas === 'Kunjungan Posyandu'
+                            ? 'btn-primary'
+                            : 'btn-outline-primary'"
+                          @click="toggleUpload('Kunjungan Posyandu')">
+                          <i class="bi bi-filetype-csv me-1"></i>
+                          Import Kunjungan
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          :class="aktifitas === 'Pendampingan Anak'
+                            ? 'btn-primary'
+                            : 'btn-outline-primary'"
+                          @click="toggleUpload('Pendampingan Anak')">
+                          <i class="bi bi-filetype-csv me-1"></i>
+                          Import Pendampingan
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-sm"
+                          :class="aktifitas === 'Intervensi Anak'
+                            ? 'btn-primary'
+                            : 'btn-outline-primary'"
+                          @click="toggleUpload('Intervensi Anak')">
+                          <i class="bi bi-filetype-csv me-1"></i>
+                          Import Intervensi
+                        </button>
+
+                      </div>
+                    </div>
+
                   </div>
+
                   <!-- Table -->
                   <div class="mt-3">
 
@@ -817,6 +892,8 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      listKelurahan:[],
+      role:'',
       selectedIds_anak: [],      // ← ID terpilih
       selectAll_anak: false,     // ← checkbox header
       selectedIds_bumil: [],      // ← ID terpilih
@@ -967,15 +1044,27 @@ export default {
         { text: 'Tgl Lahir', value: 'tgl_lahir', sortable: true },
         { text: 'BB', value: 'bb', sortable: true },
         { text: 'TB', value: 'tb', sortable: true },
-        { text: 'Tgl Pengukuran Terakhir', value: 'tgl_pengukuran', sortable: true },
+        { text: 'Tgl Pengukuran', value: 'tgl_pengukuran', sortable: true },
         { text: 'Posyandu', value: 'unit_posyandu', sortable: true },
-        //{ text: 'Intervensi', value: 'intervensi', sortable: true },
+        { text: 'Tgl Pendampingan', value: 'pendampingan', sortable: true },
+        { text: 'Tgl Intervensi', value: 'intervensi', sortable: true },
+        { text: 'Desa', value: 'desa', width: 120, sortable: true },
         { text: 'Action', value: 'action', width: 120, align: "center", class: "col-action" },
       ],
       formOpen: false,
+      yearOptions: [],
       searchQuery_kunAn: "",
+      selectDesa_kunAn: "",
+      searchDate_kunAn: "",
+      searchYear_kunAn: "",
       searchQuery_bumil: "",
+      selectDesa_bumil: "",
+      searchDate_bumil: "",
+      searchYear_bumil: "",
       searchQuery_catin: "",
+      selectDesa_catin: "",
+      searchDate_catin: "",
+      searchYear_catin: "",
       currentPage: 1,
       perPage: 10,
       perPageOptions: [5, 10, 25, 50],
@@ -1068,9 +1157,58 @@ export default {
 
       const q = this.searchQuery_kunAn?.toLowerCase()?.trim() ?? "";
 
+      const selectedDesa = this.selectDesa_kunAn
+        ?.toLowerCase()
+        ?.trim() ?? "";
+
+      const selectedMonth = this.searchDate_kunAn ?? "";
+      const selectedYear  = this.searchYear_kunAn ?? "";
+
       return arr.filter(item => {
-        const nama = item.nama?.toLowerCase() ?? "";
-        return nama.includes(q) || item.nik?.toString().includes(q);
+        /** 🔎 SEARCH (nama / nik) */
+        const nama = item.nama_anak?.toLowerCase() ?? "";
+        const nik  = item.nik?.toString() ?? "";
+
+        const matchSearch =
+          !q || nama.includes(q) || nik.includes(q);
+
+        /** 🏘️ DESA (normalisasi) */
+        const desaItem = item.desa
+          ?.toLowerCase()
+          ?.trim() ?? "";
+
+        const matchDesa =
+          !selectedDesa || desaItem === selectedDesa;
+
+        /** 📅 TANGGAL (bulan & tahun dari tgl_pengukuran) */
+        let matchDate = true;
+
+        if (selectedMonth || selectedYear) {
+          if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
+            return false;
+          }
+
+          // ambil tgl ukur TERBARU
+          const latestPosyandu = [...item.posyandu].sort(
+            (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
+          )[0];
+
+          const tgl = latestPosyandu?.tgl_ukur;
+          if (!tgl) return false;
+
+          const [year, month] = tgl.split("-");
+
+          if (selectedMonth && month !== selectedMonth) {
+            matchDate = false;
+          }
+
+          if (selectedYear && year !== selectedYear) {
+            matchDate = false;
+          }
+        }
+
+
+        return matchSearch && matchDesa && matchDate;
       });
     },
 
@@ -1124,7 +1262,9 @@ export default {
           tgl_pengukuran: item.latestPosyandu?.tgl_ukur ?? "-",
           unit_posyandu: item.latestPosyandu?.posyandu ?? "-",
 
-          //intervensi: item.intervensi?.[0]?.jenis ?? "-",
+          intervensi: item.intervensi?.[0]?.tgl_intervensi ?? "-",
+          pendampingan: item.pendampingan?.[0]?.tanggal_pendampingan ?? "-",
+          desa: item.kelurahan ?? "-",
           action: { ...item }
         }))
     },
@@ -1265,6 +1405,28 @@ export default {
 
   },
   methods: {
+    async loadRegion() {
+      const res = await axios.get(
+        `${baseURL}/api/region`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      )
+
+      this.listKelurahan = res.data.data
+      .flatMap(item => item.options || [])
+      .map(opt => ({
+        id: opt.id,
+        kelurahan: opt.kelurahan,
+        label: opt.label,
+        kecamatan: opt.kecamatan,
+        kota: opt.kota,
+        provinsi: opt.provinsi,
+      }));
+
+    },
     toggleSelectAll() {
       //console.log(this.items);
       switch (this.activeMenu) {
@@ -1434,36 +1596,6 @@ export default {
       const [day, month, year] = date.split('-')
       return `${year}-${month}-${day}`
     },
-    /* async finishImport(message) {
-      // pastikan progress mentok
-      this.importProgress = 100
-
-      // animasi ke 100
-      await new Promise(resolve => {
-        const interval = setInterval(() => {
-          if (this.animatedProgress >= 100) {
-            clearInterval(interval)
-            resolve()
-          } else {
-            this.animatedProgress += 5
-          }
-        }, 30)
-      })
-
-      // matikan loading
-      this.isLoadingImport = false
-
-      // tampilkan success SETELAH loading mati
-      Swal.fire({
-        icon: 'success',
-        text: message,
-        buttonsStyling: false,
-        customClass: {
-          confirmButton: 'btn btn-primary mx-1',
-          cancelButton: 'btn btn-outline-secondary mx-1'
-        }
-      })
-    }, */
     handleFileChange(e) {
       const file = e.target.files[0]
       this.loadFilePreview(file)
@@ -2458,14 +2590,24 @@ export default {
         ['B', 'kB', 'MB', 'GB', 'TB'][i]
       )
     },
-
     async loadFilePreview(file) {
       if (!file) return
 
       const ext = file.name.split('.').pop().toLowerCase()
 
-      if (!['csv', 'xlsx', 'xls'].includes(ext)) {
-        this.fileError = 'Hanya file CSV atau Excel (XLS/XLSX) yang diperbolehkan.'
+      //if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+      if (!['csv'].includes(ext)) {
+        Swal.fire({
+          title: 'Error',
+          html: 'Periksa format file. Pastikan berformat CSV',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-danger mx-1',
+          }
+        })
+        //this.fileError = 'Hanya file CSV atau Excel (XLS/XLSX) yang diperbolehkan.'
         return
       }
 
@@ -2603,10 +2745,19 @@ export default {
   async mounted() {
     this.isLoading = true
     try {
+      this.role = localStorage.getItem('role');
+      const currentYear = new Date().getFullYear();
+      const range = 5;
+
+      this.yearOptions = Array.from(
+        { length: range },
+        (_, i) => currentYear - i
+      );
+
       await Promise.all([
         this.loadConfigWithCache(),
         this.loadData(),
-        //this.getWilayahUser(),
+        this.loadRegion(),
         this.handleResize(),
 
         window.addEventListener('resize', this.handleResize)

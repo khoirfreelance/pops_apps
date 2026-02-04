@@ -51,6 +51,13 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 // =========================
                 // 0. Validasi data import
                 // =========================
+                if (!preg_match('/^[0-9`]+$/', $row[4])) {
+                    throw new \Exception(
+                        "NIK hanya boleh berisi angka dan karakter `",
+                        1001
+                    );
+                }
+
                 $nik = $this->normalizeNik($row[4] ?? null);
                 $nama = strtoupper($row[3]??'-');
                 $tglUkur = $this->convertDate($row[2]);
@@ -68,8 +75,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 if ($duplikat) {
                     throw new \Exception(
-                        "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
-                        . $duplikat->created_at->format('d-m-Y'),
+                        "Data atas <strong>{$nik}</strong>, <strong>{$nama}</strong> sudah diunggah pada <strong>"
+                        . $duplikat->created_at->format('d-m-Y')."</strong>",
                         1001
                     );
                 }
