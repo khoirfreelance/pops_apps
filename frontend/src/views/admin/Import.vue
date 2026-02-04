@@ -270,37 +270,17 @@
                               placeholder="Ketik NIK atau Nama"
                               v-model="searchQuery_kunAn">
 
-                        <button
-                          type="button"
-                          class="btn btn-sm"
-                          :class="aktifitas === 'Kunjungan Posyandu'
-                            ? 'btn-primary'
-                            : 'btn-outline-primary'"
-                          @click="toggleUpload('Kunjungan Posyandu')">
-                          <i class="bi bi-filetype-csv me-1"></i>
-                          Import Kunjungan
+                        <button :class="aktifitas === 'Kunjungan Posyandu'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                          @click="isUploadOpen = !isUploadOpen; aktifitas = 'Kunjungan Posyandu'">
+                          <i class="bi bi-filetype-csv me-1"></i> Import Kunjungan
                         </button>
-
-                        <button
-                          type="button"
-                          class="btn btn-sm"
-                          :class="aktifitas === 'Pendampingan Anak'
-                            ? 'btn-primary'
-                            : 'btn-outline-primary'"
-                          @click="toggleUpload('Pendampingan Anak')">
-                          <i class="bi bi-filetype-csv me-1"></i>
-                          Import Pendampingan
+                        <button :class="aktifitas === 'Pendampingan Anak'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                          @click="isUploadOpen = !isUploadOpen; aktifitas = 'Pendampingan Anak'">
+                          <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
                         </button>
-
-                        <button
-                          type="button"
-                          class="btn btn-sm"
-                          :class="aktifitas === 'Intervensi Anak'
-                            ? 'btn-primary'
-                            : 'btn-outline-primary'"
-                          @click="toggleUpload('Intervensi Anak')">
-                          <i class="bi bi-filetype-csv me-1"></i>
-                          Import Intervensi
+                        <button :class="aktifitas === 'Intervensi Anak'? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                          @click="isUploadOpen = !isUploadOpen; aktifitas = 'Intervensi Anak'">
+                          <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
                         </button>
 
                       </div>
@@ -1165,14 +1145,14 @@ export default {
       const selectedYear  = this.searchYear_kunAn ?? "";
 
       return arr.filter(item => {
-        /** 🔎 SEARCH (nama / nik) */
+
         const nama = item.nama_anak?.toLowerCase() ?? "";
         const nik  = item.nik?.toString() ?? "";
 
         const matchSearch =
           !q || nama.includes(q) || nik.includes(q);
 
-        /** 🏘️ DESA (normalisasi) */
+
         const desaItem = item.desa
           ?.toLowerCase()
           ?.trim() ?? "";
@@ -1180,7 +1160,6 @@ export default {
         const matchDesa =
           !selectedDesa || desaItem === selectedDesa;
 
-        /** 📅 TANGGAL (bulan & tahun dari tgl_pengukuran) */
         let matchDate = true;
 
         if (selectedMonth || selectedYear) {
