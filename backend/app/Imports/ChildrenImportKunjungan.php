@@ -52,6 +52,7 @@ class ChildrenImportKunjungan implements
     {
         try {
             return DB::transaction(function () use ($row) {
+            //dd(array_keys($row));
                 // =========================
                 // INTRO
                 // =========================
@@ -378,14 +379,15 @@ class ChildrenImportKunjungan implements
 
         $value = strtolower(trim($value));
 
-        if (in_array($value, ['yes', 'ya', '1', 'true', 'T'])) {
+        if (in_array($value, ['yes', 'ya', '1', 'true', 't'])) {
             return true;
-        } elseif (in_array($value, ['no', 'tidak', '0', 'false', 'F'])) {
+        } elseif (in_array($value, ['no', 'tidak', '0', 'false', 'n'])) {
             return false;
         }
 
         return null;
     }
+
 
     protected function loadWilayahUser(): void
     {
