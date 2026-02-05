@@ -267,36 +267,52 @@ class PregnancyController extends Controller
             });
             if ($request->filled('intervensi') && is_array($request->intervensi)) {
                 $groupedData = $groupedData->filter(function ($q) use ($request) {
+
+                    $jenisIntervensi = ['mbg', 'kie', 'pmt', 'bansos'];
+
                     foreach ($request->intervensi as $val) {
-                        $jenisIntervensi = ['MBG', 'KIE', 'PMT', 'Bansos'];
-                        if (strtolower($val) == "belum mendapatkan intervensi") {
+                        $val = Str::lower($val);
+
+                        // 1️⃣ Belum mendapatkan intervensi
+                        if ($val === 'belum mendapatkan intervensi') {
                             if (empty($q['intervensi']) || $q['intervensi']->isEmpty()) {
-                                return true;
+                                return true; // OR → langsung lolos
                             }
-                        } else {
-                            if (in_array($val, $jenisIntervensi) && !empty($q['intervensi']) && $q['intervensi']->isNotEmpty()) {
-                                $found = false;
-                                $q['intervensi']->each(function ($intervensiItem) use ($val, &$found) {
-                                    if (Str::lower($intervensiItem['intervensi']) === Str::lower($val)) {
-                                        $found = true;
-                                    }
-                                });
-                                return $found;
+                        }
+
+                        // kalau tidak ada intervensi, skip cek lain
+                        if (empty($q['intervensi']) || $q['intervensi']->isEmpty()) {
+                            continue;
+                        }
+
+                        // 2️⃣ Intervensi standar (MBG, KIE, PMT, Bansos)
+                        if (in_array($val, $jenisIntervensi)) {
+                            $found = $q['intervensi']->contains(function ($item) use ($val) {
+                                return Str::lower($item['intervensi']) === $val;
+                            });
+
+                            if ($found) {
+                                return true; // OR
                             }
-                            if ($val == "Bantuan Lainnya") {
-                                $found = false;
-                                $q['intervensi']->each(function ($intervensiItem) use (&$found) {
-                                    if (!in_array(Str::lower($intervensiItem['intervensi']), ['mbg', 'kie', 'pmt', 'bansos'])) {
-                                        $found = true;
-                                    }
-                                });
-                                return $found;
+                        }
+
+                        // 3️⃣ Bantuan Lainnya
+                        if ($val === 'bantuan lainnya') {
+                            $found = $q['intervensi']->contains(function ($item) use ($jenisIntervensi) {
+                                return !in_array(Str::lower($item['intervensi']), $jenisIntervensi);
+                            });
+
+                            if ($found) {
+                                return true; // OR
                             }
                         }
                     }
+
+                    // ❌ tidak ada satupun yang match
                     return false;
                 });
             }
+
 
             //dd($groupedData);
             if ($groupedData->isEmpty()) {
