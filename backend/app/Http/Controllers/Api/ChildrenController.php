@@ -2107,9 +2107,11 @@ class ChildrenController extends Controller
             ->orderBy('tgl_pengukuran', 'desc')
             ->get()
             ->groupBy('nik');
+        //dd($all);
 
         // Hitung stagnan berdasarkan bulan
         $latest = $latest->map(function ($row) use ($all) {
+
             $history = $all[$row->nik] ?? collect();
             $row->stagnan_months = $this->calculateStagnanByMonth($history);
             return $row;
@@ -2134,31 +2136,31 @@ class ChildrenController extends Controller
 
     private function calculateStagnanByMonth($history)
     {
-        // history sudah dalam urutan terbaru -> terlama
         $history = $history->sortByDesc('tgl_pengukuran')->values();
 
         $stagnanMonths = 0;
 
+
         for ($i = 0; $i < $history->count() - 1; $i++) {
 
             $current = $history[$i];
-            $next = $history[$i + 1];
+            $next    = $history[$i + 1];
 
-            // STOP condition:
-            if (is_null($current->naik_berat_badan))
-                break;
-            if ($current->naik_berat_badan == 1)
-                break;
+            // STOP condition
+            if (is_null($current->naik_berat_badan)) break;
+            if ((int)$current->naik_berat_badan === 1) break;
 
-            // current is stagnan (0)
-            $monthDiff = $current->tgl_pengukuran->diffInMonths($next->tgl_pengukuran);
+            $currentDate = \Carbon\Carbon::parse($current->tgl_pengukuran);
+            $nextDate    = \Carbon\Carbon::parse($next->tgl_pengukuran);
 
-            // minimal 1 month stagnan
+            $monthDiff = $currentDate->diffInMonths($nextDate);
+
             $stagnanMonths += max($monthDiff, 1);
         }
 
         return $stagnanMonths;
     }
+
 
     private function getIntervensiData($latest, $periodeAwal, $periodeAkhir, $intervensiFilters)
     {
