@@ -1288,8 +1288,6 @@ export default {
 
           if (m && month != m) matchDate = false;
           if (y && year != y) matchDate = false;
-
-          console.log({ tgl, m, y, month, year, matchDate });
         }
 
         return matchSearch && matchDesa && matchDate;
@@ -1378,16 +1376,19 @@ export default {
         const desa = item.kelurahan?.toLowerCase().trim() ?? "";
         const matchDesa = !a || desa === a;
 
-        /** 🏘️ Tanggal */
+        /** 📅 TANGGAL */
         let matchDate = true;
+
         if (m || y) {
           const tgl = item.tanggal_pendampingan;
           if (!tgl) return false;
+
           const [year, month] = tgl.split("-");
 
-          if (month != m) matchDate = false;
-          if (year != y) matchDate = false;
+          if (m && month !== m) matchDate = false;
+          if (y && year != y) matchDate = false;
 
+          console.log({ tgl, m, y, month, year, matchDate });
         }
 
         return matchSearch && matchDesa && matchDate;
