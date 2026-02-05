@@ -512,19 +512,70 @@
               <div class="card shadow-sm">
                 <div class="card-body">
                   <!-- Search + Button -->
-                  <div class="d-flex align-items-center justify-content-end gap-2">
+                  <div class="row g-2 align-items-end">
 
-                    <input type="text" class="form-control form-control-sm" style="width: 220px;"
-                      placeholder="Ketik NIK atau Nama" v-model="searchQuery_bumil">
+                    <!-- Filter -->
+                    <div class="col-lg-6 col-12">
+                      <div class="d-flex flex-wrap gap-2">
 
-                    <button :class="aktifitas === 'Pendampingan Bumil'?'btn btn-primary btn-sm':'btn btn-outline-primary btn-sm'" type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'Pendampingan Bumil'">
-                      <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
-                    </button>
-                    <button :class="aktifitas === 'Intervensi Bumil'?'btn btn-primary btn-sm':'btn btn-outline-primary btn-sm'" type="button"
-                      @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'Intervensi Bumil'">
-                      <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
-                    </button>
+                        <select v-if="role === 'Super Admin' " v-model="selectDesa_bumil"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Desa</option>
+                          <option v-for="desa in listKelurahan"
+                                  :key="desa.id"
+                                  :value="desa.kelurahan">
+                            {{ desa.label }}
+                          </option>
+                        </select>
+
+                        <select v-model="searchDate_bumil"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Periode</option>
+                          <option value="01">Januari</option>
+                          <option value="02">Februari</option>
+                          <option value="03">Maret</option>
+                          <option value="04">April</option>
+                          <option value="05">Mei</option>
+                          <option value="06">Juni</option>
+                          <option value="07">Juli</option>
+                          <option value="08">Agustus</option>
+                          <option value="09">September</option>
+                          <option value="10">Oktober</option>
+                          <option value="11">November</option>
+                          <option value="12">Desember</option>
+                        </select>
+
+                        <select v-model="searchYear_bumil"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Tahun</option>
+                          <option v-for="year in yearOptions"
+                                  :key="year"
+                                  :value="year">
+                            {{ year }}
+                          </option>
+                        </select>
+
+                      </div>
+                    </div>
+
+                    <!-- Search + Button -->
+                    <div class="col-lg-6 col-12">
+                      <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+
+                        <input type="text" class="form-control form-control-sm" style="width: 220px;" placeholder="Ketik NIK atau Nama" v-model="searchQuery_bumil">
+
+                        <button :class="aktifitas === 'Pendampingan Bumil'?'btn btn-primary btn-sm':'btn btn-outline-primary btn-sm'" type="button"
+                          @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'Pendampingan Bumil'">
+                          <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
+                        </button>
+                        <button :class="aktifitas === 'Intervensi Bumil'?'btn btn-primary btn-sm':'btn btn-outline-primary btn-sm'" type="button"
+                          @click="isUploadOpen_bumil = !isUploadOpen_bumil; aktifitas = 'Intervensi Bumil'">
+                          <i class="bi bi-filetype-csv me-1"></i> Import Intervensi
+                        </button>
+
+                      </div>
+                    </div>
+
                   </div>
                   <!-- Table -->
                   <div class="mt-3">
@@ -753,15 +804,69 @@
               <div class="card shadow-sm">
                 <div class="card-body">
                   <!-- Search + Button -->
-                  <div class="d-flex align-items-center justify-content-end gap-2">
-                    <input type="text" class="form-control form-control-sm" style="width: 220px;"
-                      placeholder="Ketik NIK atau Nama" v-model="searchQuery_catin">
+                  <div class="row g-2 align-items-end">
 
-                    <button :class="aktifitas === 'Pendampingan Catin'?'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
-                      @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas = 'Pendampingan Catin'">
-                      <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
-                    </button>
+                    <!-- Filter -->
+                    <div class="col-lg-6 col-12">
+                      <div class="d-flex flex-wrap gap-2">
+
+                        <select v-if="role === 'Super Admin'" v-model="selectDesa_catin"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Desa</option>
+                          <option v-for="desa in listKelurahan"
+                                  :key="desa.id"
+                                  :value="desa.kelurahan">
+                            {{ desa.label }}
+                          </option>
+                        </select>
+
+                        <select v-model="searchDate_catin"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Periode</option>
+                          <option value="01">Januari</option>
+                          <option value="02">Februari</option>
+                          <option value="03">Maret</option>
+                          <option value="04">April</option>
+                          <option value="05">Mei</option>
+                          <option value="06">Juni</option>
+                          <option value="07">Juli</option>
+                          <option value="08">Agustus</option>
+                          <option value="09">September</option>
+                          <option value="10">Oktober</option>
+                          <option value="11">November</option>
+                          <option value="12">Desember</option>
+                        </select>
+
+                        <select v-model="searchYear_catin"
+                                class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Tahun</option>
+                          <option v-for="year in yearOptions"
+                                  :key="year"
+                                  :value="year">
+                            {{ year }}
+                          </option>
+                        </select>
+
+                      </div>
+                    </div>
+
+                    <!-- Search + Button -->
+                    <div class="col-lg-6 col-12">
+                      <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+
+                        <input type="text" class="form-control form-control-sm" style="width: 220px;"
+                          placeholder="Ketik NIK atau Nama" v-model="searchQuery_catin">
+
+                        <button :class="aktifitas === 'Pendampingan Catin'?'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'" type="button"
+                          @click="isUploadOpen_catin = !isUploadOpen_catin; aktifitas = 'Pendampingan Catin'">
+                          <i class="bi bi-filetype-csv me-1"></i> Import Pendampingan
+                        </button>
+
+                      </div>
+                    </div>
+
                   </div>
+
                   <!-- Table -->
                   <div class="mt-3">
 
@@ -1275,19 +1380,9 @@ export default {
         /** 🏘️ Tanggal */
         let matchDate = true;
         if (m || y) {
-          if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
-            return false;
-          }
-
-          const latestPosyandu = [...item.posyandu].sort(
-            (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
-          )[0];
-
-          const tgl = latestPosyandu?.tgl_ukur;
+          const tgl = item.tanggal_pendampingan;
           if (!tgl) return false;
-
           const [year, month] = tgl.split("-");
-
 
           if (month != m) matchDate = false;
           if (year != y) matchDate = false;
@@ -1322,7 +1417,9 @@ export default {
         // ambil pemeriksaan TERBARU
         if (currentTgl && (!savedTgl || currentTgl > savedTgl)) {
           latestByNik[nik] = item
+          console.log('latest',latestByNik[nik]);
         }
+
       })
 
       return Object.values(latestByNik).map(item => ({
@@ -1340,7 +1437,8 @@ export default {
         tb: item.riwayat_pemeriksaan?.[0]?.tinggi_badan ?? "-",
         tgl_pendampingan: this.formatDate(item.tanggal_pendampingan) ?? "-",
         jml_anak: item.jumlah_anak ?? 0,
-        //intervensi: item.intervensi?.[0]?.intervensi ?? "-",
+        desa: item.kelurahan,
+        intervensi: item.intervensi?.[0]?.tanggal ?? "-",
         action: { ...item }
       }))
     },
@@ -1356,51 +1454,40 @@ export default {
       // 🔒 FILTER WAJIB: buang null / undefined / bukan object
       arr = arr.filter(item => item && typeof item === "object");
 
-      if (this.searchQuery_catin) {
-        const q = this.searchQuery_catin.toLowerCase().trim();
-        const a = this.selectDesa_catin?.toLowerCase()?.trim() ?? "";
-        const m = this.searchDate_catin ?? "";
-        const y  = this.searchYear_catin ?? "";
+      //console.log('data:',arr[0].tgl_kunjungan);
+      const q = this.searchQuery_catin.toLowerCase().trim();
+      const a = this.selectDesa_catin?.toLowerCase()?.trim() ?? "";
+      const m = this.searchDate_catin ?? "";
+      const y  = this.searchYear_catin ?? "";
 
-        return arr.filter(item => {
-          const namaP = item.nama_perempuan?.toLowerCase() ?? "";
-          const namaL = item.nama_laki?.toLowerCase() ?? "";
-          const nikP = item.nik_perempuan ?? "";
-          const nikL = item.nik_laki ?? "";
+      return arr.filter(item => {
+        const namaP = item.nama_perempuan?.toLowerCase() ?? "";
+        const namaL = item.nama_laki?.toLowerCase() ?? "";
+        const nikP = item.nik_perempuan ?? "";
+        const nikL = item.nik_laki ?? "";
 
-          const matchSearch = !q || namaP.includes(q) || namaL.includes(q) || nikP.includes(q) ||nikL.includes(q);
+        const matchSearch = !q || namaP.includes(q) || namaL.includes(q) || nikP.includes(q) ||nikL.includes(q);
 
-          /** 🏘️ DESA */
-          const desa = item.kelurahan?.toLowerCase().trim() ?? "";
-          const matchDesa = !a || desa === a;
+        /** 🏘️ DESA */
+        const desa = item.kelurahan?.toLowerCase().trim() ?? "";
+        const matchDesa = !a || desa === a;
 
-          /** 🏘️ Tanggal */
-          let matchDate = true;
-          if (m || y) {
-            if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
-              return false;
-            }
+        /** 🏘️ Tanggal */
+        let matchDate = true;
 
-            const latestPosyandu = [...item.posyandu].sort(
-              (a, b) => new Date(b.tgl_ukur) - new Date(a.tgl_ukur)
-            )[0];
+        if (m || y) {
+          if (!item.tgl_kunjungan) return false;
 
-            const tgl = latestPosyandu?.tgl_ukur;
-            if (!tgl) return false;
+          const [year, monthRaw] = item.tgl_kunjungan.split("-");
+          const month = monthRaw.padStart(2, "0");
 
-            const [year, month] = tgl.split("-");
+          if (m && month !== m) matchDate = false;
+          if (y && year != y) matchDate = false;
+        }
 
+        return matchSearch && matchDesa && matchDate;
+      });
 
-            if (month != m) matchDate = false;
-            if (year != y) matchDate = false;
-
-          }
-
-          return matchSearch && matchDesa && matchDate;
-        });
-      }
-
-      return arr;
     },
 
     items_catin() {
@@ -1423,18 +1510,24 @@ export default {
 
       return unique.map(item => {
         const pemeriksaan = item.riwayat_pemeriksaan?.[0] ?? null
+        const pendampingan = item.riwayat_pendampingan?.[0] ?? null
 
         return {
           nik: item.nik_perempuan ?? "-",
-          nik_laki: item.nik_laki ?? "-",
           nama_perempuan: item.nama_perempuan ?? "-",
           nama_laki: item.nama_laki ?? "-",
           usia_perempuan: item.usia_perempuan ?? "-",
-          usia_laki: item.usia_laki ?? "-",
           bb: pemeriksaan?.berat_perempuan ?? "-",
           tb: pemeriksaan?.tinggi_perempuan ?? "-",
           hb_perempuan: pemeriksaan?.hb_perempuan ?? "-",
           lila_perempuan: pemeriksaan?.lila_perempuan ?? "-",
+          desa: item.kelurahan ?? "-",
+
+          // 🔑 RAW DATE (buat filter)
+          tanggal_pendampingan_raw: pendampingan?.tanggal_pendampingan ?? null,
+
+          // 🎨 DISPLAY DATE (buat tabel)
+          tanggal_pendampingan: this.formatDate(pendampingan?.tanggal_pendampingan) ?? "-",
 
           tanggal_menikah: this.formatDate(item.tgl_pernikahan) ?? "-",
           action: { ...item }
