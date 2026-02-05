@@ -1271,6 +1271,7 @@ export default {
 
         /** 🏘️ Tanggal */
         let matchDate = true;
+
         if (m || y) {
           if (!Array.isArray(item.posyandu) || !item.posyandu.length) {
             return false;
@@ -1285,10 +1286,10 @@ export default {
 
           const [year, month] = tgl.split("-");
 
+          if (m && month != m) matchDate = false;
+          if (y && year != y) matchDate = false;
 
-          if (month != m) matchDate = false;
-          if (year != y) matchDate = false;
-
+          console.log({ tgl, m, y, month, year, matchDate });
         }
 
         return matchSearch && matchDesa && matchDate;
