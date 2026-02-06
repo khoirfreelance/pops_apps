@@ -350,7 +350,7 @@ class PregnancyController extends Controller
             'KEK' => 0,
             'Berisiko' => 0,
             'Normal' => 0,
-            'Total Ibu Hamil' => $data->count(),
+            'Total Ibu Hamil' => $total,
         ];
 
         foreach ($data as $row) {
@@ -704,12 +704,11 @@ class PregnancyController extends Controller
             }
 
             $jml = $data
-            ->groupBy('nik_ibu')
-            ->map(fn ($g) => $g->first())
-            ->values();
+                ->groupBy('nik_ibu')
+                ->map(fn ($g) => $g->first())
+                ->values();
 
             $total = $jml->count();
-            //$total = $data->count();
 
             // =====================================
             // 5. Hitung status berdasarkan FIELD BARU
