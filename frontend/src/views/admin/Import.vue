@@ -1207,7 +1207,14 @@ export default {
       PreviewTable_catin:[],
       filePreviewTable: [],
       filePreviewTable_catin: [],
-      filePreviewTable_bumil: []
+      filePreviewTable_bumil: [],
+      filters: {
+        provinsi: '',
+        kota: '',
+        kecamatan: '',
+        kelurahan: '',
+        idWilayah: ''
+      },
     }
   },
   created() {
@@ -1226,6 +1233,12 @@ export default {
     this.thisMonth = this.getThisMonth()
   },
   computed: {
+    /* role() {
+      return localStorage.getItem('role')
+    },
+    isAdmin() {
+      return this.role === 'Super Admin'
+    }, */
     exampleFile() {
       switch (this.aktifitas) {
         case "Kunjungan Posyandu":
@@ -1537,9 +1550,25 @@ export default {
       })
     }
 
-
   },
   methods: {
+    async getWilayahUser() {
+      try {
+        const res = await axios.get(`${baseURL}/api/user/region`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        const wilayah = res.data
+        this.filters.idWilayah = wilayah.id_wilayah
+        this.filters.provinsi = wilayah.provinsi
+        this.filters.kota = wilayah.kota
+        this.filters.kecamatan = wilayah.kecamatan
+        this.filters.kelurahan = wilayah.kelurahan
+        console.log('✅ getWilayahUser ->', this.filters)
+      } catch (e) {
+        console.error('❌ getWilayahUser error:', e)
+        this.kelurahan = '-'
+      }
+    },
     async loadRegion() {
       const res = await axios.get(
         `${baseURL}/api/region`,
@@ -1560,7 +1589,6 @@ export default {
         kota: opt.kota,
         provinsi: opt.provinsi,
       }));
-
     },
     toggleSelectAll() {
       //console.log(this.items);
@@ -2836,18 +2864,18 @@ export default {
         var payload;
         switch (this.activeMenu) {
           case 'anak':
-            res = await axios.get(`${baseURL}/api/children`, { headers });
+            res = await axios.get(`${baseURL}/api/children`, { headers,params: this.filters });
             payload = res.data.data_anak ?? {};
             this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
             break;
           case 'bumil':
-            res = await axios.get(`${baseURL}/api/pregnancy`, { headers });
+            res = await axios.get(`${baseURL}/api/pregnancy`, { headers,params: this.filters });
             payload = res.data?.data || [];
             this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
             break;
 
           case 'catin':
-            res = await axios.get(`${baseURL}/api/bride`, { headers });
+            res = await axios.get(`${baseURL}/api/bride`, { headers,params: this.filters });
             payload = res.data ?? {};
             this.dataLoad = Array.isArray(payload) ? payload : Object.values(payload);
             break;
@@ -2880,23 +2908,24 @@ export default {
   async mounted() {
     this.isLoading = true
     try {
-      this.role = localStorage.getItem('role');
-      const currentYear = new Date().getFullYear();
-      const range = 5;
+      this.role = localStorage.getItem('role')
 
-      this.yearOptions = Array.from(
-        { length: range },
-        (_, i) => currentYear - i
-      );
+      const currentYear = new Date().getFullYear()
+      this.yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
-      await Promise.all([
-        this.loadConfigWithCache(),
-        this.loadData(),
-        this.loadRegion(),
-        this.handleResize(),
+      await this.loadConfigWithCache()
 
-        window.addEventListener('resize', this.handleResize)
-      ])
+      if (this.role === "Super Admin") {
+        await this.loadRegion()
+      } else {
+        await this.getWilayahUser() // ⬅️ ini WAJIB selesai dulu
+      }
+
+      await this.loadData() // ⬅️ baru load data setelah filter siap
+
+      this.handleResize()
+      window.addEventListener('resize', this.handleResize)
+
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
