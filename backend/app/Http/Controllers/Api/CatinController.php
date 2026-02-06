@@ -29,9 +29,9 @@ class CatinController extends Controller
             $data = Catin::get();
             $dataRaw = $data;
 
-            $data = $data->groupBy('nik_perempuan')->map(function ($group) {
-                return $group->sortByDesc('tanggal_pemeriksaan')->first();
-            });
+            /* $data = $data->groupBy('nik_perempuan')->map(function ($group) {
+                return $group->sortByDesc('tanggal_pendampingan')->first();
+            }); */
 
             $data = $data->filter(function ($item) use ($request) {
                 if (!empty($request->provinsi) &&
@@ -86,11 +86,13 @@ class CatinController extends Controller
 
                 $start = $parsePeriode($request->periodeAwal)->startOfMonth()->format('Y-m-d');
                 $end = $parsePeriode($request->periodeAkhir)->endOfMonth()->format('Y-m-d');
-                // dd($start, $end);
+                //dd($start, $end);
+                //dd($data->toArray());
                 $data = $data->filter(function ($item) use ($start, $end) {
-                    // dd($item->tanggal_pemeriksaan_terakhir >= $start && $item->tanggal_pemeriksaan_terakhir <= $end);
-                    return $item->tanggal_pemeriksaan >= $start && $item->tanggal_pemeriksaan <= $end;
+                    // dd($item->tanggal_pendampingan_terakhir >= $start && $item->tanggal_pendampingan_terakhir <= $end);
+                    return $item->tanggal_pendampingan >= $start && $item->tanggal_pendampingan <= $end;
                 });
+                //dd($data);
             }
 
             if ($request->filled('status') && is_array($request->status)) {
@@ -207,7 +209,7 @@ class CatinController extends Controller
             ];
 
 
-            $grouped = $data->groupBy('nik_perempuan')->sortBy('tanggal_pemeriksaan')->map(function ($items) {
+            $grouped = $data->groupBy('nik_perempuan')->sortBy('tanggal_pendampingan')->map(function ($items) {
 
                 $main = $items->first();
 
@@ -512,7 +514,7 @@ class CatinController extends Controller
                 'status_kek' => $latest->status_kek ?? '-',
                 'status_hb' => $latest->status_hb ?? '-',
 
-                'tgl_kunjungan' => $latest->tanggal_pemeriksaan ?? '-',
+                'tgl_kunjungan' => $latest->tanggal_pendampingan ?? '-',
                 'tb' => $latest->tinggi_perempuan ?? '-',
                 'bb' => $latest->berat_perempuan ?? '-',
                 'lila' => $latest->lila_perempuan ?? '-',
@@ -542,7 +544,7 @@ class CatinController extends Controller
             $riwayat = $records->map(function ($r) {
                 return [
                     'kader' => $r->nama_petugas,
-                    'tanggal' => $r->tanggal_pemeriksaan,
+                    'tanggal' => $r->tanggal_pendampingan,
                     'bb' => $r->berat_perempuan,
                     'tb' => $r->tinggi_perempuan,
                     'imt' => $r->imt_perempuan,
@@ -781,7 +783,7 @@ class CatinController extends Controller
         return $rows
             ->groupBy('nik_perempuan')
             ->map(function ($items) {
-                $main = $items->sortByDesc('tanggal_pemeriksaan')->first();
+                $main = $items->sortByDesc('tanggal_pendampingan')->first();
 
                 return [
                     // informasi utama
@@ -861,7 +863,7 @@ class CatinController extends Controller
             $data = Catin::get();
 
             $data = $data->groupBy('nik_perempuan')->map(function ($group) {
-                return $group->sortByDesc('tanggal_pemeriksaan')->first();
+                return $group->sortByDesc('tanggal_pendampingan')->first();
             });
 
             $dataRaw = $data;
@@ -892,8 +894,8 @@ class CatinController extends Controller
 
 
             $data = $data->filter(function ($item) use ($periodeAwal, $periodeAkhir) {
-                return $item->tanggal_pemeriksaan >= $periodeAwal->format('Y-m-d') &&
-                    $item->tanggal_pemeriksaan <= $periodeAkhir->format('Y-m-d');
+                return $item->tanggal_pendampingan >= $periodeAwal->format('Y-m-d') &&
+                    $item->tanggal_pendampingan <= $periodeAkhir->format('Y-m-d');
             });
 
             if ($request->posyandu) {
@@ -1005,11 +1007,11 @@ class CatinController extends Controller
                     $akhir = $tgl->copy()->endOfMonth()->format('Y-m-d');
 
                     $monthData = $dataRaw->filter(function ($item) use ($awal, $akhir) {
-                        return $item->tanggal_pemeriksaan >= $awal &&
-                            $item->tanggal_pemeriksaan <= $akhir;
+                        return $item->tanggal_pendampingan >= $awal &&
+                            $item->tanggal_pendampingan <= $akhir;
                     });
                     $groupedMonth = $monthData->groupBy('nik_perempuan')->map(function ($group) {
-                        return $group->sortByDesc('tanggal_pemeriksaan')->first();
+                        return $group->sortByDesc('tanggal_pendampingan')->first();
                     });
 
                     $totalMonth = $groupedMonth->count();

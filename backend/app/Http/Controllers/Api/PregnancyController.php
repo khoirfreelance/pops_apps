@@ -34,9 +34,9 @@ class PregnancyController extends Controller
 
             $dataRaw = $data;
 
-            $data = $data->groupBy('nik_ibu')->map(function ($group) {
+            /* $data = $data->groupBy('nik_ibu')->map(function ($group) {
                 return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
-            });
+            }); */
 
             if (!empty($request->provinsi)) {
                 $data = $data->filter(function ($item) use ($request) {
