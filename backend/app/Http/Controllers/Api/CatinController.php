@@ -29,10 +29,6 @@ class CatinController extends Controller
             $data = Catin::get();
             $dataRaw = $data;
 
-            /* $data = $data->groupBy('nik_perempuan')->map(function ($group) {
-                return $group->sortByDesc('tanggal_pendampingan')->first();
-            }); */
-
             $data = $data->filter(function ($item) use ($request) {
                 if (!empty($request->provinsi) &&
                     strtolower(trim($item->provinsi)) !== strtolower(trim($request->provinsi))) {

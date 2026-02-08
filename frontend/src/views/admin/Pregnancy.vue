@@ -1380,9 +1380,13 @@ export default {
         const data = res.data?.data || []
 
         // ✅ Ambil semua nama posyandu dari seluruh riwayat_pemeriksaan
-        const allPosyandu = data.flatMap((ibu) =>
+        const allPosyandu = data
+          .map((ibu) => ibu.riwayat_pemeriksaan?.posyandu)
+          .filter(Boolean)
+
+        /* const allPosyandu = data.flatMap((ibu) =>
           (ibu.riwayat_pemeriksaan || []).map((r) => r.posyandu).filter(Boolean),
-        )
+        ) */
 
         // ✅ Buat list unik
         const uniquePosyandu = [...new Set(allPosyandu)]
@@ -1395,6 +1399,31 @@ export default {
 
         // ✅ Format data bumil
         this.bumil = data.map((item) => {
+          const lastCheck = item.riwayat_pemeriksaan
+          const intervensi = item.intervensi?.at(-1)
+
+          return {
+            id: item.nik_ibu,
+            nama: item.nama_ibu || '-',
+            usia: item.usia_ibu || '-',
+            nama_suami: item.nama_suami || '-',
+            risiko: item.status_risiko_usia || '-',
+
+            tanggal_pemeriksaan_terakhir: lastCheck?.tanggal || '-',
+            berat_badan: lastCheck?.berat_badan || '-',
+            tinggi_badan: lastCheck?.tinggi_badan || '-',
+            imt: lastCheck?.imt || '-',
+            kadar_hb: lastCheck?.kadar_hb || '-',
+            lila: lastCheck?.lila || '-',
+
+            anemia: item.status_gizi_hb || '-',
+            kek: item.status_gizi_lila || '-',
+            posyandu: lastCheck?.posyandu || '-',
+            intervensi: intervensi?.kategori || '-',
+          }
+        })
+
+        /* this.bumil = data.map((item) => {
           const lastCheck = item.riwayat_pemeriksaan?.at(-1) // pemeriksaan terakhir
           const intervensi = item.intervensi?.at(-1) // intervensi terakhir
           return {
@@ -1417,7 +1446,7 @@ export default {
             posyandu: lastCheck?.posyandu || '-',
             intervensi: intervensi?.intervensi || '-',
           }
-        })
+        }) */
 
         //console.log(this.bumil);
 
@@ -1425,7 +1454,7 @@ export default {
         this.filteredData = [...this.bumil]
         this.totalBumil = this.bumil.length
 
-        const total = res.data.total || 0
+        const total = res.data.counts?.find(c => c.title === 'Total Ibu Hamil')?.value || 0
 
         //this.totalBumil = total;
         //console.log('Total bumil:', res)
@@ -1465,6 +1494,8 @@ export default {
         // Ambil riwayat kehamilan
         const riwayatKehamilan = data.kehamilan || []
 
+        //const riwayatIntervensi = data.riwayat_intervensi || []
+
         // Ambil record terakhir
         const lastKehamilan = riwayatKehamilan.length
           ? riwayatKehamilan[riwayatKehamilan.length - 1]
@@ -1473,10 +1504,12 @@ export default {
         this.selectedBumil = {
           ...data.ibu,
           riwayat_pemeriksaan: data.riwayat_pemeriksaan || [],
-          riwayat_intervensi: dataRaw.intervensi || [],
+          riwayat_intervensi: data.riwayat_intervensi || [],
           kehamilan: data.kehamilan || [],
           risiko: lastKehamilan.risiko || '-', // ← ini tambahan
         }
+        console.log('selected',this.selectedBumil);
+
 
         // tunggu DOM ter-render
         await nextTick()
@@ -1679,32 +1712,45 @@ export default {
   },
   async mounted() {
     this.isLoading = true
+
     try {
+      // ===============================
+      // 1. Load wilayah dulu (wajib)
+      // ===============================
       if (this.isAdmin) {
         await this.loadRegion()
         this.kelurahan = 'Semua Desa'
-      }else{
+      } else {
         await this.getWilayahUser()
-        this.kelurahan = 'Desa '+ this.filters.kelurahan
-        console.log('nama'+this.kelurahan);
 
         const label = this.filters.kelurahan
+        this.kelurahan = 'Desa ' + label
+
         localStorage.setItem('kelurahan_label', label)
         eventBus.emit('kelurahanChanged', label)
       }
 
-      await this.loadPregnancy() // kasih await juga kalau ini async
+      // ===============================
+      // 2. Jalankan proses berat barengan
+      // ===============================
+      await Promise.all([
+        this.loadPregnancy(),
+      ])
+
+      // ===============================
+      // 3. Proses ringan (tidak perlu await)
+      // ===============================
       this.periodeTitle = this.periodeLabel
       this.generatePeriodeOptions()
+      this.filteredBumil = this.bumil
+
       this.handleResize()
       window.addEventListener('resize', this.handleResize)
-      this.filteredBumil = this.bumil
+
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
-      setTimeout(() => {
-        this.isLoading = false
-      }, 300)
+      this.isLoading = false
     }
   },
   beforeUnmount() {

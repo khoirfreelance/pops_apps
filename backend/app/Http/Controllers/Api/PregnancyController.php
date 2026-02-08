@@ -18,25 +18,12 @@ use App\Imports\PregnancyImportPendampingan;
 
 class PregnancyController extends Controller
 {
-    public function getData(Request $request)
+    /* public function getData(Request $request)
     {
         try {
-            //$user = Auth::user();
-
-            /* $wilayah = [
-                'kelurahan' => $user->kelurahan ?? null,
-                'kecamatan' => $user->kecamatan ?? null,
-                'kota' => $user->kota ?? null,
-                'provinsi' => $user->provinsi ?? null,
-            ]; */
-
             $data = Pregnancy::get();
 
             $dataRaw = $data;
-
-            /* $data = $data->groupBy('nik_ibu')->map(function ($group) {
-                return $group->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
-            }); */
 
             if (!empty($request->provinsi)) {
                 $data = $data->filter(function ($item) use ($request) {
@@ -129,7 +116,6 @@ class PregnancyController extends Controller
                 });
             }
 
-
             if ($request->filled('usia') && is_array($request->usia)) {
                 $data = $data->filter(function ($q) use ($request) {
                     foreach ($request->usia as $range) {
@@ -212,8 +198,6 @@ class PregnancyController extends Controller
                 ], 200);
             }
             $intervensiList = Intervensi::where('status_subjek', 'bumil')->orderBy('tgl_intervensi')->get();
-            //dd($intervensiList);
-
             // ✅ Group data per ibu
             $groupedData = $data->map(function ($group) use ($intervensiList, $dataRaw) {
 
@@ -240,7 +224,8 @@ class PregnancyController extends Controller
                         'usia_kehamilan_minggu' => $g->usia_kehamilan_minggu,
                         'posyandu' => $g->posyandu,
                     ];
-                })->values();
+                })->first();
+                //})->values();
 
                 return [
                     'nama_ibu' => $group->nama_ibu,
@@ -313,8 +298,6 @@ class PregnancyController extends Controller
                 });
             }
 
-
-            //dd($groupedData);
             if ($groupedData->isEmpty()) {
                 return response()->json([
                     'message' => 'Tidak ada data kehamilan ditemukan.',
@@ -329,6 +312,263 @@ class PregnancyController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    } */
+    public function getData(Request $request)
+    {
+        $query = Pregnancy::query();
+
+// kalau ada filter, taruh DI SINI
+// if ($request->filled('provinsi')) {
+//     $query->where('provinsi', $request->provinsi);
+// }
+
+$result = $query
+    ->get()
+    ->groupBy('nik_ibu')
+    ->map(function ($items, $nikIbu) use ($intervensiGrouped) {
+
+        $latest = $items
+            ->sortByDesc('tanggal_pemeriksaan_terakhir')
+            ->first();
+
+        return [
+            'nama_ibu' => $latest->nama_ibu,
+            'nik_ibu' => $latest->nik_ibu,
+            'usia_ibu' => $latest->usia_ibu,
+            'nama_suami' => $latest->nama_suami,
+            'nik_suami' => $latest->nik_suami,
+            'kehamilan_ke' => $latest->kehamilan_ke,
+            'jumlah_anak' => $latest->jumlah_anak,
+
+            'status_risiko_usia' => $latest->status_risiko_usia,
+            'status_gizi_hb' => $latest->status_gizi_hb,
+            'status_gizi_lila' => $latest->status_gizi_lila,
+
+            'provinsi' => $latest->provinsi,
+            'kota' => $latest->kota,
+            'kecamatan' => $latest->kecamatan,
+            'kelurahan' => $latest->kelurahan,
+            'rt' => $latest->rt,
+            'rw' => $latest->rw,
+
+            'tanggal_pendampingan' => $latest->tanggal_pendampingan,
+            'hpl' => $latest->hpl,
+
+            'riwayat_pemeriksaan' => [
+                'tanggal' => $latest->tanggal_pemeriksaan_terakhir,
+                'berat_badan' => $latest->berat_badan,
+                'tinggi_badan' => $latest->tinggi_badan,
+                'imt' => $latest->imt,
+                'kadar_hb' => $latest->kadar_hb,
+                'lila' => $latest->lila,
+            ],
+
+            // ✅ tanpa query ulang
+                'intervensi' => $intervensiGrouped[$nikIbu] ?? collect(),
+            ];
+        })
+        ->values();
+
+        dump($result);
+
+        dd($result);
+        if ($request->filled('provinsi')) {
+            $query->where('provinsi', $request->provinsi);
+        }
+        if ($request->filled('kota')) {
+            $query->where('kota', $request->kota);
+        }
+        if ($request->filled('kecamatan')) {
+            $query->where('kecamatan', $request->kecamatan);
+        }
+        if ($request->filled('kelurahan')) {
+            $query->where('kelurahan', $request->kelurahan);
+        }
+        if ($request->filled('periodeAwal') && $request->filled('periodeAkhir')) {
+            $start = Carbon::createFromFormat('F Y', $request->periodeAwal)
+                ->startOfMonth()
+                ->toDateString();
+
+            $end = Carbon::createFromFormat('F Y', $request->periodeAkhir)
+                ->endOfMonth()
+                ->toDateString();
+
+            $query->whereBetween('tanggal_pendampingan', [$start, $end]);
+        }
+        if ($request->filled('status')) {
+            $query->where(function ($q) use ($request) {
+                foreach ($request->status as $status) {
+                    $status = strtolower($status);
+
+                    if (str_contains($status, 'kek')) {
+                        $q->orWhere('status_gizi_lila', 'KEK');
+                    }
+
+                    if (str_contains($status, 'anemia')) {
+                        $q->orWhere('status_gizi_hb', 'Anemia');
+                    }
+
+                    if (str_contains($status, 'risiko')) {
+                        $q->orWhere('status_risiko_usia', 'Berisiko');
+                    }
+                }
+            });
+        }
+
+        if ($request->filled('usia')) {
+            $query->where(function ($q) use ($request) {
+                foreach ($request->usia as $range) {
+                    if ($range === '<20') {
+                        $q->orWhere('usia_ibu', '<', 20);
+                    } elseif ($range === '>40') {
+                        $q->orWhere('usia_ibu', '>', 40);
+                    } elseif (str_contains($range, '-')) {
+                        [$min, $max] = array_map('intval', explode('-', $range));
+                        $q->orWhereBetween('usia_ibu', [$min, $max]);
+                    }
+                }
+            });
+        }
+        if ($request->filled('posyandu')) {
+            $query->where(function ($q) use ($request) {
+                foreach ($request->posyandu as $posyandu) {
+                    $posyandu = strtolower($posyandu);
+                    $q->orWhere('posyandu', $posyandu);
+                }
+            });
+        }
+        if ($request->filled('rw')) {
+            $query->where(function ($q) use ($request) {
+                foreach ($request->rw as $rw) {
+                    $rw = strtolower($rw);
+                    $q->orWhere('rw', $rw);
+                }
+            });
+        }
+        if ($request->filled('rt')) {
+            $query->where(function ($q) use ($request) {
+                foreach ($request->rt as $rt) {
+                    $q->orWhere('rt', $rt);
+                }
+            });
+        }
+        $data = $query
+            ->orderBy('tanggal_pendampingan', 'desc')
+            ->get();
+
+        $qIntervensi = Intervensi::where('status_subjek', 'bumil');
+        if ($request->filled('intervensi') && is_array($request->intervensi)) {
+            $qIntervensi->where(function ($q) use ($request) {
+                foreach (array_map('strtolower', $request->intervensi) as $inv) {
+                    if ($inv === 'mbg') {
+                        $q->orWhere('kategori', 'mbg');
+                    }elseif ($inv === 'kie') {
+                        $q->orWhere('kategori', 'kie');
+                    }elseif ($inv === 'pmt') {
+                        $q->orWhere('kategori', 'pmt');
+                    }elseif ($inv === 'bansos') {
+                        $q->orWhere('kategori', 'bansos');
+                    }elseif ($inv === 'bantuan lainnya') {
+                        $q->orWhere('kategori', 'lainnya');
+                    }elseif ($inv === 'belum mendapatkan intervensi') {
+                        //$q->orWhere('kategori', 'lainnya');
+                    }
+                }
+            });
+        }
+        $intervensiGrouped = $qIntervensi->get()->groupBy('nik_subjek');
+
+        $groupedPregnancy = $data->groupBy('nik_ibu');
+
+        $result = $groupedPregnancy->map(function ($items, $nikIbu) use ($intervensiGrouped) {
+
+            $latest = $items->sortByDesc('tanggal_pemeriksaan_terakhir')->first();
+
+            return [
+                'nama_ibu' => $latest->nama_ibu,
+                'nik_ibu' => $latest->nik_ibu,
+                'usia_ibu' => $latest->usia_ibu,
+                'nama_suami' => $latest->nama_suami,
+                'nik_suami' => $latest->nik_suami,
+                'kehamilan_ke' => $latest->kehamilan_ke,
+                'jumlah_anak' => $latest->jumlah_anak,
+                'status_risiko_usia' => $latest->status_risiko_usia,
+                'status_gizi_hb' => $latest->status_gizi_hb,
+                'status_gizi_lila' => $latest->status_gizi_lila,
+                'provinsi' => $latest->provinsi,
+                'kota' => $latest->kota,
+                'kecamatan' => $latest->kecamatan,
+                'kelurahan' => $latest->kelurahan,
+                'rt' => $latest->rt,
+                'rw' => $latest->rw,
+
+                'tanggal_pendampingan' => $latest->tanggal_pendampingan,
+                'hpl' => $latest->hpl,
+                'riwayat_pemeriksaan' => [
+                    'tanggal' => $latest->tanggal_pemeriksaan_terakhir,
+                    'berat_badan' => $latest->berat_badan,
+                    'tinggi_badan' => $latest->tinggi_badan,
+                    'imt' => $latest->imt,
+                    'kadar_hb' => $latest->kadar_hb,
+                    'lila' => $latest->lila,
+                ],
+
+                // ✅ intervensi tanpa query ulang
+                'intervensi' => $intervensiGrouped[$nikIbu] ?? collect(),
+            ];
+        })->values();
+
+        $total = $result->count();
+
+        $anemia = $result->where('status_gizi_hb', 'Anemia')->count();
+        $kek = $result->where('status_gizi_lila', 'KEK')->count();
+        $berisiko = $result->where('status_risiko_usia', 'Berisiko')->count();
+        $normal = $result
+                    ->where('status_gizi_hb', 'Normal')
+                    ->where('status_gizi_lila', 'Normal')
+                    ->where('status_risiko_usia', 'Normal')
+                    ->count();
+        //$normal = $total - ($anemia + $kek + $berisiko);
+
+        $counts = [
+                [
+                    "title" => "Anemia",
+                    "value" => $anemia ?? 0,
+                    "percent" => "0%",
+                    "color" => "warning"
+                ],
+                [
+                    "title" => "KEK",
+                    "value" => $kek ?? 0,
+                    "percent" => "0%",
+                    "color" => "danger"
+                ],
+                [
+                    "title" => "Berisiko",
+                    "value" => $berisiko ?? 0,
+                    "percent" => "0%",
+                    "color" => "violet"
+                ],
+                [
+                    "title" => "Normal",
+                    "value" => $normal ?? 0,
+                    "percent" => "0%",
+                    "color" => "success"
+                ],
+                [
+                    "title" => "Total Ibu Hamil",
+                    "value" => $total ?? 0,
+                    "percent" => "0%",
+                    "color" => "secondary"
+                ],
+            ];
+
+        return response()->json([
+            'data' => $result,
+            'counts' => $counts
+        ]);
+
+
     }
 
     public function index(Request $request)
@@ -894,24 +1134,24 @@ class PregnancyController extends Controller
             }
 
             $latest = $records->first();
-            $alamat =
+            //$alamat =
 
-                // ✅ Format profil utama ibu hamil
-                $ibu = [
-                    'nik' => $latest->nik_ibu,
-                    'nama' => $latest->nama_ibu ?? '-',
-                    'nama_suami' => $latest->nama_suami ?? '-',
-                    'nik_suami' => $latest->nik_suami ?? '-',
-                    'usia_suami' => $latest->usia_suami ?? '-',
-                    'usia' => $latest->usia_ibu ?? '-',
-                    'kelurahan' => $latest->kelurahan ?? '-',
-                    'rw' => $latest->rw ?? '-',
-                    'rt' => $latest->rt ?? '-',
-                    'kecamatan' => $latest->kecamatan ?? '-',
-                    'provinsi' => $latest->provinsi ?? '-',
-                    'kota' => $latest->kota ?? '-',
-                    'status_gizi' => $latest->status_risiko_usia ?? '-',
-                ];
+            // ✅ Format profil utama ibu hamil
+            $ibu = [
+                'nik' => $latest->nik_ibu,
+                'nama' => $latest->nama_ibu ?? '-',
+                'nama_suami' => $latest->nama_suami ?? '-',
+                'nik_suami' => $latest->nik_suami ?? '-',
+                'usia_suami' => $latest->usia_suami ?? '-',
+                'usia' => $latest->usia_ibu ?? '-',
+                'kelurahan' => $latest->kelurahan ?? '-',
+                'rw' => $latest->rw ?? '-',
+                'rt' => $latest->rt ?? '-',
+                'kecamatan' => $latest->kecamatan ?? '-',
+                'provinsi' => $latest->provinsi ?? '-',
+                'kota' => $latest->kota ?? '-',
+                'status_gizi' => $latest->status_risiko_usia ?? '-',
+            ];
 
             // ✅ Riwayat Pemeriksaan (3 terakhir)
             $riwayatPemeriksaan = $records->take(5)->map(function ($item) {
@@ -930,13 +1170,17 @@ class PregnancyController extends Controller
             });
 
             // ✅ Riwayat Intervensi dummy (bisa dihubungkan tabel lain jika sudah ada)
-            $riwayatIntervensi = collect([
-                [
-                    'tanggal' => '',
-                    'kader' => '',
-                    'intervensi' => '',
-                ],
-            ]);
+            $intervensi = Intervensi::where('nik_subjek', $latest->nik_ibu)
+                ->orderByDesc('tgl_intervensi')
+                ->get();
+
+            $riwayatIntervensi = $intervensi->map(function ($item) {
+                return [
+                    'kader' => $item->petugas ?? '-',
+                    'tanggal' => $item->tgl_intervensi ?? '-',
+                    'intervensi' => $item->kategori ?? '-',
+                ];
+            })->values();
 
             // ✅ Data Kehamilan (semua record)
             $dataKehamilan = $records->map(function ($item) {
