@@ -1378,6 +1378,7 @@ export default {
         })
 
         const data = res.data?.data || []
+        console.log('data:',data );
 
         // ✅ Ambil semua nama posyandu dari seluruh riwayat_pemeriksaan
         const allPosyandu = data
@@ -1408,7 +1409,8 @@ export default {
             usia: item.usia_ibu || '-',
             nama_suami: item.nama_suami || '-',
             risiko: item.status_risiko_usia || '-',
-
+            rw: item.rw || '-',
+            rt: item.rt || '-',
             tanggal_pemeriksaan_terakhir: lastCheck?.tanggal || '-',
             berat_badan: lastCheck?.berat_badan || '-',
             tinggi_badan: lastCheck?.tinggi_badan || '-',
