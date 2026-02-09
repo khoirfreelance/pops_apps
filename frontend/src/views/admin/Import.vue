@@ -1444,8 +1444,8 @@ export default {
         nama_suami: item.nama_suami ?? "-",
         hpl: this.formatDate(item.hpl) ?? "-",
         kehamilan_ke: item.kehamilan_ke ?? "-",
-        kadar_hb: item.riwayat_pemeriksaan?.[0]?.kadar_hb ?? "-",
-        lila: item.riwayat_pemeriksaan?.[0]?.lila ?? "-",
+        kadar_hb: item.riwayat_pemeriksaan?.kadar_hb ?? "-",
+        lila: item.riwayat_pemeriksaan?.lila ?? "-",
         usia_ibu: item.usia_ibu ?? "-",
         usia_kehamilan: item.riwayat_pemeriksaan?.[0]?.usia_kehamilan_minggu ?? "-",
         bb: item.riwayat_pemeriksaan?.[0]?.berat_badan ?? "-",
@@ -1563,7 +1563,7 @@ export default {
         this.filters.kota = wilayah.kota
         this.filters.kecamatan = wilayah.kecamatan
         this.filters.kelurahan = wilayah.kelurahan
-        console.log('✅ getWilayahUser ->', this.filters)
+        //console.log('✅ getWilayahUser ->', this.filters)
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'
