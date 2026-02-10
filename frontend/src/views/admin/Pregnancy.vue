@@ -1534,18 +1534,27 @@ export default {
     },
     async resetFilter() {
       this.isLoading = true;
-      Object.keys(this.filters).forEach((k) => {
-        if (Array.isArray(this.filters[k])) this.filters[k] = []
-        else this.filters[k] = ''
-      });
-      (await this.loadPregnancy(),await this.getWilayahUser()),
+      if (this.role === "Super Admin") {
+        this.filters.provinsi =''
+        this.filters.kota = ''
+        this.filters.kecamatan = ''
+        this.filters.kelurahan = ''
+        this.filters.kelurahan_id = ''
         this.kelurahan = 'Semua Desa'
         localStorage.removeItem('userWilayah')
-        //localStorage.setItem('kelurahan_label', this.kelurahan)
         localStorage.removeItem('kelurahan_label')
-
         eventBus.emit('kelurahanChanged', null)
-        this.isLoading = false;
+      }
+      this.filters.posyandu= '',
+      this.filters.rt = '',
+      this.filters.rw = '',
+      this.filters.status = [],
+      this.filters.usia = [],
+      this.filters.intervensi = [],
+      this.filters.periodeAwal = '',
+      this.filters.periodeAkhir = '',
+      this.loadPregnancy(),
+      this.isLoading = false
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
@@ -1704,9 +1713,10 @@ export default {
       // ===============================
       // 2. Jalankan proses berat barengan
       // ===============================
-      await Promise.all([
+      await this.loadPregnancy(),
+      /* await Promise.all([
         this.loadPregnancy(),
-      ])
+      ]) */
 
       // ===============================
       // 3. Proses ringan (tidak perlu await)

@@ -1384,9 +1384,31 @@ export default {
       }
     },
     async resetFilter() {
-
+      this.isLoading = true;
+      if (this.role === "Super Admin") {
+        this.filters.provinsi =''
+        this.filters.kota = ''
+        this.filters.kecamatan = ''
+        this.filters.kelurahan = ''
+        this.filters.kelurahan_id = ''
+        this.kelurahan = 'Semua Desa'
+        localStorage.removeItem('userWilayah')
+        localStorage.removeItem('kelurahan_label')
+        eventBus.emit('kelurahanChanged', null)
+      }
+      this.filters.posyandu= '',
+      this.filters.rt = '',
+      this.filters.rw = '',
+      this.filters.status = [],
+      this.filters.usia = [],
+      this.filters.periodeAwal = '',
+      this.filters.periodeAkhir = '',
       this.rwReadonly = true,
       this.rtReadonly = true,
+      this.loadBride(),
+      //this.hitungStatusKesehatan()
+      this.isLoading = false
+      /*
       Object.keys(this.filters).forEach(k => {
         if (k=='kelurahan') this.filters[k]
         else if (Array.isArray(this.filters[k])) this.filters[k] = []
@@ -1400,7 +1422,7 @@ export default {
       localStorage.removeItem('kelurahan_label')
 
       eventBus.emit('kelurahanChanged', null)
-      //await this.hitungStatusKesehatan()
+      //await this.hitungStatusKesehatan() */
     },
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
