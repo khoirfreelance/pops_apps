@@ -2939,6 +2939,31 @@ export default {
 </script>
 
 <style scoped>
+.table-responsive {
+  overflow-x: auto;
+  scrollbar-width: thick; /* Firefox */
+}
+
+/* WebKit */
+.table-responsive::-webkit-scrollbar {
+  height: 50px !important; /* INI ukuran scrollbar horizontal */
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+
 .table-scroll-x {
   overflow-x: auto !important;
   overflow-y: hidden !important;

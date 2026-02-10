@@ -124,7 +124,6 @@ class CatinController extends Controller
                 });
             }
 
-
             if ($request->filled('usia') && is_array($request->usia)) {
                 $data = $data->filter(function ($q) use ($request) {
                     $usia = $q->usia_perempuan ?? null;

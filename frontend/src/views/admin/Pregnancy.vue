@@ -937,7 +937,7 @@ export default {
         { text: 'RW', value: 'rw', sortable: true, width: 80 },
         { text: 'RT', value: 'rt', sortable: true, width: 80 },
         { text: 'Usia (Tahun)', value: 'usia', sortable: true, width: 100 },
-        { text: 'Tanggal Pemeriksaan', value: 'tanggal_pemeriksaan_terakhir', sortable: true, width: 150 }
+        { text: 'Tanggal Pendampingan', value: 'tanggal_pemeriksaan_terakhir', sortable: true, width: 150 }
       ],
       periodeTitle: '',
       isLoading: true,
@@ -1271,7 +1271,6 @@ export default {
         if(e) return tanggal
       }
     },
-
     downloadRiwayat() {
       if (!this.selectedBumil) {
         alert('Silakan pilih ibu hamil terlebih dahulu.')

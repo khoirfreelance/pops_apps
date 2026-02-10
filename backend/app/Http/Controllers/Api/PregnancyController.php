@@ -117,6 +117,40 @@ class PregnancyController extends Controller
 
             if ($request->filled('usia') && is_array($request->usia)) {
                 $data = $data->filter(function ($q) use ($request) {
+                    $usia = $q->usia_ibu ?? null;
+                    if (!$usia)
+                        return false;
+
+                    foreach ($request->usia as $range) {
+                        $range = trim($range);
+
+                        // < 19 Tahun
+                        if ($range === '< 20 Tahun' && $usia < 20) {
+                            return true;
+                        }
+
+                        // >= 35 Tahun
+                        if ($range === '>= 35 Tahun' && $usia >= 35) {
+                            return true;
+                        }
+
+                        // 19 - 34 Tahun
+                        if ($range === '20 - 34 Tahun' && $usia >= 20 && $usia <= 34) {
+                            return true;
+                        }
+
+                        // fallback jika ada format "X - Y"
+                        if (str_contains($range, '-')) {
+                            [$min, $max] = array_map('trim', explode('-', $range));
+                            if ($usia >= (int) $min && $usia <= (int) $max) {
+                                return true;
+                            }
+                        }
+                    }
+                });
+            }
+            /* if ($request->filled('usia') && is_array($request->usia)) {
+                $data = $data->filter(function ($q) use ($request) {
 
                     if (empty($q->usia_ibu)) {
                         return false; // usia kosong memang tidak lolos filter usia
@@ -143,7 +177,7 @@ class PregnancyController extends Controller
 
                     return false;
                 });
-            }
+            } */
 
             if ($request->filled('posyandu')) {
                 $data = $data->filter(function ($q) use ($request) {
