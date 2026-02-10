@@ -37,6 +37,7 @@ class MemberController extends Controller
                 'id'            => $cadre->id,
                 'no_tpk'        => $cadre->tpk->no_tpk ?? null,
                 'nama'          => $cadre->user->name ?? null,
+                'wilayah'       => $cadre->user->id_wilayah ?? null,
                 'action'        => null,
             ];
         });
@@ -182,7 +183,6 @@ class MemberController extends Controller
 
         return response()->json($data);
     }
-
 
     public function family($id)
     {

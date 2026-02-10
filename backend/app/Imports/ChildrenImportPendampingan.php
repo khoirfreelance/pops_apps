@@ -227,14 +227,51 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 }
 
                 $user = User::where('name', strtoupper($row[1]))
-                ->whereHas('cadre', function ($q) {
-                    $q->where('id_posyandu', $this->posyanduUser)
-                    ->whereHas('posyandu', function ($p) {
-                        $p->where('rt', $this->rtPosyandu)
-                            ->where('rw', $this->rwPosyandu);
-                    });
-                })
+                ->where('id_wilayah', $wilayahData['id'])
                 ->first();
+
+                if (!$user) {
+                    $user = User::create([
+                        'nik' => null,
+                        'name' => strtoupper($row[1]),
+                        'email' => $this->generateRandomEmail($row[1]),
+                        'email_verified_at' => now(),
+                        'phone' => null,
+                        'role' => null,
+                        'id_wilayah' => $wilayahData['id'],
+                        'status' => 1,
+                        'is_pending' => 1,
+                        'password' => '-',
+                    ]);
+                }
+
+                $posyandu = Posyandu::firstOrCreate([
+                    'nama_posyandu' => strtoupper($wilayahData['kelurahan']),
+                    'id_wilayah' => $wilayahData['id'],
+                    'rt' => $row['rt'] ?? null,
+                    'rw' => $row['rw'] ?? null,
+                ]);
+
+                $posyanduID = $user->role === 'Super Admin'
+                    ? $posyandu->id
+                    : $this->posyanduUserID;
+
+                $cadre = Cadre::firstOrCreate([
+                    'id_user' => $user->id,
+                    'id_posyandu' => $posyanduID,
+                ], [
+                    'id_tpk' => null,
+                    'status' => 'non-kader',
+                ]);
+                /* $user = User::where('name', strtoupper($row[1]))
+                    ->whereHas('cadre', function ($q) {
+                        $q->where('id_posyandu', $this->posyanduUser)
+                        ->whereHas('posyandu', function ($p) {
+                            $p->where('rt', $this->rtPosyandu)
+                                ->where('rw', $this->rwPosyandu);
+                        });
+                    })
+                    ->first();
 
                 if (!$user) {
                     $user = User::create([
@@ -265,7 +302,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'id_user' => $user->id,
                     'id_posyandu' => $posyanduID,
                     'status' => 'Non Kader',
-                ]);
+                ]); */
 
                 $dampinganKeluarga = DampinganKeluarga::firstOrCreate([
                     'id_pendampingan' => $child->id,
@@ -387,7 +424,6 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         );
     }
 
-
     private function hitungZScore($tipe, $jk, $usiaOrTb, $bb)
     {
         $sex = ($jk == 'L' || $jk == 'l' || $jk == 1 || $jk == "LAKI-LAKI") ? 1 : 2;
@@ -439,7 +475,6 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         // Bulatkan ke 2 angka di belakang koma
         return round($z, 2);
     }
-
 
     private function statusBBU($z)
     {

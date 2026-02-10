@@ -258,13 +258,7 @@ class PregnancyImportPendampingan implements
             }
 
             $user = User::where('name', strtoupper($row[1]))
-                ->whereHas('cadre', function ($q) {
-                    $q->where('id_posyandu', $this->posyanduUser)
-                    ->whereHas('posyandu', function ($p) {
-                        $p->where('rt', $this->rtPosyandu)
-                            ->where('rw', $this->rwPosyandu);
-                    });
-                })
+            ->where('id_wilayah', $wilayahData['id'])
             ->first();
 
             if (!$user) {
@@ -283,18 +277,21 @@ class PregnancyImportPendampingan implements
             }
 
             $posyandu = Posyandu::firstOrCreate([
-                    'nama_posyandu' => strtoupper($wilayahData['kelurahan']),
-                    'id_wilayah' => $wilayahData['id'],
-                    'rt' => $row['rt'] ?? null,
-                    'rw' => $row['rw'] ?? null,
-                ]);
+                'nama_posyandu' => strtoupper($wilayahData['kelurahan']),
+                'id_wilayah' => $wilayahData['id'],
+                'rt' => $row['rt'] ?? null,
+                'rw' => $row['rw'] ?? null,
+            ]);
 
-            $posyanduID = $user->role === 'Super Admin'? $posyandu->id : $this->posyanduUserID;
+            $posyanduID = $user->role === 'Super Admin'
+                ? $posyandu->id
+                : $this->posyanduUserID;
 
             $cadre = Cadre::firstOrCreate([
-                'id_tpk' => null,
                 'id_user' => $user->id,
                 'id_posyandu' => $posyanduID,
+            ], [
+                'id_tpk' => null,
                 'status' => 'non-kader',
             ]);
 
