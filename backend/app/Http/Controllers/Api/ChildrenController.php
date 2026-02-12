@@ -118,6 +118,7 @@ class ChildrenController extends Controller
             ->when($periodeAkhir, fn($q) => $q->whereDate('tgl_intervensi', '<=', $filters["periodeAkhir"]))
             ->orderBy('tgl_intervensi', 'desc')
             ->get()->groupBy("nik_subjek");
+            //dd($intervensi);
         $pendampingan = Child::query()
             ->whereIn('nik_anak', $nikKunjungan)
             ->when($periodeAwal, fn($q) => $q->whereDate('tgl_pendampingan', '>=', $filters["periodeAwal"]))
@@ -222,7 +223,7 @@ class ChildrenController extends Controller
             if ($problem === 0 && $h->count() == 0) {
                 $grouped[$nik]['intervensi'][] = [
                     'kader' => '-',
-                    'jenis' => 'Normal',
+                    'jenis' => '-',
                     'tgl_intervensi' => '-',
                     'bantuan' => '-',
                 ];
