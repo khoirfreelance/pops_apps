@@ -2994,50 +2994,6 @@ label {
   font-size: 24px;
   font-weight: bold;
 }
-.table-modern {
-  border: none !important;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-/* Header */
-.table-modern th {
-  background-color: var(--bs-primary) !important; /* primary */
-  color: #fff !important;
-  font-weight: 600;
-  padding: 0.75rem;
-  text-align: left;
-}
-
-/* Cell */
-.table-modern td {
-  vertical-align: middle;
-  padding: 0.65rem 0.75rem;
-  border-bottom: 1px solid #f1f1f1;
-}
-
-/* Row hover */
-.table-modern tr:hover {
-  background-color: rgba(13, 110, 253, 0.08) !important;
-  transition: background 0.2s ease-in-out;
-}
-
-/* Pagination & footer */
-.table-modern .pagination {
-  margin-top: 1rem;
-}
-
-.table-modern .pagination .page-link {
-  border-radius: 0.5rem;
-  color: var(--bs-primary);
-}
-
-.table-modern .pagination .active .page-link {
-  background-color: #6c757d; /* secondary */
-  border-color: #6c757d;
-  color: #fff;
-}
 
 .progress-bar {
   transition: width 0.4s ease-in-out;

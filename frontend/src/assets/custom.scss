@@ -280,3 +280,41 @@ ul.nav .nav-link.active {
   }
 
 }
+
+/* horizontal */
+.vue3-easy-data-table__main::-webkit-scrollbar {
+  height: 16px !important;
+}
+
+/* vertical */
+.vue3-easy-data-table__main::-webkit-scrollbar {
+  width: 16px !important;
+}
+
+.vue3-easy-data-table__main::-webkit-scrollbar-thumb {
+  background: #888 !important;
+  border-radius: 5px !important;
+}
+
+.vue3-easy-data-table__main {
+  scrollbar-width: thick !important; /* Firefox */
+}
+
+/* horizontal */
+.table-responsive::-webkit-scrollbar {
+  height: 16px !important;
+}
+
+/* vertical */
+.table-responsive::-webkit-scrollbar {
+  width: 16px !important;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #888 !important;
+  border-radius: 5px !important;
+}
+
+.table-responsive {
+  scrollbar-width: thick !important; /* Firefox */
+}
