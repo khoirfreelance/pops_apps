@@ -218,11 +218,14 @@
                   <div class="row g-2 align-items-end">
 
                     <!-- Filter -->
-                    <div class="col-lg-6 col-12">
+                    <div class="col-lg-4 col-12">
                       <div class="d-flex flex-wrap gap-2">
-
-                        <select v-if="role === 'Super Admin' " v-model="selectDesa_kunAn"
-                                class="form-select form-select-sm w-auto">
+                        <select
+                          class="form-select form-select-sm w-auto"
+                          v-if="role === 'Super Admin' "
+                          v-model="filters.idWilayah"
+                          @change="handleRegionChange"
+                        >
                           <option value="">Pilih Desa</option>
                           <option v-for="desa in listKelurahan"
                                   :key="desa.id"
@@ -231,7 +234,17 @@
                           </option>
                         </select>
 
-                        <select v-model="searchDate_kunAn"
+                        <select v-model="this.periode" class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Periode</option>
+                          <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
+                            {{ p.label }}
+                          </option>
+                        </select>
+
+                        <button @click="applyFilter()" class="btn btn-gradient fw-semibold uniform-input">
+                          <i class="bi bi-filter me-1"></i> Terapkan
+                        </button>
+                        <!-- <select v-model="searchDate_kunAn"
                                 class="form-select form-select-sm w-auto">
                           <option value="">Pilih Periode</option>
                           <option value="01">Januari</option>
@@ -256,13 +269,13 @@
                                   :value="year">
                             {{ year }}
                           </option>
-                        </select>
+                        </select> -->
 
                       </div>
                     </div>
 
                     <!-- Search + Button -->
-                    <div class="col-lg-6 col-12">
+                    <div class="col-lg-8 col-12">
                       <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
 
                         <input type="text"
@@ -518,7 +531,31 @@
                     <div class="col-lg-6 col-12">
                       <div class="d-flex flex-wrap gap-2">
 
-                        <select v-if="role === 'Super Admin' " v-model="selectDesa_bumil"
+                        <select
+                          class="form-select form-select-sm w-auto"
+                          v-if="role === 'Super Admin' "
+                          v-model="filters.idWilayah"
+                          @change="handleRegionChange"
+                        >
+                          <option value="">Pilih Desa</option>
+                          <option v-for="desa in listKelurahan"
+                                  :key="desa.id"
+                                  :value="desa.kelurahan">
+                            {{ desa.label }}
+                          </option>
+                        </select>
+
+                        <select v-model="this.periode" class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Periode</option>
+                          <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
+                            {{ p.label }}
+                          </option>
+                        </select>
+
+                        <button @click="applyFilter()" class="btn btn-gradient fw-semibold uniform-input">
+                          <i class="bi bi-filter me-1"></i> Terapkan
+                        </button>
+                        <!-- <select v-if="role === 'Super Admin' " v-model="selectDesa_bumil"
                                 class="form-select form-select-sm w-auto">
                           <option value="">Pilih Desa</option>
                           <option v-for="desa in listKelurahan"
@@ -553,7 +590,7 @@
                                   :value="year">
                             {{ year }}
                           </option>
-                        </select>
+                        </select> -->
 
                       </div>
                     </div>
@@ -810,7 +847,31 @@
                     <div class="col-lg-6 col-12">
                       <div class="d-flex flex-wrap gap-2">
 
-                        <select v-if="role === 'Super Admin'" v-model="selectDesa_catin"
+                        <select
+                          class="form-select form-select-sm w-auto"
+                          v-if="role === 'Super Admin' "
+                          v-model="filters.idWilayah"
+                          @change="handleRegionChange"
+                        >
+                          <option value="">Pilih Desa</option>
+                          <option v-for="desa in listKelurahan"
+                                  :key="desa.id"
+                                  :value="desa.kelurahan">
+                            {{ desa.label }}
+                          </option>
+                        </select>
+
+                        <select v-model="this.periode" class="form-select form-select-sm w-auto">
+                          <option value="">Pilih Periode</option>
+                          <option v-for="p in periodeOptions" :key="p.value" :value="p.value">
+                            {{ p.label }}
+                          </option>
+                        </select>
+
+                        <button @click="applyFilter()" class="btn btn-gradient fw-semibold uniform-input">
+                          <i class="bi bi-filter me-1"></i> Terapkan
+                        </button>
+                        <!-- <select v-if="role === 'Super Admin'" v-model="selectDesa_catin"
                                 class="form-select form-select-sm w-auto">
                           <option value="">Pilih Desa</option>
                           <option v-for="desa in listKelurahan"
@@ -845,7 +906,7 @@
                                   :value="year">
                             {{ year }}
                           </option>
-                        </select>
+                        </select> -->
 
                       </div>
                     </div>
@@ -977,6 +1038,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      periodeOptions: [],
       listKelurahan:[],
       role:'',
       selectedIds_anak: [],      // ← ID terpilih
@@ -1208,12 +1270,15 @@ export default {
       filePreviewTable: [],
       filePreviewTable_catin: [],
       filePreviewTable_bumil: [],
+      periode:'',
       filters: {
         provinsi: '',
         kota: '',
         kecamatan: '',
         kelurahan: '',
-        idWilayah: ''
+        idWilayah: '',
+        periodeAwal: '',
+        periodeAkhir: '',
       },
     }
   },
@@ -1261,6 +1326,7 @@ export default {
     // ==================== ANAK ====================
     filteredAnak() {
       if (!this.dataLoad) return [];
+      //console.log('anak:',this.dataLoad);
 
       const arr = Array.isArray(this.dataLoad)
         ? this.dataLoad
@@ -1552,6 +1618,77 @@ export default {
 
   },
   methods: {
+    setPeriodeRange() {
+      if (!this.periode) {
+        this.filters.periodeAwal = ''
+        this.filters.periodeAkhir = ''
+        return
+      }
+
+      const bulan = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ]
+
+      const [year, month] = this.periode.split('-')
+      const namaBulan = bulan[parseInt(month) - 1]
+
+      const formatted = `${namaBulan} ${year}`
+
+      this.filters.periodeAwal = formatted
+      this.filters.periodeAkhir = formatted
+    },
+    async applyFilter() {
+      this.isLoading = true
+      try {
+
+        // 🔥 generate periode range dulu
+        this.setPeriodeRange()
+
+        await this.loadData()
+      } finally {
+        this.isLoading = false
+      }
+    },
+    generatePeriodeOptions() {
+      const bulan = [
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember',
+      ]
+
+      const now = new Date()
+      const result = []
+
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` // ✅ pakai tanda "-"
+        const label = `${bulan[d.getMonth()]} ${d.getFullYear()}`
+        result.push({ label, value })
+      }
+
+      this.periodeOptions = result
+      //console.log('Periode options:', this.periodeOptions)
+    },
     async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
@@ -2921,6 +3058,7 @@ export default {
         await this.getWilayahUser() // ⬅️ ini WAJIB selesai dulu
       }
 
+      this.generatePeriodeOptions()
       await this.loadData() // ⬅️ baru load data setelah filter siap
 
       this.handleResize()
