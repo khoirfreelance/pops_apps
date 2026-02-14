@@ -221,9 +221,9 @@
                     <div class="col-lg-4 col-12">
                       <div class="d-flex flex-wrap gap-2">
                         <select
-                          class="form-select form-select-sm w-auto"
+                          class="form-select form-select-sm" style="width: 30%;"
                           v-if="role === 'Super Admin' "
-                          v-model="filters.idWilayah"
+                          v-model="filters.kelurahan"
                           @change="handleRegionChange"
                         >
                           <option value="">Pilih Desa</option>
@@ -241,8 +241,8 @@
                           </option>
                         </select>
 
-                        <button @click="applyFilter()" class="btn btn-gradient fw-semibold uniform-input">
-                          <i class="bi bi-filter me-1"></i> Terapkan
+                        <button @click="applyFilter()" class="btn btn-gradient btn-sm">
+                          Terapkan
                         </button>
                         <!-- <select v-model="searchDate_kunAn"
                                 class="form-select form-select-sm w-auto">
@@ -534,7 +534,7 @@
                         <select
                           class="form-select form-select-sm w-auto"
                           v-if="role === 'Super Admin' "
-                          v-model="filters.idWilayah"
+                          v-model="filters.kelurahan"
                           @change="handleRegionChange"
                         >
                           <option value="">Pilih Desa</option>
@@ -552,8 +552,8 @@
                           </option>
                         </select>
 
-                        <button @click="applyFilter()" class="btn btn-gradient fw-semibold uniform-input">
-                          <i class="bi bi-filter me-1"></i> Terapkan
+                        <button @click="applyFilter()" class="btn btn-gradient btn-sm">
+                          Terapkan
                         </button>
                         <!-- <select v-if="role === 'Super Admin' " v-model="selectDesa_bumil"
                                 class="form-select form-select-sm w-auto">
@@ -850,7 +850,7 @@
                         <select
                           class="form-select form-select-sm w-auto"
                           v-if="role === 'Super Admin' "
-                          v-model="filters.idWilayah"
+                          v-model="filters.kelurahan"
                           @change="handleRegionChange"
                         >
                           <option value="">Pilih Desa</option>
@@ -868,8 +868,8 @@
                           </option>
                         </select>
 
-                        <button @click="applyFilter()" class="btn btn-gradient fw-semibold uniform-input">
-                          <i class="bi bi-filter me-1"></i> Terapkan
+                        <button @click="applyFilter()" class="btn btn-gradient btn-sm">
+                          Terapkan
                         </button>
                         <!-- <select v-if="role === 'Super Admin'" v-model="selectDesa_catin"
                                 class="form-select form-select-sm w-auto">
