@@ -357,14 +357,35 @@
 
                     </easy-data-table>
 
-                    <button
-                        class="btn btn-danger btn-sm mt-2"
-                        :disabled="!selectedIds_anak.length"
-                        @click="bulkDelete"
-                      >
-                        <i class="bi bi-trash"></i>
-                        Hapus ({{ selectedIds_anak.length }})
-                      </button>
+                    <select
+                      v-model="bulkAnak"
+                      :disabled="!selectedIds_anak.length"
+                      class="form-select form-select-sm w-auto"
+                      @change="handleBulkAction"
+                    >
+                      <option value="">-- Pilih Aksi --</option>
+                      <option value="kunjungan_anak">
+                        Hapus Data Kunjungan Anak ({{ selectedIds_anak.length }})
+                      </option>
+                      <option value="pendampingan_anak">
+                        Hapus Data Pendampingan Anak ({{ selectedIds_anak.length }})
+                      </option>
+                      <option value="intervensi_anak">
+                        Hapus Data Intervensi Anak ({{ selectedIds_anak.length }})
+                      </option>
+                      <option value="data_anak">
+                        Hapus Data Anak ({{ selectedIds_anak.length }})
+                      </option>
+                    </select>
+
+                    <!-- <button
+                      class="btn btn-danger btn-sm mt-2"
+                      :disabled="!selectedIds_anak.length"
+                      @click="bulkDelete"
+                    >
+                      <i class="bi bi-trash"></i>
+                      Hapus ({{ selectedIds_anak.length }})
+                    </button> -->
                   </div>
 
                 </div>
@@ -1038,6 +1059,9 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
+      bulkAnak:'',
+      bulkBumil:'',
+      bulkCatin:'',
       periodeOptions: [],
       listKelurahan:[],
       role:'',
@@ -1776,33 +1800,49 @@ export default {
             break;
       }
     },
+    async handleBulkAction() {
+      if (!this.bulkAnak) return
+
+      await this.bulkDelete()
+
+      // reset select biar gak auto trigger lagi
+      this.bulkAnak = ''
+    },
     async bulkDelete() {
-      let url,ids
+      let url = ''
+      let ids = []
+      let extraPayload = {}
+
       switch (this.activeMenu) {
-          case 'anak':
-            url = 'children'
-            ids = this.selectedIds_anak
-            if (!this.selectedIds_anak.length) return
-            break;
-          case 'bumil':
-            url = 'pregnancy'
-            ids = this.selectedIds_bumil
-            if (!this.selectedIds_bumil.length) return
-            break;
-          case 'catin':
-            url = 'bride'
-            ids = this.selectedIds_catin
-            if (!this.selectedIds_catin.length) return
-            break;
-          default:
-            break;
+        case 'anak':
+          if (!this.selectedIds_anak.length) return
+          url = 'children'
+          ids = this.selectedIds_anak
+          extraPayload.bulk_type = this.bulkAnak
+          extraPayload.filters = this.filters
+          break
+
+        case 'bumil':
+          if (!this.selectedIds_bumil.length) return
+          url = 'pregnancy'
+          ids = this.selectedIds_bumil
+          break
+
+        case 'catin':
+          if (!this.selectedIds_catin.length) return
+          url = 'bride'
+          ids = this.selectedIds_catin
+          break
+
+        default:
+          return
       }
 
-      let length = this.selectedIds_anak.length || this.selectedIds_bumil.length || this.selectedIds_catin.length
+      const length = ids.length
 
       const confirm = await Swal.fire({
         title: 'Konfirmasi',
-        html: `Yakin ingin menghapus <b>${length}</b> data ${this.activeMenu} ?`,
+        html: `Yakin ingin menghapus <b>${length}</b> data ${this.activeMenu}?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Ya, Hapus',
@@ -1824,29 +1864,30 @@ export default {
         this.importProgress = 10
 
         await axios.post(`${baseURL}/api/${url}/bulk-delete`, {
-          ids: ids
+          ids,
+          ...extraPayload
         }, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         })
 
-        this.animatedProgress = 50
-        this.progressLevel = 50
-        this.importProgress = 50
+        // Reset selection
         this.selectedIds_anak = []
-        this.selectAll_anak = false
         this.selectedIds_bumil = []
-        this.selectAll_bumil = false
         this.selectedIds_catin = []
+        this.selectAll_anak = false
+        this.selectAll_bumil = false
         this.selectAll_catin = false
+
         this.animatedProgress = 70
         this.progressLevel = 70
         this.importProgress = 70
+
         await this.loadData()
 
         this.importProgress = 100
-        // animasi ke 100
+
         await new Promise(resolve => {
           const interval = setInterval(() => {
             if (this.animatedProgress >= 100) {
@@ -1868,18 +1909,16 @@ export default {
         })
 
       } catch (e) {
-        this.isLoadingImport = false
         Swal.fire({
           title: 'Error',
-          html: e.data?.error || 'Terjadi kesalahan saat menghapus data',
+          html: e.response?.data?.error || 'Terjadi kesalahan saat menghapus data',
           icon: 'error',
           confirmButtonText: 'OK',
           buttonsStyling: false,
           customClass: {
-            confirmButton: 'btn btn-danger mx-1',
+            confirmButton: 'btn btn-danger'
           }
         })
-
       } finally {
         this.isLoadingImport = false
       }

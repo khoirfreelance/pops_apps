@@ -327,7 +327,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
             }
 
             throw new \Exception(
-                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
+                $e->getMessage()//'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
             );
         }
     }

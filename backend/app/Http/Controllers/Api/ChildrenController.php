@@ -3462,7 +3462,7 @@ class ChildrenController extends Controller
         }
     }
 
-    public function bulkDelete(Request $request)
+    /* public function bulkDelete(Request $request)
     {
         try {
             DB::beginTransaction();
@@ -3515,6 +3515,137 @@ class ChildrenController extends Controller
                 'message' => 'Gagal menghapus data keluarga'
             ], 500);
         }
+    } */
+    public function bulkDelete(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $niks = $request->ids;
+            $bulkType = $request->bulk_type;
+            $filters = $request->filters ?? [];
+
+            if (!is_array($niks) || empty($niks)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak valid'
+                ], 422);
+            }
+
+            $startDate = null;
+            $endDate = null;
+
+            if (!empty($filters['periodeAwal']) && !empty($filters['periodeAkhir'])) {
+                try {
+
+                    Carbon::setLocale('id');
+
+                    $start = Carbon::createFromLocaleFormat(
+                        'F Y',
+                        'id',
+                        $filters['periodeAwal']
+                    );
+
+                    $end = Carbon::createFromLocaleFormat(
+                        'F Y',
+                        'id',
+                        $filters['periodeAkhir']
+                    );
+
+                    $startDate = $start->copy()->startOfMonth();
+                    $endDate   = $end->copy()->endOfMonth();
+
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Format periode tidak valid'
+                    ], 422);
+                }
+            }
+
+            $totalDeleted = 0;
+
+            switch ($bulkType) {
+
+                case 'kunjungan_anak':
+                    $query = Kunjungan::whereIn('nik', $niks);
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('tgl_pengukuran', [$startDate, $endDate]);
+                    }
+                    $totalDeleted = $query->delete();
+                    break;
+
+                case 'intervensi_anak':
+                    $query = Intervensi::whereIn('nik_subjek', $niks);
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('tgl_intervensi', [$startDate, $endDate]);
+                    }
+                    $totalDeleted = $query->delete();
+                    break;
+
+                case 'pendampingan_anak':
+                    $query = Child::whereIn('nik_anak', $niks);
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                    }
+                    $totalDeleted = $query->delete();
+                    break;
+
+                case 'data_anak':
+                    $deletedKunjungan = Kunjungan::whereIn('nik', $niks);//->delete();
+                    $deletedIntervensi = Intervensi::whereIn('nik_subjek', $niks);//->delete();
+                    $deletedPendampingan = Child::whereIn('nik_anak', $niks);//->delete();
+                    if ($startDate && $endDate) {
+                        $deletedKunjungan->whereBetween('tgl_pengukuran', [$startDate, $endDate]);
+                        $deletedIntervensi->whereBetween('tgl_intervensi', [$startDate, $endDate]);
+                        $deletedPendampingan->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                    }
+
+                    $deletedKunjungan->delete();
+                    $deletedIntervensi->delete();
+                    $deletedPendampingan->delete();
+
+                    $totalDeleted =
+                        $deletedIntervensi +
+                        $deletedKunjungan +
+                        $deletedPendampingan;
+                    break;
+
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Jenis bulk tidak valid'
+                    ], 422);
+            }
+
+            DB::commit();
+
+            \App\Models\Log::create([
+                'id_user'  => Auth::id(),
+                'context'  => 'Data Anak',
+                'activity' => 'Bulk Delete ' . $bulkType . ' (' . $totalDeleted . ' data)',
+                'timestamp'=> now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'deleted' => $totalDeleted,
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Bulk delete anak gagal', [
+                'ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus data anak'
+            ], 500);
+        }
     }
+
 
 }
