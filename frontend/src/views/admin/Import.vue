@@ -62,7 +62,7 @@
               <div v-if="formOpen" class="card p-3 my-3" id="form_anak">
                 <div class="d-flex justify-content-between">
                   <h3 class="text-primary">Form Gizi Anak</h3>
-                  <button class="btn btn-outline-danger" @click="formOpen = !formOpen">
+                  <button class="btn btn-outline-danger" @click="closeAllPanels({ resetForm: true, resetFile: true })">
                     X
                   </button>
                 </div>
@@ -360,18 +360,20 @@
                     <select
                       v-model="bulkAnak"
                       :disabled="!selectedIds_anak.length"
-                      class="form-select form-select-sm w-auto"
+                      class="form-select form-select-sm w-auto mt-2"
                       @change="handleBulkAction"
                     >
                       <option value="">-- Pilih Aksi --</option>
                       <option value="kunjungan_anak">
                         Hapus Data Kunjungan Anak ({{ selectedIds_anak.length }})
                       </option>
+                      <!-- <option :disabled="!selectedIds_pend_anak" value="pendampingan_anak"> -->
                       <option value="pendampingan_anak">
-                        Hapus Data Pendampingan Anak ({{ selectedIds_anak.length }})
+                        Hapus Data Pendampingan Anak ({{ selectedIds_pend_anak }})
                       </option>
+                      <!-- <option :disabled="!selectedIds_intv_anak" value="intervensi_anak"> -->
                       <option value="intervensi_anak">
-                        Hapus Data Intervensi Anak ({{ selectedIds_anak.length }})
+                        Hapus Data Intervensi Anak ({{ selectedIds_intv_anak }})
                       </option>
                       <option value="data_anak">
                         Hapus Data Anak ({{ selectedIds_anak.length }})
@@ -397,7 +399,7 @@
               <div v-if="formOpen_bumil" id="form_bumil" class="card p-3 my-3">
                 <div class="d-flex justify-content-between">
                   <h3>Form Ibu Hamil</h3>
-                  <button class="btn btn-outline-danger" @click="formOpen_bumil = !formOpen_bumil">
+                  <button class="btn btn-outline-danger" @click="closeAllPanels({ resetForm: true, resetFile: true })">
                     X
                   </button>
                 </div>
@@ -682,14 +684,31 @@
 
                     </easy-data-table>
 
-                    <button
+                    <select
+                      v-model="bulkBumil"
+                      :disabled="!selectedIds_bumil.length"
+                      class="form-select form-select-sm w-auto mt-2"
+                      @change="bulkDelete"
+                    >
+                      <option value="">-- Pilih Aksi --</option>
+                      <option value="pendampingan_bumil">
+                        Hapus Data Pendampingan Bumil ({{ selectedIds_bumil.length }})
+                      </option>
+                      <option :disabled="!selectedIds_intv_bumil" value="intervensi_bumil">
+                        Hapus Data Intervensi Bumil ({{ selectedIds_intv_bumil }})
+                      </option>
+                      <option value="data_bumil">
+                        Hapus Data Bumil ({{ selectedIds_bumil.length }})
+                      </option>
+                    </select>
+                    <!-- <button
                         class="btn btn-danger btn-sm mt-2"
                         :disabled="!selectedIds_bumil.length"
                         @click="bulkDelete"
                       >
                         <i class="bi bi-trash"></i>
                         Hapus ({{ selectedIds_bumil.length }})
-                      </button>
+                      </button> -->
                   </div>
 
                 </div>
@@ -701,7 +720,7 @@
               <div v-if="formOpen_catin" class="card p-3 my-3" id="form_catin">
                 <div class="d-flex justify-content-between">
                   <h3>Form Calon Pengantin</h3>
-                  <button class="btn btn-outline-danger" @click="formOpen_catin = !formOpen_catin">
+                  <button class="btn btn-outline-danger" @click="closeAllPanels({ resetForm: true, resetFile: true })">
                     X
                   </button>
                 </div>
@@ -1065,6 +1084,9 @@ export default {
       periodeOptions: [],
       listKelurahan:[],
       role:'',
+      selectedIds_pend_anak:'',
+      selectedIds_intv_anak:'',
+      selectedIds_intv_bumil:'',
       selectedIds_anak: [],      // ← ID terpilih
       selectAll_anak: false,     // ← checkbox header
       selectedIds_bumil: [],      // ← ID terpilih
@@ -1754,20 +1776,68 @@ export default {
     toggleSelectAll() {
       //console.log(this.items);
       switch (this.activeMenu) {
-          case 'anak':
+          case 'anak': {
+
             if (this.selectAll_anak) {
+              // isi semua nik
               this.selectedIds_anak = this.items_kunAn.map(i => i.nik)
             } else {
               this.selectedIds_anak = []
             }
-            break;
-          case 'bumil':
+
+            // === HITUNG ULANG ===
+            const selectedSet = new Set(this.selectedIds_anak)
+
+            const selectedFullData = this.items_kunAn.filter(item =>
+              selectedSet.has(item.nik)
+            )
+
+            const isValid = val =>
+              typeof val === 'string' &&
+              val.trim() !== '' &&
+              val.trim() !== '-'
+
+            this.selectedIds_pend_anak =
+              selectedFullData.filter(item =>
+                isValid(item.pendampingan)
+              ).length
+
+            this.selectedIds_intv_anak =
+              selectedFullData.filter(item =>
+                isValid(item.intervensi)
+              ).length
+
+            break
+          }
+
+          case 'bumil': {
+
             if (this.selectAll_bumil) {
               this.selectedIds_bumil = this.items_bumil.map(i => i.nik_ibu)
             } else {
               this.selectedIds_bumil = []
             }
-            break;
+
+            // === HITUNG ULANG INTERVENSI ===
+            const selectedSet = new Set(this.selectedIds_bumil)
+
+            const selectedFullData = this.items_bumil.filter(item =>
+              selectedSet.has(item.nik_ibu)
+            )
+
+            const isValid = val =>
+              typeof val === 'string' &&
+              val.trim() !== '' &&
+              val.trim() !== '-'
+
+            this.selectedIds_intv_bumil =
+              selectedFullData.filter(item =>
+                isValid(item.intervensi)
+              ).length
+
+            break
+          }
+
           case 'catin':
               if (this.selectAll_catin) {
                 this.selectedIds_catin = this.items_catin.map(i => i.nik)
@@ -1781,23 +1851,78 @@ export default {
     },
     syncSelectAll() {
       switch (this.activeMenu) {
-          case 'anak':
-            this.selectAll_anak =
+
+        case 'anak': {
+
+          this.selectAll_anak =
             this.selectedIds_anak.length === this.items_kunAn.length &&
             this.items_kunAn.length > 0
-            break;
-          case 'bumil':
-            this.selectAll_bumil =
+
+          const selectedSet = new Set(this.selectedIds_anak)
+
+          const selectedFullData = this.items_kunAn.filter(item =>
+            selectedSet.has(item.nik)
+          )
+
+          const isValid = val =>
+            typeof val === 'string' &&
+            val.trim() !== '' &&
+            val.trim() !== '-'
+
+          this.selectedIds_pend_anak =
+            selectedFullData.filter(item =>
+              isValid(item.pendampingan)
+            ).length
+
+          this.selectedIds_intv_anak =
+            selectedFullData.filter(item =>
+              isValid(item.intervensi)
+            ).length
+
+          /* console.log('selectedFullData:', selectedFullData)
+          console.log('pendampingan count:', this.selectedIds_pend_anak)
+          console.log('intervensi count:', this.selectedIds_intv_anak) */
+
+          break
+        }
+
+        case 'bumil': {
+
+          this.selectAll_bumil =
             this.selectedIds_bumil.length === this.items_bumil.length &&
             this.items_bumil.length > 0
-            break;
-          case 'catin':
-            this.selectAll_catin =
+
+          const selectedSet = new Set(this.selectedIds_bumil)
+
+          const selectedFullData = this.items_bumil.filter(item =>
+            selectedSet.has(item.nik_ibu) // pastikan fieldnya nik ya
+          )
+
+          const isValid = val =>
+            typeof val === 'string' &&
+            val.trim() !== '' &&
+            val.trim() !== '-'
+
+          this.selectedIds_intv_bumil =
+            selectedFullData.filter(item =>
+              isValid(item.intervensi)
+            ).length
+
+            console.log(this.selectedIds_intv_bumil);
+
+          break
+        }
+
+        case 'catin': {
+          this.selectAll_catin =
             this.selectedIds_catin.length === this.items_catin.length &&
             this.items_catin.length > 0
-            break;
-          default:
-            break;
+
+          break
+        }
+
+        default:
+          break
       }
     },
     async handleBulkAction() {
@@ -1826,6 +1951,8 @@ export default {
           if (!this.selectedIds_bumil.length) return
           url = 'pregnancy'
           ids = this.selectedIds_bumil
+          extraPayload.bulk_type = this.bulkBumil
+          extraPayload.filters = this.filters
           break
 
         case 'catin':
@@ -2579,10 +2706,64 @@ export default {
     toggleSidebar() {
       this.isCollapsed = !this.isCollapsed
     },
+    closeAllPanels({ resetForm = false, resetFile = false } = {}) {
+      // Tutup semua form
+      this.formOpen = false
+      this.formOpen_bumil = false
+      this.formOpen_catin = false
+
+      // Tutup semua upload
+      this.isUploadOpen = false
+      this.isUploadOpen_bumil = false
+      this.isUploadOpen_catin = false
+
+      if (resetFile) {
+        this.resetFileState()
+      }
+
+      if (resetForm) {
+        this.resetAllForms()
+      }
+    },
+    resetFileState() {
+      this.file = null
+      this.fileName = ''
+      this.fileSize = 0
+      this.filePreviewTable = ''
+      this.filePreviewTable_catin = ''
+      this.filePreviewTable_bumil = ''
+
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = ''
+      }
+    },
+    resetAllForms() {
+      this.form = {
+        mode: "",
+        nik: "",
+        nama_anak: "",
+        nama_ortu: "",
+        bb: "",
+        tb: "",
+        unit_posyandu: "",
+        gender: "",
+        tgl_lahir: ""
+      }
+
+      this.form_bumil = {}
+      this.form_catin = {}
+    },
     async menu(type) {
       this.isLoading = true
       try {
         await Promise.all([
+          //this.closeAllPanels({ resetForm: true, resetFile: true })
+          this.closeAllPanels,
+          this.isUploadOpen = false,
+          this.isUploadOpen_bumil = false,
+          this.isUploadOpen_catin = false,
+          //this.resetForm = true,
+          //this.resetFile = true,
           this.activeMenu = type,
           this.loadData()
         ])
@@ -3082,6 +3263,7 @@ export default {
     },
   },
   async mounted() {
+
     this.isLoading = true
     try {
       this.role = localStorage.getItem('role')

@@ -3523,7 +3523,7 @@ class ChildrenController extends Controller
 
             $niks = $request->ids;
             $bulkType = $request->bulk_type;
-            $filters = $request->filters ?? [];
+            $filters  = $request->filters ?? [];
 
             if (!is_array($niks) || empty($niks)) {
                 return response()->json([
@@ -3592,23 +3592,23 @@ class ChildrenController extends Controller
                     break;
 
                 case 'data_anak':
-                    $deletedKunjungan = Kunjungan::whereIn('nik', $niks);//->delete();
-                    $deletedIntervensi = Intervensi::whereIn('nik_subjek', $niks);//->delete();
-                    $deletedPendampingan = Child::whereIn('nik_anak', $niks);//->delete();
+
+                    $queryKunjungan = Kunjungan::whereIn('nik', $niks);
+                    $queryIntervensi = Intervensi::whereIn('nik_subjek', $niks);
+                    $queryPendampingan = Child::whereIn('nik_anak', $niks);
+
                     if ($startDate && $endDate) {
-                        $deletedKunjungan->whereBetween('tgl_pengukuran', [$startDate, $endDate]);
-                        $deletedIntervensi->whereBetween('tgl_intervensi', [$startDate, $endDate]);
-                        $deletedPendampingan->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                        $queryKunjungan->whereBetween('tgl_pengukuran', [$startDate, $endDate]);
+                        $queryIntervensi->whereBetween('tgl_intervensi', [$startDate, $endDate]);
+                        $queryPendampingan->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
                     }
 
-                    $deletedKunjungan->delete();
-                    $deletedIntervensi->delete();
-                    $deletedPendampingan->delete();
+                    $deletedIntervensi = $queryIntervensi->delete();
+                    $deletedKunjungan = $queryKunjungan->delete();
+                    $deletedPendampingan = $queryPendampingan->delete();
 
-                    $totalDeleted =
-                        $deletedIntervensi +
-                        $deletedKunjungan +
-                        $deletedPendampingan;
+                    $totalDeleted = $deletedKunjungan;
+
                     break;
 
                 default:

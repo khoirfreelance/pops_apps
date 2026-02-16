@@ -254,7 +254,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                 $posyanduID = $user->role === 'Super Admin'
                     ? $posyandu->id
-                    : $this->posyanduUserID;
+                    : $this->posyanduUser;
 
                 $cadre = Cadre::firstOrCreate([
                     'id_user' => $user->id,
