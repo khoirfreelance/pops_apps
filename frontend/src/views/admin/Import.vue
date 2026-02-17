@@ -368,11 +368,11 @@
                         Hapus Data Kunjungan Anak ({{ selectedIds_anak.length }})
                       </option>
                       <!-- <option :disabled="!selectedIds_pend_anak" value="pendampingan_anak"> -->
-                      <option value="pendampingan_anak">
+                      <option value="pendampingan_anak" :disabled="selectedIds_pend_anak < 1">
                         Hapus Data Pendampingan Anak ({{ selectedIds_pend_anak }})
                       </option>
                       <!-- <option :disabled="!selectedIds_intv_anak" value="intervensi_anak"> -->
-                      <option value="intervensi_anak">
+                      <option value="intervensi_anak" :disabled="selectedIds_intv_anak < 1">
                         Hapus Data Intervensi Anak ({{ selectedIds_intv_anak }})
                       </option>
                       <option value="data_anak">
@@ -1959,6 +1959,7 @@ export default {
           if (!this.selectedIds_catin.length) return
           url = 'bride'
           ids = this.selectedIds_catin
+          extraPayload.filters = this.filters
           break
 
         default:
@@ -2756,15 +2757,12 @@ export default {
     async menu(type) {
       this.isLoading = true
       try {
+        this.closeAllPanels,
+        this.isUploadOpen = false,
+        this.isUploadOpen_bumil = false,
+        this.isUploadOpen_catin = false,
+        this.activeMenu = type,
         await Promise.all([
-          //this.closeAllPanels({ resetForm: true, resetFile: true })
-          this.closeAllPanels,
-          this.isUploadOpen = false,
-          this.isUploadOpen_bumil = false,
-          this.isUploadOpen_catin = false,
-          //this.resetForm = true,
-          //this.resetFile = true,
-          this.activeMenu = type,
           this.loadData()
         ])
       } catch (err) {

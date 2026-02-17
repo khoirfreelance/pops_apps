@@ -59,6 +59,13 @@ class ChildrenImportKunjungan implements
                 $user = Auth::user();
                 $wilayahData = $this->resolveWilayahFromRow($row);
 
+                if ((!$user || $user->role !== 'Super Admin') && $row['desakel'] !== $wilayahData['kelurahan']) {
+                    throw new \Exception(
+                        "Data untuk <strong>".$row['nik']." (".$row['desakel'].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
+                        1001
+                    );
+                }
+
                 // =========================
                 // 0. Validasi data import
                 // =========================

@@ -1321,7 +1321,8 @@ class CatinController extends Controller
         try {
             DB::beginTransaction();
 
-            $niks = $request->ids; // array NIK
+            $niks    = $request->ids; // array NIK
+            $filters = $request->filters ?? [];
 
             if (!is_array($niks) || empty($niks)) {
                 return response()->json([
@@ -1330,7 +1331,49 @@ class CatinController extends Controller
                 ], 422);
             }
 
-            $deletedCount = Catin::whereIn('nik_perempuan', $niks)->delete();
+            $startDate = null;
+            $endDate   = null;
+
+            // ==============================
+            // FILTER PERIODE (JIKA ADA)
+            // ==============================
+            if (!empty($filters['periodeAwal']) && !empty($filters['periodeAkhir'])) {
+                try {
+                    Carbon::setLocale('id');
+
+                    $start = Carbon::createFromLocaleFormat(
+                        'F Y',
+                        'id',
+                        $filters['periodeAwal']
+                    );
+
+                    $end = Carbon::createFromLocaleFormat(
+                        'F Y',
+                        'id',
+                        $filters['periodeAkhir']
+                    );
+
+                    $startDate = $start->startOfMonth();
+                    $endDate   = $end->endOfMonth();
+
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Format periode tidak valid'
+                    ], 422);
+                }
+            }
+
+            // ==============================
+            // QUERY DELETE
+            // ==============================
+            $query = Catin::whereIn('nik_perempuan', $niks);
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+            }
+
+            $deletedCount = $query->delete(); // ini integer
 
             if ($deletedCount === 0) {
                 DB::rollBack();
@@ -1358,7 +1401,7 @@ class CatinController extends Controller
             DB::rollBack();
 
             \Log::error('Bulk delete catin gagal', [
-                'ids' => $request->ids,
+                'ids'   => $request->ids,
                 'error' => $e->getMessage()
             ]);
 
@@ -1368,6 +1411,7 @@ class CatinController extends Controller
             ], 500);
         }
     }
+
 
     public function store(Request $request)
     {

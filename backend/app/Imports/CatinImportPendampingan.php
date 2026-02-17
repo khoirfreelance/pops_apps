@@ -99,6 +99,14 @@ class CatinImportPendampingan implements
             $user = Auth::user();
             $wilayahData = $this->resolveWilayahFromRow($row);
 
+            //dd($row);
+            if ((!$user || $user->role !== 'Super Admin') && $row[17] !== $wilayahData['kelurahan']) {
+                throw new \Exception(
+                    "Data untuk <strong>".$row[4]." (".$row[17].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
+                    1001
+                );
+            }
+
             // =========================
             // 0. Validasi data import
             // =========================
@@ -422,9 +430,9 @@ class CatinImportPendampingan implements
 
         if ($cadre && $cadre->posyandu) {
             $this->posyanduUserID = $cadre->posyandu->id;
-            $this->posyanduUser = $cadre->posyandu->nama_posyandu;
-            $this->rtPosyandu = $cadre->posyandu->rt;
-            $this->rwPosyandu = $cadre->posyandu->rw;
+            $this->posyanduUser = $cadre->posyandu->nama_posyandu ?? 'UNKNOWN';
+            $this->rtPosyandu = $cadre->posyandu->rt ?? '';
+            $this->rwPosyandu = $cadre->posyandu->rw ?? '';
         }
 
         $this->wilayahUser = [

@@ -73,13 +73,19 @@ class PregnancyImportPendampingan implements
     protected function processRow(array $row): void
     {
         DB::transaction(function () use ($row) {
-
-
             // =========================
             // INTRO
             // =========================
             $user = Auth::user();
             $wilayahData = $this->resolveWilayahFromRow($row);
+
+            //dd($row);
+            if ((!$user || $user->role !== 'Super Admin') && $row[19] !== $wilayahData['kelurahan']) {
+                throw new \Exception(
+                    "Data untuk <strong>".$row[4]." (".$row[19].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
+                    1001
+                );
+            }
 
             // =========================
             // 0. Validasi data import

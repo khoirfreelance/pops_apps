@@ -3561,6 +3561,22 @@ class ChildrenController extends Controller
                         'message' => 'Format periode tidak valid'
                     ], 422);
                 }
+            }else {
+
+                // ✅ Ambil tanggal_pengukuran paling terbaru
+                $query = Kunjungan::whereIn('nik', $niks);
+                $latestDate = $query->max('tgl_pengukuran');
+
+                if ($latestDate) {
+                    $latest = Carbon::parse($latestDate);
+
+                    $startDate = $latest->copy()->startOfMonth();
+                    $endDate   = $latest->copy()->endOfMonth();
+                } else {
+                    // Kalau tidak ada data sama sekali
+                    $startDate = null;
+                    $endDate   = null;
+                }
             }
 
             $totalDeleted = 0;
@@ -3642,7 +3658,8 @@ class ChildrenController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data anak'
+                'message' => 'Gagal menghapus data anak',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

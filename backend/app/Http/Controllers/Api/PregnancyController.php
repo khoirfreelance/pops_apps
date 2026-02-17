@@ -1989,7 +1989,7 @@ class PregnancyController extends Controller
 
             $startDate = null;
             $endDate = null;
-
+            //$query = Pregnancy::whereIn('nik_ibu', $niks);
             if (!empty($filters['periodeAwal']) && !empty($filters['periodeAkhir'])) {
                 try {
 
@@ -2026,6 +2026,20 @@ class PregnancyController extends Controller
                     $query = Intervensi::whereIn('nik_subjek', $niks);
                     if ($startDate && $endDate) {
                         $query->whereBetween('tgl_intervensi', [$startDate, $endDate]);
+                    }else {
+                        $query = Child::whereIn('nik_ibu', $niks);
+                        $latestDate = $query->max('tgl_pendampingan');
+
+                        if ($latestDate) {
+                            $latest = Carbon::parse($latestDate);
+
+                            $startDate = $latest->copy()->startOfMonth();
+                            $endDate   = $latest->copy()->endOfMonth();
+                        } else {
+                            // Kalau tidak ada data sama sekali
+                            $startDate = null;
+                            $endDate   = null;
+                        }
                     }
                     $totalDeleted = $query->delete();
                     break;
@@ -2034,6 +2048,20 @@ class PregnancyController extends Controller
                     $query = Pregnancy::whereIn('nik_ibu', $niks);
                     if ($startDate && $endDate) {
                         $query->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                    }else {
+                        $query = Pregnancy::whereIn('nik_ibu', $niks);
+                        $latestDate = $query->max('tgl_pendampingan');
+
+                        if ($latestDate) {
+                            $latest = Carbon::parse($latestDate);
+
+                            $startDate = $latest->copy()->startOfMonth();
+                            $endDate   = $latest->copy()->endOfMonth();
+                        } else {
+                            // Kalau tidak ada data sama sekali
+                            $startDate = null;
+                            $endDate   = null;
+                        }
                     }
                     $totalDeleted = $query->delete();
                     break;

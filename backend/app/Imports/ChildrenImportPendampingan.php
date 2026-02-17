@@ -44,6 +44,14 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 $user = Auth::user();
                 $wilayahData = $this->resolveWilayahFromRow($row);
 
+                //dd($row[20]);
+                if ((!$user || $user->role !== 'Super Admin') && $row[20] !== $wilayahData['kelurahan']) {
+                    throw new \Exception(
+                        "Data untuk <strong>".$row[4]." (".$row[20].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
+                        1001
+                    );
+                }
+
                 if (count($row) < 45) {
                     throw new Exception("Format CSV tidak valid di baris " . ($index + 2));
                 }
