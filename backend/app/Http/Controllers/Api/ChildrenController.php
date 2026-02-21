@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ChildrenController extends Controller
@@ -886,6 +887,46 @@ class ChildrenController extends Controller
                     },
                 ],
             ]);
+
+            // =============================
+            // 🔎 PRE-SCAN DUPLIKAT NIK
+            // =============================
+
+            $rows = Excel::toCollection(null, $request->file('file'))->first();
+
+            $nikCounts = [];
+            $duplicateNiks = [];
+
+            //dd($rows);
+            foreach ($rows as $index => $row) {
+
+                // skip header kalau perlu
+                if ($index === 0 && !isset($row[1])) {
+                    continue;
+                }
+
+                $nik = preg_replace('/[^0-9]/', '', $row[1] ?? null);
+
+                if ($nik) {
+                    $nikCounts[$nik] = ($nikCounts[$nik] ?? 0) + 1;
+                }
+            }
+
+            foreach ($nikCounts as $nik => $count) {
+                if ($count > 1) {
+                    $duplicateNiks[] = $nik;
+                }
+            }
+
+            //dd($duplicateNiks);
+
+            if (!empty($duplicateNiks)) {
+                throw new \Exception(
+                    "NIK berikut muncul lebih dari satu kali dalam file: <strong>"
+                    . implode('</strong>, <strong>', $duplicateNiks)
+                    . "</strong>"
+                );
+            }
 
             DB::transaction(function () use ($request) {
                 Excel::import(
@@ -3564,8 +3605,27 @@ class ChildrenController extends Controller
             }else {
 
                 // ✅ Ambil tanggal_pengukuran paling terbaru
-                $query = Kunjungan::whereIn('nik', $niks);
-                $latestDate = $query->max('tgl_pengukuran');
+                switch ($bulkType) {
+                    case 'kunjungan_anak':
+                        $query = Kunjungan::whereIn('nik', $niks);
+                        $latestDate = $query->max('tgl_pengukuran');
+                        break;
+
+                    case 'intervensi_anak':
+                        $query = Intervensi::whereIn('nik_subjek', $niks);
+                        $latestDate = $query->max('tgl_intervensi');
+                        break;
+
+                    case 'pendampingan_anak':
+                        $query = Kunjungan::whereIn('nik_anak', $niks);
+                        $latestDate = $query->max('tgl_pendampingan');
+                        break;
+
+                    default:
+                        $query = Kunjungan::whereIn('nik', $niks);
+                        $latestDate = $query->max('tgl_pengukuran');
+                        break;
+                }
 
                 if ($latestDate) {
                     $latest = Carbon::parse($latestDate);
