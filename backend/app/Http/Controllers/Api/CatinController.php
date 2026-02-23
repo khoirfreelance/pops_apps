@@ -1578,6 +1578,46 @@ class CatinController extends Controller
             'file' => 'required|mimes:csv,txt|max:5120',
         ]);
 
+        // =============================
+        // 🔎 PRE-SCAN DUPLIKAT NIK
+        // =============================
+
+        $rows = Excel::toCollection(null, $request->file('file'))->first();
+
+        $nikCounts = [];
+        $duplicateNiks = [];
+
+        //dd($rows);
+        foreach ($rows as $index => $row) {
+
+            // skip header kalau perlu
+            if ($index === 0 && !isset($row[4])) {
+                continue;
+            }
+
+            $nik = preg_replace('/[^0-9]/', '', $row[4] ?? null);
+
+            if ($nik) {
+                $nikCounts[$nik] = ($nikCounts[$nik] ?? 0) + 1;
+            }
+        }
+
+        foreach ($nikCounts as $nik => $count) {
+            if ($count > 1) {
+                $duplicateNiks[] = $nik;
+            }
+        }
+
+        //dd($duplicateNiks);
+
+        if (!empty($duplicateNiks)) {
+            throw new \Exception(
+                "NIK berikut muncul lebih dari satu kali dalam file: <strong>"
+                . implode('</strong>, <strong>', $duplicateNiks)
+                . "</strong>"
+            );
+        }
+
         try {
             Excel::import(
                 new CatinImportPendampingan(auth()->id()),

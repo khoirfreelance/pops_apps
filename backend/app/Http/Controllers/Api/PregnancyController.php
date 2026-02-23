@@ -438,6 +438,46 @@ class PregnancyController extends Controller
             ], 400);
         }
 
+        // =============================
+        // 🔎 PRE-SCAN DUPLIKAT NIK
+        // =============================
+
+        $rows = Excel::toCollection(null, $request->file('file'))->first();
+
+        $nikCounts = [];
+        $duplicateNiks = [];
+
+        //dd($rows);
+        foreach ($rows as $index => $row) {
+
+            // skip header kalau perlu
+            if ($index === 0 && !isset($row[4])) {
+                continue;
+            }
+
+            $nik = preg_replace('/[^0-9]/', '', $row[4] ?? null);
+
+            if ($nik) {
+                $nikCounts[$nik] = ($nikCounts[$nik] ?? 0) + 1;
+            }
+        }
+
+        foreach ($nikCounts as $nik => $count) {
+            if ($count > 1) {
+                $duplicateNiks[] = $nik;
+            }
+        }
+
+        //dd($duplicateNiks);
+
+        if (!empty($duplicateNiks)) {
+            throw new \Exception(
+                "NIK berikut muncul lebih dari satu kali dalam file: <strong>"
+                . implode('</strong>, <strong>', $duplicateNiks)
+                . "</strong>"
+            );
+        }
+
         //dump($file);
         try {
             Excel::import(
@@ -1001,7 +1041,7 @@ class PregnancyController extends Controller
         return $rows
             ->groupBy('nik_ibu')
             ->map(function ($items) {
-                $main = $items->sortByDesc('tgl_pendampingan')->first();
+                $main = $items->sortByDesc('tanggal_pendampingan')->first();
 
                 $intervensi = Intervensi::where('nik_subjek', $main->nik_ibu)
                     ->orderBy('tgl_intervensi', 'DESC')
@@ -2027,8 +2067,8 @@ class PregnancyController extends Controller
                     if ($startDate && $endDate) {
                         $query->whereBetween('tgl_intervensi', [$startDate, $endDate]);
                     }else {
-                        $query = Child::whereIn('nik_ibu', $niks);
-                        $latestDate = $query->max('tgl_pendampingan');
+                        $query = Pregnancy::whereIn('nik_ibu', $niks);
+                        $latestDate = $query->max('tanggal_pendampingan');
 
                         if ($latestDate) {
                             $latest = Carbon::parse($latestDate);
@@ -2047,10 +2087,10 @@ class PregnancyController extends Controller
                 case 'pendampingan_bumil':
                     $query = Pregnancy::whereIn('nik_ibu', $niks);
                     if ($startDate && $endDate) {
-                        $query->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                        $query->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
                     }else {
                         $query = Pregnancy::whereIn('nik_ibu', $niks);
-                        $latestDate = $query->max('tgl_pendampingan');
+                        $latestDate = $query->max('tanggal_pendampingan');
 
                         if ($latestDate) {
                             $latest = Carbon::parse($latestDate);
@@ -2073,7 +2113,7 @@ class PregnancyController extends Controller
 
                     if ($startDate && $endDate) {
                         $queryIntervensi->whereBetween('tgl_intervensi', [$startDate, $endDate]);
-                        $queryPendampingan->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                        $queryPendampingan->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
                     }
 
                     $deletedIntervensi = $queryIntervensi->delete();
