@@ -1078,7 +1078,7 @@ export default {
   components: { CopyRight, NavbarAdmin, HeaderAdmin, Welcome, EasyDataTable, },
   data() {
     return {
-      selectedMonth:'',
+      selectedMonth:'pada bulan terakhir',
       bulkAnak:'',
       bulkBumil:'',
       bulkCatin:'',
@@ -1700,9 +1700,13 @@ export default {
       try {
 
         // 🔥 generate periode range dulu
+        this.selectedIds_anak = []
+        this.selectedIds_bumil = []
+        this.selectedIds_catin = []
         this.setPeriodeRange()
-
         await this.loadData()
+        this.selectedMonth = this.filters.periodeAwal != '' ? this.filters.periodeAwal : this.selectedMonth
+
       } finally {
         this.isLoading = false
       }
@@ -2014,7 +2018,7 @@ export default {
 
       const confirm = await Swal.fire({
         title: 'Konfirmasi',
-        html: `Yakin ingin menghapus <b>${length}</b> data ${type}?`,
+        html: `Yakin ingin menghapus <b>${length}</b> data ${type} <b>${this.selectedMonth}</b>?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Ya, Hapus',

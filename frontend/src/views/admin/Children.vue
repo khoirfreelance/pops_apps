@@ -383,10 +383,12 @@
 
               <!-- === BUTTONS === -->
               <div class="col-6 d-flex justify-content-start mt-3 text-danger">
-                <p>Note:</p>
+
                 <ul>
                   <li class="small text-danger">Severely underweight = Berat Badan Sangat Kurang</li>
                   <li class="small text-danger">Severely Stunted = Sangat Pendek</li>
+                </ul>
+                <ul>
                   <li class="small text-danger">Severely Wasted = Gizi Buruk</li>
                   <li class="small text-danger">Possible Risk Of Everweight = Berisiko Gizi Lebih</li>
                 </ul>
