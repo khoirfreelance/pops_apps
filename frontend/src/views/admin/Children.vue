@@ -2170,7 +2170,7 @@ export default {
         this.totalAnak = this.filteredData.length;
 
         // kelurahan dari filter (atau API kalo ada)
-        this.kelurahan = this.filters.kelurahan || '-';
+        this.kelurahan = this.filters.kelurahan || 'Semua Desa';
 
 
       } catch (error) {
@@ -2218,6 +2218,7 @@ export default {
       }
     },
     async resetFilter() {
+      this.isLoading = true
       this.filters = {
         bbu: [],
         tbu: [],
@@ -2229,6 +2230,7 @@ export default {
         rt: '',
         periodeAwal: '',
         periodeAkhir: '',
+        kelurahan_id: '',
       }
 
       this.rwList = []
@@ -2237,8 +2239,22 @@ export default {
       this.rtReadonly = true
 
       this.filteredData = [...this.children]
+      if (this.isAdmin) {
+        await this.handleRegionChange()
+        this.kelurahan = 'Semua Desa'
+      }else{
+        await this.getWilayahUser()
+        this.kelurahan = 'Desa '+ this.filters.kelurahan
+        console.log('nama'+this.kelurahan);
+
+        const label = this.filters.kelurahan
+        localStorage.setItem('kelurahan_label', label)
+        eventBus.emit('kelurahanChanged', label)
+      }
       await this.loadChildren()
-      await this.getWilayahUser()
+
+      this.isLoading = false
+      //await this.getWilayahUser()
       //await this.hitungStatusGizi()
     },
     selectAll_bbu() {

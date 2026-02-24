@@ -1370,7 +1370,7 @@ class CatinController extends Controller
             $query = Catin::whereIn('nik_perempuan', $niks);
 
             if ($startDate && $endDate) {
-                $query->whereBetween('tgl_pendampingan', [$startDate, $endDate]);
+                $query->whereBetween('tanggal_pendampingan', [$startDate, $endDate]);
             }
 
             $deletedCount = $query->delete(); // ini integer
@@ -1407,7 +1407,8 @@ class CatinController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data catin'
+                'message' => 'Gagal menghapus data catin',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
