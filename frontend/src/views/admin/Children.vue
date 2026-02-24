@@ -383,7 +383,6 @@
 
               <!-- === BUTTONS === -->
               <div class="col-6 d-flex justify-content-start mt-3 text-danger">
-
                 <ul>
                   <li class="small text-danger">Severely underweight = Berat Badan Sangat Kurang</li>
                   <li class="small text-danger">Severely Stunted = Sangat Pendek</li>
@@ -781,7 +780,17 @@
               </div>
 
               <!-- BUTTONS -->
-              <div class="col-12 d-flex justify-content-end mt-3">
+              <div class="col-6 d-flex justify-content-start mt-3 text-danger">
+                <ul>
+                  <li class="small text-danger">Severely underweight = Berat Badan Sangat Kurang</li>
+                  <li class="small text-danger">Severely Stunted = Sangat Pendek</li>
+                </ul>
+                <ul>
+                  <li class="small text-danger">Severely Wasted = Gizi Buruk</li>
+                  <li class="small text-danger">Possible Risk Of Everweight = Berisiko Gizi Lebih</li>
+                </ul>
+              </div>
+              <div class="col-6 d-flex justify-content-end mt-3">
                 <button type="submit" class="btn btn-gradient fw-semibold me-2">
                   <i class="bi bi-filter me-1"></i> Terapkan
                 </button>
