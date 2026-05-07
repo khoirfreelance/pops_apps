@@ -579,10 +579,15 @@ class ChildrenController extends Controller
             $bulanLalu = now()->subMonths(2)->format('Y-m');
         }
 
+        /* dump($request);
+        dump($tanggal);
+        dump($bulanIni);
+        dd($bulanLalu); */
         // ======================================================
         // 3. Query kunjungan (2 bulan)
         // ======================================================
         $query = Kunjungan::query()
+            //->whereBetween(DB::raw("DATE_FORMAT(tgl_pengukuran,'%Y-%m')"), [$bulanIni, $bulanIni]);
             ->whereBetween(DB::raw("DATE_FORMAT(tgl_pengukuran,'%Y-%m')"), [$bulanLalu, $bulanIni]);
 
         if ($request->filled('provinsi'))
@@ -602,6 +607,7 @@ class ChildrenController extends Controller
 
         $data = $query->get();
 
+        //dd($request);
         // ======================================================
         // 4. Penampung
         // ======================================================
@@ -662,10 +668,21 @@ class ChildrenController extends Controller
                 }
             }
 
-            // Anak bermasalah untuk PMT
-            if (($isStunting || $isWasting || $isUnder) && !empty($child->nik)) {
+            /* dump($isStunting);
+            dump($isWasting);
+            dump($isUnder); */
+            // Anak bermasalah untuk PMT (HANYA BULAN INI)
+            if (
+                $ym === $bulanIni &&
+                ($isStunting || $isWasting || $isUnder) &&
+                !empty($child->nik)
+            ) {
                 $nikBermasalah[] = $child->nik;
             }
+            /* if (($isStunting || $isWasting || $isUnder) && !empty($child->nik)) {
+                $nikBermasalah[] = $child->nik;
+                //dd($child->nik);
+            } */
         }
 
         // ======================================================
@@ -673,6 +690,7 @@ class ChildrenController extends Controller
         // ======================================================
         $nikBermasalah = array_unique($nikBermasalah);
 
+        //dd(count($nikBermasalah));
         $nikPMT = Intervensi::where('status_subjek', 'anak')
             ->whereIn('nik_subjek', $nikBermasalah)
             ->pluck('nik_subjek')
@@ -1194,6 +1212,7 @@ class ChildrenController extends Controller
         $rows = [];
         $count = 0;
 
+        //dd(fgetcsv($handle, 1000, $delimiter));
         while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
             // Lewati baris kosong atau header
             if ($count === 0 && str_contains(strtolower($row[0]), 'petugas')) {
@@ -2877,6 +2896,7 @@ class ChildrenController extends Controller
     // ENDPOINT DETAIL
     public function detail_tren(Request $request)
     {
+        //dd($request);
         $filters = [
             'provinsi' => $request->provinsi,
             'kota' => $request->kota,

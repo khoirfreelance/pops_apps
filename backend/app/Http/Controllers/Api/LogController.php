@@ -4,21 +4,35 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Log;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class LogController extends Controller
 {
+
     public function index()
     {
         $user = Auth::user();
 
-        $logs = Log::with('user');
-        if ($user->role != 'SUPER ADMIN') {
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
-            $logs->wherehas('user', function ($q) use ($user) {
+        $logs = Log::with('user');
+
+        // 🔥 filter 2 bulan terakhir
+        $start = Carbon::now()->startOfMonth(); // awal bulan ini
+        $end   = Carbon::now()->endOfMonth();   // akhir bulan ini
+
+        $logs->whereBetween('timestamp', [$start, $end]);
+
+        if ($user->role != 'SUPER ADMIN') {
+            $logs->whereHas('user', function ($q) use ($user) {
                 $q->where('id_wilayah', $user->id_wilayah);
             });
         }
-        $logs = $logs->get();
+
+        $logs = $logs->orderBy('timestamp', 'desc')->get();
 
         $data = $logs->map(function ($log) {
             return [

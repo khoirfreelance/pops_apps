@@ -11,12 +11,15 @@ class RegionController extends Controller
     public function index(Request $request)
     {
         $rows = Wilayah::query()
+            ->selectRaw('MIN(id) as id, provinsi, kota, kecamatan, kelurahan')
+            ->groupBy('provinsi', 'kota', 'kecamatan', 'kelurahan')
             ->orderBy('provinsi')
             ->orderBy('kota')
             ->orderBy('kecamatan')
             ->orderBy('kelurahan')
             ->get();
 
+            //dd($rows);
         $grouped = $rows
             ->groupBy(fn ($item) =>
                 "{$item->provinsi}|{$item->kota}|{$item->kecamatan}"

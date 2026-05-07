@@ -1407,8 +1407,7 @@ class CatinController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus data catin',
-                'error' => $e->getMessage()
+                'message' => 'Gagal menghapus data catin'
             ], 500);
         }
     }
