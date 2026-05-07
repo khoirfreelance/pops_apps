@@ -604,7 +604,7 @@ export default {
         }
       })
     },
-    async getWilayahUser() {
+    /* async getWilayahUser() {
       try {
         const res = await axios.get(`${baseURL}/api/user/region`, {
           headers: {
@@ -629,7 +629,7 @@ export default {
         console.error('Gagal ambil data wilayah user:', error)
         this.kelurahan = '-'
       }
-    },
+    }, */
     async fetchPosyanduByWilayah(id_wilayah) {
       if (!id_wilayah) {
         console.warn('ID wilayah kosong, tidak bisa fetch posyandu')
@@ -690,7 +690,7 @@ export default {
     this.isLoading = true
     try {
       this.applyFiltersFromRoute()
-      await this.getWilayahUser()
+      //await this.getWilayahUser()
       await this.loadUmur()
       await this.loadDetail()
       await this.loadIndikator()

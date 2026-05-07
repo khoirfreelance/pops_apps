@@ -213,18 +213,18 @@
           </div>
         </div>
 
-        <!-- HIGHLIGHT METRIC -->
         <!-- <div class="tooltip-highlight">
-          <div
-            v-for="(val, key) in tooltip.data"
-            :key="key"
-            v-if="key && key.toLowerCase() !== 'kota'"
-            class="metric"
-          >
-            <span class="metric-label">{{ key }}</span>
-            <span class="metric-value">{{ val }}</span>
-          </div>
+          <template v-for="(val, key) in tooltip.data" :key="key">
+            <div
+              v-if="key && key.toLowerCase() !== 'kota'"
+              class="metric"
+            >
+              <span class="metric-label">{{ key }}</span>
+              <span class="metric-value">{{ val }}</span>
+            </div>
+          </template>
         </div> -->
+
 
         <!-- CONTROLS -->
         <div
@@ -260,12 +260,13 @@ import { reactive, onMounted, ref } from 'vue'
    HEATMAP DATA (FROM API)
 ========================== */
 // PORT backend kamu
-const API_PORT = 8000;
+const baseURL = 'https://datapops.id/apps/public'
+//const API_PORT = 8000;
 
 // Bangun base URL dari window.location
-const { protocol, hostname } = window.location;
+//const { protocol, hostname } = window.location;
 // contoh hasil: "http://192.168.0.5:8000"
-const baseURL = `${protocol}//${hostname}:${API_PORT}`;
+//const baseURL = `${protocol}//${hostname}:${API_PORT}`;
 const stats = reactive({})
 const kelurahanData = reactive({})
 const currentIndex = reactive({ value: 0 })

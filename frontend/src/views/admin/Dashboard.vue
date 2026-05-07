@@ -4058,7 +4058,8 @@ export default {
         const dataSudah = this.dataLoad || [] // anak punya keduanya
         const dataBelum = this.dataLoad_belum || [] // anak hanya_kunjungan
 
-        if (!dataSudah.length && !dataBelum.length) return
+        //if (!dataSudah.length && !dataBelum.length) return
+        const isEmpty = !dataSudah.length && !dataBelum.length
 
         // 🔎 Tentukan periode filter
         let targetYear, targetMonth
@@ -4130,7 +4131,11 @@ export default {
         // ==========================
         // 5️⃣ Render chart
         // ==========================
-        const counts = jenisList.map((j) => counter[j])
+        //const counts = jenisList.map((j) => counter[j])
+                const counts = isEmpty
+          ? [0, 0, 0, 0, 0, 0]
+          : jenisList.map((j) => counter[j])
+
 
         if (this.funnelChart) this.funnelChart.destroy()
 
