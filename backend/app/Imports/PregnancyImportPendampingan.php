@@ -90,6 +90,7 @@ class PregnancyImportPendampingan implements
             // =========================
             // 0. Validasi data import
             // =========================
+            //if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
             if (!preg_match('/^[0-9`]+$/', $row[4])) {
                 throw new \Exception(
                     "NIK hanya boleh berisi angka dan karakter `",
@@ -423,6 +424,29 @@ class PregnancyImportPendampingan implements
             1001
         );
     }
+
+    /*
+    private function normalizeNik($nik)
+    {
+        if (is_null($nik)) {
+            return null;
+        }
+
+        // cast ke string dulu (penting kalau dari Excel)
+        $nik = (string) $nik;
+
+        // hapus backtick
+        $nik = str_replace('`', '', $nik);
+
+        // hapus semua whitespace (spasi, tab, dll)
+        $nik = preg_replace('/\s+/', '', $nik);
+
+        // opsional: ambil hanya angka (RECOMMENDED buat NIK)
+        $nik = preg_replace('/\D/', '', $nik);
+
+        return $nik ?: null;
+    }
+    */
 
     private function normalizeNIK($nik)
     {
