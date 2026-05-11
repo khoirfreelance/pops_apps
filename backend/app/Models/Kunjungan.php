@@ -9,7 +9,8 @@ class Kunjungan extends Model
 {
     use HasFactory;
 
-    protected $table = 'kunjungan_anak_new';
+    //protected $table = 'kunjungan_anak_new';
+    protected $table = 'kunjungan_anak';
 
     protected $fillable = [
         'petugas',

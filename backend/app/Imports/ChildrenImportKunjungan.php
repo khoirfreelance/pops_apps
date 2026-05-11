@@ -8,6 +8,7 @@ use App\Models\Posyandu;
 use App\Models\Keluarga;
 use App\Models\Log;
 use App\Models\User;
+use App\Models\Intervensi; // ADDITIONAL FROM CATATAN 3
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -175,8 +176,10 @@ class ChildrenImportKunjungan implements
                     'petugas' => $user->name,
                 ]);
 
-                $isMbg = $row['mbg'];
-                if (!empty($isMbg) || $isMbg != null) {
+                $isMbg = $this->normalizeText($row['mbg']);
+                $bantuan = 'Mendapatkan makan bergizi gratis';
+                // ADDITIONAL FROM CATATAN 3
+                if ($isMbg === 'YA') {
                     Intervensi::create([
                         'petugas' => $user->name,
                         'tgl_intervensi' => $tglUkur,
@@ -193,7 +196,7 @@ class ChildrenImportKunjungan implements
                         'rw' => $row['rw']?? null,
                         'posyandu' => $this->normalizeText($row['posyandu']?? null),
                         'umur_subjek' => $usia,
-                        'bantuan' => $this->normalizeText($row['mbg']?? null),
+                        'bantuan' => $this->normalizeText($bantuan),
                         'kategori' => 'MBG',
                     ]);
                 }
@@ -250,7 +253,7 @@ class ChildrenImportKunjungan implements
             }
 
             throw new \Exception(
-                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
+                $e->getMessage()//'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
             );
         }
 
