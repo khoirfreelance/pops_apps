@@ -598,9 +598,7 @@ class PregnancyController extends Controller
 
             if ($header !== $expectedHeaders) {
                 throw new \Exception(
-                    "Format isi data csv tidak sesuai.\n\n"
-                    . "isi data CSV yang diharapkan meliputi data:\n <strong>"
-                    . implode(',', $expectedHeaders)."</strong>"
+                    "Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan."
                 );
             }
 
