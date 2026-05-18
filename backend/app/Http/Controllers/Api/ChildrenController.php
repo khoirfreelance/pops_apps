@@ -1222,89 +1222,147 @@ class ChildrenController extends Controller
 
     public function import_intervensi(Request $request)
     {
+        try {
+            $request->validate([
+                'file' => [
+                    'required',
+                    'file',
+                    'max:5120',
+                    function ($attr, $file, $fail) {
+                        $allowed = [
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ];
 
-        if (!$request->hasFile('file')) {
-            return response()->json(['message' => 'Tidak ada file yang diunggah'], 400);
-        }
-
-        $file = $request->file('file');
-        $path = $file->getRealPath();
-        $delimiter = $this->detectDelimiter($path);
-        $handle = fopen($path, 'r');
-
-        $rows = [];
-        $count = 0;
-
-        //dd(fgetcsv($handle, 1000, $delimiter));
-        while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
-            // Lewati baris kosong atau header
-            if ($count === 0 && str_contains(strtolower($row[0]), 'petugas')) {
-                $count++;
-                continue;
-            }
-            if (empty($row[0]) && empty($row[3]))
-                continue;
-
-            // =========================
-            // 0. Validasi data import
-            // =========================
-            if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
-                throw new \Exception(
-                    "NIK hanya boleh berisi angka dan karakter `",
-                    1001
-                );
-            }
-
-            $nik = $this->normalizeNik($row[4] ?? null);
-            $nama = $this->normalizeText($row[3] ?? null);
-            $tglUkur = $this->convertDate($row[1]?? null);
-
-            if (!$nik || !$tglUkur) {
-                throw new \Exception(
-                    "NIK atau tanggal intervensi kosong / tidak valid pada data {$nama}"
-                );
-            }
-
-            $duplikat = Intervensi::where('nik_subjek', $nik)
-                ->whereDate('tgl_intervensi', $tglUkur)
-                ->first();
-
-            if ($duplikat) {
-                throw new \Exception(
-                    "Data atas <strong>{$nik}</strong>, <strong>{$nama}</strong> sudah diunggah pada <strong>"
-                    . $duplikat->created_at->format('d-m-Y')."</strong>"
-                );
-            }
-
-            Intervensi::create([
-                'petugas' => $this->normalizeText($row[0] ?? null),
-                'tgl_intervensi' => $this->convertDate($row[1]?? null),
-                'desa' => $this->normalizeText($row[2] ?? null),
-                'nama_subjek' => $this->normalizeText($row[3] ?? null),
-                'nik_subjek' => $this->normalizeNik($row[4] ?? null),
-                'status_subjek' => 'ANAK',
-                'jk' => $this->normalizeText($row[5] ?? null),
-                'tgl_lahir' => $this->convertDate($row[6]?? null),
-                'nama_wali' => $this->normalizeText($row[7] ?? null),
-                'nik_wali' => $this->normalizeNik($row[8] ?? null),
-                'status_wali' => $this->normalizeText($row[9] ?? null),
-                'rt' => $row[10] ?? null,
-                'rw' => $row[11] ?? null,
-                'posyandu' => $this->normalizeText($row[12] ?? null),
-                'umur_subjek' => $this->hitungUmurBulan(
-                        $this->convertDate($row[6] ?? null),
-                        $this->convertDate($row[1] ?? null)
-                    ),
-                'bantuan' => $row[13] ?? null,
-                'kategori' => $this->normalizeText($row[14] ?? null),
+                        if (!in_array($file->getMimeType(), $allowed)) {
+                            $fail('Tipe file tidak valid.');
+                        }
+                    },
+                ],
             ]);
 
-            $count++;
+            $file = $request->file('file');
+            $path = $file->getRealPath();
+
+            $delimiter = $this->detectDelimiter($path);
+            $handle = fopen($path, 'r');
+
+            // =========================
+            // Validasi Header CSV
+            // =========================
+            $expectedHeaders = [
+                'Petugas',
+                'Tanggal',
+                'Desa',
+                'Nama Anak',
+                'NIK Anak',
+                'JK',
+                'Tgl Lahir',
+                'Nama Wali',
+                'NIK Wali',
+                'Status Wali',
+                'RT',
+                'RW',
+                'Posyandu',
+                'Bantuan',
+                'Kategori',
+            ];
+
+            $header = fgetcsv($handle, 1000, $delimiter);
+
+            if (!$header) {
+                throw new \Exception('File CSV kosong.');
+            }
+
+            // Bersihin BOM & spasi
+            $header = array_map(function ($item) {
+                $item = preg_replace('/^\xEF\xBB\xBF/', '', $item);
+                return trim($item);
+            }, $header);
+
+            if ($header !== $expectedHeaders) {
+                throw new \Exception(
+                    "Format isi data csv tidak sesuai.\n\n"
+                    . "isi data CSV yang diharapkan meliputi data:\n <strong>"
+                    . implode(',', $expectedHeaders)."</strong>"
+                );
+            }
+
+            $count = 0;
+
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+
+                if (empty($row[0]) && empty($row[3])) {
+                    continue;
+                }
+
+                // =========================
+                // Validasi data import
+                // =========================
+
+                $nik = $this->normalizeNik($row[4] ?? null);
+                $nama = $this->normalizeText($row[3] ?? null);
+                $tglUkur = $this->convertDate($row[1] ?? null);
+                $tgl_lahir = $this->convertDate($row[6] ?? null);
+
+                if (!$nik || !$tglUkur) {
+                    throw new \Exception(
+                        "NIK atau tanggal intervensi kosong / tidak valid pada data {$nama}"
+                    );
+                }
+
+                $duplikat = Intervensi::where('nik_subjek', $nik)
+                    ->whereDate('tgl_intervensi', $tglUkur)
+                    ->first();
+
+                if ($duplikat) {
+                    throw new \Exception(
+                        "Data atas NIK {$nik}, nama {$nama} sudah diunggah pada "
+                        . $duplikat->created_at->format('d-m-Y')
+                    );
+                }
+
+                Intervensi::create([
+                    'petugas' => $this->normalizeText($row[0] ?? null),
+                    'tgl_intervensi' => $tglUkur ?? null,
+                    'desa' => $this->normalizeText($row[2] ?? null),
+                    'nama_subjek' => $nama ?? null,
+                    'nik_subjek' => $nik ?? null,
+                    'status_subjek' => 'ANAK',
+                    'jk' => $this->normalizeText($row[5] ?? null),
+                    'tgl_lahir' => $tgl_lahir ?? null,
+                    'nama_wali' => $this->normalizeText($row[7] ?? null),
+                    'nik_wali' => $this->normalizeNik($row[8] ?? null),
+                    'status_wali' => $this->normalizeText($row[9] ?? null),
+                    'rt' => $row[10] ?? null,
+                    'rw' => $row[11] ?? null,
+                    'posyandu' => $this->normalizeText($row[12] ?? null),
+                    'umur_subjek' => $this->hitungUmurBulan(
+                        $this->convertDate($row[1] ?? null),
+                        $this->convertDate($row[6] ?? null)
+                    ),
+                    'bantuan' => $row[13] ?? null,
+                    'kategori' => $this->normalizeText($row[14] ?? null),
+                ]);
+
+                $count++;
+            }
+
+            fclose($handle);
+
+            return response()->json([
+                'message' => "Berhasil unggah {$count} data intervensi."
+            ]);
+
+        } catch (\Throwable $th) {
+
+            return response()->json([
+                'message' => 'Gagal import CSV',
+                'detail' => $th->getMessage(),
+            ], 422);
         }
-
-        fclose($handle);
-
-        return response()->json(['message' => "Berhasil unggah data intervensi."]);
     }
 
     /** Hitung umur (bulan) */
