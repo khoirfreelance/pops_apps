@@ -53,7 +53,8 @@ class ChildrenImportKunjungan implements
     {
         try {
             return DB::transaction(function () use ($row) {
-            //dd(array_keys($row));
+                //dd(array_keys($row));
+                //dd($row['cara_ukur']);
                 // =========================
                 // INTRO
                 // =========================
@@ -157,8 +158,8 @@ class ChildrenImportKunjungan implements
                     'tb' =>  $this->normalizeDecimal($row['tinggi']??null),
                     // ------------ ADDITIONAL CATATAN NO 1 & 3
                     'cara_ukur' => $this->normalizeText($row['cara_ukur']?? null),
-                    'mbg' => $this->normalizeText($row['mbg']?? null),
-                    'kib' => $this->normalizeText($row['kelas_ibu_balita']?? null),
+                    'mendapatkan_bantuan' => $this->normalizeText($row['mbg'])=== "YA"? "Makan Bergizi Gratis" : NULL,
+                    'kpsp' => $this->normalizeText($row['kelas_ibu_balita']?? null),
                     // ------------ ADDITIONAL CATATAN NO 1 & 3
                     'lila' => $this->normalizeDecimal($row['lila'] ?? null),
                     'provinsi'   => $wilayahData['provinsi'],

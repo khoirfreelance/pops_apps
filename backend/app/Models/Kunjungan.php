@@ -60,8 +60,8 @@ class Kunjungan extends Model
         'catatan',
         'kpsp',
         'no_kk',
-        'kib', // ADDITIONAL CATATAN NO 1 dan 3
-        'mbg' // ADDITIONAL CATATAN NO 1 dan 3
+        //'kib', // ADDITIONAL CATATAN NO 1 dan 3
+        //'mbg' // ADDITIONAL CATATAN NO 1 dan 3
     ];
 
     protected $dates = ['tgl_pengukuran'];

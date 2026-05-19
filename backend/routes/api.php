@@ -29,8 +29,10 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Dashboard Endpoint
-Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
-Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWilayah']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWilayah']);
+});
 
 // Children Endpoint
 Route::middleware('auth:sanctum')->group(function () {

@@ -59,8 +59,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 // =========================
                 // 0. Validasi data import
                 // =========================
-                // if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
-                if (!preg_match('/^[0-9`]+$/', $row[4])) {
+                if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
+                //if (!preg_match('/^[0-9`]+$/', $row[4])) {
                     throw new \Exception(
                         "NIK hanya boleh berisi angka dan karakter `",
                         1001
@@ -354,8 +354,6 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         return "{$username}.{$unique}@pops.com";
     }
 
-
-    /*
     private function normalizeNik($nik)
     {
         if (is_null($nik)) {
@@ -373,26 +371,6 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
         // opsional: ambil hanya angka (RECOMMENDED buat NIK)
         $nik = preg_replace('/\D/', '', $nik);
-
-        return $nik ?: null;
-    }
-    */
-
-    private function normalizeNik($nik)
-    {
-        if (is_null($nik)) {
-            return null;
-        }
-
-        // cast ke string dulu (penting kalau dari Excel)
-        $nik = (string) $nik;
-
-        // hapus backtick, spasi, dan karakter aneh
-        $nik = trim($nik);
-        $nik = str_replace('`', '', $nik);
-
-        // ambil HANYA angka
-        //$nik = preg_replace('/\D/', '', $nik);
 
         return $nik ?: null;
     }

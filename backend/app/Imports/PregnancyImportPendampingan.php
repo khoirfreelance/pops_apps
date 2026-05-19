@@ -90,8 +90,8 @@ class PregnancyImportPendampingan implements
             // =========================
             // 0. Validasi data import
             // =========================
-            //if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
-            if (!preg_match('/^[0-9`]+$/', $row[4])) {
+            if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
+            //if (!preg_match('/^[0-9`]+$/', $row[4])) {
                 throw new \Exception(
                     "NIK hanya boleh berisi angka dan karakter `",
                     1001
@@ -425,7 +425,7 @@ class PregnancyImportPendampingan implements
         );
     }
 
-    /*
+
     private function normalizeNik($nik)
     {
         if (is_null($nik)) {
@@ -446,26 +446,7 @@ class PregnancyImportPendampingan implements
 
         return $nik ?: null;
     }
-    */
 
-    private function normalizeNIK($nik)
-    {
-        if (is_null($nik)) {
-            return null;
-        }
-
-        // cast ke string dulu (penting kalau dari Excel)
-        $nik = (string) $nik;
-
-        // hapus backtick, spasi, dan karakter aneh
-        $nik = trim($nik);
-        $nik = str_replace('`', '', $nik);
-
-        // ambil HANYA angka
-        //$nik = preg_replace('/\D/', '', $nik);
-
-        return $nik ?: null;
-    }
 
     private function toBool($val): bool
     {
