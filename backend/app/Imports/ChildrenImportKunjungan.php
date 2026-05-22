@@ -8,7 +8,6 @@ use App\Models\Posyandu;
 use App\Models\Keluarga;
 use App\Models\Log;
 use App\Models\User;
-use App\Models\Intervensi; // ADDITIONAL FROM CATATAN 3
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -53,8 +52,7 @@ class ChildrenImportKunjungan implements
     {
         try {
             return DB::transaction(function () use ($row) {
-                //dd(array_keys($row));
-                //dd($row['cara_ukur']);
+            //dd(array_keys($row));
                 // =========================
                 // INTRO
                 // =========================
@@ -71,7 +69,8 @@ class ChildrenImportKunjungan implements
                 // =========================
                 // 0. Validasi data import
                 // =========================
-                if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row['nik']))) {
+                //if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row['nik']))) {
+                if (!preg_match('/^[0-9`]+$/', $row['nik'])) {
                     throw new \Exception(
                         "NIK hanya boleh berisi angka dan karakter `",
                         1001
@@ -156,11 +155,6 @@ class ChildrenImportKunjungan implements
                     'usia_saat_ukur' => $usia,
                     'bb' =>  $this->normalizeDecimal($row['berat']??null),
                     'tb' =>  $this->normalizeDecimal($row['tinggi']??null),
-                    // ------------ ADDITIONAL CATATAN NO 1 & 3
-                    'cara_ukur' => $this->normalizeText($row['cara_ukur']?? null),
-                    'mendapatkan_bantuan' => $this->normalizeText($row['mbg'])=== "YA"? "Makan Bergizi Gratis" : NULL,
-                    'kpsp' => $this->normalizeText($row['kelas_ibu_balita']?? null),
-                    // ------------ ADDITIONAL CATATAN NO 1 & 3
                     'lila' => $this->normalizeDecimal($row['lila'] ?? null),
                     'provinsi'   => $wilayahData['provinsi'],
                     'kota'       => $wilayahData['kota'],
@@ -176,31 +170,6 @@ class ChildrenImportKunjungan implements
                     'catatan' => 'Perekaman data '.$row['nama'].' pada '.$tglUkur.' dengan hasil '.$this->normalizeStatus($status_bbtb).' secara import data',
                     'petugas' => $user->name,
                 ]);
-
-                $isMbg = $this->normalizeText($row['mbg']);
-                $bantuan = 'Mendapatkan makan bergizi gratis';
-                // ADDITIONAL FROM CATATAN 3
-                if ($isMbg === 'YA') {
-                    Intervensi::create([
-                        'petugas' => $user->name,
-                        'tgl_intervensi' => $tglUkur,
-                        'desa' => $wilayahData['kelurahan'],
-                        'nama_subjek' => $this->normalizeText($row['nama'] ?? null),
-                        'nik_subjek' => $this->normalizeNik($row['nik'] ?? null),
-                        'status_subjek' => 'ANAK',
-                        'jk' => $this->normalizeText($jk ?? null),
-                        'tgl_lahir' => $tglLahir,
-                        'nama_wali' => $this->normalizeText($row['nama_ortu'] ?? null),
-                        'nik_wali' => null,
-                        'status_wali' => 'WALI',
-                        'rt' => $row['rt']?? null,
-                        'rw' => $row['rw']?? null,
-                        'posyandu' => $this->normalizeText($row['posyandu']?? null),
-                        'umur_subjek' => $usia,
-                        'bantuan' => $this->normalizeText($bantuan),
-                        'kategori' => 'MBG',
-                    ]);
-                }
 
                 // =========================
                 // 5. Posyandu
@@ -254,7 +223,7 @@ class ChildrenImportKunjungan implements
             }
 
             throw new \Exception(
-                $e->getMessage()//'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
+                'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
             );
         }
 

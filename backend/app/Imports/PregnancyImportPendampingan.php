@@ -90,8 +90,8 @@ class PregnancyImportPendampingan implements
             // =========================
             // 0. Validasi data import
             // =========================
-            if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
-            //if (!preg_match('/^[0-9`]+$/', $row[4])) {
+            //if (!preg_match('/^[0-9`]+$/', $this->normalizeNik($row[4]))) {
+            if (!preg_match('/^[0-9`]+$/', $row[4])) {
                 throw new \Exception(
                     "NIK hanya boleh berisi angka dan karakter `",
                     1001

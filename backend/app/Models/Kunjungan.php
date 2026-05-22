@@ -9,7 +9,6 @@ class Kunjungan extends Model
 {
     use HasFactory;
 
-    //protected $table = 'kunjungan_anak_new';
     protected $table = 'kunjungan_anak';
 
     protected $fillable = [
@@ -36,7 +35,6 @@ class Kunjungan extends Model
         'usia_saat_ukur',
         'bb',
         'tb',
-        'cara_ukur', // ADDITIONAL CATATAN NO 1 dan 3
         'lila',
         'bb_u',
         'zs_bb_u',
@@ -59,9 +57,7 @@ class Kunjungan extends Model
         'mendapatkan_bantuan',
         'catatan',
         'kpsp',
-        'no_kk',
-        //'kib', // ADDITIONAL CATATAN NO 1 dan 3
-        //'mbg' // ADDITIONAL CATATAN NO 1 dan 3
+        'no_kk'
     ];
 
     protected $dates = ['tgl_pengukuran'];
