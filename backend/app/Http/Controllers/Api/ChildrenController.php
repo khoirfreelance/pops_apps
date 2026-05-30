@@ -57,9 +57,20 @@ class ChildrenController extends Controller
                 if (count($periodeAwal) === 1) {
                     $periodeAwal = explode('+', $filters['periodeAwal']);
                 }
+
                 $bulanIndex = array_search($periodeAwal[0], self::bulan);
-                $filters['periodeAwal'] = Carbon::createFromFormat('Y-m', $periodeAwal[1] . '-' . $bulanIndex)
-                    ->startOfMonth()->format('Y-m-d');
+
+                if ($bulanIndex === false) {
+                    throw new \Exception('Bulan tidak valid');
+                }
+
+                $month = sprintf('%02d', $bulanIndex);
+
+                $filters['periodeAwal'] = Carbon::createFromFormat(
+                    'Y-m-d',
+                    $periodeAwal[1] . '-' . $month . '-01'
+                )->startOfMonth()->format('Y-m-d');
+
             } catch (\Exception $e) {
                 $filters['periodeAwal'] = null;
             }
@@ -72,13 +83,15 @@ class ChildrenController extends Controller
                     $periodeAkhir = explode('+', $filters['periodeAkhir']);
                 }
                 $bulanIndex = array_search($periodeAkhir[0], self::bulan);
-                $filters['periodeAkhir'] = Carbon::createFromFormat('Y-m', $periodeAkhir[1] . '-' . $bulanIndex)
-                    ->endOfMonth()->format('Y-m-d');
+                $filters['periodeAkhir'] = Carbon::createFromFormat(
+                    'Y-m-d',
+                    $periodeAkhir[1] . '-' . $month . '-01'
+                )->endOfMonth()->format('Y-m-d');
             } catch (\Exception $e) {
                 $filters['periodeAkhir'] = null;
             }
         }
-
+        //dd($filters);
         // ✅ 3. Dapatkan kelurahan user
         $filterProvinsi = $request->provinsi ?? null;
         $filterKota = $request->kota ?? null;
@@ -345,12 +358,15 @@ class ChildrenController extends Controller
                 'tbu',
                 'bbtb',
                 'stagnan',
+                'periode',
                 'periodeAwal',
                 'periodeAkhir'
             ]);
 
-            if ($request->filled('periode')) {
-                $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            if ($filters['periode']) {
+                [$tahun, $bulan] = explode('-', $filters['periode']);
+                $tanggal = Carbon::createFromFormat( 'Y-m-d', $tahun . '-' .$bulan. '-01');
+                //dump($tanggal);
                 $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             } else {
@@ -358,7 +374,6 @@ class ChildrenController extends Controller
                 $filters['periodeAwal'] = $tanggal->copy()->startOfMonth()->format('Y-m-d');
                 $filters['periodeAkhir'] = $tanggal->copy()->endOfMonth()->format('Y-m-d');
             }
-
 
             // ================================
             // 3. Query utama: Kunjungan
@@ -571,18 +586,17 @@ class ChildrenController extends Controller
         // 2. Atur periode
         // ======================================================
         if ($request->filled('periode')) {
-            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            [$tahun, $bulan] = explode('-', $request->periode);
+            $tanggal = Carbon::createFromFormat( 'Y-m-d', $tahun . '-' .$bulan. '-01');
+
             $bulanIni = $tanggal->format('Y-m');
             $bulanLalu = $tanggal->copy()->subMonth()->format('Y-m');
         } else {
             $bulanIni = now()->subMonth()->format('Y-m');
             $bulanLalu = now()->subMonths(2)->format('Y-m');
         }
+        //dd($bulanIni,$bulanLalu);
 
-        /* dump($request);
-        dump($tanggal);
-        dump($bulanIni);
-        dd($bulanLalu); */
         // ======================================================
         // 3. Query kunjungan (2 bulan)
         // ======================================================
@@ -1171,29 +1185,6 @@ class ChildrenController extends Controller
         return $nik ?: null;
     }
 
-    /*
-    private function normalizeNik($nik)
-    {
-        if (is_null($nik)) {
-            return null;
-        }
-
-        // cast ke string dulu (penting kalau dari Excel)
-        $nik = (string) $nik;
-
-        // hapus backtick
-        $nik = str_replace('`', '', $nik);
-
-        // hapus semua whitespace (spasi, tab, dll)
-        $nik = preg_replace('/\s+/', '', $nik);
-
-        // opsional: ambil hanya angka (RECOMMENDED buat NIK)
-        $nik = preg_replace('/\D/', '', $nik);
-
-        return $nik ?: null;
-    }
-    */
-
     private function normalizeText($value)
     {
         return $value ? strtoupper(trim($value)) : null;
@@ -1220,6 +1211,7 @@ class ChildrenController extends Controller
         return $selectedDelimiter;
     }
 
+    //update catatan 7
     public function import_intervensi(Request $request)
     {
         try {
@@ -1626,6 +1618,16 @@ class ChildrenController extends Controller
 
         // 5. Tentukan periode current & previous
         if ($request->filled('periode')) {
+            [$tahun, $bulan] = explode('-', $request->periode);
+            $tanggal = Carbon::createFromFormat( 'Y-m-d', $tahun . '-' .$bulan. '-01');
+
+            $bulanIni = $tanggal->format('Y-m');
+            $bulanLalu = $tanggal->copy()->subMonth()->format('Y-m');
+        } else {
+            $bulanIni = now()->subMonth()->format('Y-m');
+            $bulanLalu = now()->subMonths(2)->format('Y-m');
+        }
+        /* if ($request->filled('periode')) {
             $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
             $bulanIni = $tanggal->format('Y-m');
             $bulanLalu = $tanggal->subMonth()->format('Y-m');
@@ -1633,7 +1635,7 @@ class ChildrenController extends Controller
             // default: bulan ini - 1
             $bulanIni = now()->subMonth()->format('Y-m');
             $bulanLalu = now()->subMonths(2)->format('Y-m');
-        }
+        } */
 
         $query->where(function ($q) use ($bulanIni, $bulanLalu) {
             $q->whereBetween(\DB::raw("DATE_FORMAT(tgl_pengukuran, '%Y-%m')"), [$bulanLalu, $bulanIni]);
@@ -1810,6 +1812,7 @@ class ChildrenController extends Controller
 
     public function intervensi(Request $request)
     {
+        //dd($request);
         // 2️⃣ Ambil posyandu & wilayah
         $posyandu = $request->posyandu;
 
@@ -1819,10 +1822,13 @@ class ChildrenController extends Controller
         // Tentukan periode
         // ==========================
         if ($request->filled('periode')) {
-            $tanggal = Carbon::createFromFormat('Y-m', $request->periode);
+            [$tahun, $bulan] = explode('-', $request->periode);
+            $tanggal = Carbon::createFromFormat( 'Y-m-d', $tahun . '-' .$bulan. '-01');
+
         } else {
             $tanggal = now()->subMonth(); // default bulan berjalan -1
         }
+        //dd($tanggal->copy()->endOfMonth());
         $startDate = $tanggal->copy()->startOfMonth();
         $endDate = $tanggal->copy()->endOfMonth();
 
@@ -2392,6 +2398,7 @@ class ChildrenController extends Controller
         $startDate = $tanggal->copy()->subMonths(2)->startOfMonth();
         $endDate = $tanggal->copy()->endOfMonth();
 
+        //dd($startDate, $endDate);
         $qKunjungan->whereBetween('tgl_pengukuran', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
 
         $kunjungan = $qKunjungan->get();

@@ -113,8 +113,9 @@
                 </div>
 
                 <!-- Password -->
-                <div class="col-md-6" v-if="modalMode !== 'update'">
-                  <label class="form-label small fw-semibold text-secondary">Password</label>
+                <!-- <div class="col-md-6" v-if="modalMode !== 'update'"> -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Password Baru &nbsp;<small class="fw-light text-muted">(<i>Kosongkan jika tidak ingin mengganti password</i>)</small></label>
                   <div class="input-group">
                     <input
                       :type="showPassword ? 'text' : 'password'"
@@ -132,8 +133,9 @@
                 </div>
 
                 <!-- Konfirmasi Password -->
-                <div class="col-md-6" v-if="modalMode !== 'update'">
-                  <label class="form-label small fw-semibold text-secondary">Konfirmasi Password</label>
+                <!-- <div class="col-md-6" v-if="modalMode !== 'update'"> -->
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary">Konfirmasi Password &nbsp;<small class="text-muted fw-light">(<i>Kosongkan jika tidak ingin mengganti password</i>)</small></label>
                   <div class="input-group">
                     <input
                       :type="showConfirm ? 'text' : 'password'"
