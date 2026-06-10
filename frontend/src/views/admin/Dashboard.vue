@@ -5166,6 +5166,12 @@ export default {
         const label = this.filters.kelurahan
         localStorage.setItem('kelurahan_label', label)
         eventBus.emit('kelurahanChanged', label)
+
+        // 🔥 INI YANG KURANG
+        const idWilayah = this.filters.kelurahan_id || localStorage.getItem('userWilayah')
+        if (idWilayah) {
+          await this.fetchPosyanduByWilayah(idWilayah)
+        }
       }
 
       // 🔹 2. LABEL & PERIODE
