@@ -83,6 +83,7 @@ class ChildrenController extends Controller
                     $periodeAkhir = explode('+', $filters['periodeAkhir']);
                 }
                 $bulanIndex = array_search($periodeAkhir[0], self::bulan);
+                $month = sprintf('%02d', $bulanIndex);
                 $filters['periodeAkhir'] = Carbon::createFromFormat(
                     'Y-m-d',
                     $periodeAkhir[1] . '-' . $month . '-01'
