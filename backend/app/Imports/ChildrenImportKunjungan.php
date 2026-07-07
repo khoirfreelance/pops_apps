@@ -79,11 +79,19 @@ class ChildrenImportKunjungan implements
 
                 $nik = $this->normalizeNik($row['nik'] ?? null);
                 $nama = $this->normalizeText($row['nama'] ?? '-');
+                $posyandu = $this->normalizeText($row['posyandu'] ?? null);
                 $tglUkur = $this->convertDate($row['tanggal_pengukuran'] ?? null);
 
                 if (!$nik || !$tglUkur) {
                     throw new \Exception(
                         "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}",
+                        1001
+                    );
+                }
+
+                if (!$posyandu) {
+                    throw new \Exception(
+                        "Data posyandu kosong / tidak valid pada data {$nama}",
                         1001
                     );
                 }
@@ -226,7 +234,6 @@ class ChildrenImportKunjungan implements
                 'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.', $e->getCode(), $e
             );
         }
-
     }
 
     /* ======================
