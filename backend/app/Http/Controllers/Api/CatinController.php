@@ -580,14 +580,61 @@ class CatinController extends Controller
 
     private function convertDate($date)
     {
-        if (!$date)
-            return null;
-        $date = str_replace('/', '-', trim($date));
-        try {
-            return Carbon::parse($date)->format('Y-m-d');
-        } catch (\Exception $e) {
+        if (!$date) {
             return null;
         }
+
+        $date = trim($date);
+
+        // ✅ Format yang diizinkan
+        $acceptedFormats = [
+            //'m/d/Y',
+            'd/m/Y',
+            'd-m-Y',
+            'Y/m/d',
+            'Y-m-d',
+        ];
+
+        // =========================
+        // 1️⃣ Cek format eksplisit
+        // =========================
+        foreach ($acceptedFormats as $format) {
+            $dt = \DateTime::createFromFormat($format, $date);
+            if ($dt && $dt->format($format) === $date) {
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        // =========================
+        // 2️⃣ Fallback manual (CSV jelek)
+        // =========================
+        $parts = preg_split('/[\/\-]/', $date);
+
+        if (count($parts) === 3) {
+            if (strlen($parts[0]) === 4) {
+                [$y, $m, $d] = $parts;
+            } else {
+                [$d, $m, $y] = $parts;
+            }
+
+            if (checkdate((int)$m, (int)$d, (int)$y)) {
+                return sprintf('%04d-%02d-%02d', $y, $m, $d);
+            }
+        }
+
+        // =========================
+        // ❌ FORMAT TIDAK DITERIMA
+        // =========================
+        throw new \Exception(
+            "Format tanggal <strong>{$date}</strong> tidak diterima.<br>"
+            . "Format yang diperbolehkan adalah:<br>"
+            . "<ul class='text-start'>"
+            . "<li><strong>DD/MM/YYYY</strong> (contoh: 25/12/2024)</li>"
+            . "<li><strong>DD-MM-YYYY</strong> (contoh: 25-12-2024)</li>"
+            . "<li><strong>YYYY/MM/DD</strong> (contoh: 2024/12/25)</li>"
+            . "<li><strong>YYYY-MM-DD</strong> (contoh: 2024-12-25)</li>"
+            . "</ul>"
+        );
     }
 
     private function toBool($val)
