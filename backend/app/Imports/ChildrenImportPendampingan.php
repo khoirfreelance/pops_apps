@@ -37,7 +37,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
     public function collection(Collection $rows)
     {
-
+        //dd($rows);
         try {
             foreach ($rows as $index => $row) {
 
@@ -70,6 +70,11 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 $nik = $this->normalizeNik($row[4] ?? null);
                 $nama = strtoupper($row[3]??'-');
                 $tglUkur = $this->convertDate($row[2]);
+                $bbl = $this->normalizeDecimal($row[23]);
+                $bbcur = $this->normalizeDecimal($row[25]);
+                $tbl = $this->normalizeDecimal($row[24]);
+                $tbcur = $this->normalizeDecimal($row[26]);
+                $lila = $this->normalizeDecimal($row[28]);
 
                 if (!$nik || !$tglUkur) {
                     throw new \Exception(
@@ -122,13 +127,13 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'rt' => ltrim($row[21], "0"),
                     'rw' => ltrim($row[22], "0"),
 
-                    'bb_lahir' => $this->normalizeBeratGramToKg($row[23]),
-                    'tb_lahir' => $this->normalizePanjangMToCM($row[24]),
-                    'bb' => $this->normalizeBeratGramToKg($row[25]),
-                    'tb' => $this->normalizePanjangMToCM($row[26]),
+                    'bb_lahir' => $this->normalizeBeratGramToKg($bbl),
+                    'tb_lahir' => $this->normalizePanjangMToCM($tbl),
+                    'bb' => $this->normalizeBeratGramToKg($bbcur),
+                    'tb' => $this->normalizePanjangMToCM($tbcur),
 
                     'status_gizi' => strtoupper($row[27]),
-                    'lila' => $row[28],
+                    'lila' => $lila,
                     'lika' => $row[29],
 
                     'asi' => $row[30],
@@ -704,4 +709,11 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         return null; // Nilai tidak valid
     }
 
+    private function normalizeDecimal(?string $value): ?float
+    {
+        if (!$value)
+        return null;
+        $value = str_replace(',', '.', trim($value));
+        return is_numeric($value) ? (float) $value : null;
+    }
 }

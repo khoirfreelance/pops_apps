@@ -578,6 +578,14 @@ class CatinController extends Controller
         }
     }
 
+    private function normalizeDecimal(?string $value): ?float
+    {
+        if (!$value)
+        return null;
+        $value = str_replace(',', '.', trim($value));
+        return is_numeric($value) ? (float) $value : null;
+    }
+
     private function convertDate($date)
     {
         if (!$date) {
