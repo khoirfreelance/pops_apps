@@ -67,18 +67,27 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     );
                 }
 
-                $nik = $this->normalizeNik($row[4] ?? null);
-                $nama = strtoupper($row[3]??'-');
+                $nik = $this->normalizeNik($row[4]);
+                $nama = strtoupper($row[3]);
                 $tglUkur = $this->convertDate($row[2]);
-                $bbl = $this->normalizeDecimal($row[23]);
-                $bbcur = $this->normalizeDecimal($row[25]);
-                $tbl = $this->normalizeDecimal($row[24]);
-                $tbcur = $this->normalizeDecimal($row[26]);
-                $lila = $this->normalizeDecimal($row[28]);
+                $bbl = $this->normalizeDecimal($row[23] ?? null);
+                $bbcur = $this->normalizeDecimal($row[25] ?? null);
+                $tbl = $this->normalizeDecimal($row[24] ?? null);
+                $tbcur = $this->normalizeDecimal($row[26] ?? null);
+                $lila = $this->normalizeDecimal($row[28] ?? null);
+                $kie = strtoupper($row[43]);
+                $bantuan = strtoupper($row[44]);
 
                 if (!$nik || !$tglUkur) {
                     throw new \Exception(
                         "NIK atau tanggal pengukuran kosong / tidak valid pada data {$nama}",
+                        1001
+                    );
+                }
+
+                if (!$kie || !$bantuan) {
+                    throw new \Exception(
+                        "Data edukasi gizi (KIE) atau data mendapatkan bantuan sosial kosong pada data {$nama}",
                         1001
                     );
                 }
@@ -132,7 +141,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'bb' => $this->normalizeBeratGramToKg($bbcur),
                     'tb' => $this->normalizePanjangMToCM($tbcur),
 
-                    'status_gizi' => strtoupper($row[27]),
+                    //'status_gizi' => strtoupper($row[27]),
                     'lila' => $lila,
                     'lika' => $row[29],
 
@@ -151,8 +160,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'penggunaan_sab' => $row[40],
                     'apabila_ada_penyakit' => $row[41],
                     'memiliki_jaminan' => $row[42],
-                    'kie' => $row[43],
-                    'mendapatkan_bantuan' => $row[44],
+                    'kie' => $kie,
+                    'mendapatkan_bantuan' => $bantuan,
                 ];
 
                 // Z-Score
@@ -167,6 +176,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'tb_u' => $this->statusTBU($z_tbu),
                     'zs_bb_tb' => $z_bbtb,
                     'bb_tb' => $this->statusBBTB($z_bbtb),
+                    'status_gizi' => $this->statusTBU($z_tbu),
                 ]);
 
                 $child = Child::create($data);
@@ -446,7 +456,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
         switch ($tipe) {
             case 'BB/U':
-                $usia = round($usiaOrTb);
+                $usia = (int) round($usiaOrTb);
                 $row = DB::table('who_weight_for_age')
                     ->where('sex', $sex)
                     ->where('age_month', $usia)
@@ -454,7 +464,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 break;
 
             case 'TB/U':
-                $usia = round($usiaOrTb);
+                $usia = (int) round($usiaOrTb);
                 $row = DB::table('who_height_for_age')
                     ->where('sex', $sex)
                     ->where('age_month', $usia)
@@ -462,7 +472,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 break;
 
             case 'BB/TB':
-                $tb = round($usiaOrTb);
+                $tb = (int) round($usiaOrTb);
                 $row = DB::table('who_weight_for_height')
                     ->where('sex', $sex)
                     ->where('height_cm', $tb)
