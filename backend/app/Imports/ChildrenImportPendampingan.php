@@ -44,7 +44,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 $user = Auth::user();
                 $wilayahData = $this->resolveWilayahFromRow($row);
 
-                //dd($row[20]);
+                //dd($user);
                 if ((!$user || $user->role !== 'Super Admin') && $row[20] !== $wilayahData['kelurahan']) {
                     throw new \Exception(
                         "Data untuk <strong>".$row[4]." (".$row[20].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
@@ -68,7 +68,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 }
 
                 $nik = $this->normalizeNik($row[4]);
-                $nama = strtoupper($row[3]);
+                $nama = strtoupper($row[3] ?? '-');
                 $tglUkur = $this->convertDate($row[2]);
                 $bbl = $this->normalizeDecimal($row[23] ?? null);
                 $bbcur = $this->normalizeDecimal($row[25] ?? null);
@@ -111,7 +111,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'nama_anak' => $nama,
                     'nik_anak' => $nik,
                     'jk' => $this->normalizeJenisKelamin($row[5]),
-                    'usia' => ltrim(trim($row[6]), "0"),
+                    'usia' => (int) ltrim(trim($row[6]), "0"),
 
                     'nama_ayah' => strtoupper($row[7]),
                     'nik_ayah' => $this->normalizeNik($row[8] ?? null),
@@ -257,8 +257,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 if (!$user) {
                     $user = User::create([
                         'nik' => null,
-                        'name' => strtoupper($row[1]),
-                        'email' => $this->generateRandomEmail($row[1]),
+                        'name' => strtoupper($row[1]?? '-'),
+                        'email' => $this->generateRandomEmail($row[1] ?? '-'),
                         'email_verified_at' => now(),
                         'phone' => null,
                         'role' => null,

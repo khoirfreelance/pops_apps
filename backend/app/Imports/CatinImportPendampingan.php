@@ -7,7 +7,7 @@ use App\Models\Cadre;
 use App\Models\Wilayah;
 use App\Models\User;
 use App\Models\Posyandu;
-use App\Models\Log;
+//use App\Models\Log;
 use App\Models\DampinganKeluarga;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -63,6 +63,7 @@ class CatinImportPendampingan implements
     public function collection(Collection $rows)
     {
         try {
+            //dd($rows);
             foreach ($rows as $row) {
                 $this->processRow($row->toArray());
             }
@@ -73,10 +74,10 @@ class CatinImportPendampingan implements
             }
 
             // ❌ error teknis
-            Log::error('Import CSV error teknis', [
+            /* Log::error('Import CSV error teknis', [
                 'error' => $e->getMessage(),
                 'code' => $e->getCode(),
-            ]);
+            ]); */
 
             throw new \Exception(
                 'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
