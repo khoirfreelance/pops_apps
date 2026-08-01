@@ -55,6 +55,15 @@ class CatinImportPendampingan implements
         ];
     }
 
+    /* public function getCsvSettings(): array
+    {
+        return [
+            'delimiter' => ';', // FIXED
+            'input_encoding' => 'UTF-8',
+            'enclosure' => '"',
+        ];
+    } */
+
     public function startRow(): int
     {
         return 2; // skip header
@@ -63,15 +72,16 @@ class CatinImportPendampingan implements
     public function collection(Collection $rows)
     {
         try {
-            //dd($rows);
+            //dd(count($rows));
             foreach ($rows as $row) {
                 $this->processRow($row->toArray());
             }
         } catch (\Exception $e) {
+            throw $e; // sementara jangan disembunyiin dulu
             // ✅ expected error
-            if ($e->getCode() === 1001) {
+            /* if ($e->getCode() === 1001) {
                 throw new \Exception($e->getMessage());
-            }
+            } */
 
             // ❌ error teknis
             /* Log::error('Import CSV error teknis', [
@@ -79,14 +89,18 @@ class CatinImportPendampingan implements
                 'code' => $e->getCode(),
             ]); */
 
-            throw new \Exception(
+            /* throw new \Exception(
                 'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
-            );
+            ); */
         }
     }
 
     private function processRow(array $row): void
     {
+        if (count($row) !== 39) {
+            throw new \Exception("Jumlah kolom tidak sesuai. Ditemukan: " . count($row), 1001);
+        }
+        //dd($row);
         $berat = $row[21] != null ? $this->normalizeDecimal($row[21]) : null;
         $tinggi = $row[22] != null ? $this->normalizeDecimal($row[22]) : null;
         $lila = $row[26] != null ? $this->normalizeDecimal($row[26]) : null;
@@ -297,12 +311,12 @@ class CatinImportPendampingan implements
             //     'rw' => ltrim($row['rw'], "0") ?? null,
             // ]);
 
-            Log::create([
+            /* Log::create([
                 'id_user' => $this->userId,
                 'context' => 'Catin',
                 'activity' => 'Import data calon pengantin ' . ($row['nama_perempuan'] ?? '-'),
                 'timestamp' => now(),
-            ]);
+            ]); */
         });
     }
 
