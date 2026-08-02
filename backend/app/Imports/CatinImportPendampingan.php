@@ -72,16 +72,27 @@ class CatinImportPendampingan implements
     public function collection(Collection $rows)
     {
         try {
-            //dd(count($rows));
             foreach ($rows as $row) {
-                $this->processRow($row->toArray());
+                $rowArray = $row->toArray();
+
+                // Skip baris yang seluruh kolomnya kosong/null
+                $isEmptyRow = collect($rowArray)->every(function ($v) {
+                    return $v === null || trim((string) $v) === '';
+                });
+
+                if ($isEmptyRow) {
+                    continue;
+                }
+
+                $this->processRow($rowArray);
             }
         } catch (\Exception $e) {
-            throw $e; // sementara jangan disembunyiin dulu
+            //$detail = $e;
+            //throw $e; // sementara jangan disembunyiin dulu
             // ✅ expected error
-            /* if ($e->getCode() === 1001) {
+            if ($e->getCode() === 1001) {
                 throw new \Exception($e->getMessage());
-            } */
+            }
 
             // ❌ error teknis
             /* Log::error('Import CSV error teknis', [
@@ -89,9 +100,9 @@ class CatinImportPendampingan implements
                 'code' => $e->getCode(),
             ]); */
 
-            /* throw new \Exception(
+            throw new \Exception(
                 'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.'
-            ); */
+            );
         }
     }
 
@@ -114,8 +125,13 @@ class CatinImportPendampingan implements
             $user = Auth::user();
             $wilayahData = $this->resolveWilayahFromRow($row);
 
-            //dd($row);
-            if ((!$user || $user->role !== 'Super Admin') && $row[17] !== $wilayahData['kelurahan']) {
+            $isNotSuperAdmin = !$user || $user->role !== 'Super Admin';
+            $kelurahanCsv = strtoupper(trim($row[17]));
+            $kelurahanDb  = strtoupper(trim($wilayahData['kelurahan']));
+
+            $isDifferentKelurahan = $kelurahanCsv !== $kelurahanDb;
+
+            if ($isNotSuperAdmin && $isDifferentKelurahan) {
                 throw new \Exception(
                     "Data untuk <strong>".$row[4]." (".$row[17].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
                     1001
@@ -483,10 +499,10 @@ class CatinImportPendampingan implements
         // SUPER ADMIN
         // =========================
 
-        $prov = $this->normalizeWilayahKey($row[14] ?? null);
-        $kota = $this->normalizeWilayahKey($row[15] ?? null);
-        $kec  = $this->normalizeWilayahKey($row[16] ?? null);
-        $kel  = $this->normalizeWilayahKey($row[17] ?? null);
+        $prov = $this->normalizeWilayahKey($row[14]);
+        $kota = $this->normalizeWilayahKey($row[15]);
+        $kec  = $this->normalizeWilayahKey($row[16]);
+        $kel  = $this->normalizeWilayahKey($row[17]);
 
         $wilayah = Wilayah::where('provinsi', $prov)
             ->where('kota', $kota)
