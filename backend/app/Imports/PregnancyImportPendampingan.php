@@ -59,6 +59,7 @@ class PregnancyImportPendampingan implements
             }
 
         } catch (\Exception $e) {
+            //throw $e;
             // ✅ expected error
             if ($e->getCode() === 1001) {
                 throw new \Exception($e->getMessage());
@@ -220,7 +221,10 @@ class PregnancyImportPendampingan implements
 
             $noKK = $pregnancy['nik_suami'] ?? null;
 
-            if ($noKK) {
+            $keluarga = null; // <-- default so it always exists
+
+            if ($noKK != null) {
+
                 $keluarga = Keluarga::firstOrCreate(
                     [
                         'no_kk' => $noKK,
@@ -233,6 +237,7 @@ class PregnancyImportPendampingan implements
                         'is_pending' => true,
                     ]
                 );
+
                 $anggota_ayah = [
                     'id_keluarga' => $keluarga->id,
                     'nama' => $pregnancy['nama_suami'],
@@ -253,13 +258,13 @@ class PregnancyImportPendampingan implements
 
                 if ($pregnancy['nik_suami']) {
                     AnggotaKeluarga::firstOrCreate(["nik" => $anggota_ayah['nik']], $anggota_ayah);
-                }else{
+                } else {
                     AnggotaKeluarga::create($anggota_ayah);
                 }
 
                 if ($pregnancy['nik_ibu']) {
                     AnggotaKeluarga::firstOrCreate(["nik" => $anggota_ibu['nik']], $anggota_ibu);
-                }else{
+                } else {
                     AnggotaKeluarga::create($anggota_ibu);
                 }
             }
@@ -304,7 +309,7 @@ class PregnancyImportPendampingan implements
 
             $dampinganKeluarga = DampinganKeluarga::firstOrCreate([
                 'id_pendampingan' => $pregnancy->id,
-                'id_keluarga' => $keluarga->id,
+                'id_keluarga' => optional($keluarga)->id,
                 'id_tpk' => $cadre->id,
                 'jenis' => 'BUMIL',
             ]);
