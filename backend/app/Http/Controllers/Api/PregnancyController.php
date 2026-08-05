@@ -695,6 +695,10 @@ class PregnancyController extends Controller
 
         $date = trim($date);
 
+        if ($date ==='' || $date === '-') {
+            return null;
+        }
+
         // ✅ Format yang diizinkan
         $acceptedFormats = [
             //'m/d/Y',

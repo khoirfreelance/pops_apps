@@ -274,11 +274,14 @@ class ChildrenImportKunjungan implements
     // Irul Custom ConvertDate
     private function convertDate($date)
     {
-        if (!$date) {
-            return null;
-        }
+        if (!$date) return null;
 
         $date = trim($date);
+
+        // HANDLE VALUE SAMPAH
+        if ($date === '-' || $date === '') {
+            return null;
+        }
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [

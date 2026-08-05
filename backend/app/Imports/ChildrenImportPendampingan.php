@@ -75,6 +75,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 $tbl = $this->normalizeDecimal($row[24] ?? null);
                 $tbcur = $this->normalizeDecimal($row[26] ?? null);
                 $lila = $this->normalizeDecimal($row[28] ?? null);
+                $lika = $this->normalizeDecimal($row[29] ?? null);
                 $kie = strtoupper($row[43]);
                 $bantuan = strtoupper($row[44]);
 
@@ -143,7 +144,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
 
                     //'status_gizi' => strtoupper($row[27]),
                     'lila' => $lila,
-                    'lika' => $row[29],
+                    'lika' => $lika,
 
                     'asi' => $row[30],
                     'imunisasi' => $row[31],
@@ -387,20 +388,36 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
         // opsional: ambil hanya angka (RECOMMENDED buat NIK)
         $nik = preg_replace('/\D/', '', $nik);
 
+        // maksimal 16 digit
+        if (strlen($nik) > 16) {
+            $nik = substr($nik, 0, 16);
+            /* throw new \Exception(
+                "NIK '{$nik}' lebih dari 16 digit",
+                1001
+            ); */
+        }
+
+        // kalau kurang dari 16 → anggap invalid
+        if (strlen($nik) !== 16) {
+            return null;
+        }
+
         return $nik ?: null;
     }
 
     private function convertDate($date)
     {
-        if (!$date) {
-            return null;
-        }
+        if (!$date) return null;
 
         $date = trim($date);
 
+        // HANDLE VALUE SAMPAH
+        if ($date === '-' || $date === '') {
+            return null;
+        }
+
         // ✅ Format yang diizinkan
         $acceptedFormats = [
-            //'m/d/Y',
             'd/m/Y',
             'd-m-Y',
             'Y/m/d',

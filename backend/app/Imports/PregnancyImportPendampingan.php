@@ -53,6 +53,7 @@ class PregnancyImportPendampingan implements
 
     public function collection(Collection $rows): void
     {
+        //dd($rows);
         try {
             foreach ($rows as $row) {
                 $this->processRow($row->toArray());
@@ -73,6 +74,11 @@ class PregnancyImportPendampingan implements
 
     protected function processRow(array $row): void
     {
+        /* dd([
+            'index_2' => $row[2] ?? null,
+            'index_22' => $row[22] ?? null,
+            'full_row' => $row
+        ]); */
         DB::transaction(function () use ($row) {
             // =========================
             // INTRO
@@ -102,6 +108,7 @@ class PregnancyImportPendampingan implements
             $nik = $this->normalizeNIK($row[4] ?? null);
             $nama = $this->normalizeText($row[3] ?? null);
             $tglUkur = $this->convertDate($row[2] ?? null);
+            $tglAkhir = $this->convertDate($row[22] ?? null);
 
             if (!$nik || !$tglUkur) {
                 throw new \Exception(
@@ -153,7 +160,7 @@ class PregnancyImportPendampingan implements
 
             $pregnancy = Pregnancy::create([
                 'nama_petugas' => $this->normalizeText($row[1] ?? null),
-                'tanggal_pendampingan' => $this->convertDate($row[2] ?? null),
+                'tanggal_pendampingan' => $tglUkur ?? null,
 
                 'nama_ibu' => $this->normalizeText($row[3] ?? null),
                 'nik_ibu' => $this->normalizeNIK($row[4] ?? null),
@@ -178,7 +185,7 @@ class PregnancyImportPendampingan implements
                 'rt' => $row[20] ?? null,
                 'rw' => $row[21] ?? null,
 
-                'tanggal_pemeriksaan_terakhir' => $this->convertDate($row[22] ?? null),
+                'tanggal_pemeriksaan_terakhir' => $tglAkhir ?? null,
                 'berat_badan' => $berat,
                 'tinggi_badan' => $tinggi,
                 'kadar_hb' => $hb,
@@ -373,11 +380,15 @@ class PregnancyImportPendampingan implements
 
     private function convertDate($date)
     {
-        if (!$date) {
-            return null;
-        }
+        dump($date);
+        if (!$date) return null;
 
         $date = trim($date);
+
+        // HANDLE VALUE SAMPAH
+        if ($date === '-' || $date === '') {
+            return null;
+        }
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
@@ -429,7 +440,6 @@ class PregnancyImportPendampingan implements
             1001
         );
     }
-
 
     private function normalizeNik($nik)
     {

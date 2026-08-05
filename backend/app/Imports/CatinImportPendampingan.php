@@ -55,15 +55,6 @@ class CatinImportPendampingan implements
         ];
     }
 
-    /* public function getCsvSettings(): array
-    {
-        return [
-            'delimiter' => ';', // FIXED
-            'input_encoding' => 'UTF-8',
-            'enclosure' => '"',
-        ];
-    } */
-
     public function startRow(): int
     {
         return 2; // skip header
@@ -73,6 +64,7 @@ class CatinImportPendampingan implements
     {
         try {
             foreach ($rows as $row) {
+                //dd($row);
                 $rowArray = $row->toArray();
 
                 // Skip baris yang seluruh kolomnya kosong/null
@@ -88,7 +80,7 @@ class CatinImportPendampingan implements
             }
         } catch (\Exception $e) {
             //$detail = $e;
-            //throw $e; // sementara jangan disembunyiin dulu
+            throw $e; // sementara jangan disembunyiin dulu
             // ✅ expected error
             if ($e->getCode() === 1001) {
                 throw new \Exception($e->getMessage());
@@ -387,11 +379,14 @@ class CatinImportPendampingan implements
 
     private function convertDate($date)
     {
-        if (!$date) {
-            return null;
-        }
+        if (!$date) return null;
 
         $date = trim($date);
+
+        // HANDLE VALUE SAMPAH
+        if ($date === '-' || $date === '') {
+            return null;
+        }
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
@@ -594,7 +589,7 @@ class CatinImportPendampingan implements
         return ($usia_perempuan < 20 || $usia_perempuan > 35) ? 'Berisiko' : 'Normal';
     }
 
-    private function normalizeDecimal(?string $value): ?float
+    /* private function normalizeDecimal(?string $value): ?float
     {
         if ($value === null) {
             return null;
@@ -621,5 +616,12 @@ class CatinImportPendampingan implements
         }
 
         return (float) $value;
+    } */
+    private function normalizeDecimal(?string $value): ?float
+    {
+        if (!$value)
+        return null;
+        $value = str_replace(',', '.', trim($value));
+        return is_numeric($value) ? (float) $value : null;
     }
 }

@@ -1497,11 +1497,14 @@ class ChildrenController extends Controller
     // Irul Custom ConvertDate
     private function convertDate($date)
     {
-        if (!$date) {
-            return null;
-        }
+        if (!$date) return null;
 
         $date = trim($date);
+
+        // HANDLE VALUE SAMPAH
+        if ($date === '-' || $date === '') {
+            return null;
+        }
 
         // ✅ Format yang diizinkan
         $acceptedFormats = [
@@ -1554,6 +1557,13 @@ class ChildrenController extends Controller
         );
     }
 
+    private function normalizeDecimal(?string $value): ?float
+    {
+        if (!$value)
+        return null;
+        $value = str_replace(',', '.', trim($value));
+        return is_numeric($value) ? (float) $value : null;
+    }
     /* private function convertDate($date)
     {
         if (!$date)
