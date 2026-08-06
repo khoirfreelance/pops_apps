@@ -3734,7 +3734,7 @@ class ChildrenController extends Controller
                         break;
 
                     case 'pendampingan_anak':
-                        $query = Kunjungan::whereIn('nik_anak', $niks);
+                        $query = Child::whereIn('nik_anak', $niks);
                         $latestDate = $query->max('tgl_pendampingan');
                         break;
 
