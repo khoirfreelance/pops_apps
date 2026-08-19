@@ -60,25 +60,20 @@ class PregnancyImportPendampingan implements
             }
 
         } catch (\Exception $e) {
-            //throw $e;
+            throw $e;
             // ✅ expected error
-            if ($e->getCode() === 1001) {
+            /* if ($e->getCode() === 1001) {
                 throw new \Exception($e->getMessage());
             }
 
             throw new \Exception(
                 'Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan.',422,$e
-            );
+            ); */
         }
     }
 
     protected function processRow(array $row): void
     {
-        /* dd([
-            'index_2' => $row[2] ?? null,
-            'index_22' => $row[22] ?? null,
-            'full_row' => $row
-        ]); */
         DB::transaction(function () use ($row) {
             // =========================
             // INTRO
@@ -110,9 +105,69 @@ class PregnancyImportPendampingan implements
             $tglUkur = $this->convertDate($row[2] ?? null);
             $tglAkhir = $this->convertDate($row[22] ?? null);
 
-            if (!$nik || !$tglUkur) {
+            if (!$nik) {
                 throw new \Exception(
-                    "NIK atau tanggal pendampingan kosong / tidak valid pada data {$nama}", 1001
+                    "NIK kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$tglUkur) {
+                throw new \Exception(
+                    "Tanggal pendampingan kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$nama) {
+                throw new \Exception(
+                    "Nama ibu hamil kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[16]) {
+                throw new \Exception(
+                    "Provinsi kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[17]) {
+                throw new \Exception(
+                    "Kota kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[18]) {
+                throw new \Exception(
+                    "Kecamatan kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[19]) {
+                throw new \Exception(
+                    "Desa kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$tglAkhir) {
+                throw new \Exception(
+                    "Tanggal Pemeriksaan kesehatan terakhir kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[23]) {
+                throw new \Exception(
+                    "Berat badan kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[24]) {
+                throw new \Exception(
+                    "Tinggi badan kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[25]) {
+                throw new \Exception(
+                    "IMT kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[26]) {
+                throw new \Exception(
+                    "Kadar HB kosong / tidak valid pada data {$nama}", 1001
+                );
+            }
+            if (!$row[28]) {
+                throw new \Exception(
+                    "Lingkar lengan atas (Lila) kosong / tidak valid pada data {$nama}", 1001
                 );
             }
 
@@ -127,6 +182,7 @@ class PregnancyImportPendampingan implements
                     1001
                 );
             }
+            //dd($duplikat);
 
             $jum_anak = $this->normalizeDecimal($row[11] ?? null);
             $berat = $this->normalizeDecimal($row[23] ?? null);
@@ -157,10 +213,10 @@ class PregnancyImportPendampingan implements
             }
 
             $imt = $this->hitungIMT($berat, $tinggi);
-
+            //dd($usia);
             $pregnancy = Pregnancy::create([
                 'nama_petugas' => $this->normalizeText($row[1] ?? null),
-                'tanggal_pendampingan' => $tglUkur ?? null,
+                'tanggal_pendampingan' => $tglUkur,
 
                 'nama_ibu' => $this->normalizeText($row[3] ?? null),
                 'nik_ibu' => $this->normalizeNIK($row[4] ?? null),
@@ -219,6 +275,7 @@ class PregnancyImportPendampingan implements
                 'posyandu' => $this->posyanduUser ?? null,
             ]);
 
+            //dd($pregnancy);
             /* $wilayah = Wilayah::firstOrCreate([
                 'provinsi' => $this->normalizeText($pregnancy->provinsi),
                 'kota' => $this->normalizeText($pregnancy->kota),
@@ -276,23 +333,30 @@ class PregnancyImportPendampingan implements
                 }
             }
 
-            $user = User::where('name', strtoupper($row[1]))
-            ->where('id_wilayah', $wilayahData['id'])
-            ->first();
+            $namaPetugas = trim((string) ($row[1] ?? ''));
 
-            if (!$user) {
-                $user = User::create([
-                    'nik' => null,
-                    'name' => strtoupper($row[1]),
-                    'email' => $this->generateRandomEmail($row[1]),
-                    'email_verified_at' => now(),
-                    'phone' => null,
-                    'role' => null,
-                    'id_wilayah' => $wilayahData['id'],
-                    'status' => 1,
-                    'is_pending' => 1,
-                    'password' => '-',
-                ]);
+            $petugas = null;
+
+            if ($namaPetugas !== '') {
+
+                $petugas = User::where('name', strtoupper($namaPetugas))
+                    ->where('id_wilayah', $wilayahData['id'])
+                    ->first();
+
+                if (!$petugas) {
+                    $petugas = User::create([
+                        'nik' => null,
+                        'name' => strtoupper($namaPetugas),
+                        'email' => $this->generateRandomEmail($namaPetugas),
+                        'email_verified_at' => now(),
+                        'phone' => null,
+                        'role' => null,
+                        'id_wilayah' => $wilayahData['id'],
+                        'status' => 1,
+                        'is_pending' => 1,
+                        'password' => '-',
+                    ]);
+                }
             }
 
             $posyandu = Posyandu::firstOrCreate([
@@ -380,7 +444,6 @@ class PregnancyImportPendampingan implements
 
     private function convertDate($date)
     {
-        dump($date);
         if (!$date) return null;
 
         $date = trim($date);
