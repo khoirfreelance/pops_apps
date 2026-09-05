@@ -76,8 +76,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 $tbcur = $this->normalizeDecimal($row[26] ?? null);
                 $lila = $this->normalizeDecimal($row[28] ?? null);
                 $lika = $this->normalizeDecimal($row[29] ?? null);
-                $kie = strtoupper($row[43]);
-                $bantuan = strtoupper($row[44]);
+                $kie = strtoupper($row[42]);
+                $bantuan = strtoupper($row[43]);
 
                 if (!$nik || !$tglUkur) {
                     throw new \Exception(
@@ -152,15 +152,15 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     'rutin_posyandu' => $row[33],
 
                     'riwayat_penyakit_bawaan' => $row[34],
-                    'penyakit_bawaan' => $row[35],
-                    'riwayat_penyakit_6bulan' => $row[36],
-                    'penyakit_6bulan' => $row[37],
+                    //'penyakit_bawaan' => $row[34],
+                    'riwayat_penyakit_6bulan' => $row[35],
+                    //'penyakit_6bulan' => $row[35],
 
-                    'terpapar_asap_rokok' => $row[38],
-                    'penggunaan_jamban_sehat' => $row[39],
-                    'penggunaan_sab' => $row[40],
-                    'apabila_ada_penyakit' => $row[41],
-                    'memiliki_jaminan' => $row[42],
+                    'terpapar_asap_rokok' => $row[36],
+                    'penggunaan_jamban_sehat' => $row[37],
+                    'penggunaan_sab' => $row[38],
+                    'apabila_ada_penyakit' => $row[39],
+                    'memiliki_jaminan' => $row[40],
                     'kie' => $kie,
                     'mendapatkan_bantuan' => $bantuan,
                 ];
