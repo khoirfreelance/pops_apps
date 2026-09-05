@@ -52,7 +52,7 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                     );
                 }
 
-                if (count($row) < 45) {
+                if (count($row) < 44) {
                     throw new Exception("Format CSV tidak valid di baris " . ($index + 2));
                 }
 
