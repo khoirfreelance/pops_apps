@@ -59,7 +59,13 @@ class ChildrenImportKunjungan implements
                 $user = Auth::user();
                 $wilayahData = $this->resolveWilayahFromRow($row);
 
-                if ((!$user || $user->role !== 'Super Admin') && $row['desakel'] !== $wilayahData['kelurahan']) {
+                $isNotSuperAdmin = !$user || $user->role !== 'Super Admin';
+                $kelurahanCsv = strtoupper(trim($row['desakel']));
+                $kelurahanDb  = strtoupper(trim($wilayahData['kelurahan']));
+
+                $isDifferentKelurahan = $kelurahanCsv !== $kelurahanDb;
+
+                if ($isNotSuperAdmin && $isDifferentKelurahan) {
                     throw new \Exception(
                         "Data untuk <strong>".$row['nik']." (".$row['desakel'].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
                         1001

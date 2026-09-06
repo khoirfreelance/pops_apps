@@ -80,15 +80,19 @@ class PregnancyImportPendampingan implements
             // =========================
             $user = Auth::user();
             $wilayahData = $this->resolveWilayahFromRow($row);
+            $isNotSuperAdmin = !$user || $user->role !== 'Super Admin';
+            $kelurahanCsv = strtoupper(trim($row[19]));
+            $kelurahanDb  = strtoupper(trim($wilayahData['kelurahan']));
 
-            //dd($row);
-            if ((!$user || $user->role !== 'Super Admin') && $row[19] !== $wilayahData['kelurahan']) {
+            $isDifferentKelurahan = $kelurahanCsv !== $kelurahanDb;
+
+            if ($isNotSuperAdmin && $isDifferentKelurahan) {
                 throw new \Exception(
-                    "Data untuk <strong>".$row[4]." (".$row[19].")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
+                    "Data untuk <strong>".$row[4]." (".$kelurahan.")</strong> yang anda unggah bukan untuk desa yang anda kelola <strong>(".$wilayahData['kelurahan'].")</strong>.",
                     1001
                 );
             }
-
+            //dd($row);
             // =========================
             // 0. Validasi data import
             // =========================
@@ -155,11 +159,11 @@ class PregnancyImportPendampingan implements
                     "Tinggi badan kosong / tidak valid pada data {$nama}", 1001
                 );
             }
-            if (!$row[25]) {
+            /* if (!$row[25]) {
                 throw new \Exception(
                     "IMT kosong / tidak valid pada data {$nama}", 1001
                 );
-            }
+            } */
             if (!$row[26]) {
                 throw new \Exception(
                     "Kadar HB kosong / tidak valid pada data {$nama}", 1001
