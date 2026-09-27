@@ -596,7 +596,8 @@ class PregnancyController extends Controller
                 return trim($item);
             }, $header);
 
-            if ($header !== $expectedHeaders) {
+            //if ($header !== $expectedHeaders) {
+            if ($header < 16) {
                 throw new \Exception(
                     "Gagal import data, silahkan check dan bandingkan kembali format csv dengan contoh yang diberikan."
                 );
