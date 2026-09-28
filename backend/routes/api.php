@@ -31,6 +31,14 @@ Route::middleware('auth:sanctum')->group(function () {
 // Dashboard Endpoint
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/rt/{id_wilayah?}', [DashboardController::class, 'getRT']);
+    Route::post('/dashboard/rt/update', [DashboardController::class, 'updateRT']);
+
+    Route::get('/dashboard/rw/{id_wilayah?}', [DashboardController::class, 'getRW']);
+    Route::post('/dashboard/rw/update', [DashboardController::class, 'updateRW']);
+
+    Route::get('/dashboard/stat-keluarga/{id_wilayah?}', [DashboardController::class, 'getStatKeluarga']);
+    Route::post('/dashboard/stat-keluarga/update', [DashboardController::class, 'updateStatKeluarga']);
     Route::get('/posyandu/{id}/wilayah', [DashboardController::class, 'getPosyanduWilayah']);
 });
 

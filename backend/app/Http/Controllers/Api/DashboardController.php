@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-//use Illuminate\Http\Request;
+use Illuminate\Http\Request;
 use App\Models\Keluarga;
 use App\Models\Posyandu;
 use App\Models\TPK;
 use App\Models\User;
 use App\Models\Catin;
-//use App\Models\Pendampingan;
+use App\Models\RT;
+use App\Models\RW;
+use App\Models\StatKeluarga;
 use App\Models\Pregnancy;
 use App\Models\Child;
 use App\Models\Kunjungan;
-//use App\Models\Bride;
 use App\Models\Wilayah;
 use Illuminate\Support\Facades\Auth;
-//use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -27,108 +27,56 @@ class DashboardController extends Controller
         $isSuperAdmin = $user->role === 'Super Admin';
         $wilayah = Wilayah::find($user->id_wilayah);
 
-        //dd($user->role,' and ',$user->id_wilayah);
-        // ambil semua nilai RT dan RW dari masing-masing tabel
+        // ===== RT, RW, Keluarga dari tabel rekap =====
         if ($isSuperAdmin) {
-            $rts = collect()
-                ->merge(Pregnancy::whereNotNull('rt')->pluck('rt'))
-                ->merge(Catin::whereNotNull('rt')->pluck('rt'))
-                ->merge(Kunjungan::whereNotNull('rt')->pluck('rt'))
-                ->merge(Child::whereNotNull('rt')->pluck('rt'));
-
-            $rws = collect()
-                ->merge(Pregnancy::whereNotNull('rw')->pluck('rw'))
-                ->merge(Catin::whereNotNull('rw')->pluck('rw'))
-                ->merge(Kunjungan::whereNotNull('rw')->pluck('rw'))
-                ->merge(Child::whereNotNull('rw')->pluck('rw'));
-        }else{
-            $rts = collect()
-                ->merge(Pregnancy::whereNotNull('rt')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rt'))
-                ->merge(Catin::whereNotNull('rt')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rt'))
-                ->merge(Kunjungan::whereNotNull('rt')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rt'))
-                ->merge(Child::whereNotNull('rt')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rt'));
-
-            $rws = collect()
-                ->merge(Pregnancy::whereNotNull('rw')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rw'))
-                ->merge(Catin::whereNotNull('rw')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rw'))
-                ->merge(Kunjungan::whereNotNull('rw')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rw'))
-                ->merge(Child::whereNotNull('rw')
-                    ->where('kelurahan', $wilayah->kelurahan)
-                    ->pluck('rw'));
+            // Super Admin: jumlahkan semua wilayah
+            $totalRt       = RT::sum('count_rt');
+            $totalRw       = RW::sum('count_rw');
+            $totalKeluarga = StatKeluarga::sum('count_keluarga');
+        } else {
+            // Admin biasa: hanya wilayahnya
+            $totalRt       = RT::where('id_wilayah', $wilayah->id)->sum('count_rt');
+            $totalRw       = RW::where('id_wilayah', $wilayah->id)->sum('count_rw');
+            $totalKeluarga = StatKeluarga::where('id_wilayah', $wilayah->id)->sum('count_keluarga');
         }
 
-        // hitung yang unik
-        $uniqueRt = $rts->unique()->count();
-        $uniqueRw = $rws->unique()->count();
-
+        // ===== Anak <= 5 tahun =====
         if ($isSuperAdmin) {
-            $anakDariPendampingan = Child::whereRaw(
-                    'TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60'
-                )
-                ->distinct('nik_anak')
-                ->count('nik_anak');
-
-            $anakDariKunjungan = Kunjungan::whereRaw(
-                    'TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60'
-                )
+            $anakDariKunjungan = Kunjungan::whereRaw('TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60')
                 ->distinct('nik')
                 ->count('nik');
-
-        }else {
-            $anakDariPendampingan = Child::whereRaw(
-                    'TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60 AND kelurahan = "'.$wilayah->kelurahan.'"'
-                )
-                ->distinct('nik_anak')
-                ->count('nik_anak');
-
-            $anakDariKunjungan = Kunjungan::whereRaw(
-                    'TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60 AND kelurahan = "'.$wilayah->kelurahan.'"'
-                )
+        } else {
+            $anakDariKunjungan = Kunjungan::whereRaw('TIMESTAMPDIFF(MONTH, tgl_lahir, CURDATE()) <= 60')
+                ->where('kelurahan', $wilayah->kelurahan)
                 ->distinct('nik')
                 ->count('nik');
         }
-
-        $anak = $anakDariPendampingan + $anakDariKunjungan;
 
         if ($isSuperAdmin) {
             return response()->json([
-                'rw' => $uniqueRw,
-                'rt' => $uniqueRt,
-                'keluarga' => Keluarga::count(),
-                'tpk' => TPK::count(),
+                'rw'        => (int) $totalRw,
+                'rt'        => (int) $totalRt,
+                'keluarga'  => (int) $totalKeluarga,
+                'tpk'       => TPK::count(),
                 'ibu_hamil' => Pregnancy::count(),
-                'posyandu' => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu','id_wilayah')->get()->count(),
-                'bidan' => User::where('role', '=', 'Bidan')->count(),
-                'catin' => Catin::count(),
-                'anak' => $anakDariKunjungan,
-            ]);
-        }else {
-            return response()->json([
-                'rw' => $uniqueRw,
-                'rt' => $uniqueRt,
-                'keluarga' => Keluarga::where('id_wilayah', $wilayah->id)->count(),
-                'tpk' => TPK::where('id_wilayah', $wilayah->id)->count(),
-                'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)->count(),
-                'posyandu' => Posyandu::select('nama_posyandu')->where('id_wilayah', $wilayah->id)->groupBy('nama_posyandu','id_wilayah')->get()->count(),
-                'bidan' => User::where('role', '=', 'Bidan')->count(),
-                'catin' => Catin::where('kelurahan', $wilayah->kelurahan)->count(),
-                'anak' => $anakDariKunjungan,
+                'posyandu'  => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu', 'id_wilayah')->get()->count(),
+                'bidan'     => User::where('role', 'Bidan')->count(),
+                'catin'     => Catin::count(),
+                'anak'      => $anakDariKunjungan,
             ]);
         }
+
+        return response()->json([
+            'rw'        => (int) $totalRw,
+            'rt'        => (int) $totalRt,
+            'keluarga'  => (int) $totalKeluarga,
+            'tpk'       => TPK::where('id_wilayah', $wilayah->id)->count(),
+            'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)->count(),
+            'posyandu'  => Posyandu::select('nama_posyandu')->where('id_wilayah', $wilayah->id)->groupBy('nama_posyandu', 'id_wilayah')->get()->count(),
+            'bidan'     => User::where('role', 'Bidan')->count(),
+            'catin'     => Catin::where('kelurahan', $wilayah->kelurahan)->count(),
+            'anak'      => $anakDariKunjungan,
+        ]);
     }
 
     public function getPosyanduWilayah($id)
@@ -151,6 +99,114 @@ class DashboardController extends Controller
         })->values();
 
         return response()->json($grouped);
+    }
+
+    // ================= RT =================
+
+    public function getRT($id_wilayah = null)
+    {
+        $query = RT::query();
+
+        if ($id_wilayah) {
+            $query->where('id_wilayah', $id_wilayah);
+        }
+
+        return response()->json($query->get());
+    }
+
+    public function updateRT(Request $request)
+    {
+        $request->validate([
+            'id_wilayah'  => 'required|exists:wilayah,id',
+            'count_rt'    => 'required|integer|min:0',
+        ]);
+
+        $rt = RT::updateOrCreate(
+            [
+                'id_wilayah' => $request->id_wilayah,
+                'id_petugas' => Auth::id(),
+            ],
+            [
+                'count_rt' => $request->count_rt,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Data RT berhasil diupdate',
+            'data' => $rt,
+        ]);
+    }
+
+    // ================= RW =================
+
+    public function getRW($id_wilayah = null)
+    {
+        $query = RW::query();
+
+        if ($id_wilayah) {
+            $query->where('id_wilayah', $id_wilayah);
+        }
+
+        return response()->json($query->get());
+    }
+
+    public function updateRW(Request $request)
+    {
+        $request->validate([
+            'id_wilayah'  => 'required|exists:wilayah,id',
+            'count_rw'    => 'required|integer|min:0',
+        ]);
+
+        $rw = RW::updateOrCreate(
+            [
+                'id_wilayah' => $request->id_wilayah,
+                'id_petugas' => Auth::id(),
+            ],
+            [
+                'count_rw' => $request->count_rw,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Data RW berhasil diupdate',
+            'data' => $rw,
+        ]);
+    }
+
+    // ================= Stat Keluarga =================
+
+    public function getStatKeluarga($id_wilayah = null)
+    {
+        $query = StatKeluarga::query();
+
+        if ($id_wilayah) {
+            $query->where('id_wilayah', $id_wilayah);
+        }
+
+        return response()->json($query->get());
+    }
+
+    public function updateStatKeluarga(Request $request)
+    {
+        $request->validate([
+            'id_wilayah'     => 'required|exists:wilayah,id',
+            'count_keluarga' => 'required|integer|min:0',
+        ]);
+
+        $stat = StatKeluarga::updateOrCreate(
+            [
+                'id_wilayah' => $request->id_wilayah,
+                'id_petugas' => Auth::id(),
+            ],
+            [
+                'count_keluarga' => $request->count_keluarga,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Data Stat Keluarga berhasil diupdate',
+            'data' => $stat,
+        ]);
     }
 
 }
