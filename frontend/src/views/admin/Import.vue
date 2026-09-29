@@ -1937,7 +1937,9 @@ export default {
         this.filters.kota = wilayah.kota
         this.filters.kecamatan = wilayah.kecamatan
         this.filters.kelurahan = wilayah.kelurahan
-        //console.log('✅ getWilayahUser ->', this.filters)
+
+        // 🔥 TAMBAHAN: isi label desa untuk admin desa
+        this.kelurahan = wilayah.kelurahan
       } catch (e) {
         console.error('❌ getWilayahUser error:', e)
         this.kelurahan = '-'
@@ -3546,11 +3548,11 @@ export default {
         console.error('Gagal ambil data:', e)
       }
     },
-
     async loadDataStat() {
       try {
         const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        const idWilayah = this.role === 'Super Admin' ? '' : this.filters.idWilayah
+        const isSuperAdmin = this.role === 'Super Admin'
+        const idWilayah = isSuperAdmin ? '' : this.filters.idWilayah
 
         const [rtRes, rwRes, keluargaRes] = await Promise.all([
           axios.get(`${baseURL}/api/dashboard/rt/${idWilayah}`, { headers }),
@@ -3581,8 +3583,22 @@ export default {
           }
         })
 
-        // filter by search kalau bukan admin / sudah pilih desa
-        if (this.filters.kelurahan) {
+        // 🔥 TAMBAHAN: kalau admin desa dan belum ada baris sama sekali,
+        // buat baris default (kosong) supaya tetap bisa klik "Ubah" untuk mengisi pertama kali
+        if (!isSuperAdmin && this.dataLoad_stat.length === 0 && this.filters.idWilayah) {
+          this.dataLoad_stat = [
+            {
+              id_wilayah: this.filters.idWilayah,
+              desa: this.kelurahan ?? '-',
+              rt: 0,
+              rw: 0,
+              keluarga: 0,
+            },
+          ]
+        }
+
+        // Super Admin dengan filter desa aktif → filter lagi berdasarkan nama desa terpilih
+        if (isSuperAdmin && this.filters.kelurahan) {
           this.dataLoad_stat = this.dataLoad_stat.filter(
             (item) => item.desa === this.filters.kelurahan
           )
