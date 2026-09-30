@@ -58,7 +58,7 @@
                 <button class="nav-link w-100 text-truncate" id="catin-tab" data-bs-toggle="tab"
                   data-bs-target="#stat-tab-pane" type="button" role="tab" aria-controls="stat-tab-pane"
                   aria-selected="false" @click="menu('stat')">
-                  Statistik
+                  <i class="fa fa-area-chart" aria-hidden="true"></i>
                 </button>
               </li>
             </ul>
