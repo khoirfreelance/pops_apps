@@ -29,15 +29,17 @@ class DashboardController extends Controller
 
         // ===== RT, RW, Keluarga dari tabel rekap =====
         if ($isSuperAdmin) {
-            // Super Admin: jumlahkan semua wilayah
-            $totalRt       = RT::sum('count_rt');
-            $totalRw       = RW::sum('count_rw');
-            $totalKeluarga = StatKeluarga::sum('count_keluarga');
+            $ids = $this->canonicalWilayahIds();
+
+            $totalRt       = RT::whereIn('id_wilayah', $ids)->sum('count_rt');
+            $totalRw       = RW::whereIn('id_wilayah', $ids)->sum('count_rw');
+            $totalKeluarga = StatKeluarga::whereIn('id_wilayah', $ids)->sum('count_keluarga');
         } else {
-            // Admin biasa: hanya wilayahnya
-            $totalRt       = RT::where('id_wilayah', $wilayah->id)->sum('count_rt');
-            $totalRw       = RW::where('id_wilayah', $wilayah->id)->sum('count_rw');
-            $totalKeluarga = StatKeluarga::where('id_wilayah', $wilayah->id)->sum('count_keluarga');
+            $wilayahId = $this->resolveWilayahId($wilayah->id);
+
+            $totalRt       = RT::where('id_wilayah', $wilayahId)->sum('count_rt');
+            $totalRw       = RW::where('id_wilayah', $wilayahId)->sum('count_rw');
+            $totalKeluarga = StatKeluarga::where('id_wilayah', $wilayahId)->sum('count_keluarga');
         }
 
         // ===== Anak <= 5 tahun =====
@@ -105,10 +107,12 @@ class DashboardController extends Controller
 
     public function getRT($id_wilayah = null)
     {
-        $query = RT::query();
+        $query = RT::with('wilayah');
 
         if ($id_wilayah) {
-            $query->where('id_wilayah', $id_wilayah);
+            $query->where('id_wilayah', $this->resolveWilayahId($id_wilayah));
+        } else {
+            $query->whereIn('id_wilayah', $this->canonicalWilayahIds());
         }
 
         return response()->json($query->get());
@@ -141,10 +145,12 @@ class DashboardController extends Controller
 
     public function getRW($id_wilayah = null)
     {
-        $query = RW::query();
+        $query = RW::with('wilayah');
 
         if ($id_wilayah) {
-            $query->where('id_wilayah', $id_wilayah);
+            $query->where('id_wilayah', $this->resolveWilayahId($id_wilayah));
+        } else {
+            $query->whereIn('id_wilayah', $this->canonicalWilayahIds());
         }
 
         return response()->json($query->get());
@@ -173,14 +179,48 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Id wilayah "kanonik": kelurahan tidak null/kosong,
+     * dan jika redundan ambil id paling kecil (paling atas).
+     */
+    private function canonicalWilayahIds()
+    {
+        return Wilayah::query()
+            ->whereNotNull('kelurahan')
+            ->where('kelurahan', '!=', '')
+            ->selectRaw('MIN(id) as id')
+            ->groupBy('provinsi', 'kota', 'kecamatan', 'kelurahan')
+            ->pluck('id');
+    }
+
+    /**
+     * Ubah id wilayah apapun (termasuk duplikat) jadi id kanonik-nya.
+     * Return null kalau wilayah tidak ada / kelurahan kosong.
+     */
+    private function resolveWilayahId($id)
+    {
+        $w = Wilayah::find($id);
+
+        if (!$w || blank($w->kelurahan)) {
+            return null;
+        }
+
+        return Wilayah::where('provinsi', $w->provinsi)
+            ->where('kota', $w->kota)
+            ->where('kecamatan', $w->kecamatan)
+            ->where('kelurahan', $w->kelurahan)
+            ->min('id');
+    }
     // ================= Stat Keluarga =================
 
     public function getStatKeluarga($id_wilayah = null)
     {
-        $query = StatKeluarga::query();
+        $query = StatKeluarga::with('wilayah');
 
         if ($id_wilayah) {
-            $query->where('id_wilayah', $id_wilayah);
+            $query->where('id_wilayah', $this->resolveWilayahId($id_wilayah));
+        } else {
+            $query->whereIn('id_wilayah', $this->canonicalWilayahIds());
         }
 
         return response()->json($query->get());
