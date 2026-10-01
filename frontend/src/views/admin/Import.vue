@@ -1946,25 +1946,36 @@ export default {
       }
     },
     async loadRegion() {
-      const res = await axios.get(
-        `${baseURL}/api/region`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      )
+      const res = await axios.get(`${baseURL}/api/region`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
 
-      this.listKelurahan = res.data.data
-      .flatMap(item => item.options || [])
-      .map(opt => ({
-        id: opt.id,
-        kelurahan: opt.kelurahan,
-        label: opt.label,
-        kecamatan: opt.kecamatan,
-        kota: opt.kota,
-        provinsi: opt.provinsi,
-      }));
+      const options = res.data.data
+        .flatMap(item => item.options || [])
+        // buang kelurahan null / kosong
+        .filter(opt => opt.kelurahan && opt.kelurahan.trim() !== '')
+        // urutkan id kecil dulu, supaya "yang paling atas" yang dipakai
+        .sort((a, b) => Number(a.id) - Number(b.id))
+
+      const seen = new Map()
+      options.forEach(opt => {
+        const key = opt.kelurahan.trim().toUpperCase()
+        if (!seen.has(key)) {
+          seen.set(key, {
+            id: opt.id,
+            kelurahan: opt.kelurahan,
+            label: opt.label,
+            kecamatan: opt.kecamatan,
+            kota: opt.kota,
+            provinsi: opt.provinsi,
+          })
+        }
+      })
+
+      // tampilkan urut abjad di dropdown
+      this.listKelurahan = [...seen.values()].sort((a, b) =>
+        a.label.localeCompare(b.label)
+      )
     },
     toggleSelectAll() {
       //console.log(this.items);
@@ -3572,16 +3583,20 @@ export default {
         put(rwRes.data, 'rw')
         put(keluargaRes.data, 'keluarga')
 
-        this.dataLoad_stat = Object.values(map).map((item) => {
-          const wilayah = this.listKelurahan.find((w) => w.id === item.id_wilayah)
-          return {
-            id_wilayah: item.id_wilayah,
-            desa: wilayah?.kelurahan ?? this.kelurahan ?? '-',
-            rt: item.rt ?? 0,
-            rw: item.rw ?? 0,
-            keluarga: item.keluarga ?? 0,
-          }
-        })
+        this.dataLoad_stat = Object.values(map)
+          .filter(item =>
+            isSuperAdmin ? this.listKelurahan.some(w => w.id === item.id_wilayah) : true
+          )
+          .map((item) => {
+            const wilayah = this.listKelurahan.find((w) => w.id === item.id_wilayah)
+            return {
+              id_wilayah: item.id_wilayah,
+              desa: wilayah?.kelurahan ?? this.kelurahan ?? '-',
+              rt: item.rt ?? 0,
+              rw: item.rw ?? 0,
+              keluarga: item.keluarga ?? 0,
+            }
+          })
 
         // 🔥 TAMBAHAN: kalau admin desa dan belum ada baris sama sekali,
         // buat baris default (kosong) supaya tetap bisa klik "Ubah" untuk mengisi pertama kali
