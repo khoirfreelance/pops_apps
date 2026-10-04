@@ -17,6 +17,7 @@ use App\Models\Child;
 use App\Models\Kunjungan;
 use App\Models\Wilayah;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -61,6 +62,7 @@ class DashboardController extends Controller
                 'keluarga'  => (int) $totalKeluarga,
                 'tpk'       => TPK::count(),
                 'ibu_hamil' => Pregnancy::count(),
+                'posyandu' => (int) $this->countPosyanduByKelurahan(),
                 'posyandu'  => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu', 'id_wilayah')->get()->count(),
                 'bidan'     => User::where('role', 'Bidan')->count(),
                 'catin'     => Catin::count(),
@@ -74,7 +76,7 @@ class DashboardController extends Controller
             'keluarga'  => (int) $totalKeluarga,
             'tpk'       => TPK::where('id_wilayah', $wilayah->id)->count(),
             'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)->count(),
-            'posyandu'  => Posyandu::select('nama_posyandu')->where('id_wilayah', $wilayah->id)->groupBy('nama_posyandu', 'id_wilayah')->get()->count(),
+            'posyandu' => (int) $this->countPosyanduByKelurahan($wilayah->kelurahan),
             'bidan'     => User::where('role', 'Bidan')->count(),
             'catin'     => Catin::where('kelurahan', $wilayah->kelurahan)->count(),
             'anak'      => $anakDariKunjungan,
@@ -104,7 +106,6 @@ class DashboardController extends Controller
     }
 
     // ================= RT =================
-
     public function getRT($id_wilayah = null)
     {
         $query = RT::with('wilayah');
@@ -249,4 +250,15 @@ class DashboardController extends Controller
         ]);
     }
 
+    private function countPosyanduByKelurahan($kelurahan = null)
+    {
+        $w = DB::getTablePrefix() . 'wilayah'; // jadi "tb_wilayah"
+
+        return Posyandu::join('wilayah', 'wilayah.id', '=', 'posyandu.id_wilayah')
+            ->whereNotNull('wilayah.kelurahan')
+            ->where('wilayah.kelurahan', '!=', '')
+            ->when($kelurahan, fn ($q) => $q->where('wilayah.kelurahan', $kelurahan))
+            ->selectRaw("COUNT(DISTINCT UPPER(TRIM({$w}.kelurahan))) as total")
+            ->value('total');
+    }
 }
