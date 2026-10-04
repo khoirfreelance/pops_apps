@@ -17,6 +17,7 @@ use App\Models\Child;
 use App\Models\Kunjungan;
 use App\Models\Wilayah;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -61,12 +62,20 @@ class DashboardController extends Controller
                 'keluarga'  => (int) $totalKeluarga,
                 'tpk'       => TPK::count(),
                 'ibu_hamil' => Pregnancy::count(),
-                'posyandu'  => Posyandu::select('nama_posyandu')->groupBy('nama_posyandu', 'id_wilayah')->get()->count(),
+                'posyandu' => Kunjungan::distinct()->count('posyandu'),
                 'bidan'     => User::where('role', 'Bidan')->count(),
                 'catin'     => Catin::count(),
                 'anak'      => $anakDariKunjungan,
             ]);
         }
+
+        $kelurahan = Wilayah::where('id', $wilayah->id)->value('kelurahan');
+
+        $posyandu = Kunjungan::where('kelurahan', strtoupper($kelurahan))
+            ->whereDate('tgl_pengukuran', '>=', now()->subYear())
+            ->distinct()
+            ->orderBy('posyandu')
+            ->pluck('posyandu');
 
         return response()->json([
             'rw'        => (int) $totalRw,
@@ -74,7 +83,7 @@ class DashboardController extends Controller
             'keluarga'  => (int) $totalKeluarga,
             'tpk'       => TPK::where('id_wilayah', $wilayah->id)->count(),
             'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)->count(),
-            'posyandu'  => Posyandu::select('nama_posyandu')->where('id_wilayah', $wilayah->id)->groupBy('nama_posyandu', 'id_wilayah')->get()->count(),
+            'posyandu'  => $posyandu->count(),
             'bidan'     => User::where('role', 'Bidan')->count(),
             'catin'     => Catin::where('kelurahan', $wilayah->kelurahan)->count(),
             'anak'      => $anakDariKunjungan,
