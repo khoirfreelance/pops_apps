@@ -194,6 +194,12 @@ class PregnancyController extends Controller
                 });
             }
 
+            // Satu baris per ibu hamil (record pendampingan terbaru dalam hasil filter)
+            $data = $data
+                ->sortByDesc(fn ($i) => $i->tanggal_pendampingan)
+                ->unique('nik_ibu')   // unique() mempertahankan item pertama = yang terbaru
+                ->values();
+
             $counts = [
                 [
                     "title" => "Anemia",
@@ -247,8 +253,9 @@ class PregnancyController extends Controller
                     ];
                 })->values();
 
-                $riwayat = $dataRaw->Where('nik_ibu', $group->nik_ibu)->sortBy('tanggal_pemeriksaan_terakhir')->map(function ($g) {
-                    return [
+                $riwayat = $dataRaw->where('nik_ibu', $group->nik_ibu)
+                    ->sortByDesc('tanggal_pemeriksaan_terakhir')
+                    ->map(fn ($g) => [
                         'tanggal_pemeriksaan_terakhir' => $g->tanggal_pemeriksaan_terakhir,
                         'berat_badan' => $g->berat_badan,
                         'tinggi_badan' => $g->tinggi_badan,
@@ -260,8 +267,7 @@ class PregnancyController extends Controller
                         'status_gizi_lila' => $g->status_gizi_lila,
                         'usia_kehamilan_minggu' => $g->usia_kehamilan_minggu,
                         'posyandu' => $g->posyandu,
-                    ];
-                })->first();
+                    ])->first();
                 //})->values();
 
                 return [
@@ -283,7 +289,8 @@ class PregnancyController extends Controller
                     'rw' => $group->rw,
                     'tanggal_pendampingan' => $group->tanggal_pendampingan,
                     'riwayat_pemeriksaan' => $riwayat,
-                    'hpl' => $group->first()->hpl,
+                    'hpl' => $group->hpl,
+                    //'hpl' => $group->first()->hpl,
                     'intervensi' => $intervensi ?? null,
                 ];
             });
@@ -356,13 +363,14 @@ class PregnancyController extends Controller
         if ($data instanceof \Illuminate\Http\JsonResponse) {
             return $data;
         }
-        $jml = $data
+        /* $jml = $data
             ->groupBy('nik_ibu')
             ->map(fn ($g) => $g->first())
-            ->values();
+            ->values(); */
 
-        $total = $jml->count();
-
+        //$total = $jml->count();
+        $total = $data->count();
+        $result = [];
         $count = [
             'Anemia' => 0,
             'KEK' => 0,
