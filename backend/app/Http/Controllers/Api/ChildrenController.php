@@ -300,7 +300,7 @@ class ChildrenController extends Controller
                 $count['Normal']++;
             }
 
-            if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obesitas')) {
+            if (str_contains($a['bbtb'], 'overweight') || str_contains($a['bbtb'], 'obes')) {
                 $count['Overweight']++;
             }
 
