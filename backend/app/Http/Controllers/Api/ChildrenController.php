@@ -2879,26 +2879,26 @@ class ChildrenController extends Controller
                 ], 404);
             }
 
-            // === 2. Riwayat Posyandu ===
-            $posyandu = Kunjungan::where('nik', $nik)
+            // === 2. Riwayat Posyandu (ambil sekali, dipakai ulang untuk pendampingan) ===
+            $kunjunganAll = Kunjungan::where('nik', $nik)
                 ->orderBy('tgl_pengukuran', 'ASC')
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'tgl_ukur' => $item->tgl_pengukuran ?? null,
-                        'jk' => $item->jk,
-                        'bb' => $item->bb,
-                        'tb' => $item->tb,
-                        'bbu' => $item->bb_u,
-                        'tbu' => $item->tb_u,
-                        'bbtb' => $item->bb_tb,
-                        'zs_bbu' => $item->zs_bb_u,
-                        'zs_tbu' => $item->zs_tb_u,
-                        'zs_bbtb' => $item->zs_bb_tb,
-                        'usia' => $item->usia_saat_ukur,
-                    ];
-                });
+                ->get();
 
+            $posyandu = $kunjunganAll->map(function ($item) {
+                return [
+                    'tgl_ukur' => $item->tgl_pengukuran ?? null,
+                    'jk' => $item->jk,
+                    'bb' => $item->bb,
+                    'tb' => $item->tb,
+                    'bbu' => $item->bb_u,
+                    'tbu' => $item->tb_u,
+                    'bbtb' => $item->bb_tb,
+                    'zs_bbu' => $item->zs_bb_u,
+                    'zs_tbu' => $item->zs_tb_u,
+                    'zs_bbtb' => $item->zs_bb_tb,
+                    'usia' => $item->usia_saat_ukur,
+                ];
+            });
             // === 3. Riwayat Intervensi ===
             $intervensi = Intervensi::where('nik_subjek', $nik)
                 ->orderBy('tgl_intervensi', 'ASC')
@@ -2911,27 +2911,44 @@ class ChildrenController extends Controller
                     ];
                 });
 
-            // === 4. Riwayat Pendampingan ===
+            // === 4. Riwayat Pendampingan (BB/TB diambil dari kunjungan posyandu) ===
             $pendampingan = Child::where('nik_anak', $nik)
                 ->orderBy('tgl_pendampingan', 'ASC')
                 ->get()
-                ->map(function ($row) {
+                ->map(function ($row) use ($kunjunganAll) {
+
+                    // cari kunjungan posyandu paling dekat dengan tanggal pendampingan
+                    $kunj = null;
+                    if ($row->tgl_pendampingan && $kunjunganAll->isNotEmpty()) {
+                        $tglPend = Carbon::parse($row->tgl_pendampingan);
+
+                        $kunj = $kunjunganAll
+                            ->filter(fn ($k) => !empty($k->tgl_pengukuran))
+                            ->sortBy(fn ($k) => abs(
+                                Carbon::parse($k->tgl_pengukuran)->diffInDays($tglPend, false)
+                            ))
+                            ->first();
+                    }
+
                     return [
                         'tanggal' => $row->tgl_pendampingan,
                         'kader' => $row->petugas,
                         'usia' => $row->usia,
                         'bb_lahir' => $row->bb_lahir,
                         'tb_lahir' => $row->tb_lahir,
-                        'uk_bb' => $row->bb,
-                        'uk_tb' => $row->tb,
-                        'bb' => $row->bb_u,
-                        'tb' => $row->tb_u,
-                        'bbu' => $row->zs_bb_u,
-                        'tbu' => $row->zs_tb_u,
-                        'bbtb' => $row->zs_bb_tb,
+
+                        // angka ukuran dari posyandu
+                        'uk_bb' => $this->normalizeBB($kunj->bb ?? $row->bb),
+                        'uk_tb' => $kunj->tb ?? $row->tb,
+                        'bb'    => $this->normalizeBB($kunj->bb ?? $row->bb),
+                        'tb'    => $kunj->tb ?? $row->tb,
+
+                        // z-score (angka) dari posyandu
+                        'bbu'  => $kunj->zs_bb_u ?? $row->zs_bb_u,
+                        'tbu'  => $kunj->zs_tb_u ?? $row->zs_tb_u,
+                        'bbtb' => $kunj->zs_bb_tb ?? $row->zs_bb_tb,
                     ];
                 });
-
             // === 5. Data Kelahiran ===
             $kelahiran =
                 [
@@ -2989,6 +3006,12 @@ class ChildrenController extends Controller
             ], 500);
 
         }
+    }
+
+    private function normalizeBB($bb)
+    {
+        if ($bb === null) return null;
+        return $bb > 100 ? round($bb / 1000, 2) : $bb;
     }
 
     // ENDPOINT DETAIL
