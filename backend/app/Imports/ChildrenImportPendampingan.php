@@ -76,8 +76,8 @@ class ChildrenImportPendampingan implements ToCollection, WithStartRow
                 $tbcur = $this->normalizeDecimal($row[26] ?? null);
                 $lila = $this->normalizeDecimal($row[28] ?? null);
                 $lika = $this->normalizeDecimal($row[29] ?? null);
-                $kie = strtoupper($row[42]);
-                $bantuan = strtoupper($row[43]);
+                $kie = strtoupper($row[41]);
+                $bantuan = strtoupper($row[42]);
 
                 if (!$nik || !$tglUkur) {
                     throw new \Exception(
