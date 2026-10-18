@@ -364,15 +364,34 @@ class ChildrenImportKunjungan implements
         return is_numeric($value) ? (float) $value : null;
     }
 
-    private function statusBB($status){
-        $beratBadan = [
-            "Sangat Kurang" => "Severely Underweight",
-            "Kurang" => "Underweight",
-            "Normal" => "Normal",
-            "Risiko Berat Badan Lebih" => "Risiko BB Lebih",
-            "BB Lebih" => "BB Lebih",
-        ];
-        return $beratBadan[$status] ?? null;
+    private function lookup(array $map, $value): ?string
+    {
+        $v = mb_strtolower(preg_replace('/\s+/', ' ', trim((string) $value)));
+        return $map[$v] ?? null;
+    }
+
+    private function statusBB($status, $z = null)
+    {
+        $s = $this->lookup([
+            'sangat kurang'            => 'Severely Underweight',
+            'kurang'                   => 'Underweight',
+            'normal'                   => 'Normal',
+            'risiko berat badan lebih' => 'Risiko BB Lebih',
+            'risiko bb lebih'          => 'Risiko BB Lebih',
+            'bb lebih'                 => 'Risiko BB Lebih',
+        ], $status);
+        if ($s) return $s;
+
+        if (trim((string) $status) !== '') {
+            \Illuminate\Support\Facades\Log::warning("Status BB/U tak dikenal: '{$status}'");
+        }
+        if ($z !== null) {
+            if ($z < -3) return 'Severely Underweight';
+            if ($z < -2) return 'Underweight';
+            if ($z <= 1) return 'Normal';
+            return 'Risiko BB Lebih';
+        }
+        return null;
     }
 
     private function statusTB($status){

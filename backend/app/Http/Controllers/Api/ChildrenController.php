@@ -1688,7 +1688,7 @@ class ChildrenController extends Controller
                 'Gizi Buruk (Severely Wasted)' => ['Severely Wasted'],
                 'Gizi Kurang (Wasted)' => ['Wasted'],
                 'Gizi Baik (Normal)' => ['Normal'],
-                'Berisiko Gizi Lebih (Possible Risk of Overweight)' => ['Possible risk of Overweight'],
+         'Berisiko Gizi Lebih (Possible Risk of Overweight)' => ['Possible Risk Of Overweight'],
                 'Gizi Lebih (Overweight)' => ['Overweight'],
                 'Obesitas (Obese)' => ['Obese', 'Obesitas'],
             ], $bulanIni, $bulanLalu),
@@ -1714,14 +1714,20 @@ class ChildrenController extends Controller
         );
 
 
-        // Hitung kategori
-        $countCategories = function ($collection) use ($field, $categories) {
+        $norm = fn($v) => mb_strtolower(trim((string) $v));
+        $countCategories = function ($collection) use ($field, $categories, $norm) {
             $result = [];
             foreach ($categories as $cat => $values) {
-                $result[$cat] = $collection->filter(function ($i) use ($field, $values) {
-                    return in_array($i->$field, $values);
-                })->count();
+                $targets = array_map($norm, $values);
+                $result[$cat] = $collection->filter(
+                    fn($i) => in_array($norm($i->$field), $targets, true)
+                )->count();
             }
+
+            $result['Tidak terklasifikasi'] = $collection->filter(
+                fn($i) => trim((string) $i->$field) === ''
+            )->count();
+
             return $result;
         };
 
@@ -2319,7 +2325,6 @@ class ChildrenController extends Controller
         return $stagnanMonths;
     }
 
-
     private function getIntervensiData($latest, $periodeAwal, $periodeAkhir, $intervensiFilters)
     {
         // Jika tidak ada filter intervensi → lewati saja
@@ -2723,7 +2728,8 @@ class ChildrenController extends Controller
             ->selectRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') as bulan, nik")
             ->whereBetween('tgl_pengukuran', [$startDate, $endDate])
             ->whereBetween('usia_saat_ukur', [$minAge, $maxAge])
-            ->where('naik_berat_badan', 1);
+            ->where('naik_berat_badan', 0);   // sebelumnya 1
+            //->where('naik_berat_badan', 1);
 
         // ==========================
         // 🔑 FILTER WILAYAH
@@ -3014,6 +3020,16 @@ class ChildrenController extends Controller
         return $bb > 100 ? round($bb / 1000, 2) : $bb;
     }
 
+    private function applyWilayahFilters($query, array $filters)
+    {
+        foreach (['provinsi', 'kota', 'kecamatan', 'kelurahan', 'posyandu', 'rt', 'rw'] as $col) {
+            if (!empty($filters[$col])) {
+                $query->where($col, $filters[$col]);
+            }
+        }
+        return $query;
+    }
+
     // ENDPOINT DETAIL
     public function detail_tren(Request $request)
     {
@@ -3161,13 +3177,28 @@ class ChildrenController extends Controller
             'P' => 0
         ];
 
-        if ($summaryMonth) {
+        /* if ($summaryMonth) {
             foreach (['L', 'P'] as $jk) {
                 $tidakNaik[$jk] = Kunjungan::query()
                     ->where('jk', $jk)
                     ->where('naik_berat_badan', 1)
                     ->whereRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') = ?", [$summaryMonth])
                     ->distinct('nik')
+                    ->count('nik');
+            }
+        } */
+       if ($summaryMonth) {
+            $mStart = Carbon::createFromFormat('Y-m-d', $summaryMonth . '-01')->startOfMonth();
+            $mEnd   = $mStart->copy()->endOfMonth();
+
+            foreach (['L', 'P'] as $jk) {
+                $q = Kunjungan::query()
+                    ->where('jk', $jk)
+                    ->where('naik_berat_badan', 0)
+                    ->whereBetween('tgl_pengukuran', [$mStart, $mEnd]);
+
+                $tidakNaik[$jk] = $this->applyWilayahFilters($q, $filters)
+                    ->distinct()
                     ->count('nik');
             }
         }
@@ -3425,6 +3456,31 @@ class ChildrenController extends Controller
         }
 
         return response()->json(['indikator' => $result], 200);
+    }
+
+    private function countByCategory(string $field, string $month, array $filters, ?string $jk = null): array
+    {
+        // 1 anak = 1 pengukuran terakhir di bulan tsb
+        $latest = Kunjungan::query()
+            ->selectRaw("nik, MAX(tgl_pengukuran) as last_date")
+            ->whereRaw("DATE_FORMAT(tgl_pengukuran, '%Y-%m') = ?", [$month])
+            ->when($filters['provinsi'] ?? null,  fn($q, $v) => $q->where('provinsi', $v))
+            ->when($filters['kota'] ?? null,      fn($q, $v) => $q->where('kota', $v))
+            ->when($filters['kecamatan'] ?? null, fn($q, $v) => $q->where('kecamatan', $v))
+            ->when($filters['kelurahan'] ?? null, fn($q, $v) => $q->where('kelurahan', $v))
+            ->when($filters['posyandu'] ?? null,  fn($q, $v) => $q->where('posyandu', $v))
+            ->when($filters['rw'] ?? null,        fn($q, $v) => $q->where('rw', $v))
+            ->when($filters['rt'] ?? null,        fn($q, $v) => $q->where('rt', $v))
+            ->when($jk, fn($q, $v) => $q->where('jk', $v))
+            ->groupBy('nik');
+
+        return Kunjungan::query()
+            ->joinSub($latest, 'l', fn($j) => $j->on('kunjungan.nik', '=', 'l.nik')
+                                                ->on('kunjungan.tgl_pengukuran', '=', 'l.last_date'))
+            ->selectRaw("LOWER(TRIM($field)) as kategori, COUNT(*) as total")
+            ->groupBy('kategori')
+            ->pluck('total', 'kategori')
+            ->all();
     }
 
     // CRUD
