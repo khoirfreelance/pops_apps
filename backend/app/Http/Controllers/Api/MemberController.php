@@ -9,6 +9,8 @@ use App\Models\TPK;
 use App\Models\DampinganKeluarga;
 use App\Models\User;
 use App\Models\Log;
+use Illuminate\Support\Facades\DB;
+//use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class MemberController extends Controller
@@ -190,34 +192,43 @@ class MemberController extends Controller
                 'keluarga.kepala',
                 'pregnancy',
                 'catin',
-                'anak'
+                'anak',
             ])
             ->where('id_tpk', $id)
             ->get();
-        //dd($dampingan);
-        $data = $dampingan->map(fn ($d) => [
-            'id' => $d->id,
-            'jenis' => $d->jenis,
-            'no_kk' => $d->keluarga?->no_kk ?? $d->catin?->nik_perempuan,
-            'rt' => $d->keluarga?->rt ?? $d->catin?->rt,
-            'rw' => $d->keluarga?->rw ?? $d->catin?->rw,
-            'kepala_keluarga' => $d->keluarga?->kepala->nama ?? $d->catin?->nama_perempuan,
-            'id_pendampingan' => $d->id_pendampingan,
 
-            'sasaran' =>
-                $d->anak?->nama_anak
-                ?? $d->pregnancy?->nama_ibu
-                ?? $d->catin?->nama_perempuan,
+        $fmt = fn ($v) => $v ? \Carbon\Carbon::parse($v)->format('Y-m-d') : null;
 
-            'tgl_pendampingan' =>
-                $d->anak?->tgl_pendampingan
-                ?? \Carbon\Carbon::parse($d->pregnancy?->tanggal_pendampingan)?->format('Y-m-d')
-                ?? \Carbon\Carbon::parse($d->catin?->tanggal_pendampingan)?->format('Y-m-d'),
-            'anak' => $d->anak,
-            'bumil' => $d->pregnancy,
-            'catin' => $d->catin,
+        $data = $dampingan->map(function ($d) use ($fmt) {
+            $jenis = strtoupper($d->jenis);
 
-        ]);
+            // ambil hanya relasi yang sesuai jenis
+            $anak  = $jenis === 'ANAK'  ? $d->anak      : null;
+            $bumil = $jenis === 'BUMIL' ? $d->pregnancy : null;
+            $catin = $jenis === 'CATIN' ? $d->catin     : null;
+
+            // data sumber sudah dihapus (orphan) -> buang
+            if (!$anak && !$bumil && !$catin) {
+                return null;
+            }
+
+            return [
+                'id'              => $d->id,
+                'jenis'           => $jenis,
+                'no_kk'           => $d->keluarga?->no_kk ?? $catin?->nik_perempuan,
+                'rt'              => $d->keluarga?->rt ?? $catin?->rt,
+                'rw'              => $d->keluarga?->rw ?? $catin?->rw,
+                'kepala_keluarga' => $d->keluarga?->kepala?->nama ?? $catin?->nama_perempuan,
+                'id_pendampingan' => $d->id_pendampingan,
+                'sasaran'         => $anak?->nama_anak ?? $bumil?->nama_ibu ?? $catin?->nama_perempuan,
+                'tgl_pendampingan'=> $fmt($anak?->tgl_pendampingan)
+                                    ?? $fmt($bumil?->tanggal_pendampingan)
+                                    ?? $fmt($catin?->tanggal_pendampingan),
+                'anak'            => $anak,
+                'bumil'           => $bumil,
+                'catin'           => $catin,
+            ];
+        })->filter()->values();
 
         return response()->json($data);
     }

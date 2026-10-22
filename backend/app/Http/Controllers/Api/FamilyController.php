@@ -24,62 +24,44 @@ class FamilyController extends Controller
 
     public function index()
     {
-
         $user = Auth::user();
 
-        $keluargas = Keluarga::with('kepala', 'wilayah');
-        /* if ($user->role != 'SUPER ADMIN') {
+        $keluargas = Keluarga::query()
+            ->select('id', 'no_kk', 'alamat', 'rt', 'rw', 'id_wilayah')
+            ->with([
+                'kepala:id,id_keluarga,nama,nik,tanggal_lahir,pendidikan,status_hubungan,is_pending',
+                'wilayah:id,provinsi,kota,kecamatan,kelurahan',
+            ])
+            ->withCount(['anggota as jml_anggota' => fn ($q) => $q->where('is_pending', 0)]);
 
-            $keluargas->wherehas('wilayah', function ($q) use ($user) {
-                $q->where('id', $user->id_wilayah);
-            });
-        } */
-
-        switch ($user->role) {
-            case 'SUPER ADMIN':
-                /* $keluargas->wherehas('wilayah', function ($q) use ($user) {
-                    $q->where('id', $user->id_wilayah);
-                }); */
-                break;
-            case 'ADMIN':
-                $keluargas->wherehas('wilayah', function ($q) use ($user) {
-                    $q->where('id', $user->id_wilayah);
-                });
-                break;
+        if ($user->role === 'ADMIN') {
+            $keluargas->where('id_wilayah', $user->id_wilayah);
         }
+        // SUPER ADMIN: lihat semua (sesuaikan kalau memang harus dibatasi)
 
-        $keluargas = $keluargas->get();
-
-        $data = $keluargas->map(function ($k) {
+        $data = $keluargas->get()->map(function ($k) {
             return [
-                'id'      => $k->id,
-                'no_kk'   => $k->no_kk,
-                'alamat'  => $k->alamat,
-                'rt'      => $k->rt,
-                'rw'      => $k->rw,
-
-                // data kepala keluarga langsung diurai
-                'nama_kepala'     => $k->kepala ? $k->kepala->nama : null,
-                'nik_kepala'      => $k->kepala ? $k->kepala->nik : null,
-                'tgl_lahir'       => $k->kepala && $k->kepala->tanggal_lahir
-                                    ? Carbon::parse($k->kepala->tanggal_lahir)->format('Y-m-d')
-                                    : null,
-
-                'pendidikan'      => $k->kepala ? $k->kepala->pendidikan : null,
-                'status_hubungan' => $k->kepala ? $k->kepala->status_hubungan : null,
-                'is_pending' => $k->kepala ? $k->kepala->is_pending : null,
-                // ✅ WILAYAH
-                'wilayah' => $k->wilayah ? [
+                'id'              => $k->id,
+                'no_kk'           => $k->no_kk,
+                'alamat'          => $k->alamat,
+                'rt'              => $k->rt,
+                'rw'              => $k->rw,
+                'nama_kepala'     => $k->kepala?->nama,
+                'nik_kepala'      => $k->kepala?->nik,
+                'tgl_lahir'       => $k->kepala?->tanggal_lahir
+                                        ? Carbon::parse($k->kepala->tanggal_lahir)->format('Y-m-d')
+                                        : null,
+                'pendidikan'      => $k->kepala?->pendidikan,
+                'status_hubungan' => $k->kepala?->status_hubungan,
+                'is_pending'      => $k->kepala?->is_pending,
+                'wilayah'         => $k->wilayah ? [
                     'id'        => $k->wilayah->id,
                     'provinsi'  => $k->wilayah->provinsi,
                     'kota'      => $k->wilayah->kota,
                     'kecamatan' => $k->wilayah->kecamatan,
                     'kelurahan' => $k->wilayah->kelurahan,
                 ] : null,
-                // jumlah anggota keluarga
-                'jml_anggota'     => $k->anggota ? $k->anggota
-                                        ->where('is_pending', 0)
-                                        ->count() : 0,
+                'jml_anggota'     => $k->jml_anggota,
             ];
         });
 
