@@ -61,10 +61,10 @@ class DashboardController extends Controller
                 'rt'        => (int) $totalRt,
                 'keluarga'  => (int) $totalKeluarga,
                 'tpk'       => TPK::count(),
-                'ibu_hamil' => Pregnancy::count(),
+                'ibu_hamil' => Pregnancy::distinct()->count('nik_ibu'),
                 'posyandu' => Kunjungan::distinct()->count('posyandu'),
                 'bidan'     => User::where('role', 'Bidan')->count(),
-                'catin'     => Catin::count(),
+                'catin'     => Catin::distinct()->count('nik_perempuan'),
                 'anak'      => $anakDariKunjungan,
             ]);
         }
@@ -82,10 +82,13 @@ class DashboardController extends Controller
             'rt'        => (int) $totalRt,
             'keluarga'  => (int) $totalKeluarga,
             'tpk'       => TPK::where('id_wilayah', $wilayah->id)->count(),
-            'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)->count(),
+            //'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)->count(),
+            'ibu_hamil' => Pregnancy::where('kelurahan', $wilayah->kelurahan)
+                ->distinct()->count('nik_ibu'),
             'posyandu'  => $posyandu->count(),
             'bidan'     => User::where('role', 'Bidan')->count(),
-            'catin'     => Catin::where('kelurahan', $wilayah->kelurahan)->count(),
+            'catin'     => Catin::where('kelurahan', $wilayah->kelurahan)
+            ->distinct()->count('nik_perempuan'),
             'anak'      => $anakDariKunjungan,
         ]);
     }
